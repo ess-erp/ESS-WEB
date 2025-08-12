@@ -4,7 +4,8 @@ import {
     FETCH_LEVEL_REQUEST, FETCH_LEVEL_SUCCESS, FETCH_LEVEL_FAILURE,
     FETCH_STRAND_REQUEST, FETCH_STRAND_SUCCESS, FETCH_STRAND_FAILURE,
     FETCH_NATIONALITY_REQUEST, FETCH_NATIONALITY_SUCCESS, FETCH_NATIONALITY_FAILURE,
-    FETCH_RELIGION_REQUEST,FETCH_RELIGION_SUCCESS, FETCH_RELIGION_FAILURE,
+    FETCH_RELIGION_REQUEST, FETCH_RELIGION_SUCCESS, FETCH_RELIGION_FAILURE,
+    FETCH_OTPCODE_REQUEST, FETCH_OTPCODE_SUCCESS, FETCH_OTPCODE_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -21,6 +22,7 @@ const initialState = {
     strandState: { ...initialFormState },
     nationalityState: { ...initialFormState },
     religionState: { ...initialFormState },
+    otpcodeState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -54,7 +56,7 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, strandState: { loading: false, data: action.payload, error: '' } };
         case FETCH_STRAND_FAILURE:
             return { ...state, strandState: { loading: false, data: [], error: action.payload } };
-            
+
         //Nationality
         case FETCH_NATIONALITY_REQUEST:
             return { ...state, nationalityState: { loading: true, data: [], error: '' } };
@@ -70,6 +72,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, religionState: { loading: false, data: action.payload, error: '' } };
         case FETCH_RELIGION_FAILURE:
             return { ...state, religionState: { loading: false, data: [], error: action.payload } };
+            
+        //OTP Code
+        case FETCH_OTPCODE_REQUEST:
+            return { ...state, otpcodeState: { loading: true, data: [], error: '' } };
+        case FETCH_OTPCODE_SUCCESS:
+            return { ...state, otpcodeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_OTPCODE_FAILURE:
+            return { ...state, otpcodeState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

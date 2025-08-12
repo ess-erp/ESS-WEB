@@ -5,6 +5,7 @@ import {
     FETCH_STRAND_REQUEST, FETCH_STRAND_SUCCESS, FETCH_STRAND_FAILURE,
     FETCH_NATIONALITY_REQUEST, FETCH_NATIONALITY_SUCCESS, FETCH_NATIONALITY_FAILURE,
     FETCH_RELIGION_REQUEST, FETCH_RELIGION_SUCCESS, FETCH_RELIGION_FAILURE,
+    FETCH_OTPCODE_REQUEST, FETCH_OTPCODE_SUCCESS, FETCH_OTPCODE_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -156,6 +157,29 @@ export const fetchReligionData = () => async (dispatch) => {
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchReligionFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+//Get OtpCode
+export const fetchOtpCodeRequest = () => ({ type: FETCH_OTPCODE_REQUEST });
+export const fetchOtpCodeSuccess = (data) => ({ type: FETCH_OTPCODE_SUCCESS, payload: data });
+export const fetchOtpCodeFailure = (error) => ({ type: FETCH_OTPCODE_FAILURE, payload: error });
+
+export const fetchOtpCodeData = (Email="") => async (dispatch) => {
+    dispatch(fetchOtpCodeRequest());
+    try{
+        const url = `${baseUrl}/auth/email-verification?Email=${Email}`
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json'}
+        });
+        const res = await response.json();
+
+        dispatch(fetchOtpCodeSuccess(res));
+        return { ok: true, data: res };
+    } catch (error) {
+        dispatch(fetchOtpCodeFailure(error.message));
         return { ok: false, error };
     }
 };
