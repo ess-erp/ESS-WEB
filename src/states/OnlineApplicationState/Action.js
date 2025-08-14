@@ -6,6 +6,9 @@ import {
     FETCH_NATIONALITY_REQUEST, FETCH_NATIONALITY_SUCCESS, FETCH_NATIONALITY_FAILURE,
     FETCH_RELIGION_REQUEST, FETCH_RELIGION_SUCCESS, FETCH_RELIGION_FAILURE,
     FETCH_OTPCODE_REQUEST, FETCH_OTPCODE_SUCCESS, FETCH_OTPCODE_FAILURE,
+    FETCH_PROVINCE_REQUEST, FETCH_PROVINCE_SUCCESS, FETCH_PROVINCE_FAILURE,
+    FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
+    FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -152,7 +155,7 @@ export const fetchReligionData = () => async (dispatch) => {
             headers: { 'Content-Type': 'application/json' }
         });
         const res = await response.json();
-        
+
         dispatch(fetchReligionSuccess(res));
         return { ok: true, data: res };
     } catch (error) {
@@ -166,13 +169,13 @@ export const fetchOtpCodeRequest = () => ({ type: FETCH_OTPCODE_REQUEST });
 export const fetchOtpCodeSuccess = (data) => ({ type: FETCH_OTPCODE_SUCCESS, payload: data });
 export const fetchOtpCodeFailure = (error) => ({ type: FETCH_OTPCODE_FAILURE, payload: error });
 
-export const fetchOtpCodeData = (Email="") => async (dispatch) => {
+export const fetchOtpCodeData = (Email = "") => async (dispatch) => {
     dispatch(fetchOtpCodeRequest());
-    try{
+    try {
         const url = `${baseUrl}/auth/email-verification?Email=${Email}`
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json'}
+            headers: { 'Content-Type': 'application/json' }
         });
         const res = await response.json();
 
@@ -180,6 +183,80 @@ export const fetchOtpCodeData = (Email="") => async (dispatch) => {
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchOtpCodeFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Get Province
+export const fetchProvinceRequest = () => ({ type: FETCH_PROVINCE_REQUEST });
+export const fetchProvinceSuccess = (data) => ({ type: FETCH_PROVINCE_SUCCESS, payload: data });
+export const fetchProvinceFailure = (error) => ({ type: FETCH_PROVINCE_FAILURE, payload: error });
+
+export const fetchProvinceData = () => async (dispatch) => {
+    dispatch(fetchProvinceRequest());
+    try {
+        const response = await fetch('/assets/PhAddress/province.json');
+
+        const res = await response.json();
+        dispatch(fetchProvinceSuccess(res));
+        return { ok: true, data: res };
+    } catch (error) {
+        dispatch(fetchProvinceFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Get City
+export const fetchCityRequest = () => ({ type: FETCH_CITY_REQUEST });
+export const fetchCitySuccess = (data) => ({ type: FETCH_CITY_SUCCESS, payload: data });
+export const fetchCityFailure = (error) => ({ type: FETCH_CITY_FAILURE, payload: error });
+
+export const fetchCityData = (ProvinceCode = '') => async (dispatch) => {
+    dispatch(fetchCityRequest());
+    try {
+
+        console.log(ProvinceCode);
+        const response = await fetch('/assets/PhAddress/city.json');
+
+        const res = await response.json();
+
+         const filtered = ProvinceCode
+            ? res.filter(city => city.province_code === ProvinceCode)
+            : res;
+
+        dispatch(fetchCitySuccess(filtered));
+        return { ok: true, data: filtered };
+    } catch (error) {
+        dispatch(fetchCityFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Get Barangay
+export const fetchBarangayRequest = () => ({ type: FETCH_BARANGAY_REQUEST });
+export const fetchBarangaySuccess = (data) => ({ type: FETCH_BARANGAY_SUCCESS, payload: data });
+export const fetchBarangayFailure = (error) => ({ type: FETCH_BARANGAY_FAILURE, payload: error });
+
+export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
+    dispatch(fetchBarangayRequest());
+    try {
+
+        console.log(CityCode);
+        const response = await fetch('/assets/PhAddress/barangay.json');
+
+        const res = await response.json();
+
+         const filtered = CityCode
+            ? res.filter(city => city.city_code === CityCode)
+            : res;
+
+        dispatch(fetchBarangaySuccess(filtered));
+        return { ok: true, data: filtered };
+    } catch (error) {
+        dispatch(fetchBarangayFailure(error.message));
         return { ok: false, error };
     }
 };

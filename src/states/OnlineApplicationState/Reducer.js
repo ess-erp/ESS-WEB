@@ -6,6 +6,9 @@ import {
     FETCH_NATIONALITY_REQUEST, FETCH_NATIONALITY_SUCCESS, FETCH_NATIONALITY_FAILURE,
     FETCH_RELIGION_REQUEST, FETCH_RELIGION_SUCCESS, FETCH_RELIGION_FAILURE,
     FETCH_OTPCODE_REQUEST, FETCH_OTPCODE_SUCCESS, FETCH_OTPCODE_FAILURE,
+    FETCH_PROVINCE_REQUEST, FETCH_PROVINCE_SUCCESS, FETCH_PROVINCE_FAILURE,
+    FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
+    FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -23,6 +26,9 @@ const initialState = {
     nationalityState: { ...initialFormState },
     religionState: { ...initialFormState },
     otpcodeState: { ...initialFormState },
+    provinceState: { ...initialFormState },
+    cityState: { ...initialFormState },
+    barangayState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -72,7 +78,7 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, religionState: { loading: false, data: action.payload, error: '' } };
         case FETCH_RELIGION_FAILURE:
             return { ...state, religionState: { loading: false, data: [], error: action.payload } };
-            
+
         //OTP Code
         case FETCH_OTPCODE_REQUEST:
             return { ...state, otpcodeState: { loading: true, data: [], error: '' } };
@@ -80,6 +86,30 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, otpcodeState: { loading: false, data: action.payload, error: '' } };
         case FETCH_OTPCODE_FAILURE:
             return { ...state, otpcodeState: { loading: false, data: [], error: action.payload } };
+
+        //Province
+        case FETCH_PROVINCE_REQUEST:
+            return { ...state, provinceState: { loading: true, data: [], error: '' } };
+        case FETCH_PROVINCE_SUCCESS:
+            return { ...state, provinceState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_PROVINCE_FAILURE:
+            return { ...state, provinceState: { loading: false, data: '', error: action.payload } };
+
+        //City
+        case FETCH_CITY_REQUEST:
+            return { ...state, cityState: { loading: true, data: [], error: '' } };
+        case FETCH_CITY_SUCCESS:
+            return { ...state, cityState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CITY_FAILURE:
+            return { ...state, cityState: { loading: false, data: '', error: action.payload } };
+
+        //Barangay
+        case FETCH_BARANGAY_REQUEST:
+            return { ...state, barangayState: { loading: true, data: [], error: '' } };
+        case FETCH_BARANGAY_SUCCESS:
+            return { ...state, barangayState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_BARANGAY_FAILURE:
+            return { ...state, barangayState: { loading: false, data: '', error: action.payload } };
 
         default:
             return state;
