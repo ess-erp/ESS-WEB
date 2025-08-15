@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from "react-router-dom";
 import BlueBtn from '../../components/ButtonsComponents/BlueBtn';
 import RedBtn from '../ButtonsComponents/RedBtn';
 import GreenBtn from '../ButtonsComponents/GreenBtn';
@@ -34,6 +35,7 @@ const NewEnrollyComponent = () => {
     const provinceState = useSelector((state) => state.online.provinceState || {});
     const cityState = useSelector((state) => state.online.cityState || {});
     const barangayState = useSelector((state) => state.online.barangayState || {});
+    const insertStudentState = useSelector((state) => state.online.insertStudentState || {});
 
     const campuses = campusState.data || [];
     const [selectedCampus, setSelectedCampus] = useState(null);
@@ -65,7 +67,14 @@ const NewEnrollyComponent = () => {
     const barangay = barangayState.data || [];
     const [selectedBarangay, setSelectedBarangay] = useState(null);
 
-    console.log(city);
+
+    const insertStudent = insertStudentState.data || [];
+
+    const navigate = useNavigate();
+    if(insertStudent.length !== 0){
+        navigate('/congratulationletter')
+    }
+    console.log(insertStudent);
 
 
     useEffect(() => {

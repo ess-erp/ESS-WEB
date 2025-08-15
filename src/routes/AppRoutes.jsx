@@ -4,12 +4,14 @@ import Login from "../pages/Auth/Login";
 import Dashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
+import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
 
 const AppRoutes = () => (
   <Router>
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/onlineapplication" element={<OnlineApplication />}/>
+      <Route path="/congratulationletter" element={<CongratsComponent />}/>
 
       {/* ✅ Secure routes using element prop */}
       <Route
