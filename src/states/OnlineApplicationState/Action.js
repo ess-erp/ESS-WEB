@@ -9,6 +9,7 @@ import {
     FETCH_PROVINCE_REQUEST, FETCH_PROVINCE_SUCCESS, FETCH_PROVINCE_FAILURE,
     FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
     FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
+    FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -222,7 +223,7 @@ export const fetchCityData = (ProvinceCode = '') => async (dispatch) => {
 
         const res = await response.json();
 
-         const filtered = ProvinceCode
+        const filtered = ProvinceCode
             ? res.filter(city => city.province_code === ProvinceCode)
             : res;
 
@@ -249,7 +250,7 @@ export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
 
         const res = await response.json();
 
-         const filtered = CityCode
+        const filtered = CityCode
             ? res.filter(city => city.city_code === CityCode)
             : res;
 
@@ -257,6 +258,43 @@ export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
         return { ok: true, data: filtered };
     } catch (error) {
         dispatch(fetchBarangayFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Insert Student
+export const fetchInsertStudentRequest = () => ({ type: FETCH_INSERTSTUDENT_REQUEST });
+export const fetchInsertStudentSuccess = (data) => ({ type: FETCH_INSERTSTUDENT_SUCCESS, payload: data });
+export const fetchInsertStudentFailure = (error) => ({ type: FETCH_INSERTSTUDENT_FAILURE, payload: error });
+
+export const fetchInsertStudentData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertStudentRequest());
+    try {
+        const url = `${baseUrl}/auth/student-online-application`; // also removed the stray " at the end
+
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const text = await response.text();
+        let res;
+        try {
+            res = text ? JSON.parse(text) : {};
+        } catch {
+            res = { success: false, message: text || "Invalid JSON response" };
+        }
+
+        if (res.success === false) {
+            throw new Error(res.message || "Unknown error");
+        }
+
+        dispatch(fetchInsertStudentSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertStudentFailure(error.message));
         return { ok: false, error };
     }
 };

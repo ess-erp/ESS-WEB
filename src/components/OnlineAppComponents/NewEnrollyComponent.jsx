@@ -17,6 +17,7 @@ import {
     fetchProvinceData,
     fetchCityData,
     fetchBarangayData,
+    fetchInsertStudentData
 } from '../../states/OnlineApplicationState/Action';
 
 
@@ -379,10 +380,14 @@ const NewEnrollyComponent = () => {
     };
 
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = () => {
+        const formData = new FormData();
 
+        for (const key in form) {
+            formData.append(key, form[key]);
+        }
 
+        dispatch(fetchInsertStudentData(formData));
     };
 
 

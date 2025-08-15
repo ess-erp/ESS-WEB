@@ -9,6 +9,7 @@ import {
     FETCH_PROVINCE_REQUEST, FETCH_PROVINCE_SUCCESS, FETCH_PROVINCE_FAILURE,
     FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
     FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
+    FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -29,6 +30,7 @@ const initialState = {
     provinceState: { ...initialFormState },
     cityState: { ...initialFormState },
     barangayState: { ...initialFormState },
+    insertStudentState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -110,6 +112,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, barangayState: { loading: false, data: action.payload, error: '' } };
         case FETCH_BARANGAY_FAILURE:
             return { ...state, barangayState: { loading: false, data: '', error: action.payload } };
+
+        //Insert New Student
+        case FETCH_INSERTSTUDENT_REQUEST:
+            return { ...state, insertStudentState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERTSTUDENT_SUCCESS:
+            return { ...state, insertStudentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERTSTUDENT_FAILURE:
+            return { ...state, insertStudentState: { loading: false, data: '', error: action.payload } };
 
         default:
             return state;
