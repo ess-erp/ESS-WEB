@@ -28,7 +28,7 @@ const AnnouncementComponent = () => {
                     News & Announcement
                 </h2>
             </div>
-            <div className="space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+            <div className="space-y-6">
                 {events.map((event) => (
                     <div
                         key={event.id}

@@ -71,7 +71,7 @@ const NewEnrollyComponent = () => {
     const insertStudent = insertStudentState.data || [];
 
     const navigate = useNavigate();
-    if(insertStudent.length !== 0){
+    if (insertStudent.length !== 0) {
         navigate('/congratulationletter')
     }
     console.log(insertStudent);
@@ -178,7 +178,7 @@ const NewEnrollyComponent = () => {
     const [otpSentMessage, setOtpSentMessage] = useState("");
 
     console.log(form);
-
+    const [cooldown, setCooldown] = useState(0);
     useEffect(() => {
         if (triggerVerify && form.ContactEmail) {
             dispatch(fetchOtpCodeData(form.ContactEmail));
@@ -190,6 +190,24 @@ const NewEnrollyComponent = () => {
             setTriggerVerify(false);
         }
     }, [triggerVerify, form.ContactEmail, dispatch]);
+
+
+    useEffect(() => {
+        let timer;
+        if (cooldown > 0) {
+            timer = setInterval(() => {
+                setCooldown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(timer);
+    }, [cooldown]);
+
+    const verifyEmail = () => {
+        if (cooldown > 0) return; // prevent spamming while in cooldown
+
+        setTriggerVerify(true);
+        setCooldown(30); // start 30s cooldown
+    };
 
     const handleChange = (e) => {
         // setForm({ ...form, [e.target.name]: e.target.value });
@@ -203,9 +221,7 @@ const NewEnrollyComponent = () => {
             setIsOtpValid(otpPattern.test(value));
         }
     };
-    const verifyEmail = () => {
-        setTriggerVerify(true);
-    };
+
     const [step, setStep] = useState(1);
     const stepTitle = {
         1: "Personal Information",
@@ -971,7 +987,11 @@ const NewEnrollyComponent = () => {
                                                 className="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                 required
                                             />
-                                            <BlueBtn label="Send OTP" onClick={verifyEmail} />
+                                            <BlueBtn
+                                                label={cooldown > 0 ? `Resend OTP in ${cooldown}s` : "Send OTP"}
+                                                onClick={verifyEmail}
+                                                disabled={cooldown > 0}
+                                            />
                                         </div>
                                         {otpSentMessage && (
                                             <p style={{ color: "green", marginTop: "8px" }}>
@@ -1003,12 +1023,10 @@ const NewEnrollyComponent = () => {
                                             maxLength={6}
                                         />
 
-                                        {/* ✅ Green check */}
                                         {isOtpValid && (
                                             <CheckCircleIcon className="absolute right-3 top-[36px] h-5 w-5 text-green-500" />
                                         )}
 
-                                        {/* ❌ Red X */}
                                         {isOtpValid === false && (
                                             <XCircleIcon className="absolute right-3 top-[36px] h-5 w-5 text-red-500" />
                                         )}
@@ -1315,6 +1333,7 @@ const NewEnrollyComponent = () => {
                         { label: "Yes", type: "green", onClick: handleSubmit },
                         { label: "No", type: "red", onClick: () => console.log("No clicked") },
                     ]}
+                    backgroundImage="/assets/img/White-Background.png"
                 />
             </div>
         </div>

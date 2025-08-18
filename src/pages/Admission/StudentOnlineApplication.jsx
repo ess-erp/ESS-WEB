@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import StudentDataTable from "../../components/AdmissionComponents/StudentDataTable";
@@ -15,10 +15,12 @@ const StudentOnlineApplication = () => {
         { label: 'Online Application', href: '/admission/onlineapplication' }
     ];
 
- 
+    const [sidebarOpen, setSidebarOpen] = useState(true);
+
     return (
-        <div className="flex">
-            <Sidebar />
+
+        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
+            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
             <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
@@ -49,7 +51,6 @@ const StudentOnlineApplication = () => {
                 </section>
             </div>
         </div>
-
     );
 };
 

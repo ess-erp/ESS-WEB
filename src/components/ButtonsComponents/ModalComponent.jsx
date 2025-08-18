@@ -4,7 +4,14 @@ import RedBtn from "./RedBtn";
 import YellowBtn from "./YellowBtn";
 import BlueBtn from "./BlueBtn";
 
-const ModalComponent = ({ isOpen, onClose, title, body, buttons = [] }) => {
+const ModalComponent = ({ 
+    isOpen, 
+    onClose, 
+    title, 
+    body, 
+    buttons = [], 
+    backgroundImage // ✅ optional prop
+}) => {
     const getButtonComponent = (type) => {
         switch (type) {
             case "green":
@@ -23,11 +30,17 @@ const ModalComponent = ({ isOpen, onClose, title, body, buttons = [] }) => {
             {isOpen && (
                 <motion.div
                     className="fixed inset-0 flex items-center justify-center z-50"
-                    style={{
-                        backgroundImage: `url('/assets/img/White-Background.png')`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                    }}
+                    style={
+                        backgroundImage
+                            ? {
+                                  backgroundImage: `url(${backgroundImage})`,
+                                  backgroundSize: "cover",
+                                  backgroundPosition: "center",
+                              }
+                            : {
+                                  backgroundColor: "rgba(0, 0, 0, 0.5)", // fallback overlay
+                              }
+                    }
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

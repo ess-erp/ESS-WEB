@@ -10,6 +10,8 @@ import {
     FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
     FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
     FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
+    FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
+    FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -295,6 +297,57 @@ export const fetchInsertStudentData = (formData) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchInsertStudentFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Get old student
+export const fetchOldStudentRequest = () => ({ type: FETCH_OLDSTUDENT_REQUEST });
+export const fetchOldStudentSuccess = (data) => ({ type: FETCH_OLDSTUDENT_SUCCESS, payload: data });
+export const fetchOldStudentFailure = (error) => ({ type: FETCH_OLDSTUDENT_FAILURE, payload: error });
+
+export const fetchOldStudentData = () => async (dispatch) => {
+    dispatch(fetchOldStudentRequest());
+    try {
+        const url = `${baseUrl}/auth/get-old-student`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const res = await response.json();
+        console.log(res);
+        dispatch(fetchOldStudentSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchOldStudentFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+//Get student data
+export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST });
+export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCCESS, payload: data });
+export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
+
+export const fetchStudentByIdData = (StudentId="") => async (dispatch) => {
+    dispatch(fetchOldStudentRequest());
+    try {
+        const url = `${baseUrl}/auth/get-student-id?StudentId=${StudentId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        const res = await response.json();
+        console.log(res);
+        dispatch(fetchStudentByIdSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchStudentByIdFailure(error.message));
         return { ok: false, error };
     }
 };

@@ -16,7 +16,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = 'Login | Seton School';
+    document.title = 'Login | ESS';
     const token = localStorage.getItem("token");
 
     if (token) {
@@ -283,15 +283,6 @@ const Login = () => {
                 </svg>
                 Google
               </button>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Sign up
-                </a>
-              </p>
             </div>
             {loading ? "Signing in..." : ""}
           </div>

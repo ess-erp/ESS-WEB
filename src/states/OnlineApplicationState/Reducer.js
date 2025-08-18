@@ -10,6 +10,8 @@ import {
     FETCH_CITY_REQUEST, FETCH_CITY_SUCCESS, FETCH_CITY_FAILURE,
     FETCH_BARANGAY_REQUEST, FETCH_BARANGAY_SUCCESS, FETCH_BARANGAY_FAILURE,
     FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
+    FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
+    FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -31,6 +33,8 @@ const initialState = {
     cityState: { ...initialFormState },
     barangayState: { ...initialFormState },
     insertStudentState: { ...initialFormState },
+    oldStudentState: { ...initialFormState },
+    studentDataState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -120,6 +124,22 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, insertStudentState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERTSTUDENT_FAILURE:
             return { ...state, insertStudentState: { loading: false, data: '', error: action.payload } };
+
+        //Fetch Old Student
+        case FETCH_OLDSTUDENT_REQUEST:
+            return { ...state, oldStudentState: { loading: true, data: [], error: '' } };
+        case FETCH_OLDSTUDENT_SUCCESS:
+            return { ...state, oldStudentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_OLDSTUDENT_FAILURE:
+            return { ...state, oldStudentState: { loading: false, data: '', error: action.payload } };
+
+        //Fetch Student Data using StudentId
+        case FETCH_STUDENTBYID_REQUEST:
+            return { ...state, studentDataState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENTBYID_SUCCESS:
+            return { ...state, studentDataState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENTBYID_FAILURE:
+            return { ...state, studentDataState: { loading: false, data: '', error: action.payload } };
 
         default:
             return state;
