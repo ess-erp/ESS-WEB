@@ -5,6 +5,9 @@ import Dashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
 import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
+import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
+import TemplatesForm from "../pages/Admission/TemplatesForm";
+
 
 const AppRoutes = () => (
   <Router>
@@ -27,6 +30,22 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes>
             <StudentOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/admission/studentappform"
+        element={
+          <ProtectedRoutes>
+            <StudentOnlineAppForm />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/admission/templatesform"
+        element={
+          <ProtectedRoutes>
+            <TemplatesForm />
           </ProtectedRoutes>
         }
       />

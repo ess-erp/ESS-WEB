@@ -1,6 +1,7 @@
 import {
     FETCH_LOGIN_REQUEST, FETCH_LOGIN_SUCCESS, FETCH_LOGIN_FAILURE,
 } from './ActionType';
+import { setToken } from '../../services/tokenServices';
 // import { useNavigate } from 'react-router-dom';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -27,7 +28,7 @@ export const fetchLoginData = (formData) => async(dispatch) => {
             throw new Error(res.message);
         }
         dispatch(fetchLoginSuccess(res));
-        localStorage.setItem('token', res.Token);
+        setToken(res.Token);
         localStorage.setItem('userData', JSON.stringify(res));
         return{ok: true, role: res.UserRole };
     }

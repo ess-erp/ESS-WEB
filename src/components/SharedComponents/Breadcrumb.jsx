@@ -12,7 +12,7 @@ const Breadcrumb = ({ items }) => {
                   {item.label}
                 </a>
               ) : (
-                <span className={`font-semibold ${isLast ? "text-black" : "text-gray-500"}`}>
+                <span className={`font-semibold ${isLast ? "text-green-700" : "text-gray-500"}`}>
                   {item.label}
                 </span>
               )}

@@ -96,17 +96,14 @@ const Login = () => {
     <section className="bg-[url('/assets/img/White-Background.png')] bg-cover bg-center bg-no-repeat h-screen flex items-center justify-center">
       {loading && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
-          {/* Logo / image */}
           <img
             src="/assets/img/ESS-Logo.png"
             alt="Loading..."
             className="mb-6"
           />
 
-          {/* Loading animation (spinning circle) */}
           <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-solid"></div>
 
-          {/* Optional loading text */}
           <p className="mt-4 text-gray-600 font-medium">Loading...</p>
         </div>
       )}

@@ -333,7 +333,7 @@ export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCC
 export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
 
 export const fetchStudentByIdData = (StudentId="") => async (dispatch) => {
-    dispatch(fetchOldStudentRequest());
+    dispatch(fetchStudentByIdRequest());
     try {
         const url = `${baseUrl}/auth/get-student-id?StudentId=${StudentId}`;
         const response = await fetch(url, {

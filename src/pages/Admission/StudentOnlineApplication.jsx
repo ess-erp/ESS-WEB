@@ -24,7 +24,7 @@ const StudentOnlineApplication = () => {
             <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
-                    <h2 className="text-2xl font-bold text-black mt-2">Online Application</h2>
+                    <h2 className="text-sm font-bold text-black mt-2">Online Application</h2>
                 </div>
 
                 <section className="flex items-center justify-center h-[calc(100%-5rem)]">

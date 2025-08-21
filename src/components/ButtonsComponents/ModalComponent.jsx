@@ -4,12 +4,12 @@ import RedBtn from "./RedBtn";
 import YellowBtn from "./YellowBtn";
 import BlueBtn from "./BlueBtn";
 
-const ModalComponent = ({ 
-    isOpen, 
-    onClose, 
-    title, 
-    body, 
-    buttons = [], 
+const ModalComponent = ({
+    isOpen,
+    onClose,
+    title,
+    body,
+    buttons = [],
     backgroundImage // ✅ optional prop
 }) => {
     const getButtonComponent = (type) => {
@@ -33,13 +33,13 @@ const ModalComponent = ({
                     style={
                         backgroundImage
                             ? {
-                                  backgroundImage: `url(${backgroundImage})`,
-                                  backgroundSize: "cover",
-                                  backgroundPosition: "center",
-                              }
+                                backgroundImage: `url(${backgroundImage})`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                            }
                             : {
-                                  backgroundColor: "rgba(0, 0, 0, 0.5)", // fallback overlay
-                              }
+                                backgroundColor: "rgba(0, 0, 0, 0.5)", // fallback overlay
+                            }
                     }
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -63,7 +63,11 @@ const ModalComponent = ({
 
                         <h2 className="text-xl font-bold text-center text-green-700">{title}</h2>
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
-                        <p className="mb-4 text-center">{body}</p>
+                        {typeof body === "string" ? (
+                            <p className="mb-4 text-center">{body}</p>
+                        ) : (
+                            <div className="mb-4 text-center">{body}</div>
+                        )}
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
 
                         <div className={`grid grid-cols-${buttons.length} gap-4`}>
