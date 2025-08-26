@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import BlueBtn from '../../components/ButtonsComponents/BlueBtn';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { fetchLoginData } from '../../states/AuthState/Action';
@@ -86,6 +87,7 @@ const Login = () => {
     }
     else {
       setLoading(false);
+      console.log(res.error);
       alert(res.error); // or set error state
     }
   };
@@ -119,8 +121,9 @@ const Login = () => {
             />
 
             <div className="text-center mt-4 px-4">
-              <h2 className="text-xl font-bold text-green-800 mb-2">This is an example ERP System.</h2>
-              <p className="text-gray-600">Please rewrite this example paragraph.</p>
+              <h2 className="text-xl font-bold text-green-800 mb-2">This is the Elizabeth Seton School ERP System.</h2>
+              <p className="text-gray-600">Join us and be part of our amazing community.</p>
+              <p className="text-gray-600">Enroll your child by using this Online Application.</p>
             </div>
           </div>
 
@@ -238,6 +241,7 @@ const Login = () => {
                     type="submit"
                     className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-green bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
+
                     Sign in
                   </button>
                 </div>

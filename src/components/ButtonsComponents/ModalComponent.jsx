@@ -10,7 +10,9 @@ const ModalComponent = ({
     title,
     body,
     buttons = [],
-    backgroundImage // ✅ optional prop
+    backgroundImage,
+    size,
+    maxHeight
 }) => {
     const getButtonComponent = (type) => {
         switch (type) {
@@ -21,7 +23,7 @@ const ModalComponent = ({
             case "yellow":
                 return YellowBtn;
             default:
-                return BlueBtn; // fallback
+                return BlueBtn;
         }
     };
 
@@ -38,7 +40,7 @@ const ModalComponent = ({
                                 backgroundPosition: "center",
                             }
                             : {
-                                backgroundColor: "rgba(0, 0, 0, 0.5)", // fallback overlay
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
                             }
                     }
                     initial={{ opacity: 0 }}
@@ -47,7 +49,11 @@ const ModalComponent = ({
                     transition={{ duration: 0.4 }}
                 >
                     <motion.div
-                        className="bg-white rounded-lg shadow-lg w-96 p-6 relative"
+                        className={`bg-white rounded-lg shadow-lg p-6 relative ${size ? size : "w-96"}`}
+                        style={{
+                            maxHeight: maxHeight || 'auto', // <-- use the prop here
+                            overflowY: 'auto',              // scroll content if it exceeds maxHeight
+                        }}
                         initial={{ y: -200, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -200, opacity: 0 }}
@@ -63,11 +69,13 @@ const ModalComponent = ({
 
                         <h2 className="text-xl font-bold text-center text-green-700">{title}</h2>
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
+
                         {typeof body === "string" ? (
                             <p className="mb-4 text-center">{body}</p>
                         ) : (
                             <div className="mb-4 text-center">{body}</div>
                         )}
+
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
 
                         <div className={`grid grid-cols-${buttons.length} gap-4`}>
@@ -79,7 +87,11 @@ const ModalComponent = ({
                                         label={btn.label}
                                         onClick={() => {
                                             if (btn.onClick) btn.onClick();
-                                            onClose();
+
+                                            // only close modal if flag is true
+                                            if (btn.closeOnClick !== false) {
+                                                onClose();
+                                            }
                                         }}
                                     />
                                 );

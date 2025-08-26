@@ -1,13 +1,35 @@
-import { Navigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode"; 
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+const ProtectedRoutes = ({ children }) => {
+  const navigate = useNavigate();
 
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000; // in seconds
+
+      if (decoded.exp < currentTime) {
+        // Token expired
+        localStorage.removeItem("token");
+        navigate("/");
+      }
+    } catch (err) {
+      // Invalid token
+      localStorage.removeItem("token");
+      navigate("/");
+    }
+  }, [navigate]);
 
   return children;
 };
 
-export default ProtectedRoute;
+export default ProtectedRoutes;

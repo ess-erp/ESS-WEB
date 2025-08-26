@@ -40,8 +40,20 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-
 button {
+  cursor: pointer; /* make sure pointer shows */
+  transition: all 0.2s ease-in-out; /* smooth hover/click effect */
+}
+
+button:focus {
+  outline: none; /* remove default outline */
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Tailwind's focus:ring-blue-400 equivalent */
+}
+
+button:active {
+  transform: scale(0.97); /* slight press-down effect */
+}
+/* button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
@@ -58,7 +70,7 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */
 
 @media (prefers-color-scheme: light) {
   :root {

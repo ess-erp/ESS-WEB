@@ -4,106 +4,95 @@ import { Pencil } from "lucide-react";
 import DataTable from "react-data-table-component";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import {
-    fetchStudentGpaData,
-    fetchStudentUpdatedGpaData,
-} from "../../states/AdmissionState/Action";
+import { fetchGpaTableData, fetchInsertGpaTableData } from "../../states/AdmissionState/Action";
 
-const GPATableComponent = ({ studentId, levelId }) => {
-    console.log("StudentId:", studentId);
-    console.log("LevelId:", levelId);
+const GPATableComponent = ({ studentId }) => {
     const dispatch = useDispatch();
-    const [subjects, setSubjects] = useState([]);
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
+    const currentUserId = user.UserId;
+    const gpaTableState = useSelector((state) => state.admission.gpaTableState || {});
+    const gpaTable = gpaTableState.data?.data || [];
+    const totalRows = gpaTableState.data?.totalRecords || 0;
+    const loading = gpaTableState.loading || false;
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
 
+    const [subjects, setSubjects] = useState([]);
 
-    const updatedGpaState = useSelector((state) => state.admission.updatedGpaState || {});
-    const updateGpa = updatedGpaState.data || [];
+    const [editingRowId, setEditingRowId] = useState(null);
+    const [tempGrade, setTempGrade] = useState("");
 
     useEffect(() => {
-        if (studentId) {
-            dispatch(fetchStudentUpdatedGpaData(studentId));
-        }
-    }, [dispatch, studentId]);
+        dispatch(fetchGpaTableData(studentId, page, pageSize, search));
+    }, [dispatch, studentId, page, pageSize, search]);
 
     useEffect(() => {
-        let newSubjects = [];
-
-        if (levelId >= 1 && levelId <= 3) {
-            newSubjects = []; 
+        if (gpaTable.length > 0 && subjects.length === 0) {
+            const initialSubjects = gpaTable.map((row) => ({
+                TempId: row.GpaTempId,
+                SubjGrade: row.SubjGrade || "",
+                CreatedByUserId: currentUserId
+            }));
+            setSubjects(initialSubjects);
         }
-        else if (levelId === 5 || levelId >= 6) {
-            if (Array.isArray(updateGpa) && updateGpa.length > 0) {
-                newSubjects = updateGpa.map((subj) => ({
-                    id: subj.SubjId,
-                    title: subj.SubjName,
-                    score: subj.SubjGrade ?? "",
-                }));
-            } else {
-                newSubjects = [
-                    { id: 1, title: "English", score: "" },
-                    { id: 2, title: "Math", score: "" },
-                    { id: 3, title: "Science", score: "" },
-                ];
-
-                if (levelId >= 6) {
-                    newSubjects.push(
-                        { id: 4, title: "Filipino", score: "" },
-                        { id: 5, title: "Araling Panlipunan", score: "" }
-                    );
-                }
-            }
-        }
-
-        setSubjects(newSubjects);
-    }, [levelId, updateGpa]);
-
-
-
-
-    const [editingRow, setEditingRow] = useState(null);
-    const [tempScore, setTempScore] = useState("");
+    }, [gpaTable]);
 
     const handleEditClick = (row) => {
-        setEditingRow(row.id);
-        setTempScore(row.score);
+        setEditingRowId(row.TempId);
+        const current = subjects.find((s) => s.TempId === row.TempId);
+        setTempGrade(current?.SubjGrade || row.SubjGrade || "");
     };
-
-    const handleSave = (id) => {
+    const handleSaveGrade = (tempId) => {
         setSubjects((prev) =>
-            prev.map((doc) =>
-                doc.id === id ? { ...doc, score: tempScore } : doc
+            prev.map((subj) =>
+                subj.TempId === tempId ? { ...subj, SubjGrade: tempGrade } : subj
             )
         );
-        setEditingRow(null);
+        setEditingRowId(null);
     };
-
     const columns = [
         {
             name: "Subject Code",
-            selector: (row) => row.title,
+            selector: (row) => row.SubjectCode,
+            sortable: true,
+            wrap: true,
+        },
+        {
+            name: "Subject Name",
+            selector: (row) => row.SubjectName,
             sortable: true,
             wrap: true,
         },
         {
             name: "Grade",
-            cell: (row) =>
-                editingRow === row.id ? (
+            cell: (row) => {
+                // Find the edited subject data
+                const subj = subjects.find((s) => s.TempId === row.TempId);
+
+                // If the original SubjGrade exists (not null/undefined), display it
+                if (row.SubjGrade !== null && row.SubjGrade !== undefined) {
+                    return row.SubjGrade;
+                }
+
+                // Otherwise, show the editable input or stored grade
+                return editingRowId === row.TempId ? (
                     <input
                         type="text"
-                        value={tempScore}
-                        onChange={(e) => setTempScore(e.target.value)}
-                        onBlur={() => handleSave(row.id)}
                         className="border p-1 rounded w-20"
+                        value={tempGrade}
+                        onChange={(e) => setTempGrade(e.target.value)}
+                        onBlur={() => handleSaveGrade(row.TempId)}
                         autoFocus
                     />
                 ) : (
-                    row.score || "—"
-                ),
+                    subj?.SubjGrade || "—"
+                );
+            },
             sortable: true,
         },
         {
@@ -122,116 +111,123 @@ const GPATableComponent = ({ studentId, levelId }) => {
         },
     ];
 
-    // submit modal
+    const Loader = () => (
+        <div className="flex justify-center items-center py-10">
+            <svg
+                className="animate-spin h-8 w-8 text-blue-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                ></circle>
+                <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                ></path>
+            </svg>
+        </div>
+    );
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // error modal
-    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-    const [errorMessages, setErrorMessages] = useState([]);
-
-    const handleOpenModal = () => {
+    const openWarningModal = () => {
         setIsModalOpen(true);
-    };
+    }
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-    const handleSubmit = () => {
-        let errors = [];
+    const handleSubmit = async () => {
 
-        subjects.forEach((subj) => {
-            if (subj.score === "" || subj.score === null) {
-                errors.push(
-                    <div key={subj.id}>
-                        Grade for <strong>{subj.title}</strong> cannot be empty
-                    </div>
-                );
-            } else if (isNaN(subj.score)) {
-                errors.push(
-                    <div key={subj.id}>
-                        Grade for <strong>{subj.title}</strong> must be a number
-                    </div>
-                );
-            } else {
-                const scoreValue = Number(subj.score);
-                if (scoreValue < 0 || scoreValue > 100) {
-                    errors.push(
-                        <div key={subj.id}>
-                            Grade for <strong>{subj.title}</strong> must be between 0 and 100
-                        </div>
-                    );
-                }
-            }
-        });
-
-        if (errors.length > 0) {
-            setErrorMessages(errors); 
-            setIsErrorModalOpen(true);
-            return;
-        }
-
-        // ✅ All good
-        console.log("All grades are valid:", subjects);
-
-
-        const formData = {
+        const payload = {
+            GpaId: gpaTable[0].GpaId,
+            GpaTempId: gpaTable[0].GpaTempId,
             StudentId: studentId,
-            CreatedByUserId: user.UserId,
-            LevelId: levelId,
-            English: subjects[0]?.title || null,
-            EnglishGrade: subjects[0]?.score || null,
-            Math: subjects[1]?.title || null,
-            MathGrade: subjects[1]?.score || null,
-            Science: subjects[2]?.title || null,
-            ScienceGrade: subjects[2]?.score || null,
-            Filipino: subjects[3]?.title || null,
-            FilipinoGrade: subjects[3]?.score || null,
-            AralingPanlipunan: subjects[4]?.title || null,
-            AralingPanlipunanGrade: subjects[4]?.score || null,
+            GpaChildDtos: subjects
         };
 
-        dispatch(fetchStudentGpaData(formData));
-        console.log(formData);
-        setIsModalOpen(false);
+        try {
+            const result = await dispatch(fetchInsertGpaTableData(payload));
+            if (result.ok) {
+                setIsSuccessModalOpen(true);
+            }
+        } catch (error) {
+            alert("Error submitting GPA:", error);
+        }
     };
     return (
         <>
             <DataTable
-                title={<span className="font-bold text-lg text-green-700">Grade Point Average</span>}
+                keyField="uniqueKey"
+                title={
+                    <div className="flex items-center justify-between">
+                        <span className="font-bold text-lg text-green-700">
+                            Grade Point Average
+                        </span>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            className="px-3 py-2 border rounded w-52 text-sm"
+                            value={search}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
+                }
                 columns={columns}
-                data={subjects}
+                data={gpaTable.map((row, idx) => ({
+                    ...row,
+                    uniqueKey: `${row.GpaTempId}-${row.SubjId || idx}`
+                }))}
+                progressPending={loading}
+                progressComponent={<Loader />}
+                noDataComponent={
+                    <div className="py-10 text-center text-gray-500 font-medium">
+                        No records found. Please check the template module if the template is disabled.
+                    </div>
+                }
                 pagination
+                paginationServer
+                paginationTotalRows={totalRows}
+                paginationDefaultPage={page}
+                onChangePage={(newPage) => setPage(newPage)}
+                onChangeRowsPerPage={(newPageSize, newPage) => {
+                    setPageSize(newPageSize);
+                    setPage(newPage);
+                }}
                 highlightOnHover
                 striped
                 responsive
-                noDataComponent="No subjects for this level"
             />
 
             {subjects.length > 0 && (
                 <div className="flex justify-end mt-4">
-                    <GreenBtn label="Submit" onClick={handleOpenModal} />
+                    <GreenBtn label="Submit" onClick={openWarningModal} />
                 </div>
             )}
-
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={<span className="font-bold text-lg text-red-700">Warning</span>}
-                body="Are you sure you want to submit?"
+                body="Are you sure you want to continue?"
                 buttons={[
                     { label: "Yes", type: "green", onClick: handleSubmit },
                     { label: "No", type: "red" },
                 ]}
             />
-
             <ModalComponent
-                isOpen={isErrorModalOpen}
-                onClose={() => setIsErrorModalOpen(false)}
-                title={<span className="font-bold text-lg text-red-700">Validation Errors</span>}
-                body={
-                    <div className="text-left space-y-1">
-                        {errorMessages}
-                    </div>
-                }
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body="Grades have been successfully submitted!"
                 buttons={[
-                    { label: "OK", type: "red", onClick: () => setIsErrorModalOpen(false) },
+                    { label: "OK", type: "green", onClick: () => setIsSuccessModalOpen(false) },
                 ]}
             />
         </>

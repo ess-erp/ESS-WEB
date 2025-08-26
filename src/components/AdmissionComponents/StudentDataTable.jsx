@@ -1,29 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from "react-router-dom";
 import { FaClock, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import DataTable from 'react-data-table-component';
 import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
-import {
-  fetchEnrollmentTableData, // ✅ fix typo (was fetchEnrollmenTableData)
-} from "../../states/AdmissionState/Action";
+import { fetchEnrollmentTableData } from "../../states/AdmissionState/Action";
 
 const StudentDataTable = () => {
   const dispatch = useDispatch();
   const tableState = useSelector((state) => state.admission.tableState || {});
   const table = tableState.data.data || [];
   const totalRows = tableState.data.totalRecords || 0;
-
-
+  const loading = tableState.loading || false;
 
   const statuses = [
     { label: "Pending", icon: <FaClock className="text-yellow-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
     { label: "Ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" },
     { label: "Enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
   ];
+
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [tempStartDate, setTempStartDate] = useState('');
+  const [tempEndDate, setTempEndDate] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState('Pending');
+  const [filterText, setFilterText] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const columns = [
     { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
@@ -34,39 +40,30 @@ const StudentDataTable = () => {
     { name: 'Date Created', selector: row => new Date(row.DateCreated).toLocaleDateString(), sortable: true },
     {
       name: 'Actions',
-      cell: (row) => (
-        <BlueBtn label="View" onClick={() => handleButtonClick(row)} />
-      ),
+      cell: (row) => <BlueBtn label="View" onClick={() => handleButtonClick(row)} />,
       ignoreRowClick: true,
-    
     }
   ];
 
-  const handleButtonClick = (row) => {
-    console.log('Button clicked for:', row);
-    const url = `/admission/studentappform?AppId=${row.AppId}`;
-    window.open(url, '_blank');
+  // Fetch server data whenever dependencies change
+  const fetchData = () => {
+    dispatch(fetchEnrollmentTableData(
+      startDate,
+      endDate,
+      selectedStatus,
+      currentPage,
+      rowsPerPage,
+      filterText
+    ));
   };
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [tempStartDate, setTempStartDate] = useState('');
-  const [tempEndDate, setTempEndDate] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('Pending');
-  const [filterText, setFilterText] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Fetch data when status, page, or rows change
   useEffect(() => {
-    dispatch(fetchEnrollmentTableData(startDate || '', endDate || '', selectedStatus, currentPage, rowsPerPage, filterText));
-  }, [dispatch, startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText]);
+    fetchData();
+  }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleModalTrigger = (e) => {
-    e.preventDefault();
-    setIsModalOpen(true); // Show modal
+  const handleButtonClick = (row) => {
+    const url = `/admission/studentappform?AppId=${row.AppId}`;
+    window.open(url, '_blank');
   };
 
   const handleSubmit = () => {
@@ -74,17 +71,18 @@ const StudentDataTable = () => {
     setEndDate(tempEndDate);
     setCurrentPage(1);
     setIsModalOpen(false);
-
   }
+
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-center gap-4">
+      {/* Status buttons */}
+      <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
         {statuses.map((status) => (
           <button
             key={status.label}
             onClick={() => {
               setSelectedStatus(status.label);
-              setCurrentPage(1); // reset to first page
+              setCurrentPage(1);
               setStartDate('');
               setEndDate('');
               setTempStartDate('');
@@ -95,7 +93,6 @@ const StudentDataTable = () => {
             {status.icon}
             <div className="text-left">
               <p className="text-sm font-medium">{status.label}</p>
-              {/* Replace with dynamic count later */}
               <p className="text-lg font-bold">--</p>
             </div>
           </button>
@@ -105,26 +102,26 @@ const StudentDataTable = () => {
       {/* Table */}
       <div className="overflow-x-auto pt-2">
         <div className="p-6 bg-white rounded shadow">
-          {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-green-500">
               {`List of ${selectedStatus} in Enrollment`}
             </h2>
 
-            {/* Wrap button and search in a flex container */}
             <div className="flex items-center gap-2">
-              <OutlineBlueBtn label="Date Range" onClick={handleModalTrigger} />
+              <OutlineBlueBtn label="Date Range" onClick={() => setIsModalOpen(true)} />
               <input
                 type="text"
                 placeholder="Search..."
                 className="px-3 py-2 border border-gray-300 rounded w-full max-w-xs"
                 value={filterText}
-                onChange={(e) => setFilterText(e.target.value)}
+                onChange={(e) => {
+                  setFilterText(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
           </div>
 
-          {/* Animated Table */}
           <AnimatePresence mode="wait">
             <motion.div
               key={selectedStatus + currentPage + filterText}
@@ -136,6 +133,7 @@ const StudentDataTable = () => {
               <DataTable
                 columns={columns}
                 data={table}
+                progressPending={loading}
                 pagination
                 paginationServer
                 paginationTotalRows={totalRows}
@@ -152,6 +150,8 @@ const StudentDataTable = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Date Range Modal */}
       <ModalComponent
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -179,19 +179,10 @@ const StudentDataTable = () => {
           </div>
         }
         buttons={[
-          {
-            label: "Submit",
-            type: "green",
-            onClick: () => handleSubmit(startDate, endDate),
-          },
-          {
-            label: "Cancel",
-            type: "red",
-            onClick: () => setIsModalOpen(false),
-          },
+          { label: "Submit", type: "green", onClick: handleSubmit },
+          { label: "Cancel", type: "red", onClick: () => setIsModalOpen(false) },
         ]}
       />
-
     </div>
   );
 };

@@ -68,12 +68,22 @@ const NewEnrollyComponent = () => {
     const [selectedBarangay, setSelectedBarangay] = useState(null);
 
 
-    const insertStudent = insertStudentState.data || [];
+    const insertStudent = insertStudentState.data;
 
     const navigate = useNavigate();
-    if (insertStudent.length !== 0) {
-        navigate('/congratulationletter')
-    }
+
+    useEffect(() => {
+        if (insertStudent.length !== 0) {
+            navigate("/congratulationletter");
+        }
+    }, [insertStudent, navigate]);
+
+    // useEffect(() => {
+    //     if (insertStudent.length !== 0) {
+    //         navigate("/congratulationletter");
+    //     }
+    // }, [insertStudent, navigate]); // re-run effect when insertStudent changes
+
     console.log(insertStudent);
 
 

@@ -700,7 +700,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <GPATableComponent studentId={studentData.StudentId} levelId={studentData.LevelId}/>
+                            <GPATableComponent studentId={studentData.StudentId}/>
                         </motion.div>
                     )}
 
@@ -713,7 +713,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <ExamSchedulerComponent />
+                            <ExamSchedulerComponent studentId={studentData.StudentId} levelId={studentData.LevelId}/>
                         </motion.div>
                     )}
                 </AnimatePresence>

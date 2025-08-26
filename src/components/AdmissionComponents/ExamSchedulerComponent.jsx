@@ -1,14 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
+import {
+    fetchExaminationSchedulerData,
+    fetchExamSchedTemplateData,
+} from "../../states/AdmissionState/Action";
 
-const ExamSchedulerComponent = () => {
+const ExamSchedulerComponent = ({ studentId, levelId }) => {
+    console.log(studentId);
+    console.log(levelId);
+    const dispatch = useDispatch();
+
+    const examSchedState = useSelector((state) => state.admission.examSchedState || {});
+    const examSchedData = examSchedState.data || [];
+
+    const examSchedTemplateState = useSelector((state) => state.admission.examSchedTemplateState || {});
+    const examTemplate = examSchedTemplateState.data || [];
+
+    console.log(examTemplate);
+
+    console.log(examSchedData);
+    useEffect(() => {
+        if (studentId) {
+            dispatch(fetchExaminationSchedulerData(studentId));
+        }
+        if(levelId){
+            dispatch(fetchExamSchedTemplateData(levelId));
+        }
+
+    }, [dispatch, studentId, levelId]);
     const [formData, setFormData] = useState({
         generalAverage: "",
         examDate: "",
         examLocation: "",
         examResult: "",
     });
+    useEffect(() => {
+        if (examSchedData) {
+            setFormData((prev) => ({
+                ...prev,
+                generalAverage: examSchedData.OverAllGpa ?? "", // nullable
+            }));
+        }
+    }, [examSchedData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -39,17 +74,17 @@ const ExamSchedulerComponent = () => {
                 {/* Left side - Example Information */}
                 <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-6 shadow">
                     <h3 className="text-lg font-semibold text-green-700 mb-3">
-                        Example Information
+                        Letter Template
                     </h3>
                     <ul className="space-y-2 text-gray-700 text-sm">
                         <li>
-                            <strong>General Average:</strong> 85
+                            <strong>Test Permit</strong> 85
                         </li>
                         <li>
-                            <strong>Examination Date:</strong> 2025-09-10
+                            <strong>Admission Result</strong> 2025-09-10
                         </li>
                         <li>
-                            <strong>Exam Location:</strong> Room 201, Main Building
+                            <strong>Letter</strong> Room 201, Main Building
                         </li>
                         <li>
                             <strong>Exam Result:</strong> Passed
@@ -79,6 +114,7 @@ const ExamSchedulerComponent = () => {
                                 min="0"
                                 max="100"
                                 required
+                                readOnly
                             />
                         </div>
 

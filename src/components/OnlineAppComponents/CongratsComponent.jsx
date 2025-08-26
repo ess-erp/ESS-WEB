@@ -59,7 +59,7 @@ const CongratsComponent = () => {
                 <HiArrowRight className="text-xl transition-transform group-hover:translate-x-1" />
             </motion.a>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes confetti-fall {
                     0% {
                         transform: translateY(-100vh) rotate(0deg);
