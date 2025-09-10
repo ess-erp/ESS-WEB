@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
+import { Listbox } from "@headlessui/react";
 import {
     fetchExaminationSchedulerData,
     fetchExamSchedTemplateData,
@@ -10,6 +11,11 @@ import {
 const ExamSchedulerComponent = ({ studentId, levelId }) => {
     console.log(studentId);
     console.log(levelId);
+
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem("userData");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const dispatch = useDispatch();
 
     const examSchedState = useSelector((state) => state.admission.examSchedState || {});
@@ -25,7 +31,7 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
         if (studentId) {
             dispatch(fetchExaminationSchedulerData(studentId));
         }
-        if(levelId){
+        if (levelId) {
             dispatch(fetchExamSchedTemplateData(levelId));
         }
 
@@ -33,6 +39,7 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
     const [formData, setFormData] = useState({
         generalAverage: "",
         examDate: "",
+        examResultDate: "",
         examLocation: "",
         examResult: "",
     });
@@ -45,21 +52,36 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
         }
     }, [examSchedData]);
 
+    const [selectedExam, setSelectedExam] = useState(null);
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const form = {
+        SchedId: selectedExam?.SchedId || 0,
+        SchedTempId: selectedExam?.SchedTempId || 0,
+        RoomId: selectedExam?.RoomId || 0,
+        RoomTemp: selectedExam?.RoomTempId || 0,
+        StudentId: studentId,
+        CreatedByUserId: user.UserId,
+        ExamDate: formData?.examDate || null,
+        ExamResultDate: formData?.examResultDate || null,
+    };
+    const handleSubmit = () => {
         console.log("Form Submitted:", formData);
+        console.log(selectedExam);
+        console.log(form);
         // You can dispatch Redux or call API here
     };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+
+
     const handleOpenModal = () => {
         setIsModalOpen(true);
+
     };
 
     return (
@@ -74,51 +96,79 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
                 {/* Left side - Example Information */}
                 <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-6 shadow">
                     <h3 className="text-lg font-semibold text-green-700 mb-3">
-                        Letter Template
+                        Examination Information
                     </h3>
                     <ul className="space-y-2 text-gray-700 text-sm">
                         <li>
-                            <strong>Test Permit</strong> 85
+                            <strong>General Point Average:</strong> {formData.generalAverage}
                         </li>
                         <li>
-                            <strong>Admission Result</strong> 2025-09-10
+                            <strong>Exam Location:</strong> {selectedExam?.RoomCode || ""}-{selectedExam?.RoomName}
                         </li>
                         <li>
-                            <strong>Letter</strong> Room 201, Main Building
+                            <strong>Exam Date From:</strong>{" "}
+                            {selectedExam?.StartDate ? new Date(selectedExam.StartDate).toLocaleDateString() : ""}
                         </li>
                         <li>
-                            <strong>Exam Result:</strong> Passed
+                            <strong>Exam Date To:</strong>{" "}
+                            {selectedExam?.EndDate ? new Date(selectedExam.EndDate).toLocaleDateString() : ""}
+                        </li>
+                        <li>
+                            <strong>Exam Start Time:</strong> {selectedExam?.StartTime || ""}
+                        </li>
+                        <li>
+                            <strong>Exam End Time:</strong> {selectedExam?.EndTime || ""}
+                        </li>
+                        <li>
+                            <strong>Number of slot:</strong> {selectedExam?.NoOfSlot || ""}
                         </li>
                     </ul>
+
                     <p className="mt-4 text-xs text-gray-500">
-                        Note: These are only sample values. Please input the actual
-                        details of the student.
+                        Note: Please encode the correct details at the right side of this component.
                     </p>
                 </div>
 
                 {/* Right side - Form */}
                 <div>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* General Average */}
+                        {/* Exam Location / Room */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                General Average from Prev School
+                                Exam Location / Room
                             </label>
-                            <input
-                                type="number"
-                                name="generalAverage"
-                                value={formData.generalAverage}
-                                onChange={handleChange}
-                                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-                                placeholder="Enter general average"
-                                min="0"
-                                max="100"
-                                required
-                                readOnly
-                            />
-                        </div>
+                            <Listbox value={selectedExam} onChange={setSelectedExam}>
+                                <div className="relative">
+                                    {/* Button */}
+                                    <Listbox.Button className="w-full border rounded-md px-3 py-2 text-left bg-white shadow-xs">
+                                        {selectedExam
+                                            ? `${selectedExam.Description}-${selectedExam.RoomCode}-${selectedExam.RoomName} : (${selectedExam.StartTime} - ${selectedExam.EndTime})`
+                                            : "Select room for examination"}
+                                    </Listbox.Button>
 
-                        {/* Examination Date */}
+                                    {/* Dropdown */}
+                                    <Listbox.Options className="absolute mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto z-50">
+                                        {examTemplate.length > 0 ? (
+                                            examTemplate.map((exam) => (
+                                                <Listbox.Option
+                                                    key={exam.SchedId}
+                                                    value={exam}
+                                                    className={({ active }) =>
+                                                        `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""
+                                                        }`
+                                                    }
+                                                >
+                                                    {/* Show description + time */}
+                                                    {exam.Description}-{exam.RoomCode}-{exam.RoomName} : ({exam.StartTime} - {exam.EndTime})
+                                                </Listbox.Option>
+                                            ))
+                                        ) : (
+                                            <div className="px-3 py-2 text-gray-500">No exam schedules found</div>
+                                        )}
+                                    </Listbox.Options>
+                                </div>
+                            </Listbox>
+                        </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Examination Date
@@ -127,42 +177,73 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
                                 type="date"
                                 name="examDate"
                                 value={formData.examDate}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (selectedExam?.StartDate && selectedExam?.EndDate) {
+                                        const selectedDate = new Date(value);
+                                        const startDate = new Date(selectedExam.StartDate);
+                                        const endDate = new Date(selectedExam.EndDate);
+
+                                        if (selectedDate < startDate || selectedDate > endDate) {
+                                            alert("Selected date must be within the exam date range!");
+                                            return; // prevent setting invalid date
+                                        }
+                                    }
+                                    handleChange(e); // update formData if valid
+                                }}
                                 className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
                                 required
+                                min={selectedExam?.StartDate ? new Date(selectedExam.StartDate).toISOString().split("T")[0] : undefined}
+                                max={selectedExam?.EndDate ? new Date(selectedExam.EndDate).toISOString().split("T")[0] : undefined}
+                                disabled={!selectedExam}
                             />
                         </div>
 
-                        {/* Exam Location / Room */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Exam Location / Room
-                            </label>
-                            <input
-                                type="text"
-                                name="examLocation"
-                                value={formData.examLocation}
-                                onChange={handleChange}
-                                className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-                                placeholder="Enter location or room"
-                                required
-                            />
-                        </div>
 
                         {/* Exam Result */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Exam Result
+                                Examination Result Date
                             </label>
                             <input
-                                type="text"
-                                name="examResult"
-                                value={formData.examResult}
-                                onChange={handleChange}
+                                type="date"
+                                name="examResultDate"
+                                value={formData.examResultDate}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+
+                                    // ✅ Extra validation: result date must equal exam date
+                                    if (formData.examDate) {
+                                        const examDate = new Date(formData.examDate);
+                                        const resultDate = new Date(value);
+
+                                        // if (resultDate.getTime() !== examDate.getTime()) {
+                                        //     alert("Exam Result Date must be the same as the Examination Date!");
+                                        //     return;
+                                        // }
+                                    } else {
+                                        alert("Please select an Examination Date first!");
+                                        return;
+                                    }
+
+                                    handleChange(e);
+                                }}
                                 className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500"
-                                placeholder="Enter exam result"
+                                required
+                                min={
+                                    formData.examDate
+                                        ? new Date(formData.examDate).toISOString().split("T")[0]
+                                        : undefined
+                                }
+                                max={
+                                    selectedExam?.EndDate
+                                        ? new Date(selectedExam?.EndDate).toISOString().split("T")[0]
+                                        : undefined
+                                }
+                                disabled={!formData.examDate} // disable until examDate is chosen
                             />
                         </div>
+
 
                         {/* Submit */}
                         <div className="flex justify-end mt-4">

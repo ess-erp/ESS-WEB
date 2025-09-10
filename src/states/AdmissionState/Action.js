@@ -13,6 +13,7 @@ import {
     FETCH_INSERTGPATABLE_REQUEST, FETCH_INSERTGPATABLE_SUCCESS, FETCH_INSERTGPATABLE_FAILURE,
     FETCH_EXAMINATIONSCHEDULER_REQUEST, FETCH_EXAMINATIONSCHEDULER_SUCCESS, FETCH_EXAMINATIONSCHEDULER_FAILURE,
     FETCH_EXAMSCHEDTEMPLATE_REQUEST, FETCH_EXAMSCHEDTEMPLATE_SUCCESS, FETCH_EXAMSCHEDTEMPLATE_FAILURE,
+    FETCH_UPDATESTUDENTFORM_REQUEST, FETCH_UPDATESTUDENTFORM_SUCCESS, FETCH_UPDATESTUDENTFORM_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -471,3 +472,35 @@ export const fetchExamSchedTemplateData = (levelId) => async (dispatch) => {
     }
 
 };
+
+
+//update student app form 
+export const fetchUpdateStudentFormRequest = () => ({ type: FETCH_UPDATESTUDENTFORM_REQUEST });
+export const fetchUpdateStudentFormSuccess = (data) => ({ type: FETCH_UPDATESTUDENTFORM_SUCCESS, payload: data });
+export const fetchUpdateStudentFormFailure = (error) => ({ type: FETCH_UPDATESTUDENTFORM_FAILURE, payload: error });
+
+export const fetchUpdateStudentFormData = (formData) => async (dispatch) => {
+    dispatch(fetchUpdateStudentFormRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/update-student-app-form`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        console.log(res);
+
+        dispatch(fetchExamSchedTemplateSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchUpdateStudentFormFailure(error.message));
+        return { ok: false, error };
+    }
+}

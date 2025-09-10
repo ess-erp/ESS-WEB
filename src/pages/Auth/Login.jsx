@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import BlueBtn from '../../components/ButtonsComponents/BlueBtn';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { fetchLoginData } from '../../states/AuthState/Action';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { handleAuthRedirect } from "../../services/authRedirect";
 
 
 const Login = () => {
@@ -17,25 +17,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = 'Login | ESS';
-    const token = localStorage.getItem("token");
-
-    if (token) {
-      // Optional: Check role if you want to route differently
-      const userData = JSON.parse(localStorage.getItem("userData"));
-      const role = userData?.UserRole;
-      console.log(role);
-
-      switch (role) {
-        case "admission":
-          navigate("/admission/dashboard");
-          break;
-        default:
-          navigate("/");
-      }
-    }
-  }, []);
-
+    document.title = "Login | ESS";
+    handleAuthRedirect(navigate);
+  }, [navigate]);
 
 
   const handleSubmit = async (e) => {
@@ -62,11 +46,9 @@ const Login = () => {
       return;
     }
 
-    // Clear errors and submit
     setErrors({});
     console.log("Email:", email);
     console.log("Password:", password);
-    // Submit to backend/API here
 
     const formData = {
       Email: email,
@@ -76,19 +58,12 @@ const Login = () => {
     const res = await dispatch(fetchLoginData(formData));
 
     if (res.ok) {
-      switch (res.role) {
-        case "admission":
-          navigate('/admission/dashboard');
-          break;
-        default:
-          navigate('/');
-          break;
-      }
+      handleAuthRedirect(navigate);
     }
     else {
       setLoading(false);
-      console.log(res.error);
-      alert(res.error); // or set error state
+      setErrors({ form: res.error || "Invalid email or password." });
+      setTimeout(() => setErrors({}), 3000);
     }
   };
 
@@ -166,6 +141,9 @@ const Login = () => {
                     />
                   </div>
                   {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                  {errors.form && (
+                    <p className="mt-1 text-sm text-red-500">{String(errors.form)}</p>
+                  )}
                 </div>
 
                 <div>
@@ -222,6 +200,9 @@ const Login = () => {
 
                   </div>
                   {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+                  {errors.form && (
+                    <p className="mt-1 text-sm text-red-500">{String(errors.form)}</p>
+                  )}
                 </div>
 
                 <div className="flex items-center">
@@ -239,7 +220,7 @@ const Login = () => {
                 <div>
                   <button
                     type="submit"
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-green bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
 
                     Sign in

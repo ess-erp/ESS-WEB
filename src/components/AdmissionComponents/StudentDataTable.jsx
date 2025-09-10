@@ -76,7 +76,7 @@ const StudentDataTable = () => {
   return (
     <div>
       {/* Status buttons */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mb-4">
+      <div className="flex flex-wrap justify-center gap-4 mb-4">
         {statuses.map((status) => (
           <button
             key={status.label}
@@ -88,9 +88,14 @@ const StudentDataTable = () => {
               setTempStartDate('');
               setTempEndDate('');
             }}
-            className={`flex items-center gap-3 w-48 h-20 rounded-lg shadow-sm ${status.bg} ${status.hover} transition-all duration-200`}
+            className={`flex items-center justify-center gap-3 w-48 h-20 rounded-lg shadow-sm ${status.bg} ${status.hover} transition-all duration-200`}
           >
-            {status.icon}
+            {/* icon on the left */}
+            <div className="flex-shrink-0">
+              {status.icon}
+            </div>
+
+            {/* text on the right */}
             <div className="text-left">
               <p className="text-sm font-medium">{status.label}</p>
               <p className="text-lg font-bold">--</p>
@@ -98,6 +103,8 @@ const StudentDataTable = () => {
           </button>
         ))}
       </div>
+
+
 
       {/* Table */}
       <div className="overflow-x-auto pt-2">

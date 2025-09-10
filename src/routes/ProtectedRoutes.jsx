@@ -1,14 +1,20 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; 
+import { useEffect, useState } from "react";
+import { useNavigate, Navigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
-const ProtectedRoutes = ({ children }) => {
+const ProtectedRoutes = ({ children, allowedRoles }) => {
   const navigate = useNavigate();
+    const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("userData");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [isValid, setIsValid] = useState(null); 
 
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if (!token) {
+      setIsValid(false);
       navigate("/");
       return;
     }
@@ -20,14 +26,29 @@ const ProtectedRoutes = ({ children }) => {
       if (decoded.exp < currentTime) {
         // Token expired
         localStorage.removeItem("token");
+        setIsValid(false);
         navigate("/");
+        return;
       }
+
+      setUser(decoded); // store decoded JWT payload
+      setIsValid(true);
     } catch (err) {
       // Invalid token
       localStorage.removeItem("token");
+      setIsValid(false);
       navigate("/");
     }
   }, [navigate]);
+
+  // While checking token
+  if (isValid === null) return null;
+
+  console.log(user);
+  // Role restriction check
+  if (allowedRoles && user && !allowedRoles.includes(user.UserRole)) {
+    return <Navigate to="/accessdenied" replace />;
+  }
 
   return children;
 };

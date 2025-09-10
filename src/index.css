@@ -46,12 +46,12 @@ button {
 }
 
 button:focus {
-  outline: none; /* remove default outline */
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* Tailwind's focus:ring-blue-400 equivalent */
+  outline: none; 
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
 }
 
 button:active {
-  transform: scale(0.97); /* slight press-down effect */
+  transform: scale(0.97); 
 }
 /* button {
   border-radius: 8px;
@@ -80,7 +80,7 @@ button:focus-visible {
   a:hover {
     color: #213547;
   }
-  button {
+  /* button {
     background-color: #f9f9f9;
-  }
+  } */
 }

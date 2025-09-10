@@ -13,6 +13,7 @@ import {
     FETCH_INSERTGPATABLE_REQUEST, FETCH_INSERTGPATABLE_SUCCESS, FETCH_INSERTGPATABLE_FAILURE,
     FETCH_EXAMINATIONSCHEDULER_REQUEST, FETCH_EXAMINATIONSCHEDULER_SUCCESS, FETCH_EXAMINATIONSCHEDULER_FAILURE,
     FETCH_EXAMSCHEDTEMPLATE_REQUEST, FETCH_EXAMSCHEDTEMPLATE_SUCCESS, FETCH_EXAMSCHEDTEMPLATE_FAILURE,
+    FETCH_UPDATESTUDENTFORM_REQUEST, FETCH_UPDATESTUDENTFORM_SUCCESS, FETCH_UPDATESTUDENTFORM_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -37,6 +38,7 @@ const initialGeneralState = {
     insertGpaTableState: { ...initialState },
     examSchedState: { ...initialState },
     examSchedTemplateState: { ...initialState },
+    updateStudentFormState: { ...initialState },
 }
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -155,6 +157,13 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_EXAMSCHEDTEMPLATE_FAILURE:
             return { ...state, examSchedTemplateState: { loading: false, data: [], error: action.payload } };
         
+        //update student app form
+        case FETCH_UPDATESTUDENTFORM_REQUEST:
+            return { ...state, updateStudentFormState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATESTUDENTFORM_SUCCESS:
+            return { ...state, updateStudentFormState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATESTUDENTFORM_FAILURE:
+            return { ...state, updateStudentFormState: { loading: false, data: [], error: action.payload } };
         
         default:
             return state;
