@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Bell } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
 import DashboardIcon from "../IconComponents/DashboardIcon";
@@ -15,6 +16,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
+    const navigate = useNavigate();
+
 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef(null);
@@ -35,58 +38,47 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
 
     }, []);
+    const roleMenus = {
+        admission: [
+            { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
+            { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
+            { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
+        cfw: [
+            { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
+            { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
+            { name: "Templates", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
+            { name: "Examination Entry", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
+            { separator: true },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
+        cashier: [
+            { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
+            { name: "Transactions", icon: AccountIcon, path: "/accounts/transactions" },
+            { name: "Settings", icon: SettingsIcon, path: "/settings" },
+        ],
+    };
 
+    // Pick menu by role
+    const menuItems = roleMenus[user?.UserRole] || [];
 
     const getActiveItem = () => {
-        if (location.pathname.includes("/admission/dashboard")) return "Dashboard";
-        if (location.pathname.includes("/admission/onlineapplication")) return "Online Application";
+        if (location.pathname.includes("/dashboard")) return "Dashboard";
+        if (location.pathname.includes("/onlineapplication")) return "Online Application";
         if (location.pathname.includes("/accounts")) return "Accounts";
         if (location.pathname.includes("/tickets")) return "Tickets";
         if (location.pathname.includes("/settings")) return "Settings";
         return "";
     };
-
     const activeItem = getActiveItem();
 
-    // const menuItems = [
-    //     { name: "Dashboard", icon: DashboardIcon },
-    //     { name: "Online Application", icon: UserIconSolid },
-    //     { name: "Accounts", icon: AccountIcon },
-    //     { separator: true },
-    //     { name: "Tickets", icon: TicketIcon },
-    //     { name: "Settings", icon: SettingsIcon },
-    // ];
-    const navigate = useNavigate();
-    const menuItems = [
-        { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
-        { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
-        { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
-        { separator: true },
-        { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-        { name: "Settings", icon: SettingsIcon, path: "/settings" },
-    ];
-
-    // const handleClick = (name) => {
-    //     switch (name) {
-    //         case "Dashboard":
-    //             navigate("/admission/dashboard");
-    //             break;
-    //         case "Online Application":
-    //             navigate("/admission/onlineapplication");
-    //             break;
-    //         case "Templates":
-    //             navigate("/admission/templates");
-    //             break;
-    //         case "Tickets":
-    //             navigate("/tickets");
-    //             break;
-    //         case "Settings":
-    //             navigate("/settings");
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // };
     const handleLogout = () => {
         removeToken();
         navigate('/');
@@ -271,3 +263,5 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 };
 
 export default Sidebar;
+
+

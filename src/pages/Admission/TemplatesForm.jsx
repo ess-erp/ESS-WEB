@@ -398,7 +398,7 @@ const TemplatesForm = () => {
                                         onClick={() => setSelectedStatus("active")}
                                         className={`px-6 py-2 text-sm font-semibold border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400
                                         ${selectedStatus === "active"
-                                                ? "bg-blue-600 text-blue-700 border-blue-600"
+                                                ? "bg-blue-600 text-white border-blue-600"
                                                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
                                             } rounded-l-lg`}
                                     >
@@ -409,7 +409,7 @@ const TemplatesForm = () => {
                                         onClick={() => setSelectedStatus("draft")}
                                         className={`px-6 py-2 text-sm font-semibold border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400
                                         ${selectedStatus === "draft"
-                                                ? "bg-blue-600 text-blue-700 border-blue-600"
+                                                ? "bg-blue-600 text-white border-blue-600"
                                                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
                                             } rounded-r-lg`}
                                     >

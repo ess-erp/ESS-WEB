@@ -1,34 +1,37 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoutes from "./ProtectedRoutes";
 import Login from "../pages/Auth/Login";
-import Dashboard from "../pages/Admission/Dashboard";
+import AdmissionDashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
 import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
 import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
-import TemplatesForm from "../pages/Admission/TemplatesForm";
-
+import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
+import CfwDashboard from "../pages/CFW/Dashboard";
+import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
+import AccessDenied from "../components/SharedComponents/AccessDenied";
 
 const AppRoutes = () => (
   <Router>
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route path="/onlineapplication" element={<OnlineApplication />}/>
-      <Route path="/congratulationletter" element={<CongratsComponent />}/>
+      <Route path="/onlineapplication" element={<OnlineApplication />} />
+      <Route path="/congratulationletter" element={<CongratsComponent />} />
+      <Route path="/accessdenied" element={<AccessDenied />} />
 
-      {/* ✅ Secure routes using element prop */}
+      {/* ✅ Admissions modules */}
       <Route
         path="/admission/dashboard"
         element={
-          <ProtectedRoutes>
-            <Dashboard />
+          <ProtectedRoutes allowedRoles={["admission"]}>
+            <AdmissionDashboard />
           </ProtectedRoutes>
         }
       />
       <Route
         path="/admission/onlineapplication"
         element={
-          <ProtectedRoutes>
+          <ProtectedRoutes allowedRoles={["admission"]}>
             <StudentOnlineApplication />
           </ProtectedRoutes>
         }
@@ -36,7 +39,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/studentappform"
         element={
-          <ProtectedRoutes>
+          <ProtectedRoutes allowedRoles={["admission"]}>
             <StudentOnlineAppForm />
           </ProtectedRoutes>
         }
@@ -44,11 +47,34 @@ const AppRoutes = () => (
       <Route
         path="/admission/templatesform"
         element={
-          <ProtectedRoutes>
-            <TemplatesForm />
+          <ProtectedRoutes allowedRoles={["admission"]}>
+            <AdmissionTemplatesForm />
           </ProtectedRoutes>
         }
       />
+      {/* End of admission modules */}
+
+      {/* ✅ CFW modules */}
+      <Route
+        path="/cfw/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["cfw"]}>
+            <CfwDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/cfw/examroomtemplates"
+        element={
+          <ProtectedRoutes allowedRoles={["cfw"]}>
+            <CfwExamRoomTemplate />
+          </ProtectedRoutes>
+        }
+      />
+      {/* End of CFW Modules */}
+
+      {/* 🚨 Catch-all route → Redirect to home */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </Router>
 );

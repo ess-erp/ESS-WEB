@@ -42,7 +42,7 @@ const StudentOnlineApplication = () => {
                         </div>
                         <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
                             <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">This is the table of Online Application. Please the button below to view the table.</span>
+                            <span className="block sm:inline">This is the table of Online Application. Please click the button below to view the table.</span>
                         </div>
                         <div className="overflow-x-auto">
                             <StudentDataTable />
