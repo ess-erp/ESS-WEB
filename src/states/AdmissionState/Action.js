@@ -14,6 +14,10 @@ import {
     FETCH_EXAMINATIONSCHEDULER_REQUEST, FETCH_EXAMINATIONSCHEDULER_SUCCESS, FETCH_EXAMINATIONSCHEDULER_FAILURE,
     FETCH_EXAMSCHEDTEMPLATE_REQUEST, FETCH_EXAMSCHEDTEMPLATE_SUCCESS, FETCH_EXAMSCHEDTEMPLATE_FAILURE,
     FETCH_UPDATESTUDENTFORM_REQUEST, FETCH_UPDATESTUDENTFORM_SUCCESS, FETCH_UPDATESTUDENTFORM_FAILURE,
+    FETCH_INSERTEXAMSCHEDULE_REQUEST, FETCH_INSERTEXAMSCHEDULE_SUCCESS, FETCH_INSERTEXAMSCHEDULE_FAILURE,
+    FETCH_OTHERSTABLE_REQUEST, FETCH_OTHERSTABLE_SUCCESS, FETCH_OTHERSTABLE_FAILURE,
+    FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
+    FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -286,7 +290,7 @@ export const fetchDocumentTableData = (studentId, page, pageSize, search) => asy
     dispatch(fetchDocumentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-document-table?&studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/admission/get-document-table?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -353,11 +357,11 @@ export const fetchGpaTableRequest = () => ({ type: FETCH_GPATABLE_REQUEST });
 export const fetchGpaTableSuccess = (data) => ({ type: FETCH_GPATABLE_SUCCESS, payload: data });
 export const fetchGpaTableFailure = (error) => ({ type: FETCH_GPATABLE_FAILURE, payload: error });
 
-export const fetchGpaTableData = (studentId, page, pageSize, search) => async (dispatch) => {
+export const fetchGpaTableData = (divId, studentId, page, pageSize, search) => async (dispatch) => {
     dispatch(fetchGpaTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-gpa-table?&studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/admission/get-gpa-table?divId=${divId}&studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -420,7 +424,7 @@ export const fetchExaminationSchedulerData = (studentId) => async (dispatch) => 
     dispatch(fetchExaminationSchedulerRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-exam-schedule?&studentId=${studentId}`;
+        const url = `${baseUrl}/admission/get-exam-schedule?studentId=${studentId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -451,7 +455,7 @@ export const fetchExamSchedTemplateData = (levelId) => async (dispatch) => {
     dispatch(fetchExamSchedTemplateRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-exam-schedule-template?&levelId=${levelId}`;
+        const url = `${baseUrl}/admission/get-exam-schedule-template?levelId=${levelId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -501,6 +505,123 @@ export const fetchUpdateStudentFormData = (formData) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchUpdateStudentFormFailure(error.message));
+        return { ok: false, error };
+    }
+}
+
+//insert exam schedule date of applicant
+export const fetchInsertExamScheduleRequest = () => ({ type: FETCH_INSERTEXAMSCHEDULE_REQUEST });
+export const fetchInsertExamScheduleSuccess = (data) => ({ type: FETCH_INSERTEXAMSCHEDULE_SUCCESS, payload: data });
+export const fetchInsertExamSchedulreFailure = (error) => ({ type: FETCH_INSERTEXAMSCHEDULE_FAILURE, payload: error });
+
+export const fetchInsertExamScheduleData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertExamScheduleRequest());
+    try {
+
+        const token = getToken();
+        const url = `${baseUrl}/admission/insert-exam-schedule`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        console.log(res);
+        dispatch(fetchInsertExamScheduleSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchInsertExamScheduleFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+//get gpa template table
+export const fetchOthersTableRequest = () => ({ type: FETCH_OTHERSTABLE_REQUEST });
+export const fetchOthersTableSuccess = (data) => ({ type: FETCH_OTHERSTABLE_SUCCESS, payload: data });
+export const fetchOthersTableFailure = (error) => ({ type: FETCH_OTHERSTABLE_FAILURE, payload: error });
+
+export const fetchOthersTableData = (studentId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchOthersTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-others-table?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        console.log(res);
+
+        dispatch(fetchOthersTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchOthersTableFailure(error.message));
+        return { ok: false, error };
+    }
+
+};
+
+//get test permit template
+export const fetchTestPermitRequest = () => ({ type: FETCH_TESTPERMIT_REQUEST });
+export const fetchTestPermitSuccess = (data) => ({ type: FETCH_TESTPERMIT_SUCCESS, payload: data });
+export const fetchTestPermitFailure = (error) => ({ type: FETCH_TESTPERMIT_FAILURE, payload: error });
+
+export const fetchTestPermitData = (emailStatusId) => async (dispatch) => {
+    dispatch(fetchTestPermitRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-test-permit?emailStatusId=${emailStatusId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        const res = await response.json();
+        dispatch(fetchTestPermitSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchTestPermitFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+//resend email of others table 
+export const fetchResendEmailRequest = () => ({ type: FETCH_RESENDEMAIL_REQUEST });
+export const fetchResendEmailSuccess = (data) => ({ type: FETCH_RESENDEMAIL_SUCCESS, payload: data });
+export const fetchResendEmailFailure = (error) => ({ type: FETCH_RESENDEMAIL_FAILURE, payload: error });
+
+export const fetchResendEmailData = (emailStatusId, studentId, emailType, currentUserId) => async (dispatch) => {
+    dispatch(fetchResendEmailRequest());
+    try {
+
+        const token = getToken();
+        const url = `${baseUrl}/admission/resend-email?emailStatusId=${emailStatusId}&studentId=${studentId}&emailType=${emailType}&currentUserId=${currentUserId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+        const res = await response.json();
+        dispatch(fetchResendEmailSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchResendEmailFailure(error.message));
         return { ok: false, error };
     }
 }

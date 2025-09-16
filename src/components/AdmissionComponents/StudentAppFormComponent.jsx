@@ -1409,7 +1409,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <GPATableComponent studentId={formData.StudentId} />
+                            <GPATableComponent divId={formData.DivId} studentId={formData.StudentId} />
                         </motion.div>
                     )}
 

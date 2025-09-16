@@ -17,6 +17,9 @@ export const handleAuthRedirect = (navigate) => {
       case "cfw":
         navigate("/cfw/dashboard");
         break;
+      case "cashier":
+        navigate("/cashier/dashboard");
+        break;
       default:
         navigate("/");
         break;

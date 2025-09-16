@@ -6,7 +6,7 @@ import GreenBtn from "../ButtonsComponents/GreenBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import { fetchGpaTableData, fetchInsertGpaTableData } from "../../states/AdmissionState/Action";
 
-const GPATableComponent = ({ studentId }) => {
+const GPATableComponent = ({ divId, studentId }) => {
     const dispatch = useDispatch();
 
     const [user, setUser] = useState(() => {
@@ -28,8 +28,8 @@ const GPATableComponent = ({ studentId }) => {
     const [tempGrade, setTempGrade] = useState("");
 
     useEffect(() => {
-        dispatch(fetchGpaTableData(studentId, page, pageSize, search));
-    }, [dispatch, studentId, page, pageSize, search]);
+        dispatch(fetchGpaTableData(divId,studentId, page, pageSize, search));
+    }, [dispatch, divId, studentId, page, pageSize, search]);
 
     useEffect(() => {
         if (gpaTable.length > 0 && subjects.length === 0) {
@@ -71,15 +71,12 @@ const GPATableComponent = ({ studentId }) => {
         {
             name: "Grade",
             cell: (row) => {
-                // Find the edited subject data
                 const subj = subjects.find((s) => s.TempId === row.TempId);
 
-                // If the original SubjGrade exists (not null/undefined), display it
                 if (row.SubjGrade !== null && row.SubjGrade !== undefined) {
                     return row.SubjGrade;
                 }
 
-                // Otherwise, show the editable input or stored grade
                 return editingRowId === row.TempId ? (
                     <input
                         type="text"

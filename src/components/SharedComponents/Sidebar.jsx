@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bell } from "lucide-react";
+import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
 import DashboardIcon from "../IconComponents/DashboardIcon";
@@ -55,14 +56,29 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Templates", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
             { name: "Examination Entry", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
             { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
         cashier: [
             { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
-            { name: "Transactions", icon: AccountIcon, path: "/accounts/transactions" },
-            { name: "Settings", icon: SettingsIcon, path: "/settings" },
+            { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
+            { name: "Payment Form", icon: CreditCardIcon, path: "/cashier/paymentform" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
+        finance: [
+            { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
+            { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
+            { name: "Payment Form", icon: CreditCardIcon, path: "/cashier/paymentform" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
     };
 
@@ -181,7 +197,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                                 className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
                                 ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
                             >
-                                <item.icon />
+                                <item.icon className="h-5 w-5 text-gray-600" />
                                 {isSidebarOpen && (
                                     <span className="mx-4 font-medium">{item.name}</span>
                                 )}

@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoutes from "./ProtectedRoutes";
 import Login from "../pages/Auth/Login";
+import AccessDenied from "../components/SharedComponents/AccessDenied";
 import AdmissionDashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
@@ -9,7 +10,9 @@ import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
 import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
 import CfwDashboard from "../pages/CFW/Dashboard";
 import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
-import AccessDenied from "../components/SharedComponents/AccessDenied";
+import CashierDashboard from "../pages/Cashier/Dashboard";
+import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
+import CashierPayment from "../pages/Cashier/CashierPayment";
 
 const AppRoutes = () => (
   <Router>
@@ -72,6 +75,36 @@ const AppRoutes = () => (
         }
       />
       {/* End of CFW Modules */}
+
+
+      {/* Cashier modules */}
+
+      <Route
+        path="/cashier/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["cashier"]}>
+            <CashierDashboard />
+          </ProtectedRoutes>
+        }
+      />
+            <Route
+        path="/cashier/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={["cashier"]}>
+            <CashierStudentOnlineApplication />
+          </ProtectedRoutes>
+        }
+         />
+            <Route
+        path="/cashier/cashierpayment"
+        element={
+          <ProtectedRoutes allowedRoles={["cashier"]}>
+            <CashierPayment />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/* End of Cashier modules */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

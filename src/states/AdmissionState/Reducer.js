@@ -14,6 +14,10 @@ import {
     FETCH_EXAMINATIONSCHEDULER_REQUEST, FETCH_EXAMINATIONSCHEDULER_SUCCESS, FETCH_EXAMINATIONSCHEDULER_FAILURE,
     FETCH_EXAMSCHEDTEMPLATE_REQUEST, FETCH_EXAMSCHEDTEMPLATE_SUCCESS, FETCH_EXAMSCHEDTEMPLATE_FAILURE,
     FETCH_UPDATESTUDENTFORM_REQUEST, FETCH_UPDATESTUDENTFORM_SUCCESS, FETCH_UPDATESTUDENTFORM_FAILURE,
+    FETCH_INSERTEXAMSCHEDULE_REQUEST, FETCH_INSERTEXAMSCHEDULE_SUCCESS, FETCH_INSERTEXAMSCHEDULE_FAILURE,
+    FETCH_OTHERSTABLE_REQUEST, FETCH_OTHERSTABLE_SUCCESS, FETCH_OTHERSTABLE_FAILURE,
+    FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
+    FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -29,16 +33,20 @@ const initialGeneralState = {
     insertTemplateState: { ...initialState },
     levelState: { ...initialState },
     divisionState: { ...initialState },
-    templateTableState: { ...initialState},
+    templateTableState: { ...initialState },
     rowTemplateTableState: { ...initialState },
     rowUpdateState: { ...initialState },
-    documentTableState: {  ...initialState },
+    documentTableState: { ...initialState },
     insertDocumentState: { ...initialState },
     gpaTableState: { ...initialState },
     insertGpaTableState: { ...initialState },
     examSchedState: { ...initialState },
     examSchedTemplateState: { ...initialState },
     updateStudentFormState: { ...initialState },
+    insertExamScheduleState: { ...initialState },
+    othersTableState: { ...initialState },
+    testPermitState: { ...initialState },
+    resendEmailState: { ...initialState },
 }
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -100,7 +108,7 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_ROWTEMPLATETABLE_FAILURE:
             return { ...state, rowTemplateTableState: { loading: false, data: [], error: action.payload } };
 
-            
+
         //Update the row template
         case FETCH_UPDATEROWTEMPLATE_REQUEST:
             return { ...state, rowUpdateState: { loading: true, data: [], error: '' } };
@@ -109,7 +117,7 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_UPDATEROWTEMPLATE_FAILURE:
             return { ...state, rowUpdateState: { loading: false, data: [], error: action.payload } };
 
-         //Get Document table
+        //Get Document table
         case FETCH_DOCUMENTTABLE_REQUEST:
             return { ...state, documentTableState: { loading: true, data: [], error: '' } };
         case FETCH_DOCUMENTTABLE_SUCCESS:
@@ -140,7 +148,7 @@ const admissionReducer = (state = initialGeneralState, action) => {
             return { ...state, insertGpaTableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERTGPATABLE_FAILURE:
             return { ...state, insertGpaTableState: { loading: false, data: [], error: action.payload } };
-            
+
         //Get exam sched by student id
         case FETCH_EXAMINATIONSCHEDULER_REQUEST:
             return { ...state, examSchedState: { loading: true, data: [], error: '' } };
@@ -156,7 +164,7 @@ const admissionReducer = (state = initialGeneralState, action) => {
             return { ...state, examSchedTemplateState: { loading: false, data: action.payload, error: '' } };
         case FETCH_EXAMSCHEDTEMPLATE_FAILURE:
             return { ...state, examSchedTemplateState: { loading: false, data: [], error: action.payload } };
-        
+
         //update student app form
         case FETCH_UPDATESTUDENTFORM_REQUEST:
             return { ...state, updateStudentFormState: { loading: true, data: [], error: '' } };
@@ -164,7 +172,39 @@ const admissionReducer = (state = initialGeneralState, action) => {
             return { ...state, updateStudentFormState: { loading: false, data: action.payload, error: '' } };
         case FETCH_UPDATESTUDENTFORM_FAILURE:
             return { ...state, updateStudentFormState: { loading: false, data: [], error: action.payload } };
-        
+
+        //update student app form
+        case FETCH_INSERTEXAMSCHEDULE_REQUEST:
+            return { ...state, insertExamScheduleState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERTEXAMSCHEDULE_SUCCESS:
+            return { ...state, insertExamScheduleState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERTEXAMSCHEDULE_FAILURE:
+            return { ...state, insertExamScheduleState: { loading: false, data: [], error: action.payload } };
+
+        //get others table by student id
+        case FETCH_OTHERSTABLE_REQUEST:
+            return { ...state, othersTableState: { loading: true, data: [], error: '' } };
+        case FETCH_OTHERSTABLE_SUCCESS:
+            return { ...state, othersTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_OTHERSTABLE_FAILURE:
+            return { ...state, othersTableState: { loading: false, data: [], error: action.payload } };
+
+        //get test permit by student id
+        case FETCH_TESTPERMIT_REQUEST:
+            return { ...state, testPermitState: { loading: true, data: [], error: '' } };
+        case FETCH_TESTPERMIT_SUCCESS:
+            return { ...state, testPermitState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_TESTPERMIT_FAILURE:
+            return { ...state, testPermitState: { loading: false, data: [], error: action.payload } };
+
+        //resend email
+        case FETCH_RESENDEMAIL_REQUEST:
+            return { ...state, resendEmailState: { loading: true, data: [], error: '' } };
+        case FETCH_RESENDEMAIL_SUCCESS:
+            return { ...state, resendEmailState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_RESENDEMAIL_FAILURE:
+            return { ...state, resendEmailState: { loading: false, data: [], error: action.payload } };
+
         default:
             return state;
     }
