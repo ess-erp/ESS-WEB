@@ -63,7 +63,7 @@ const Login = () => {
     else {
       setLoading(false);
       setErrors({ form: res.error || "Invalid email or password." });
-      setTimeout(() => setErrors({}), 3000);
+      setTimeout(() => setErrors({}), 5000);
     }
   };
 

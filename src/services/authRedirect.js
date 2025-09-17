@@ -20,6 +20,9 @@ export const handleAuthRedirect = (navigate) => {
       case "cashier":
         navigate("/cashier/dashboard");
         break;
+      case "finance":
+        navigate("/finance/dashboard");
+        break;
       default:
         navigate("/");
         break;

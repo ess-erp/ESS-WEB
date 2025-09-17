@@ -71,9 +71,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
         finance: [
-            { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
-            { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
-            { name: "Payment Form", icon: CreditCardIcon, path: "/cashier/paymentform" },
+            { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
+            { name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
+            { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },

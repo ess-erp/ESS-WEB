@@ -13,6 +13,8 @@ import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
 import CashierDashboard from "../pages/Cashier/Dashboard";
 import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
+import FinanceDashboard from "../pages/Finance/Dashboard";
+import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
 
 const AppRoutes = () => (
   <Router>
@@ -87,15 +89,15 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-            <Route
+      <Route
         path="/cashier/onlineapplication"
         element={
           <ProtectedRoutes allowedRoles={["cashier"]}>
             <CashierStudentOnlineApplication />
           </ProtectedRoutes>
         }
-         />
-            <Route
+      />
+      <Route
         path="/cashier/cashierpayment"
         element={
           <ProtectedRoutes allowedRoles={["cashier"]}>
@@ -105,6 +107,27 @@ const AppRoutes = () => (
       />
 
       {/* End of Cashier modules */}
+
+
+      {/* Start of finance module */}
+
+      <Route
+        path="/finance/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["finance"]}>
+            <FinanceDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/finance/templates"
+        element={
+          <ProtectedRoutes allowedRoles={["finance"]}>
+            <FinanceTemplatesForm />
+          </ProtectedRoutes>
+        }
+      />
+      {/* End of finance module */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
