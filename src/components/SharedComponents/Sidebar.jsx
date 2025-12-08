@@ -53,8 +53,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         cfw: [
             { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
             { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
-            { name: "Templates", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
-            { name: "Examination Entry", icon: DocumentIcon, path: "/cfw/examroomtemplates" },
+            { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },

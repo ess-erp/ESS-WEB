@@ -2,28 +2,91 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Printer } from "lucide-react";
 import { useLocation } from "react-router-dom";
-import { fetchStudentAppFormData } from "../../states/CashierState/Action";
+import ModalComponent from "../ButtonsComponents/ModalComponent";
+import {
+    fetchStudentAppFormData,
+    fetchOrNumberData,
+    fetchPrintTestPermitData,
+    fetchInsertSubmitTestData,
+} from "../../states/CashierState/Action";
 
 const PaymentComponent = () => {
     const dispatch = useDispatch();
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem("userData");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     const { search } = useLocation();
     const query = new URLSearchParams(search);
     const AppId = query.get("AppId");
+
     const studentAppFormState = useSelector(
         (state) => state.cashier.studentAppFormState || {}
     );
     const studentData = studentAppFormState.data || {};
 
+    const orNumberState = useSelector((state) => state.cashier.orNumberState || {});
+    const orNumber = orNumberState.data || [];
+
+    const permitState = useSelector((state) => state.cashier.printTestPermitState || {});
+    const permitData = permitState.data || {};
+    const permitLoading = permitState.loading;
+
     const [amount, setAmount] = useState(""); // <-- state for amount
+    const [amountError, setAmountError] = useState("");
 
     useEffect(() => {
         dispatch(fetchStudentAppFormData(AppId));
-    }, [dispatch, AppId]);
+        dispatch(fetchOrNumberData(user.UserId));
+    }, [dispatch, AppId, user.UserId]);
 
     // parse amount to number safely
     const amountValue = parseFloat(amount) || 0;
-    const tax = amountValue > 0 ? 10 : 0; // example tax logic
-    const total = amountValue + tax;
+    const total = amountValue; // ✅ no tax anymore
+
+
+
+    const [isOpenModal, setIsOpenModal] = useState(false);
+
+    const handlePrint = async () => {
+        if (!amount || Number(amount) <= 0) {
+            setAmountError("Please enter a valid amount greater than 0.");
+
+            setTimeout(() => {
+                setAmountError("");
+            }, 3000);
+
+            return; 
+        }
+        const payload = {
+            StudentId: studentData.StudentId,
+            AppId: AppId,
+            OrId: orNumber.OrId,
+            CreatedByUserId: user.UserId,
+            Amount: amount,
+            OrNumberUsed: orNumber.LatestOrNo,
+        };
+
+        console.log(payload);
+        await dispatch(fetchPrintTestPermitData(payload));
+        setIsOpenModal(true);
+    };
+
+    const handleSubmitOrNumber = async () =>{
+
+        const payload = {
+            StudentId: studentData.StudentId,
+            AppId: AppId,
+            OrId: orNumber.OrId,
+            CreatedByUserId: user.UserId,
+            Amount: amount,
+            OrNumberUsed: orNumber.LatestOrNo,
+        };
+        console.log(payload);
+        await dispatch(fetchInsertSubmitTestData(payload));
+        setIsOpenModal(true);
+    };
+
 
     return (
         <div className="bg-white p-4">
@@ -67,8 +130,9 @@ const PaymentComponent = () => {
                                             id="officialReceipt"
                                             type="text"
                                             placeholder="Enter Official Receipt No."
-                                            className="px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border border-gray-300 rounded-lg 
-                                                focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200 outline-none"
+                                            className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
+                                            value={orNumber.LatestOrNo ?? ""}
+                                            readOnly
                                         />
                                         <p className="text-xs text-gray-500">
                                             Required for payment verification
@@ -104,11 +168,13 @@ const PaymentComponent = () => {
                                             id="amount"
                                             type="number"
                                             placeholder="Enter Amount."
-                                            className="px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border border-gray-300 rounded-lg 
-                                                focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-200 outline-none"
+                                            className={`px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg 
+                                            focus:ring-2 transition duration-200 outline-none
+                                            ${amountError ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-green-500 focus:border-green-500"}`}
                                             value={amount}
                                             onChange={(e) => setAmount(e.target.value)}
                                         />
+                                        {amountError && <p className="text-sm text-red-500">{amountError}</p>}
                                     </div>
                                 </div>
 
@@ -121,13 +187,13 @@ const PaymentComponent = () => {
                                     </button>
                                     <button
                                         type="button"
+                                        onClick={handlePrint}
                                         className="w-40 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 tracking-wide cursor-pointer"
                                     >
                                         <Printer className="w-5 h-5" />
                                         Print
                                     </button>
                                 </div>
-
                             </form>
                         </div>
                     </div>
@@ -144,12 +210,6 @@ const PaymentComponent = () => {
                                     ₱{amountValue.toFixed(2)}
                                 </span>
                             </li>
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                Tax{" "}
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{tax.toFixed(2)}
-                                </span>
-                            </li>
                             <li className="flex flex-wrap gap-4 text-[15px] font-semibold text-slate-900 border-t border-gray-300 pt-4">
                                 Total{" "}
                                 <span className="ml-auto">₱{total.toFixed(2)}</span>
@@ -158,6 +218,69 @@ const PaymentComponent = () => {
                     </div>
                 </div>
             </div>
+
+            <ModalComponent
+                isOpen={isOpenModal}
+                onClose={() => setIsOpenModal(false)}
+                title="Official Receipt Preview"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex justify-center items-center">
+                        <div className="w-3/4 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600 text-center">
+                                Preview
+                            </label>
+                            <div className="border rounded-lg shadow overflow-hidden flex justify-center items-center">
+                                {permitLoading ? (
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : permitData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${permitData.PdfBase64}`}
+                                        className="w-full h-[60vh]"
+                                        title="Test Permit Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Print",
+                        type: "green",
+                        onClick: () => {
+                            if (permitData?.PdfBase64) {
+                                const pdfWindow = window.open("", "_blank");
+                                if (pdfWindow) {
+                                    pdfWindow.document.write(
+                                        `<iframe width='100%' height='100%' src='data:application/pdf;base64,${permitData.PdfBase64}'></iframe>`
+                                    );
+
+                                    // Wait a bit before calling print (ensure iframe is loaded)
+                                    setTimeout(() => {
+                                        pdfWindow.focus();
+                                        pdfWindow.print();
+                                    }, 500);
+                                }
+
+                                handleSubmitOrNumber();
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsOpenModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
         </div>
     );
 };

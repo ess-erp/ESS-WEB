@@ -11,12 +11,12 @@ const TemplatesForm = () => {
 
 
     useEffect(() => {
-        document.title = 'Templates Form';
+        document.title = 'Examination Templates';
     }, []);
     const dispatch = useDispatch();
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/cfw/dashboard' },
-        { label: 'Exam Room Template', href: '/cfw/examroontemplate' },
+        { label: 'Examination Templates', href: '/cfw/examroontemplate' },
     ];
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
@@ -32,7 +32,7 @@ const TemplatesForm = () => {
                 <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                     <div className="mb-4">
                         <Breadcrumb items={breadcrumbItems} />
-                        <h2 className="text-sm font-bold text-black mt-2">Templates</h2>
+                        <h2 className="text-sm font-bold text-black mt-2">Examination Templates</h2>
                     </div>
 
                     <section className="flex items-center justify-center h-[calc(100%-5rem)]">
@@ -40,7 +40,7 @@ const TemplatesForm = () => {
                             <hr className="border-t-1 border-solid border-gray-400 my-6" />
                             <div className="flex justify-center">
                                 <h2 className="text-2xl font-bold text-green-500 mt-2">
-                                    Templates
+                                    Examination Templates
                                 </h2>
                             </div>
                             <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">

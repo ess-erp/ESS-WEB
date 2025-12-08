@@ -370,8 +370,6 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
                                     <option value="">-- Select Template Type --</option>
                                     <option value="room">Exam Room Template</option>
                                     <option value="schedule">Assign Exam Schedule Template</option>
-                                    <option value="grade">Transmutation Table Template</option>
-                                    <option value="grade">List of Subjects Template</option>
                                 </select>
                             </div>
 

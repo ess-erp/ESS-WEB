@@ -9,7 +9,10 @@ import CongratsComponent from "../components/OnlineAppComponents/CongratsCompone
 import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
 import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
 import CfwDashboard from "../pages/CFW/Dashboard";
+import CfwStudentOnlineApplication from "../pages/CFW/StudentOnlineApplication";
+import CfwStudentOnlineAppForm from "../pages/CFW/StudentOnlineAppForm";
 import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
+import CfwTemplates from "../pages/CFW/Templates";
 import CashierDashboard from "../pages/Cashier/Dashboard";
 import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
@@ -69,10 +72,34 @@ const AppRoutes = () => (
         }
       />
       <Route
+        path="/cfw/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={["cfw"]}>
+            <CfwStudentOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/cfw/studentappform"
+        element={
+          <ProtectedRoutes allowedRoles={["cfw"]}>
+            <CfwStudentOnlineAppForm />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
         path="/cfw/examroomtemplates"
         element={
           <ProtectedRoutes allowedRoles={["cfw"]}>
             <CfwExamRoomTemplate />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/cfw/templates"
+        element={
+          <ProtectedRoutes allowedRoles={["cfw"]}>
+            <CfwTemplates />
           </ProtectedRoutes>
         }
       />

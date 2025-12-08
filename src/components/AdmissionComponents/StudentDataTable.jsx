@@ -16,9 +16,9 @@ const StudentDataTable = () => {
   const loading = tableState.loading || false;
 
   const statuses = [
-    { label: "Pending", icon: <FaClock className="text-yellow-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
-    { label: "Ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" },
-    { label: "Enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
+    { label: "Pending", action: "pending",icon: <FaClock className="text-yellow-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
+    { label: "Ongoing", action: "ongoing-admission", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" },
+    { label: "Enrolled", action: "enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
   ];
 
   const [startDate, setStartDate] = useState('');
@@ -81,7 +81,7 @@ const StudentDataTable = () => {
           <button
             key={status.label}
             onClick={() => {
-              setSelectedStatus(status.label);
+              setSelectedStatus(status.action);
               setCurrentPage(1);
               setStartDate('');
               setEndDate('');

@@ -1,5 +1,6 @@
 import {
     FETCH_LOGIN_REQUEST, FETCH_LOGIN_SUCCESS, FETCH_LOGIN_FAILURE,
+    FETCH_GOOGLELOGIN_REQUEST, FETCH_GOOGLELOGIN_SUCCESS, FETCH_GOOGLELOGIN_FAILURE,
 } from './ActionType';
 import { setToken } from '../../services/tokenServices';
 // import { useNavigate } from 'react-router-dom';
@@ -35,5 +36,32 @@ export const fetchLoginData = (formData) => async(dispatch) => {
     catch(error){
         dispatch(fetchLoginFailure(error.message));
         return { ok: false, error};
+    }
+};
+
+export const fetchGoogleLoginRequest = () => ({ type: FETCH_GOOGLELOGIN_REQUEST });
+export const fetchGoogleLoginSuccess = (data) => ({ type: FETCH_GOOGLELOGIN_SUCCESS, payload: data });
+export const fetchGoogleLoginFailure = (error) => ({ type: FETCH_GOOGLELOGIN_FAILURE, payload: error });
+
+export const fetchGoogleLoginData = (payload) => async (dispatch) => {
+    dispatch(fetchGoogleLoginRequest());
+    try {
+        const url = `${baseUrl}/auth/google-login`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGoogleLoginSuccess(res));
+        setToken(res.Token);
+        localStorage.setItem('userData', JSON.stringify(res));
+        return ({ ok: true, role: res.UserRole });
+    }
+    catch(error) {
+        dispatch(fetchGoogleLoginFailure(error.message));
+        return ({ ok: false, error });
     }
 };

@@ -3,17 +3,19 @@ import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
-import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
-import RowToggleComponent from '../../components/ButtonsComponents/RowToggleComponent';
-import {
-    fetchLevelData,
-} from "../../states/AdmissionState/Action";
+import { Pencil, Eye, Trash2, Plus } from "lucide-react";
+import RowToggleComponent from "../../components/ButtonsComponents/RowToggleComponent";
+import { fetchLevelData } from "../../states/AdmissionState/Action";
 import {
     fetchInsertExamRoomData,
     fetchExamRoomTemplateData,
     fetchInsertExamScheduleData,
     fetchTemplateTableData,
 } from "../../states/CfwState/Action";
+import {
+    fetchListOfUserData,
+    fetchInsertOrSeriesData,
+} from "../../states/FinanceState/Action";
 
 const TemplateDataTable = ({ selectedStatus }) => {
     const dispatch = useDispatch();
@@ -21,43 +23,64 @@ const TemplateDataTable = ({ selectedStatus }) => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
-    const currentUserId = user.UserId;
+    const currentUserId = user?.UserId;
 
     const levelState = useSelector((state) => state.admission.levelState || {});
     const levelData = levelState.data || [];
-    const insertExamRoomState = useSelector((state) => state.cfw.insertExamRoomState || {});
+    const insertExamRoomState = useSelector(
+        (state) => state.cfw.insertExamRoomState || {}
+    );
     const isInserted = insertExamRoomState.data || [];
-    const examRoomTemplate = useSelector((state) => state.cfw.examRoomTemplate || {});
+    const examRoomTemplate = useSelector(
+        (state) => state.cfw.examRoomTemplate || {}
+    );
     const roomData = examRoomTemplate.data || [];
-    // const templateTableState = useSelector((state) => state.cfw.templateTableState || {});
-    // const templateTable = templateTableState.data.data || [];
+
     const [totalRecords, setTotalRecords] = useState(0);
     const [loadingTable, setLoadingTable] = useState(false);
     const [table, setTable] = useState([]);
-    console.log(isInserted);
 
-    console.log(levelData);
-    console.log(roomData);
+    // ✅ users for dropdown
+    const [listOfUsers, setListOfUsers] = useState([]);
+
     useEffect(() => {
         dispatch(fetchLevelData());
     }, [dispatch]);
 
+    const usersState = useSelector((state) => state.finance.listOfUserState || {});
+    const usersData = usersState.data || [];
+
+    useEffect(() => {
+        dispatch(fetchListOfUserData());
+    }, [dispatch]);
+
+    // keep your dropdown controlled by Redux data
+    useEffect(() => {
+        setListOfUsers(usersData);
+    }, [usersData]);
 
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState("");
 
-
-    const fetchTemplates = async (selectedStatus, page = 1, pageSize = 10, search) => {
+    const fetchTemplates = async (
+        selectedStatus,
+        page = 1,
+        pageSize = 10,
+        search
+    ) => {
         setLoadingTable(true);
 
-        const result = await dispatch(fetchTemplateTableData(selectedStatus, page, pageSize, search));
+        const result = await dispatch(
+            fetchTemplateTableData(selectedStatus, page, pageSize, search)
+        );
 
         if (result.ok) {
-            const docsWithActive = (result.data || []).map(doc => ({
+            const docsWithActive = (result.data || []).map((doc) => ({
                 ...doc,
-                isActive: selectedStatus === "active" ? true : doc.isActive ?? false,
+                isActive:
+                    selectedStatus === "active" ? true : doc.isActive ?? false,
             }));
             setTable(docsWithActive);
             setTotalRecords(result.totalRecords || 0);
@@ -101,12 +124,18 @@ const TemplateDataTable = ({ selectedStatus }) => {
         },
         {
             name: "Date Created",
-            selector: (row) => row.DateCreated ? new Date(row.DateCreated).toLocaleDateString() : "—",
+            selector: (row) =>
+                row.DateCreated
+                    ? new Date(row.DateCreated).toLocaleDateString()
+                    : "—",
             sortable: true,
         },
         {
             name: "Date Modified",
-            selector: (row) => row.DateModified ? new Date(row.DateModified).toLocaleDateString() : "—",
+            selector: (row) =>
+                row.DateModified
+                    ? new Date(row.DateModified).toLocaleDateString()
+                    : "—",
             sortable: true,
         },
         {
@@ -127,31 +156,34 @@ const TemplateDataTable = ({ selectedStatus }) => {
                         <Pencil size={18} />
                     </button>
 
-                    <RowToggleComponent row={row} onToggle={handleToggleActive} />
+                    <RowToggleComponent
+                        row={row}
+                        onToggle={handleToggleActive}
+                    />
                 </div>
             ),
             ignoreRowClick: true,
             width: "180px",
-        }
-
+        },
     ];
-
 
     const handleToggleActive = async (selectedRow, newStatus) => {
         const CreatedByUserId = user.UserId;
         const activeStatus = newStatus ? "Y" : "DR";
 
         try {
-            const result = await dispatch(fetchUpdateRowTemplateData(
-                selectedRow.TemplateId,
-                selectedRow.TempType,
-                CreatedByUserId,
-                activeStatus
-            ));
+            const result = await dispatch(
+                fetchUpdateRowTemplateData(
+                    selectedRow.TemplateId,
+                    selectedRow.TempType,
+                    CreatedByUserId,
+                    activeStatus
+                )
+            );
 
             if (result.ok) {
-                setTable(prev =>
-                    prev.map(row =>
+                setTable((prev) =>
+                    prev.map((row) =>
                         row.TemplateId === selectedRow.TemplateId
                             ? { ...row, isActive: newStatus }
                             : row
@@ -165,76 +197,50 @@ const TemplateDataTable = ({ selectedStatus }) => {
         }
     };
 
-
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // for template form 
+    // template form state
     const [templateType, setTemplateType] = useState("");
     const [gradeRows, setGradeRows] = useState([{ grade: "" }]);
     const [errors, setErrors] = useState({});
-    // end of template form
 
-    const [roomForm, setRoomForm] = useState({
-        description: "",
-        campusId: "",
-        rooms: [{ roomCode: "", roomName: "", remarks: "" }]
-    });
+    // ✅ booklet form state (array of rows)
+    const [bookletForm, setBookletForm] = useState([
+        { startNo: "", endNo: "", userId: "", orType: "", remarks: "", createdByUserId: user.UserId },
+    ]);
 
-    const [scheduleForm, setScheduleForm] = useState({
-        description: "",
-        roomTempId: "",
-        noOfSlot: "",
-        startDate: "",
-        endDate: "",
-        schedules: [{ levelId: "", startTime: "", endTime: "", remarks: "" }]
-    });
-
-    const handleRoomChange = (campusId) => {
-        if (campusId) {
-            dispatch(fetchExamRoomTemplateData(campusId));
-        }
-    };
-
-    const handleScheduleRowChange = (index, field, value) => {
-        const updated = [...scheduleForm.schedules];
+    const handleBookletFormChange = (index, field, value) => {
+        const updated = [...bookletForm];
         updated[index][field] = value;
-        setScheduleForm((prev) => ({ ...prev, schedules: updated }));
+        setBookletForm(updated);
     };
+
+    const handleAddBookletRow = () => {
+        setBookletForm([
+            ...bookletForm,
+            { startNo: "", endNo: "", userId: "", orType: "", remarks: "", createdByUserId: user.UserId },
+        ]);
+    };
+
+    const handleRemoveBookletRow = (index) => {
+        setBookletForm(bookletForm.filter((_, i) => i !== index));
+    };
+
     const validateForm = () => {
         let newErrors = {};
 
-        if (templateType === "room") {
-            if (!roomForm.description.trim()) newErrors.description = "Description is required";
-            if (!roomForm.campusId) newErrors.campus = "Campus is required";
-            roomForm.rooms.forEach((r, i) => {
-                if (!r.roomCode.trim()) newErrors[`roomCode-${i}`] = "Room Code is required";
-                if (!r.roomName.trim()) newErrors[`roomName-${i}`] = "Room Name is required";
-            });
-        }
-
-        if (templateType === "schedule") {
-            if (!scheduleForm.description.trim()) newErrors.description = "Description is required";
-            if (!scheduleForm.campusId) newErrors.campus = "Campus is required";
-            if (!scheduleForm.roomTempId) newErrors.roomId = "Room is required";
-            if (!scheduleForm.noOfSlot || isNaN(scheduleForm.noOfSlot)) {
-                newErrors.noOfSlot = "Available slots must be a number";
-            }
-            if (!scheduleForm.startDate) newErrors.startDate = "Date From is required";
-            if (!scheduleForm.endDate) newErrors.endDate = "Date To is required";
-            if (scheduleForm.startDate && scheduleForm.endDate && scheduleForm.startDate > scheduleForm.endDate) {
-                newErrors.endDate = "Date To must be after Date From";
-            }
-            scheduleForm.schedules.forEach((s, i) => {
-                if (!s.levelId) newErrors[`level-${i}`] = "Level is required";
-                if (!s.startTime) newErrors[`startTime-${i}`] = "Begin Time is required";
-                if (!s.endTime) newErrors[`endTime-${i}`] = "Finish Time is required";
-                if (!s.remarks || !s.remarks.trim()) newErrors[`remarks-${i}`] = "Remarks is required";
-            });
-        }
-
-        if (templateType === "grade") {
-            gradeRows.forEach((g, i) => {
-                if (!g.grade.trim()) newErrors[`grade-${i}`] = "Grade is required";
+        if (templateType === "booklet") {
+            bookletForm.forEach((row, i) => {
+                if (!row.startNo.trim())
+                    newErrors[`startNo-${i}`] = "Start No is required";
+                if (!row.endNo.trim())
+                    newErrors[`endNo-${i}`] = "End No is required";
+                if (!row.userId)
+                    newErrors[`userId-${i}`] = "User is required";
+                if (!row.orType.trim())
+                    newErrors[`orType-${i}`] = "OR Type is required";
+                if (!row.remarks.trim())
+                    newErrors[`remarks-${i}`] = "Remarks is required";
             });
         }
 
@@ -242,47 +248,31 @@ const TemplateDataTable = ({ selectedStatus }) => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validateForm()) return;
 
-        if (templateType === "room") {
-            console.log("Room Template Submitted:", roomForm);
-            const payload = {
-                Description: roomForm.description,
-                CampusId: roomForm.campusId,
-                CreatedByUserId: currentUserId,
-                ExamRoomTemplateChildDtos: roomForm.rooms.map(r => ({
-                    RoomCode: r.roomCode,
-                    RoomName: r.roomName,
-                    Remarks: r.remarks
-                }))
-            };
-            dispatch(fetchInsertExamRoomData(payload));
-        }
-        if (templateType === "schedule") {
-            console.log("Schedule Template Submitted:", scheduleForm);
-            const payload = {
-                Description: scheduleForm.description,
-                RoomTempId: scheduleForm.roomTempId,
-                NoOfSlot: scheduleForm.noOfSlot,
-                StartDate: scheduleForm.startDate,
-                EndDate: scheduleForm.endDate,
-                CreatedByUserId: currentUserId,
-                ScheduleTempChildDtos: scheduleForm.schedules.map(r => ({
-                    LevelId: r.levelId,
-                    StartTime: r.startTime,
-                    EndTime: r.endTime,
-                    Remarks: r.remarks
-                }))
-            };
-            console.log(payload);
-            dispatch(fetchInsertExamScheduleData(payload));
-        }
-        if (templateType === "grade") {
-            console.log("Grade Template Submitted:", gradeRows);
-        }
+        const payload = {
+            orSeriesBodyDtos: bookletForm.map(row => ({
+                startNo: row.startNo,
+                endNo: row.endNo,
+                userId: parseInt(row.userId, 10),
+                orType: row.orType,
+                remarks: row.remarks,
+                createdByUserId: currentUserId?.toString() ?? "0"
+            }))
+        };
 
-        setIsModalOpen(false);
+        console.log("Submitting payload:", payload);
+
+        const result = await dispatch(fetchInsertOrSeriesData(payload));
+
+        if (result.ok) {
+            alert("OR Series inserted successfully!");
+            setIsModalOpen(false);
+            setBookletForm([{ startNo: "", endNo: "", userId: "", orType: "", remarks: "" }]);
+        } else {
+            alert("Error inserting OR Series: " + result.error);
+        }
     };
 
     return (
@@ -290,7 +280,8 @@ const TemplateDataTable = ({ selectedStatus }) => {
             {/* top bar with title + search + add button */}
             <div className="flex justify-between items-center mb-4">
                 <span className="font-bold text-lg text-green-700">
-                    List of {selectedStatus === "active" ? "Active" : "Draft"} Templates
+                    List of {selectedStatus === "active" ? "Active" : "Draft"}{" "}
+                    Templates
                 </span>
 
                 <div className="flex items-center gap-2">
@@ -324,322 +315,225 @@ const TemplateDataTable = ({ selectedStatus }) => {
                 striped
                 responsive
             />
+
+            {/* modal */}
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title="Add New Template"
                 body={
-                    <>
-                        <div className="max-h-[70vh] overflow-y-auto p-2 space-y-4">
-                            <div className="text-center">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Select Template Type
-                                </label>
-                                <select
-                                    value={templateType}
-                                    onChange={(e) => setTemplateType(e.target.value)}
-                                    className="mt-1 w-1/2 mx-auto rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">-- Select Template Type --</option>
-                                    <option value="fees">Table of fees</option>
-                                    <option value="booklet">Official Receipt Booklet</option>
-                                </select>
-                            </div>
+                    <div className="max-h-[70vh] overflow-y-auto p-2 space-y-4">
+                        <div className="text-center">
+                            <label className="block text-sm font-medium text-gray-700">
+                                Select Template Type
+                            </label>
+                            <select
+                                value={templateType}
+                                onChange={(e) => setTemplateType(e.target.value)}
+                                className="mt-1 w-1/2 mx-auto rounded-lg border p-2 focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">
+                                    -- Select Template Type --
+                                </option>
+                                <option value="fees">Table of fees</option>
+                                <option value="booklet">
+                                    Official Receipt Booklet
+                                </option>
+                            </select>
+                        </div>
 
-                            {/* ========== ROOM TEMPLATE ========== */}
-                            {templateType === "fees" && (
-
-                                <div>
-                                    <div className="flex gap-4 mb-4">
-                                        {/* Description */}
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700">Description</label>
+                        {/* ✅ Booklet Template */}
+                        {templateType === "booklet" && (
+                            <div>
+                                {bookletForm.map((row, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
+                                    >
+                                        {/* Start No */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Start no.
+                                            </label>
                                             <input
                                                 type="text"
-                                                value={roomForm.description}
+                                                value={row.startNo}
                                                 onChange={(e) =>
-                                                    setRoomForm((prev) => ({ ...prev, description: e.target.value }))
+                                                    handleBookletFormChange(
+                                                        index,
+                                                        "startNo",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                className={`w-full rounded-lg border p-2 ${errors.description ? "border-red-500" : ""
-                                                    }`}
+                                                className="w-full rounded-lg border p-2"
                                             />
-                                            {errors.description && (
-                                                <p className="text-red-500 text-sm">{errors.description}</p>
+                                            {errors[`startNo-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {
+                                                        errors[
+                                                        `startNo-${index}`
+                                                        ]
+                                                    }
+                                                </p>
                                             )}
                                         </div>
 
-                                        {/* Campus */}
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700">Campus</label>
-                                            <select
-                                                value={roomForm.campusId}
+                                        {/* End No */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                End no.
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.endNo}
                                                 onChange={(e) =>
-                                                    setRoomForm((prev) => ({ ...prev, campusId: e.target.value }))
+                                                    handleBookletFormChange(
+                                                        index,
+                                                        "endNo",
+                                                        e.target.value
+                                                    )
                                                 }
-                                                className={`w-full rounded-lg border p-2 ${errors.campus ? "border-red-500" : ""
-                                                    }`}
+                                                className="w-full rounded-lg border p-2"
+                                            />
+                                            {errors[`endNo-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`endNo-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* ✅ User Dropdown */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                User
+                                            </label>
+                                            <select
+                                                value={row.userId}
+                                                onChange={(e) =>
+                                                    handleBookletFormChange(
+                                                        index,
+                                                        "userId",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full rounded-lg border p-2"
                                             >
-                                                <option value="">-- Select Campus --</option>
-                                                <option value="1">Las Pinas-Campus</option>
-                                                <option value="2">South-Campus</option>
+                                                <option value="">
+                                                    -- Select User --
+                                                </option>
+                                                {listOfUsers.map((u) => (
+                                                    <option
+                                                        key={u.UserId}
+                                                        value={u.UserId}
+                                                    >
+                                                        {`${u.Fname || ""} ${u.Mname || ""} ${u.Lname || ""}`.replace(
+                                                            /\s+/g,
+                                                            " "
+                                                        )}
+                                                    </option>
+                                                ))}
                                             </select>
-                                            {errors.campus && (
-                                                <p className="text-red-500 text-sm">{errors.campus}</p>
+                                            {errors[`userId-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`userId-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* OR Type */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                OR Type
+                                            </label>
+                                            <select
+                                                value={row.orType}
+                                                onChange={(e) =>
+                                                    handleBookletFormChange(index, "orType", e.target.value)
+                                                }
+                                                className="w-full rounded-lg border p-2"
+                                            >
+                                                <option value="">-- Select OR Type --</option>
+                                                <option value="For Enrollment Purpose">For Enrollment Purpose</option>
+                                                <option value="For Other Payment">For Other Payment</option>
+                                            </select>
+                                            {errors[`orType-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`orType-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Remarks */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Remarks
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.remarks}
+                                                onChange={(e) =>
+                                                    handleBookletFormChange(
+                                                        index,
+                                                        "remarks",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                className="w-full rounded-lg border p-2"
+                                            />
+                                            {errors[`remarks-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {
+                                                        errors[
+                                                        `remarks-${index}`
+                                                        ]
+                                                    }
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Delete Button */}
+                                        <div className="flex justify-center items-center">
+                                            {bookletForm.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleRemoveBookletRow(
+                                                            index
+                                                        )
+                                                    }
+                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
                                             )}
                                         </div>
                                     </div>
-                                    {roomForm.rooms.map((row, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
-                                        >
-                                            {/* Room Code */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Room Code
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={row.roomCode}
-                                                    onChange={(e) => {
-                                                        const updated = [...roomForm.rooms];
-                                                        updated[index].roomCode = e.target.value;
-                                                        setRoomForm((prev) => ({ ...prev, rooms: updated }));
-                                                    }}
-                                                    className={`w-full rounded-lg border p-2 ${errors[`roomCode-${index}`] ? "border-red-500" : ""
-                                                        }`}
-                                                />
-                                                {errors[`roomCode-${index}`] && (
-                                                    <p className="text-red-500 text-sm">
-                                                        {errors[`roomCode-${index}`]}
-                                                    </p>
-                                                )}
-                                            </div>
+                                ))}
 
-                                            {/* Room Name */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Room Name
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    value={row.roomName}
-                                                    onChange={(e) => {
-                                                        const updated = [...roomForm.rooms];
-                                                        updated[index].roomName = e.target.value;
-                                                        setRoomForm((prev) => ({ ...prev, rooms: updated }));
-                                                    }}
-                                                    className={`w-full rounded-lg border p-2 ${errors[`roomName-${index}`] ? "border-red-500" : ""
-                                                        }`}
-                                                />
-                                                {errors[`roomName-${index}`] && (
-                                                    <p className="text-red-500 text-sm">
-                                                        {errors[`roomName-${index}`]}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            {/* Remarks */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Remarks
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) => {
-                                                        const updated = [...roomForm.rooms];
-                                                        updated[index].remarks = e.target.value;
-                                                        setRoomForm((prev) => ({ ...prev, rooms: updated }));
-                                                    }}
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                            </div>
-
-                                            {/* Delete Button */}
-                                            <div className="flex justify-center items-center">
-                                                {roomForm.rooms.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setRoomForm((prev) => ({
-                                                                ...prev,
-                                                                rooms: prev.rooms.filter((_, i) => i !== index),
-                                                            }))
-                                                        }
-                                                        className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setRoomForm((prev) => ({
-                                                ...prev,
-                                                rooms: [...prev.rooms, { roomCode: "", roomName: "", remarks: "" }],
-                                            }))
-                                        }
-                                        className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
-                                    >
-                                        + Add Row
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* ========== SCHEDULE TEMPLATE ========== */}
-                            {templateType === "booklet" && (
-                                <div>
-
-
-                                    {/* Dynamic Rows */}
-                                    {scheduleForm.schedules.map((row, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
-                                        >
-                                            {/* Level */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Start no.
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) =>
-                                                        handleScheduleRowChange(index, "remarks", e.target.value)
-                                                    }
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                                {errors[`remarks-${index}`] && (
-                                                    <p className="text-red-500 text-sm">{errors[`remarks-${index}`]}</p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    End no.
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) =>
-                                                        handleScheduleRowChange(index, "remarks", e.target.value)
-                                                    }
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                                {errors[`remarks-${index}`] && (
-                                                    <p className="text-red-500 text-sm">{errors[`remarks-${index}`]}</p>
-                                                )}
-                                            </div>
-                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Select user
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) =>
-                                                        handleScheduleRowChange(index, "remarks", e.target.value)
-                                                    }
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                                {errors[`remarks-${index}`] && (
-                                                    <p className="text-red-500 text-sm">{errors[`remarks-${index}`]}</p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    OR Type
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) =>
-                                                        handleScheduleRowChange(index, "remarks", e.target.value)
-                                                    }
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                                {errors[`remarks-${index}`] && (
-                                                    <p className="text-red-500 text-sm">{errors[`remarks-${index}`]}</p>
-                                                )}
-                                            </div>
-
-
-                                            {/* Remarks */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700">
-                                                    Remarks
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Remarks"
-                                                    value={row.remarks}
-                                                    onChange={(e) =>
-                                                        handleScheduleRowChange(index, "remarks", e.target.value)
-                                                    }
-                                                    className="w-full rounded-lg border p-2"
-                                                />
-                                                {errors[`remarks-${index}`] && (
-                                                    <p className="text-red-500 text-sm">{errors[`remarks-${index}`]}</p>
-                                                )}
-                                            </div>
-
-                                            {/* Delete Button */}
-                                            <div className="flex justify-center items-center">
-                                                {scheduleForm.schedules.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setScheduleForm((prev) => ({
-                                                                ...prev,
-                                                                schedules: prev.schedules.filter((_, i) => i !== index),
-                                                            }))
-                                                        }
-                                                        className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {/* Add Row */}
-                                    <button
-                                        type="button"
-                                        onClick={() =>
-                                            setScheduleForm((prev) => ({
-                                                ...prev,
-                                                schedules: [...prev.schedules, { levelId: "", startTime: "", endTime: "", remarks: "" }],
-                                            }))
-                                        }
-                                        className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
-                                    >
-                                        + Add Row
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                    </>
+                                {/* Add Row */}
+                                <button
+                                    type="button"
+                                    onClick={handleAddBookletRow}
+                                    className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
+                                >
+                                    + Add Row
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 }
                 size="w-[800px]"
                 maxHeight="100vh"
                 buttons={[
-                    { label: "Submit", type: "green", onClick: handleSubmit, closeOnClick: false },
+                    {
+                        label: "Submit",
+                        type: "green",
+                        onClick: handleSubmit,
+                        closeOnClick: false,
+                    },
                     { label: "No", type: "red", closeOnClick: true },
                 ]}
             />
-
-
         </div>
     );
 };

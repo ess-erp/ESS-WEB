@@ -16,14 +16,14 @@ const StudentDataTable = () => {
   const loading = tableState.loading || false;
 
   const statuses = [
-    { label: "Ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" }
+    { label: "Ongoing", action: "ongoing-cashier", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" }
   ];
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tempStartDate, setTempStartDate] = useState('');
   const [tempEndDate, setTempEndDate] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('Ongoing');
+  const [selectedStatus, setSelectedStatus] = useState('ongoing-cashier');
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -79,7 +79,7 @@ const StudentDataTable = () => {
           <button
             key={status.label}
             onClick={() => {
-              setSelectedStatus(status.label);
+              setSelectedStatus(status.action);
               setCurrentPage(1);
               setStartDate('');
               setEndDate('');
