@@ -18,6 +18,7 @@ import {
     FETCH_OTHERSTABLE_REQUEST, FETCH_OTHERSTABLE_SUCCESS, FETCH_OTHERSTABLE_FAILURE,
     FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
     FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
+    FETCH_ADMISSION_TEST_RESULT_REQUEST, FETCH_ADMISSION_TEST_RESULT_SUCCESS, FETCH_ADMISSION_TEST_RESULT_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -624,4 +625,31 @@ export const fetchResendEmailData = (emailStatusId, studentId, emailType, curren
         dispatch(fetchResendEmailFailure(error.message));
         return { ok: false, error };
     }
-}
+};
+
+export const fetchAdmissionTestResultRequest = () => ({ type: FETCH_ADMISSION_TEST_RESULT_REQUEST });
+export const fetchAdmissionTestResultSuccess = (data) => ({ type: FETCH_ADMISSION_TEST_RESULT_SUCCESS, payload: data });
+export const fetchAdmissionTestResultFailure = (error) => ({ type: FETCH_ADMISSION_TEST_RESULT_FAILURE, payload: error });
+
+export const fetchAdmissionTestResultData = (studentId) => async (dispatch) => {
+    dispatch(fetchAdmissionTestResultRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-admission-test-result?studentId=${studentId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'applicatio/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchAdmissionTestResultSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchAdmissionTestResultFailure(error.message));
+        return ({ ok: false, error })
+    }
+};

@@ -18,6 +18,7 @@ import {
     FETCH_OTHERSTABLE_REQUEST, FETCH_OTHERSTABLE_SUCCESS, FETCH_OTHERSTABLE_FAILURE,
     FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
     FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
+    FETCH_ADMISSION_TEST_RESULT_REQUEST, FETCH_ADMISSION_TEST_RESULT_SUCCESS, FETCH_ADMISSION_TEST_RESULT_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -47,6 +48,7 @@ const initialGeneralState = {
     othersTableState: { ...initialState },
     testPermitState: { ...initialState },
     resendEmailState: { ...initialState },
+    admissionTestResultState: { ...initialState }, 
 }
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -203,7 +205,13 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_RESENDEMAIL_SUCCESS:
             return { ...state, resendEmailState: { loading: false, data: action.payload, error: '' } };
         case FETCH_RESENDEMAIL_FAILURE:
-            return { ...state, resendEmailState: { loading: false, data: [], error: action.payload } };
+            
+        case FETCH_ADMISSION_TEST_RESULT_REQUEST:
+            return { ...state, admissionTestResultState: { loading: true, data: [], error: '' } };
+        case FETCH_ADMISSION_TEST_RESULT_SUCCESS:
+            return { ...state, admissionTestResultState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ADMISSION_TEST_RESULT_FAILURE:
+            return { ...state, admissionTestResultState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

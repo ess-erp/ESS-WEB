@@ -7,6 +7,7 @@ import {
     fetchOthersTableData,
     fetchTestPermitData,
     fetchResendEmailData,
+    fetchAdmissionTestResultData,
 } from "../../states/AdmissionState/Action";
 
 const AppFormOthersComponent = ({ studentId }) => {
@@ -23,11 +24,15 @@ const AppFormOthersComponent = ({ studentId }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isOpenTestPermitModal, setIsOpenTestPermitModal] = useState(false);
+    const [isOpenAdmissionTestResultModal, setIsOpenAdmissionTestResultModal ] = useState(false);
 
     const testPermitState = useSelector((state) => state.admission.testPermitState);
     const { loading: permitLoading, data: permitData } = testPermitState || {};
 
     const resendEmailState = useSelector((state) => state.admission.resendEmailState || {});
+
+    const admissionTestResultState = useSelector((state) => state.admission.admissionTestResultState);
+    const { loading: admissionTestResultLoading, data: admissionTestResultData } = admissionTestResultState || {};
 
 
     const fetchData = () => {
@@ -104,8 +109,19 @@ const AppFormOthersComponent = ({ studentId }) => {
 
     const openRowModal = (row, type) => {
         console.log(`Open ${type} modal for:`, row);
-        setIsOpenTestPermitModal(true);
-        dispatch(fetchTestPermitData(row.EmailStatusId));
+       
+
+        switch (row.TempName) {
+            case "Admission Test Result":
+                dispatch(fetchAdmissionTestResultData(studentId));
+                setIsOpenAdmissionTestResultModal(true);
+                break;
+            case "Test Permit":
+                dispatch(fetchTestPermitData(row.EmailStatusId));
+                setIsOpenTestPermitModal(true);
+                break;
+        }
+        
     };
 
     const [resendCooldown, setResendCooldown] = useState(false);
@@ -251,6 +267,97 @@ const AppFormOthersComponent = ({ studentId }) => {
                 maxHeight="100vh"
             />
             <ModalComponent
+                isOpen={isOpenAdmissionTestResultModal}
+                onClose={() => setIsOpenAdmissionTestResultModal(false)}
+                title="Admission Test Result"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex gap-6">
+                        {/* Left side: Info */}
+                        <div className="w-1/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Information</label>
+                            {/* {permitLoading ? (
+                                <span className="text-gray-400 text-sm">Loading...</span>
+                            ) : permitData ? (
+                                <div className="flex flex-col gap-2 text-sm text-gray-500">
+                                    <span>
+                                        Father's Email:{" "}
+                                        <span className="font-semibold text-gray-700">{admissionTestResultData.FatherEmail}</span>
+                                    </span>
+                                    <span>
+                                        Mother's Email:{""}
+                                        <span className="font-semibold text-gray-700">{permitData.MotherEmail}</span>
+                                    </span>
+                                    <span>
+                                        Last sent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            {permitData.DateCreated
+                                                ? new Date(permitData.DateCreated).toLocaleDateString()
+                                                : "—"}
+                                        </span>
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-gray-400 text-sm">No data found</span>
+                            )} */}
+                        </div>
+
+                        {/* Right side: Preview */}
+                        <div className="w-2/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Preview</label>
+                            <div className="border rounded-lg shadow overflow-hidden flex-1">
+                                {admissionTestResultLoading ? (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : admissionTestResultData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${admissionTestResultData.PdfBase64}`}
+                                        className="w-full h-[40vh]"
+                                        title="Admission Test Result Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Download",
+                        type: "green",
+                        onClick: () => {
+                            if (admissionTestResultData?.PdfBase64) {
+                                const link = document.createElement("a");
+                                link.href = `data:application/pdf;base64,${admissionTestResultData.PdfBase64}`;
+                                link.download = "TestPermit.pdf";
+                                link.click();
+                            }
+                        },
+                    },
+                    // {
+                    //     label: "Resend Email",
+                    //     type: "blue",
+                    //     className: `px-5 py-2.5 text-sm font-semibold rounded-lg shadow transition
+                    //             ${resendCooldown
+                    //             ? "bg-gray-400 cursor-not-allowed"
+                    //             : "bg-blue-600 text-white hover:bg-blue-700 active:scale-95"}`,
+                    //     closeOnClick: false,
+                    //     onClick: handleResendEmail,
+
+                    // },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsOpenAdmissionTestResultModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
+            <ModalComponent
                 isOpen={isSuccessModalOpen}
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={<span className="font-bold text-lg text-green-700">Success</span>}
@@ -293,3 +400,5 @@ const AppFormOthersComponent = ({ studentId }) => {
 };
 
 export default AppFormOthersComponent;
+
+
