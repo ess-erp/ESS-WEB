@@ -19,6 +19,9 @@ import {
     FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
     FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
     FETCH_ADMISSION_TEST_RESULT_REQUEST, FETCH_ADMISSION_TEST_RESULT_SUCCESS, FETCH_ADMISSION_TEST_RESULT_FAILURE,
+    FETCH_GENERATE_LETTER_REQUEST, FETCH_GENERATE_LETTER_SUCCESS, FETCH_GENERATE_LETTER_FAILURE,
+    FETCH_GENERATED_LETTER_REQUEST, FETCH_GENERATED_LETTER_SUCCESS, FETCH_GENERATED_LETTER_FAILURE,
+    FETCH_INSERT_TAGGING_LETTER_REQUEST, FETCH_INSERT_TAGGING_LETTER_SUCCESS, FETCH_INSERT_TAGGING_LETTER_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -48,8 +51,11 @@ const initialGeneralState = {
     othersTableState: { ...initialState },
     testPermitState: { ...initialState },
     resendEmailState: { ...initialState },
-    admissionTestResultState: { ...initialState }, 
-}
+    admissionTestResultState: { ...initialState },
+    generateLetterState: { ...initialState },
+    generatedLetterState: { ...initialState },
+    insertTaggingLetterCode: { ...initialState },
+};
 
 const admissionReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -205,13 +211,34 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_RESENDEMAIL_SUCCESS:
             return { ...state, resendEmailState: { loading: false, data: action.payload, error: '' } };
         case FETCH_RESENDEMAIL_FAILURE:
-            
+
         case FETCH_ADMISSION_TEST_RESULT_REQUEST:
             return { ...state, admissionTestResultState: { loading: true, data: [], error: '' } };
         case FETCH_ADMISSION_TEST_RESULT_SUCCESS:
             return { ...state, admissionTestResultState: { loading: false, data: action.payload, error: '' } };
         case FETCH_ADMISSION_TEST_RESULT_FAILURE:
             return { ...state, admissionTestResultState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GENERATE_LETTER_REQUEST:
+            return { ...state, generateLetterState: { loading: true, data: [], error: '' } };
+        case FETCH_GENERATE_LETTER_SUCCESS:
+            return { ...state, generateLetterState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GENERATE_LETTER_FAILURE:
+            return { ...state, generateLetterState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GENERATED_LETTER_REQUEST:
+            return { ...state, generatedLetterState: { loading: true, data: [], error: '' } };
+        case FETCH_GENERATED_LETTER_SUCCESS:
+            return { ...state, generatedLetterState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GENERATED_LETTER_FAILURE:
+            return { ...state, generatedLetterState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_TAGGING_LETTER_REQUEST:
+            return { ...state, insertTaggingLetterCode: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_TAGGING_LETTER_SUCCESS:
+            return { ...state, insertTaggingLetterCode: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_TAGGING_LETTER_FAILURE:
+            return { ...state, insertTaggingLetterCode: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

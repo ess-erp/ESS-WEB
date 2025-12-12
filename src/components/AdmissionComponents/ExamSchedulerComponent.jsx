@@ -81,9 +81,14 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
     };
     const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         setIsLoadingModalOpen(true);
-        dispatch(fetchInsertExamScheduleData(form));
+        const res = await dispatch(fetchInsertExamScheduleData(form));
+        if(res.ok){
+            if(isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
     };
 
 
@@ -110,7 +115,7 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
             }
         }
     }, [insertExamScheduleState]);
-    
+
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 

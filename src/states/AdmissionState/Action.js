@@ -19,6 +19,9 @@ import {
     FETCH_TESTPERMIT_REQUEST, FETCH_TESTPERMIT_SUCCESS, FETCH_TESTPERMIT_FAILURE,
     FETCH_RESENDEMAIL_REQUEST, FETCH_RESENDEMAIL_SUCCESS, FETCH_RESENDEMAIL_FAILURE,
     FETCH_ADMISSION_TEST_RESULT_REQUEST, FETCH_ADMISSION_TEST_RESULT_SUCCESS, FETCH_ADMISSION_TEST_RESULT_FAILURE,
+    FETCH_GENERATE_LETTER_REQUEST, FETCH_GENERATE_LETTER_SUCCESS, FETCH_GENERATE_LETTER_FAILURE,
+    FETCH_GENERATED_LETTER_REQUEST, FETCH_GENERATED_LETTER_SUCCESS, FETCH_GENERATED_LETTER_FAILURE,
+    FETCH_INSERT_TAGGING_LETTER_REQUEST, FETCH_INSERT_TAGGING_LETTER_SUCCESS, FETCH_INSERT_TAGGING_LETTER_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -53,7 +56,6 @@ export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pa
         return { ok: false, error };
     };
 };
-
 
 //get student data from enrollment with status
 export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST });
@@ -577,11 +579,11 @@ export const fetchTestPermitRequest = () => ({ type: FETCH_TESTPERMIT_REQUEST })
 export const fetchTestPermitSuccess = (data) => ({ type: FETCH_TESTPERMIT_SUCCESS, payload: data });
 export const fetchTestPermitFailure = (error) => ({ type: FETCH_TESTPERMIT_FAILURE, payload: error });
 
-export const fetchTestPermitData = (emailStatusId) => async (dispatch) => {
+export const fetchTestPermitData = (othersTableId) => async (dispatch) => {
     dispatch(fetchTestPermitRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-test-permit?emailStatusId=${emailStatusId}`;
+        const url = `${baseUrl}/admission/get-test-permit?othersTableId=${othersTableId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -631,11 +633,11 @@ export const fetchAdmissionTestResultRequest = () => ({ type: FETCH_ADMISSION_TE
 export const fetchAdmissionTestResultSuccess = (data) => ({ type: FETCH_ADMISSION_TEST_RESULT_SUCCESS, payload: data });
 export const fetchAdmissionTestResultFailure = (error) => ({ type: FETCH_ADMISSION_TEST_RESULT_FAILURE, payload: error });
 
-export const fetchAdmissionTestResultData = (studentId) => async (dispatch) => {
+export const fetchAdmissionTestResultData = (othersTableId) => async (dispatch) => {
     dispatch(fetchAdmissionTestResultRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-admission-test-result?studentId=${studentId}`;
+        const url = `${baseUrl}/admission/get-admission-test-result?othersTableId=${othersTableId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -651,5 +653,88 @@ export const fetchAdmissionTestResultData = (studentId) => async (dispatch) => {
     catch(error){
         dispatch(fetchAdmissionTestResultFailure(error.message));
         return ({ ok: false, error })
+    }
+};
+
+export const fetchGenerateLetterRequest = () => ({ type: FETCH_GENERATE_LETTER_REQUEST });
+export const fetchGenerateLetterSuccess = (data) => ({ type: FETCH_GENERATE_LETTER_SUCCESS, payload: data });
+export const fetchGenerateLetterFailure = (error) => ({ type: FETCH_GENERATE_LETTER_FAILURE, payload: error });
+
+export const fetchGenerateLetterData = (studentId,curUserId) => async (dispatch) => {
+    dispatch(fetchGenerateLetterRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/generate-letter-student-id?studentId=${studentId}&userId=${curUserId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGenerateLetterSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchGenerateLetterFailure(error.message));
+        return ({ ok: false, error });
+    }
+};
+
+export const fetchGeneratedLetterRequest = () => ({ type: FETCH_GENERATED_LETTER_REQUEST });
+export const fetchGeneratedLetterSuccess = (data) => ({ type: FETCH_GENERATED_LETTER_SUCCESS, payload: data });
+export const fetchGeneratedLetterFailure = (error) => ({ type: FETCH_GENERATED_LETTER_FAILURE, payload: error });
+
+export const fetchGeneratedLetterData = (othersTableId) => async (dispatch) => {
+    dispatch(fetchGeneratedLetterRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-generated-letter?othersTableId=${othersTableId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchGeneratedLetterSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchGeneratedLetterFailure(error.message));
+        return ({ ok: false, error });
+    }
+};
+
+export const fetchInsertTaggingLetterRequest = () => ({ type: FETCH_INSERT_TAGGING_LETTER_REQUEST });
+export const fetchInsertTaggingLetterSuccess = (data) => ({ type: FETCH_INSERT_TAGGING_LETTER_SUCCESS, payload: data });
+export const fetchInsertTaggingLetterFailure = (error) => ({ type: FETCH_INSERT_TAGGING_LETTER_FAILURE, payload: error });
+
+export const fetchInsertTaggingLetterData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertTaggingLetterRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/insert-tagging-letter`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertTaggingLetterSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchInsertTaggingLetterFailure());
+        return ({ ok: false, error });
     }
 };
