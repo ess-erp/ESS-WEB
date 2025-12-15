@@ -11,6 +11,10 @@ import {
     fetchGenerateLetterData,
     fetchGeneratedLetterData,
     fetchInsertTaggingLetterData,
+    fetchReligionWaverData,
+    fetchSendReligionWaiverData,
+    fetchUpdateSendReligionWaiverData,
+    fetchAcademicWaiverData,
 } from "../../states/AdmissionState/Action";
 import BlueBtn from "../ButtonsComponents/BlueBtn";
 
@@ -42,8 +46,15 @@ const AppFormOthersComponent = ({ studentId }) => {
     const generatedLetterState = useSelector((state) => state.admission.generatedLetterState);
     const { loading: generatedLetterLoading, data: generatedLetterData } = generatedLetterState || {};
 
+    const religionWaverState = useSelector((state) => state.admission.religionWaverState || {});
+    const { loading: religionWaverLoading, data: religionWaverData } = religionWaverState || {};
+
+    const academicWaiverState = useSelector((state) => state.admission.academicWaiverState || {});
+    const { loading: academicWaiverLoading, data: academicWaiverData } = academicWaiverState || {};
+
     console.log(admissionTestResultData);
     console.log(generatedLetterData);
+    console.log(religionWaverData);
     const fetchData = () => {
         dispatch(fetchOthersTableData(
             studentId,
@@ -61,7 +72,7 @@ const AppFormOthersComponent = ({ studentId }) => {
         { TempName: "Test Permit", DateCreated: null, ActiveStatus: "Pending" },
         { TempName: "Academic Waiver", DateCreated: null, ActiveStatus: "Pending" },
         { TempName: "Admission Test Result", DateCreated: null, ActiveStatus: "Pending" },
-        { TempName: "Religion Waver", DateCreated: null, ActiveStatus: "Pending" },
+        { TempName: "Religion Waiver", DateCreated: null, ActiveStatus: "Pending" },
         { TempName: "Letter", DateCreated: null, ActiveStatus: "Pending" },
         { TempName: "Tagging for Letter", DateCreated: null, ActiveStatus: "Pending" },
 
@@ -115,7 +126,7 @@ const AppFormOthersComponent = ({ studentId }) => {
             button: true,
         },
     ];
-
+    const [otherId, setOtherId] = useState(0);
     const openRowModal = (row, type) => {
         console.log(`Open ${type} modal for:`, row);
 
@@ -135,7 +146,16 @@ const AppFormOthersComponent = ({ studentId }) => {
                 break;
             case "Tagging for Letter":
                 setIsTaggingLetterOpen(true);
-            break;
+                break;
+            case "Religion Waiver":
+                dispatch(fetchReligionWaverData(studentId));
+                setOtherId(row.OthersTableId);
+                setIsReligionWaverModal(true);
+                break;
+            case "Academic Waiver":
+                dispatch(fetchAcademicWaiverData(studentId));
+                setIsOpenAcademicWaiver(true);
+                break;
         }
 
     };
@@ -194,20 +214,69 @@ const AppFormOthersComponent = ({ studentId }) => {
     };
 
     const [isTaggingLetterOpen, setIsTaggingLetterOpen] = useState(false);
+    const [isTaggingLetterSuccess, setIsTaggingLetterSuccess] = useState(false);
+    const [isTaggingLetterLoading, setIsTaggingLetterLoading] = useState(false);
     const [dateOfEnrollment, setDateOfEnrollment] = useState("");
     const [dateOfFirstPayment, setDateOfFirstPayment] = useState("");
-    const handleSubmitTaggingLetter = () => {
-        alert("Test");
-        console.log(dateOfEnrollment);
-        console.log(dateOfFirstPayment);
+    const handleSubmitTaggingLetter = async () => {
+        setIsTaggingLetterLoading(true);
         const payload = {
             StudentId: studentId,
             CreatedByUserId: user.UserId,
             DateOfEnrollment: dateOfEnrollment,
             DateOfFirstPayment: dateOfFirstPayment,
         };
-        
+        const res = await dispatch(fetchInsertTaggingLetterData(payload));
+        console.log(res);
+        if (res.ok) {
+            setIsTaggingLetterLoading(false);
+            setIsTaggingLetterSuccess(true)
+            if (isLetterSuccessModal == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
+        else {
+            setIsTaggingLetterLoading(false);
+            setIsErrorModalOpen(true);
+        }
     };
+
+    const [isReligionWaverModal, setIsReligionWaverModal] = useState(false);
+    const [isReligionWaiverLoading, setIsReligionWaiverLoading] = useState(false);
+    const [isReligionWaiverSuccess, setIsReligionWaiverSuccess] = useState(false);
+    const handleSendReligionWaiver = async () => {
+        const payload = {
+            StudentId: studentId,
+            CreatedByUserId: user.UserId,
+            FatherId: religionWaverData.FatherId,
+            MotherId: religionWaverData.MotherId,
+        };
+        console.log(payload);
+        setIsReligionWaiverLoading(true);
+        let res = "";
+        if (religionWaverData.length != 0) {
+            res = await dispatch(fetchUpdateSendReligionWaiverData(otherId, user.UserId));
+        }
+        else {
+            res = await dispatch(fetchSendReligionWaiverData(payload));
+        }
+          if (res.ok) {
+                setIsReligionWaverModal(false);
+                setIsReligionWaiverLoading(false);
+                setIsReligionWaiverSuccess(true);
+                if (isReligionWaiverSuccess == false) {
+                    setTimeout(() => window.location.reload(), 3000);
+                }
+            }
+            else {
+                setIsReligionWaverModal(false);
+                setIsReligionWaiverLoading(false);
+                setIsErrorModalOpen(true);
+            }
+    };
+
+    const [isOpenAcademicWaiver, setIsOpenAcademicWaiver] = useState(false);
+
 
     return (
         <div className="p-4">
@@ -470,7 +539,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                 size="w-[1000px]"
                 maxHeight="100vh"
             />
-             <ModalComponent
+            <ModalComponent
                 isOpen={isTaggingLetterOpen}
                 onClose={() => setIsTaggingLetterOpen(false)}
                 title="Tagging for Letter"
@@ -478,7 +547,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                     <div className="max-h-[80vh] w-full p-6 flex gap-6 justify-center">
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-600">Date of Enrollment</label>
-                           <input
+                            <input
                                 type="date"
                                 name="dateOfEnrollment"
                                 value={dateOfEnrollment || ""}
@@ -492,7 +561,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             <input
                                 type="date"
                                 name="dateOfFirstPayment"
-                                 value={dateOfFirstPayment || ""}
+                                value={dateOfFirstPayment || ""}
                                 onChange={(e) => setDateOfFirstPayment(e.target.value)}
                                 className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
@@ -580,6 +649,236 @@ const AppFormOthersComponent = ({ studentId }) => {
                     </div>
                 }
                 buttons={[]}
+            />
+            <ModalComponent
+                isOpen={isTaggingLetterSuccess}
+                onClose={() => setIsTaggingLetterSuccess(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body={
+                    <span>
+                        Done generating letter please check the Letter in table.
+                    </span>
+                }
+                buttons={[
+                    { label: "OK", type: "green", onClick: () => setIsTaggingLetterSuccess(false) }
+                ]}
+            />
+            <ModalComponent
+                isOpen={isTaggingLetterLoading}
+                onClose={() => { }} // prevent closing while loading
+                title={<span className="font-bold text-lg text-blue-700">Processing</span>}
+                body={
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span className="text-gray-600">Saving tagging letter.</span>
+                        <span className="text-gray-600">Please wait don't close this window.</span>
+                    </div>
+                }
+                buttons={[]}
+            />
+            <ModalComponent
+                isOpen={isReligionWaverModal}
+                onClose={() => setIsReligionWaverModal(false)}
+                title="Religion Waver"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex gap-6">
+                        {/* Left side: Info */}
+                        <div className="w-1/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Information</label>
+                            {religionWaverLoading ? (
+                                <span className="text-gray-400 text-sm">Loading...</span>
+                            ) : religionWaverData ? (
+                                <div className="flex flex-col gap-2 text-sm text-gray-500">
+                                    <span>
+                                        Father's Email:{" "}
+                                        <span className="font-semibold text-gray-700"> {religionWaverData.FathersEmail}</span>
+                                    </span>
+                                    <span>
+                                        Mother's Email:{""}
+                                        <span className="font-semibold text-gray-700"> {religionWaverData.MothersEmail}</span>
+                                    </span>
+                                    <span>
+                                        Last sent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            {permitData.DateCreated
+                                                ? new Date(permitData.DateCreated).toLocaleDateString()
+                                                : "—"}
+                                        </span>
+                                    </span>
+                                    <span>
+                                        Send this religion waiver to parent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            <BlueBtn label="Send" onClick={handleSendReligionWaiver} />
+                                        </span>
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-gray-400 text-sm">No data found</span>
+                            )}
+                        </div>
+
+                        {/* Right side: Preview */}
+                        <div className="w-2/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Preview</label>
+                            <div className="border rounded-lg shadow overflow-hidden flex-1">
+                                {religionWaverLoading ? (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : religionWaverData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${religionWaverData.PdfBase64}`}
+                                        className="w-full h-[40vh]"
+                                        title="Test Permit Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Download",
+                        type: "green",
+                        onClick: () => {
+                            if (religionWaverData?.PdfBase64) {
+                                const link = document.createElement("a");
+                                link.href = `data:application/pdf;base64,${religionWaverData.PdfBase64}`;
+                                link.download = "TestPermit.pdf";
+                                link.click();
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsReligionWaverModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
+            <ModalComponent
+                isOpen={isReligionWaiverSuccess}
+                onClose={() => setIsReligionWaiverSuccess(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body={
+                    <span>
+                        Religion Waiver was sent to parents.
+                    </span>
+                }
+                buttons={[
+                    { label: "OK", type: "green", onClick: () => setIsReligionWaiverSuccess(false) }
+                ]}
+            />
+            <ModalComponent
+                isOpen={isReligionWaiverLoading}
+                onClose={() => { }} // prevent closing while loading
+                title={<span className="font-bold text-lg text-blue-700">Processing</span>}
+                body={
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span className="text-gray-600">Religion waiver is sending to parents email.</span>
+                        <span className="text-gray-600">Please wait don't close this window.</span>
+                    </div>
+                }
+                buttons={[]}
+            />
+            <ModalComponent
+                isOpen={isOpenAcademicWaiver}
+                onClose={() => setIsOpenAcademicWaiver(false)}
+                title="Academic Waiver"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex gap-6">
+                        {/* Left side: Info */}
+                        <div className="w-1/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Information</label>
+                            {academicWaiverLoading ? (
+                                <span className="text-gray-400 text-sm">Loading...</span>
+                            ) : academicWaiverData ? (
+                                <div className="flex flex-col gap-2 text-sm text-gray-500">
+                                    <span>
+                                        Father's Email:{" "}
+                                        <span className="font-semibold text-gray-700"> {academicWaiverData.FathersEmail}</span>
+                                    </span>
+                                    <span>
+                                        Mother's Email:{""}
+                                        <span className="font-semibold text-gray-700"> {academicWaiverData.MothersEmail}</span>
+                                    </span>
+                                    <span>
+                                        Last sent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            {academicWaiverData.DateCreated
+                                                ? new Date(permitData.DateCreated).toLocaleDateString()
+                                                : "—"}
+                                        </span>
+                                    </span>
+                                    <span>
+                                        Send this religion waiver to parent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            <BlueBtn label="Send" onClick={handleSendReligionWaiver} />
+                                        </span>
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-gray-400 text-sm">No data found</span>
+                            )}
+                        </div>
+
+                        {/* Right side: Preview */}
+                        <div className="w-2/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Preview</label>
+                            <div className="border rounded-lg shadow overflow-hidden flex-1">
+                                {academicWaiverLoading ? (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : academicWaiverData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${academicWaiverData.PdfBase64}`}
+                                        className="w-full h-[40vh]"
+                                        title="Academic Waiver Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Download",
+                        type: "green",
+                        onClick: () => {
+                            if (academicWaiverData?.PdfBase64) {
+                                const link = document.createElement("a");
+                                link.href = `data:application/pdf;base64,${academicWaiverData.PdfBase64}`;
+                                link.download = "TestPermit.pdf";
+                                link.click();
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsReligionWaverModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
             />
         </div>
     );

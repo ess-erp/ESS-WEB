@@ -22,6 +22,10 @@ import {
     FETCH_GENERATE_LETTER_REQUEST, FETCH_GENERATE_LETTER_SUCCESS, FETCH_GENERATE_LETTER_FAILURE,
     FETCH_GENERATED_LETTER_REQUEST, FETCH_GENERATED_LETTER_SUCCESS, FETCH_GENERATED_LETTER_FAILURE,
     FETCH_INSERT_TAGGING_LETTER_REQUEST, FETCH_INSERT_TAGGING_LETTER_SUCCESS, FETCH_INSERT_TAGGING_LETTER_FAILURE,
+    FETCH_RELIGION_WAVER_REQUEST, FETCH_RELIGION_WAVER_SUCCESS, FETCH_RELIGION_WAVER_FAILURE,
+    FETCH_SEND_RELIGION_WAIVER_REQUEST, FETCH_SEND_RELIGION_WAIVER_SUCCESS, FETCH_SEND_RELIGION_WAIVER_FAILURE,
+    FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST, FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS, FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE,
+    FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -736,5 +740,117 @@ export const fetchInsertTaggingLetterData = (formData) => async (dispatch) => {
     catch(error) {
         dispatch(fetchInsertTaggingLetterFailure());
         return ({ ok: false, error });
+    }
+};
+
+export const fetchReligionWaverRequest = () => ({ type: FETCH_RELIGION_WAVER_REQUEST });
+export const fetchReligionWaverSuccess = (data) => ({ type: FETCH_RELIGION_WAVER_SUCCESS, payload: data });
+export const fetchReligionWaverFailure = (error) => ({ type: FETCH_RELIGION_WAVER_FAILURE, payload: error });
+
+export const fetchReligionWaverData = (studentId) => async (dispatch) => {
+    dispatch(fetchReligionWaverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-religion-waver-student-id?studentId=${studentId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchReligionWaverSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchReligionWaverFailure(error.message));
+        return ({ ok: false, error });
+    }
+};
+
+export const fetchSendReligionWaiverRequest = () => ({ type: FETCH_SEND_RELIGION_WAIVER_REQUEST });
+export const fetchSendReligionWaiverSuccess = (data) => ({ type: FETCH_SEND_RELIGION_WAIVER_SUCCESS, payload: data });
+export const fetchSendReligionWaiverFailure = (error) => ({ type: FETCH_SEND_RELIGION_WAIVER_FAILURE, payload: error });
+
+export const fetchSendReligionWaiverData = (formData) => async (dispatch) => {
+    dispatch(fetchSendReligionWaiverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/send-religion-waiver`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        const res = await response.json();
+        
+        dispatch(fetchSendReligionWaiverSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchSendReligionWaiverFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchUpdateSendReligionWaiverRequest = () => ({ type: FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST });
+export const fetchUpdateSendReligionWaiverSuccess = (data) => ({ type: FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS, payload: data });
+export const fetchUpdateSendReligionWaiverFailure = (error) => ({ type: FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE, payload: error });
+
+export const fetchUpdateSendReligionWaiverData = (othersTableId,userId) => async (dispatch) => {
+    dispatch(fetchUpdateSendReligionWaiverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/update-send-religion-waiver?othersTableId=${othersTableId}&userId=${userId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        
+        const res = await response.json();
+        
+        dispatch(fetchUpdateSendReligionWaiverSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchUpdateSendReligionWaiverFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchAcademicWaiverRequest = () => ({ type: FETCH_ACADEMIC_WAIVER_REQUEST });
+export const fetchAcademicWaiverSuccess = (data) => ({ type: FETCH_ACADEMIC_WAIVER_SUCCESS, payload: data });
+export const fetchAcademicWaiverFailure = (error) => ({ type: FETCH_ACADEMIC_WAIVER_FAILURE, payload: error });
+
+export const fetchAcademicWaiverData = (studentId) => async (dispatch) => {
+    dispatch(fetchAcademicWaiverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/get-academic-waiver-student-id?studentId=${studentId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+        
+        const res = await response.json();
+        
+        dispatch(fetchAcademicWaiverSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchAcademicWaiverFailure(error.message));
+        return ({ ok: false, error })
     }
 };

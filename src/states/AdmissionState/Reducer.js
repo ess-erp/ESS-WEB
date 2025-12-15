@@ -22,6 +22,10 @@ import {
     FETCH_GENERATE_LETTER_REQUEST, FETCH_GENERATE_LETTER_SUCCESS, FETCH_GENERATE_LETTER_FAILURE,
     FETCH_GENERATED_LETTER_REQUEST, FETCH_GENERATED_LETTER_SUCCESS, FETCH_GENERATED_LETTER_FAILURE,
     FETCH_INSERT_TAGGING_LETTER_REQUEST, FETCH_INSERT_TAGGING_LETTER_SUCCESS, FETCH_INSERT_TAGGING_LETTER_FAILURE,
+    FETCH_RELIGION_WAVER_REQUEST, FETCH_RELIGION_WAVER_SUCCESS, FETCH_RELIGION_WAVER_FAILURE,
+    FETCH_SEND_RELIGION_WAIVER_REQUEST, FETCH_SEND_RELIGION_WAIVER_SUCCESS, FETCH_SEND_RELIGION_WAIVER_FAILURE,
+    FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST, FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS, FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE,
+    FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -55,6 +59,10 @@ const initialGeneralState = {
     generateLetterState: { ...initialState },
     generatedLetterState: { ...initialState },
     insertTaggingLetterCode: { ...initialState },
+    religionWaverState: { ...initialState },
+    sendReligionWaiverState: { ...initialState },
+    updateReligionWaiverState: { ...initialState },
+    academicWaiverState: { ...initialState },
 };
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -239,6 +247,35 @@ const admissionReducer = (state = initialGeneralState, action) => {
             return { ...state, insertTaggingLetterCode: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_TAGGING_LETTER_FAILURE:
             return { ...state, insertTaggingLetterCode: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_RELIGION_WAVER_REQUEST:
+            return { ...state, religionWaverState: { loading: true, data: [], error: '' } };
+        case FETCH_RELIGION_WAVER_SUCCESS:
+            return { ...state, religionWaverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_RELIGION_WAVER_FAILURE:
+            return { ...state, religionWaverState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SEND_RELIGION_WAIVER_REQUEST:
+            return { ...state, sendReligionWaiverState: { loading: true, data: [], error: '' } };
+        case FETCH_SEND_RELIGION_WAIVER_SUCCESS:
+            return { ...state, sendReligionWaiverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SEND_RELIGION_WAIVER_FAILURE:
+            return { ...state, sendReligionWaiverState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST:
+            return { ...state, updateReligionWaiverState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS:
+            return { ...state, updateReligionWaiverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE:
+            return { ...state, updateReligionWaiverState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_ACADEMIC_WAIVER_REQUEST:
+            return { ...state, academicWaiverState: { loading: true, data: [], error: '' } };
+        case FETCH_ACADEMIC_WAIVER_SUCCESS:
+            return { ...state, academicWaiverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ACADEMIC_WAIVER_FAILURE:
+            return { ...state, academicWaiverState: { loading: false, data: [], error: action.payload } };
+
 
         default:
             return state;
