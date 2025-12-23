@@ -26,6 +26,8 @@ import {
     FETCH_SEND_RELIGION_WAIVER_REQUEST, FETCH_SEND_RELIGION_WAIVER_SUCCESS, FETCH_SEND_RELIGION_WAIVER_FAILURE,
     FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST, FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS, FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE,
     FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
+    FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE,
+    FETCH_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_SEND_ACADEMIC_WAIVER_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -852,5 +854,63 @@ export const fetchAcademicWaiverData = (studentId) => async (dispatch) => {
     catch(error){
         dispatch(fetchAcademicWaiverFailure(error.message));
         return ({ ok: false, error })
+    }
+};
+
+
+export const fetchUpdateSendAcademicWaiverRequest = () => ({ type: FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST });
+export const fetchUpdateSendAcademicWaiverSuccess = (data) => ({ type: FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, payload: data });
+export const fetchUpdateSendAcademicWaiverFailure = (error) => ({ type: FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE, payload: error });
+
+export const fetchUpdateSendAcademicWaiverData = (othersTableId, userId) => async (dispatch) => {
+    dispatch(fetchUpdateSendAcademicWaiverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/update-send-academic-waiver?othersTableId=${othersTableId}&userId=${userId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchUpdateSendAcademicWaiverSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchUpdateSendAcademicWaiverFailure(error.message));
+        return ({ ok: false, error });
+    }
+};
+
+export const fetchSendAcademicWaiverRequest = () => ({ type: FETCH_SEND_ACADEMIC_WAIVER_REQUEST });
+export const fetchSendAcademicWaiverSuccess = (data) => ({ type: FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, payload: data });
+export const fetchSendAcademicWaiverFailure = (error) => ({ type: FETCH_SEND_ACADEMIC_WAIVER_FAILURE, payload: error });
+
+export const fetchSendAcademicWaiverData = (formData) => async (dispatch) => {
+    dispatch(fetchSendAcademicWaiverRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/admission/send-academic-waiver`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSendAcademicWaiverSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error) {
+        dispatch(fetchSendAcademicWaiverFailure(error.message));
+        return ({ ok: false, error });
     }
 };

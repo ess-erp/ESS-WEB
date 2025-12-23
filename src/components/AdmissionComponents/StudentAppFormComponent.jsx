@@ -171,6 +171,8 @@ const StudentAppFormComponent = () => {
     };
 
 
+    const [lrn, setLrn] = useState("");
+
     return (
         <>
             <div className="flex items-center mt-2">

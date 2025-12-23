@@ -26,6 +26,8 @@ import {
     FETCH_SEND_RELIGION_WAIVER_REQUEST, FETCH_SEND_RELIGION_WAIVER_SUCCESS, FETCH_SEND_RELIGION_WAIVER_FAILURE,
     FETCH_UPDATE_SEND_RELIGION_WAIVER_REQUEST, FETCH_UPDATE_SEND_RELIGION_WAIVER_SUCCESS, FETCH_UPDATE_SEND_RELIGION_WAIVER_FAILURE,
     FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
+    FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE,
+    FETCH_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_SEND_ACADEMIC_WAIVER_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -63,6 +65,8 @@ const initialGeneralState = {
     sendReligionWaiverState: { ...initialState },
     updateReligionWaiverState: { ...initialState },
     academicWaiverState: { ...initialState },
+    updateAcademicWaiverState: { ...initialState },
+    sendAcademicWaiverState: { ...initialState },
 };
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -275,6 +279,20 @@ const admissionReducer = (state = initialGeneralState, action) => {
             return { ...state, academicWaiverState: { loading: false, data: action.payload, error: '' } };
         case FETCH_ACADEMIC_WAIVER_FAILURE:
             return { ...state, academicWaiverState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST:
+            return { ...state, updateAcademicWaiverState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS:
+            return { ...state, updateAcademicWaiverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE:
+            return { ...state, updateAcademicWaiverState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SEND_ACADEMIC_WAIVER_REQUEST:
+            return { ...state, sendAcademicWaiverState: { loading: true, data: [], error: '' } };
+        case FETCH_SEND_ACADEMIC_WAIVER_SUCCESS:
+            return { ...state, sendAcademicWaiverState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SEND_ACADEMIC_WAIVER_FAILURE:
+            return { ...state, sendAcademicWaiverState: { loading: false, data: [], error: action.payload } };
 
 
         default:

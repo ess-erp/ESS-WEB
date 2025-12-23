@@ -15,6 +15,8 @@ import {
     fetchSendReligionWaiverData,
     fetchUpdateSendReligionWaiverData,
     fetchAcademicWaiverData,
+    fetchUpdateSendAcademicWaiverData,
+    fetchSendAcademicWaiverData,
 } from "../../states/AdmissionState/Action";
 import BlueBtn from "../ButtonsComponents/BlueBtn";
 
@@ -260,23 +262,53 @@ const AppFormOthersComponent = ({ studentId }) => {
         else {
             res = await dispatch(fetchSendReligionWaiverData(payload));
         }
-          if (res.ok) {
-                setIsReligionWaverModal(false);
-                setIsReligionWaiverLoading(false);
-                setIsReligionWaiverSuccess(true);
-                if (isReligionWaiverSuccess == false) {
-                    setTimeout(() => window.location.reload(), 3000);
-                }
+        if (res.ok) {
+            setIsReligionWaverModal(false);
+            setIsReligionWaiverLoading(false);
+            setIsReligionWaiverSuccess(true);
+            if (isReligionWaiverSuccess == false) {
+                setTimeout(() => window.location.reload(), 3000);
             }
-            else {
-                setIsReligionWaverModal(false);
-                setIsReligionWaiverLoading(false);
-                setIsErrorModalOpen(true);
-            }
+        }
+        else {
+            setIsReligionWaverModal(false);
+            setIsReligionWaiverLoading(false);
+            setIsErrorModalOpen(true);
+        }
     };
 
     const [isOpenAcademicWaiver, setIsOpenAcademicWaiver] = useState(false);
-
+    const [isAcademicWaiverLoading, setIsAcademivWaiverLoading] = useState(false);
+    const [isAcademicWaiverSuccess, setIsAcademicWaiverSuccess] = useState(false);
+    const handleSendAcademicWaiver = async () => {
+        const payload = {
+            StudentId: studentId,
+            CreatedByUserId: user.UserId,
+            FatherId: academicWaiverData.FatherId,
+            MotherId: academicWaiverData.MotherId,
+        };
+        setIsAcademivWaiverLoading(true);
+        let res = "";
+        if (academicWaiverData.length != 0) {
+            res = await dispatch(fetchUpdateSendAcademicWaiverData(otherId, user.UserId));
+        }
+        else {
+            res = await dispatch(fetchSendAcademicWaiverData(payload));
+        }
+        if (res.ok) {
+            setIsOpenAcademicWaiver(false);
+            setIsAcademivWaiverLoading(false);
+            setIsAcademicWaiverSuccess(true);
+            if (isAcademicWaiverSuccess == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
+        else {
+            setIsOpenAcademicWaiver(false);
+            setIsAcademivWaiverLoading(false);
+            setIsErrorModalOpen(true);
+        }
+    };
 
     return (
         <div className="p-4">
@@ -826,7 +858,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                                     <span>
                                         Send this religion waiver to parent:{" "}
                                         <span className="font-semibold text-gray-700">
-                                            <BlueBtn label="Send" onClick={handleSendReligionWaiver} />
+                                            <BlueBtn label="Send" onClick={handleSendAcademicWaiver} />
                                         </span>
                                     </span>
                                 </div>
@@ -874,11 +906,40 @@ const AppFormOthersComponent = ({ studentId }) => {
                     {
                         label: "Close",
                         type: "red",
-                        onClick: () => setIsReligionWaverModal(false),
+                        onClick: () => setIsOpenAcademicWaiver(false),
                     },
                 ]}
                 size="w-[1000px]"
                 maxHeight="100vh"
+            />
+            <ModalComponent
+                isOpen={isAcademicWaiverSuccess}
+                onClose={() => setIsAcademicWaiverSuccess(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body={
+                    <span>
+                        Academic Waiver was sent to parents.
+                    </span>
+                }
+                buttons={[
+                    { label: "OK", type: "green", onClick: () => setIsAcademicWaiverSuccess(false) }
+                ]}
+            />
+            <ModalComponent
+                isOpen={isAcademicWaiverLoading}
+                onClose={() => { }} // prevent closing while loading
+                title={<span className="font-bold text-lg text-blue-700">Processing</span>}
+                body={
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span className="text-gray-600">Academic waiver is sending to parents email.</span>
+                        <span className="text-gray-600">Please wait don't close this window.</span>
+                    </div>
+                }
+                buttons={[]}
             />
         </div>
     );
