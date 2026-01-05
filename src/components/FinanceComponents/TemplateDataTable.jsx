@@ -5,17 +5,13 @@ import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import { Pencil, Eye, Trash2, Plus } from "lucide-react";
 import RowToggleComponent from "../../components/ButtonsComponents/RowToggleComponent";
-import { fetchLevelData } from "../../states/AdmissionState/Action";
 import {
-    fetchInsertExamRoomData,
-    fetchExamRoomTemplateData,
-    fetchInsertExamScheduleData,
     fetchTemplateTableData,
-} from "../../states/CfwState/Action";
-import {
     fetchListOfUserData,
+    fetchInsertTableOfFeesData,
     fetchInsertOrSeriesData,
 } from "../../states/FinanceState/Action";
+import useTemplateStore from "../../zustands/FinanceZustands/useTemplateStore";
 
 const TemplateDataTable = ({ selectedStatus }) => {
     const dispatch = useDispatch();
@@ -25,27 +21,12 @@ const TemplateDataTable = ({ selectedStatus }) => {
     });
     const currentUserId = user?.UserId;
 
-    const levelState = useSelector((state) => state.admission.levelState || {});
-    const levelData = levelState.data || [];
-    const insertExamRoomState = useSelector(
-        (state) => state.cfw.insertExamRoomState || {}
-    );
-    const isInserted = insertExamRoomState.data || [];
-    const examRoomTemplate = useSelector(
-        (state) => state.cfw.examRoomTemplate || {}
-    );
-    const roomData = examRoomTemplate.data || [];
-
     const [totalRecords, setTotalRecords] = useState(0);
     const [loadingTable, setLoadingTable] = useState(false);
     const [table, setTable] = useState([]);
 
-    // ✅ users for dropdown
+    // users for dropdown
     const [listOfUsers, setListOfUsers] = useState([]);
-
-    useEffect(() => {
-        dispatch(fetchLevelData());
-    }, [dispatch]);
 
     const usersState = useSelector((state) => state.finance.listOfUserState || {});
     const usersData = usersState.data || [];
@@ -107,8 +88,8 @@ const TemplateDataTable = ({ selectedStatus }) => {
 
     const columns = [
         {
-            name: "Description",
-            selector: (row) => row.Description,
+            name: "Template Name",
+            selector: (row) => row.TempTitle,
             sortable: true,
             wrap: true,
         },
@@ -167,6 +148,10 @@ const TemplateDataTable = ({ selectedStatus }) => {
         },
     ];
 
+    const openRowModal = () => {
+        alert("test");
+    };
+
     const handleToggleActive = async (selectedRow, newStatus) => {
         const CreatedByUserId = user.UserId;
         const activeStatus = newStatus ? "Y" : "DR";
@@ -196,41 +181,17 @@ const TemplateDataTable = ({ selectedStatus }) => {
             console.error("Error updating template:", error);
         }
     };
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    // template form state
-    const [templateType, setTemplateType] = useState("");
-    const [gradeRows, setGradeRows] = useState([{ grade: "" }]);
-    const [errors, setErrors] = useState({});
-
-    // ✅ booklet form state (array of rows)
-    const [bookletForm, setBookletForm] = useState([
-        { startNo: "", endNo: "", userId: "", orType: "", remarks: "", createdByUserId: user.UserId },
-    ]);
-
-    const handleBookletFormChange = (index, field, value) => {
-        const updated = [...bookletForm];
-        updated[index][field] = value;
-        setBookletForm(updated);
-    };
-
-    const handleAddBookletRow = () => {
-        setBookletForm([
-            ...bookletForm,
-            { startNo: "", endNo: "", userId: "", orType: "", remarks: "", createdByUserId: user.UserId },
-        ]);
-    };
-
-    const handleRemoveBookletRow = (index) => {
-        setBookletForm(bookletForm.filter((_, i) => i !== index));
-    };
+    const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [modalBody, setModalBody] = useState("");
 
     const validateForm = () => {
         let newErrors = {};
 
         if (templateType === "booklet") {
-            bookletForm.forEach((row, i) => {
+            bookletForm.orNumberList.forEach((row, i) => {
                 if (!row.startNo.trim())
                     newErrors[`startNo-${i}`] = "Start No is required";
                 if (!row.endNo.trim())
@@ -239,39 +200,103 @@ const TemplateDataTable = ({ selectedStatus }) => {
                     newErrors[`userId-${i}`] = "User is required";
                 if (!row.orType.trim())
                     newErrors[`orType-${i}`] = "OR Type is required";
-                if (!row.remarks.trim())
-                    newErrors[`remarks-${i}`] = "Remarks is required";
+            });
+        }
+        else {
+            feesForm.feesChildForm.forEach((row, i) => {
+                if (!row.transCode.trim())
+                    newErrors[`transCode-${i}`] = "Transaction Code is required";
+                if (!row.transType.trim())
+                    newErrors[`transType-${i}`] = "Transaction Type is required";
+                if (!row.transGroup)
+                    newErrors[`usertransGroupId-${i}`] = "Transaction Group is required";
             });
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+    const {
+        isModalOpen,
+        openModal,
+        closeModal,
+        templateType,
+        setTemplateType,
+        bookletForm,
+        feesForm,
+        setBookletFormField,
+        setFeesFormField,
+        updateBookletFormRow,
+        updateFeesFormRow,
+        addBookletFormRow,
+        addFeesFormRow,
+        deleteBookletFormRow,
+        deleteFeesFormRow,
+        setFileUpload,
+        errors,
+        setErrors,
+    } = useTemplateStore();
+
+    const openSubmitModal = () => {
+        setIsSubmitModalOpen(true);
+    };
 
     const handleSubmit = async () => {
         if (!validateForm()) return;
-
-        const payload = {
-            orSeriesBodyDtos: bookletForm.map(row => ({
-                startNo: row.startNo,
-                endNo: row.endNo,
-                userId: parseInt(row.userId, 10),
-                orType: row.orType,
-                remarks: row.remarks,
-                createdByUserId: currentUserId?.toString() ?? "0"
-            }))
-        };
-
-        console.log("Submitting payload:", payload);
-
-        const result = await dispatch(fetchInsertOrSeriesData(payload));
-
-        if (result.ok) {
-            alert("OR Series inserted successfully!");
-            setIsModalOpen(false);
-            setBookletForm([{ startNo: "", endNo: "", userId: "", orType: "", remarks: "" }]);
-        } else {
-            alert("Error inserting OR Series: " + result.error);
+        let payload = null;
+        let res = null;
+        setIsLoadingModalOpen(true);
+        if (templateType == "fees") {
+            payload = {
+                TempName: feesForm.tempName,
+                Remarks: feesForm.remarks,
+                CreatedByUserId: currentUserId,
+                FeesChildDtos: feesForm.feesChildForm.map(r => ({
+                    TransCode: r.transCode,
+                    TransType: r.transType,
+                    TransGroup: r.transGroup,
+                    Value: r.value,
+                }))
+            };
+            res = await dispatch(fetchInsertTableOfFeesData(payload));
+            if (res.ok) {
+                setIsLoadingModalOpen(false);
+                setIsSuccessModalOpen(true);
+                setModalBody("Done saving the table of fees.");
+                if (isSuccessModalOpen == false) {
+                    setTimeout(() => window.location.reload(), 3000);
+                }
+            }
+            else {
+                setIsLoadingModalOpen(false);
+                setIsErrorModalOpen(true);
+            }
+        }
+        else {
+            payload = {
+                TempName: bookletForm.tempName,
+                CreatedByUserId: currentUserId,
+                OrSeriesBodyDtos: bookletForm.orNumberList.map(r => ({
+                    StartNo: r.startNo,
+                    EndNo: r.endNo,
+                    UserId: r.userId,
+                    OrType: r.orType,
+                    Remarks: r.remarks
+                }))
+            };
+            res = await dispatch(fetchInsertOrSeriesData(payload));
+            if (res.ok) {
+                setIsLoadingModalOpen(false);
+                setIsSuccessModalOpen(true);
+                setModalBody("Done saving the or number series.");
+                if (isSuccessModalOpen == false) {
+                    setTimeout(() => window.location.reload(), 3000);
+                }
+            }
+            else {
+                setIsLoadingModalOpen(false);
+                setIsErrorModalOpen(true);
+            }
         }
     };
 
@@ -287,7 +312,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
                 <div className="flex items-center gap-2">
                     <OutlineBlueBtn
                         label="Add new"
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={openModal}
                     >
                         <Plus size={16} className="mr-1" />
                     </OutlineBlueBtn>
@@ -319,7 +344,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
             {/* modal */}
             <ModalComponent
                 isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                onClose={closeModal}
                 title="Add New Template"
                 body={
                     <div className="max-h-[70vh] overflow-y-auto p-2 space-y-4">
@@ -342,10 +367,169 @@ const TemplateDataTable = ({ selectedStatus }) => {
                             </select>
                         </div>
 
-                        {/* ✅ Booklet Template */}
+                        {/* Table of Fees Template */}
+                        {templateType === "fees" && (
+                            <div>
+                                <div className="flex gap-4 mb-4">
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-gray-700">Name of Template</label>
+                                        <input
+                                            type="text"
+                                            value={feesForm.tempName}
+                                            placeholder="Enter name of template"
+                                            onChange={(e) => setFeesFormField("tempName", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
+                                                }`}
+                                        />
+                                        {errors.description && (
+                                            <p className="text-red-500 text-sm">{errors.tempName}</p>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-gray-700">Remarks</label>
+                                        <input
+                                            type="text"
+                                            value={feesForm.remarks}
+                                            placeholder="Enter remarks"
+                                            onChange={(e) => setFeesFormField("remarks", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.remarks ? "border-red-500" : ""
+                                                }`}
+                                        />
+                                        {errors.description && (
+                                            <p className="text-red-500 text-sm">{errors.remarks}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+
+                                {feesForm.feesChildForm.map((row, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
+                                    >
+                                        {/* Start No */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Transaction Code
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.transCode ?? ""}
+                                                placeholder="Enter transaction code"
+                                                onChange={(e) => updateFeesFormRow(index, "transCode", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`transCode-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`transCode-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`transCode-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* End No */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Transaction Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.transType ?? ""}
+                                                placeholder="Enter transaction name"
+                                                onChange={(e) => updateFeesFormRow(index, "transType", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`transType-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`transType-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`transType-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* ✅ User Dropdown */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Transaction Group
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.transGroup ?? ""}
+                                                placeholder="Enter transaction group"
+                                                onChange={(e) => updateFeesFormRow(index, "transGroup", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`transGroup-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`transGroup-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`transGroup-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* OR Type */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Price/Value
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={row.value ?? ""}
+                                                placeholder="Enter value"
+                                                onChange={(e) => updateFeesFormRow(index, "value", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`value-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`value-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`value-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Delete Button */}
+                                        <div className="flex justify-center items-center">
+                                            {feesForm.feesChildForm.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteFeesFormRow(index)}
+                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                {/* Add Row */}
+                                <button
+                                    type="button"
+                                    onClick={addFeesFormRow}
+                                    className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
+                                >
+                                    + Add Row
+                                </button>
+                            </div>
+                        )}
                         {templateType === "booklet" && (
                             <div>
-                                {bookletForm.map((row, index) => (
+                                <div className="flex-1">
+                                    <label className="block text-sm font-medium text-gray-700">Name of Template</label>
+                                    <input
+                                        type="text"
+                                        value={bookletForm.tempName}
+                                        placeholder="Enter name of template"
+                                        onChange={(e) => setBookletFormField("tempName", e.target.value)}
+                                        className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
+                                            }`}
+                                    />
+                                    {errors.description && (
+                                        <p className="text-red-500 text-sm">{errors.tempName}</p>
+                                    )}
+                                </div>
+
+                                {bookletForm.orNumberList.map((row, index) => (
                                     <div
                                         key={index}
                                         className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
@@ -357,23 +541,15 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={row.startNo}
-                                                onChange={(e) =>
-                                                    handleBookletFormChange(
-                                                        index,
-                                                        "startNo",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full rounded-lg border p-2"
+                                                value={row.startNo ?? ""}
+                                                placeholder="Enter start number of OR"
+                                                onChange={(e) => updateBookletFormRow(index, "startNo", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`startNo-${index}`] ? "border-red-500" : ""
+                                                    }`}
                                             />
                                             {errors[`startNo-${index}`] && (
                                                 <p className="text-red-500 text-sm">
-                                                    {
-                                                        errors[
-                                                        `startNo-${index}`
-                                                        ]
-                                                    }
+                                                    {errors[`startNo-${index}`]}
                                                 </p>
                                             )}
                                         </div>
@@ -385,15 +561,11 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={row.endNo}
-                                                onChange={(e) =>
-                                                    handleBookletFormChange(
-                                                        index,
-                                                        "endNo",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full rounded-lg border p-2"
+                                                value={row.endNo ?? ""}
+                                                placeholder="Enter end number of OR"
+                                                onChange={(e) => updateBookletFormRow(index, "endNo", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`endNo-${index}`] ? "border-red-500" : ""
+                                                    }`}
                                             />
                                             {errors[`endNo-${index}`] && (
                                                 <p className="text-red-500 text-sm">
@@ -408,15 +580,10 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                                 User
                                             </label>
                                             <select
-                                                value={row.userId}
-                                                onChange={(e) =>
-                                                    handleBookletFormChange(
-                                                        index,
-                                                        "userId",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="w-full rounded-lg border p-2"
+                                                value={row.userId ?? ""}
+                                                onChange={(e) => updateBookletFormRow(index, "userId", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`userId-${index}`] ? "border-red-500" : ""
+                                                    }`}
                                             >
                                                 <option value="">
                                                     -- Select User --
@@ -446,11 +613,10 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                                 OR Type
                                             </label>
                                             <select
-                                                value={row.orType}
-                                                onChange={(e) =>
-                                                    handleBookletFormChange(index, "orType", e.target.value)
-                                                }
-                                                className="w-full rounded-lg border p-2"
+                                                value={row.orType ?? ""}
+                                                onChange={(e) => updateBookletFormRow(index, "orType", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`orType-${index}`] ? "border-red-500" : ""
+                                                    }`}
                                             >
                                                 <option value="">-- Select OR Type --</option>
                                                 <option value="For Enrollment Purpose">For Enrollment Purpose</option>
@@ -470,37 +636,19 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                             </label>
                                             <input
                                                 type="text"
-                                                value={row.remarks}
-                                                onChange={(e) =>
-                                                    handleBookletFormChange(
-                                                        index,
-                                                        "remarks",
-                                                        e.target.value
-                                                    )
-                                                }
+                                                value={row.remarks ?? ""}
+                                                placeholder="Enter remarks"
+                                                onChange={(e) => updateBookletFormRow(index, "remarks", e.target.value)}
                                                 className="w-full rounded-lg border p-2"
                                             />
-                                            {errors[`remarks-${index}`] && (
-                                                <p className="text-red-500 text-sm">
-                                                    {
-                                                        errors[
-                                                        `remarks-${index}`
-                                                        ]
-                                                    }
-                                                </p>
-                                            )}
                                         </div>
 
                                         {/* Delete Button */}
                                         <div className="flex justify-center items-center">
-                                            {bookletForm.length > 1 && (
+                                            {bookletForm.orNumberList.length > 1 && (
                                                 <button
                                                     type="button"
-                                                    onClick={() =>
-                                                        handleRemoveBookletRow(
-                                                            index
-                                                        )
-                                                    }
+                                                    onClick={() => deleteBookletFormRow(index)}
                                                     className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
                                                 >
                                                     <Trash2 size={18} />
@@ -513,7 +661,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 {/* Add Row */}
                                 <button
                                     type="button"
-                                    onClick={handleAddBookletRow}
+                                    onClick={addBookletFormRow}
                                     className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
                                 >
                                     + Add Row
@@ -528,11 +676,55 @@ const TemplateDataTable = ({ selectedStatus }) => {
                     {
                         label: "Submit",
                         type: "green",
-                        onClick: handleSubmit,
-                        closeOnClick: false,
+                        onClick: openSubmitModal,
+                        // closeOnClick: false,
                     },
                     { label: "No", type: "red", closeOnClick: true },
                 ]}
+            />
+            <ModalComponent
+                isOpen={isSubmitModalOpen}
+                onClose={() => setIsSubmitModalOpen(false)}
+                title={<span className="font-bold text-lg text-red-700">Warning</span>}
+                body="Are you sure you want to submit?"
+                buttons={[
+                    { label: "Yes", type: "green", onClick: handleSubmit },
+                    { label: "No", type: "red" },
+                ]}
+            />
+            <ModalComponent
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body={modalBody}
+                buttons={[
+                    { label: "OK", type: "green", onClick: () => setIsSuccessModalOpen(false) }
+                ]}
+            />
+            <ModalComponent
+                isOpen={isErrorModalOpen}
+                onClose={() => setIsErrorModalOpen(false)}
+                title={<span className="font-bold text-lg text-red-700">Error</span>}
+                body={"Something went wrong. Please try again."}
+                buttons={[
+                    { label: "Close", type: "red", onClick: () => setIsErrorModalOpen(false) }
+                ]}
+            />
+            <ModalComponent
+                isOpen={isLoadingModalOpen}
+                onClose={() => { }} // prevent closing while loading
+                title={<span className="font-bold text-lg text-blue-700">Processing</span>}
+                body={
+                    <div className="flex flex-col items-center justify-center gap-3">
+                        <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                        </svg>
+                        <span className="text-gray-600">Saving the template.</span>
+                        <span className="text-gray-600">Please wait don't close this window.</span>
+                    </div>
+                }
+                buttons={[]}
             />
         </div>
     );

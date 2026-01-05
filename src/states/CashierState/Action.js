@@ -1,25 +1,25 @@
 import {
-    FETCH_STUDENTAPPFORM_REQUEST, FETCH_STUDENTAPPFORM_SUCCESS, FETCH_STUDENTAPPFORM_FAILURE,
+    FETCH_TRANSACTION_TYPE_REQUEST, FETCH_TRANSACTION_TYPE_SUCCESS, FETCH_TRANSACTION_TYPE_FAILURE,
+    FETCH_STUDENT_APPLICATION_REQUEST, FETCH_STUDENT_APPLICATION_SUCCESS, FETCH_STUDENT_APPLICATION_FAILURE,
     FETCH_ORNUMBER_REQUEST, FETCH_ORNUMBER_SUCCESS, FETCH_ORNUMBER_FAILURE,
     FETCH_PRINTTESTPERMIT_REQUEST, FETCH_PRINTTESTPERMIT_SUCCESS, FETCH_PRINTTESTPERMIT_FAILURE,
-    FETCH_INSERTSUBMITTEST_REQUEST, FETCH_INSERTSUBMITTEST_SUCCESS, FETCH_INSERTSUBMITTEST_FAILURE,
+    // FETCH_INSERTSUBMITTEST_REQUEST, FETCH_INSERTSUBMITTEST_SUCCESS, FETCH_INSERTSUBMITTEST_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
+export const fetchTransactionTypeRequest = () => ({ type: FETCH_TRANSACTION_TYPE_REQUEST });
+export const fetchTransactionTypeSuccess = (data) => ({ type: FETCH_TRANSACTION_TYPE_SUCCESS, payload: data });
+export const fetchTransactionTypeFailure = (error) => ({ type: FETCH_TRANSACTION_TYPE_FAILURE, payload: error });
 
-//get the app form
-export const fetchStudentAppFormRequest = () => ({ type: FETCH_STUDENTAPPFORM_REQUEST });
-export const fetchStudentAppFormSuccess = (data) => ({ type: FETCH_STUDENTAPPFORM_SUCCESS, payload: data });
-export const fetchStudentAppFormFailure = (error) => ({ type: FETCH_STUDENTAPPFORM_FAILURE, payload: error });
-
-export const fetchStudentAppFormData = (appId) => async (dispatch) => {
-    dispatch(fetchStudentAppFormRequest());
+export const fetchTransactionTypeData = () => async (dispatch) => {
+    dispatch(fetchTransactionTypeRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cashier/get-student-app?appId=${appId}`;
-         const response = await fetch(url, {
+        const url = `${baseUrl}/cashier/get-transaction-type`;
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -28,14 +28,45 @@ export const fetchStudentAppFormData = (appId) => async (dispatch) => {
         });
 
         const res = await response.json();
-        dispatch(fetchStudentAppFormSuccess(res));
+        dispatch(fetchTransactionTypeSuccess(res));
         return { ok: true, data: res.data };
     }
-    catch(error) {
-        dispatch(fetchStudentAppFormFailure(error.message));
+    catch(error){
+        dispatch(fetchTransactionTypeFailure(error.message));
         return { ok: false, error };
     }
 };
+
+
+export const fetchStudentAppRequest = () => ({ type: FETCH_STUDENT_APPLICATION_REQUEST });
+export const fetchStudentAppSuccess = (data) => ({ type: FETCH_STUDENT_APPLICATION_SUCCESS, payload: data });
+export const fetchStudentAppFailure = (error) => ({ type: FETCH_STUDENT_APPLICATION_FAILURE, payload: error });
+
+export const fetchStudentAppData = () => async (dispatch) => {
+    dispatch(fetchStudentAppRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cashier/get-student-application`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchStudentAppSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchStudentAppFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
 
 export const fetchOrNumberRequest = () => ({ type: FETCH_ORNUMBER_REQUEST });
 export const fetchOrNumberSuccess = (data) => ({ type: FETCH_ORNUMBER_SUCCESS, payload: data });
@@ -94,33 +125,33 @@ export const fetchPrintTestPermitData = (formData) => async (dispatch) => {
     }
 };
 
-export const fetchInsertSubmitTestRequest = () => ({ type: FETCH_INSERTSUBMITTEST_REQUEST });
-export const fetchInsertSubmitTestSuccess = (data) => ({ type: FETCH_INSERTSUBMITTEST_SUCCESS, payload: data });
-export const fetchInsertSubmitTestFailure = (error) => ({ type: FETCH_INSERTSUBMITTEST_FAILURE, payload: error });
+// export const fetchInsertSubmitTestRequest = () => ({ type: FETCH_INSERTSUBMITTEST_REQUEST });
+// export const fetchInsertSubmitTestSuccess = (data) => ({ type: FETCH_INSERTSUBMITTEST_SUCCESS, payload: data });
+// export const fetchInsertSubmitTestFailure = (error) => ({ type: FETCH_INSERTSUBMITTEST_FAILURE, payload: error });
 
-export const fetchInsertSubmitTestData = (formData) => async (dispatch) => {
-    dispatch(fetchInsertSubmitTestRequest());
+// export const fetchInsertSubmitTestData = (formData) => async (dispatch) => {
+//     dispatch(fetchInsertSubmitTestRequest());
 
-    try{
-        const token = getToken();
-        const url = `${baseUrl}/cashier/insert-test-payment`;
+//     try{
+//         const token = getToken();
+//         const url = `${baseUrl}/cashier/insert-test-payment`;
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify(formData)
-        });
+//         const response = await fetch(url, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`,
+//             },
+//             body: JSON.stringify(formData)
+//         });
 
-        const res = await response.json();
-        dispatch(fetchInsertSubmitSuccess(res));
-        return { ok: true, data: res.data };
-    }
-    catch(error){
-        dispatch(fetchInsertSubmitTestFailure(error.message));
-        return { ok: false, error };
-    }
+//         const res = await response.json();
+//         dispatch(fetchInsertSubmitSuccess(res));
+//         return { ok: true, data: res.data };
+//     }
+//     catch(error){
+//         dispatch(fetchInsertSubmitTestFailure(error.message));
+//         return { ok: false, error };
+//     }
 
-};
+// };

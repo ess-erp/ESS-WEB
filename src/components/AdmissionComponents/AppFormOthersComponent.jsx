@@ -156,13 +156,12 @@ const AppFormOthersComponent = ({ studentId }) => {
                 break;
             case "Academic Waiver":
                 dispatch(fetchAcademicWaiverData(studentId));
+                setOtherId(row.OthersTableId ?? 0);
                 setIsOpenAcademicWaiver(true);
                 break;
         }
 
     };
-
-
 
 
     const [resendCooldown, setResendCooldown] = useState(false);
@@ -310,6 +309,10 @@ const AppFormOthersComponent = ({ studentId }) => {
         }
     };
 
+    const handleSendLetter = async () => {
+
+    };
+
     return (
         <div className="p-4">
             <h2 className="text-xl font-bold mb-4 text-green-700">Others</h2>
@@ -396,7 +399,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             if (permitData?.PdfBase64) {
                                 const link = document.createElement("a");
                                 link.href = `data:application/pdf;base64,${permitData.PdfBase64}`;
-                                link.download = "TestPermit.pdf";
+                                link.download = `${permitData.Fname} ${permitData.Mname ?? ""} ${permitData.Lname}-Test Permit.pdf`;
                                 link.click();
                             }
                         },
@@ -484,7 +487,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             if (admissionTestResultData?.PdfBase64) {
                                 const link = document.createElement("a");
                                 link.href = `data:application/pdf;base64,${admissionTestResultData.PdfBase64}`;
-                                link.download = "TestPermit.pdf";
+                                link.download = `${admissionTestResultData.Fname} ${admissionTestResultData.Mname ?? ""} ${admissionTestResultData.Lname}-Admission Test Result.pdf`;
                                 link.click();
                             }
                         },
@@ -504,24 +507,38 @@ const AppFormOthersComponent = ({ studentId }) => {
                 title="Letter"
                 body={
                     <div className="max-h-[80vh] w-full p-6 flex gap-6">
-                        <div className="w-1/3 flex flex-col gap-2">
+                         <div className="w-1/3 flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-600">Information</label>
-                            {/* {letterLoading ? (
+                            {generatedLetterLoading ? (
                                 <span className="text-gray-400 text-sm">Loading...</span>
-                            ) : admissionTestResultData ? (
+                            ) : generatedLetterData ? (
                                 <div className="flex flex-col gap-2 text-sm text-gray-500">
                                     <span>
-                                        For Recommendation In:
-                                        <span className="font-semibold text-gray-700"> {admissionTestResultData.InterviewRemarks}</span>
+                                        Father's Email:{" "}
+                                        <span className="font-semibold text-gray-700"> {generatedLetterData.FathersEmail}</span>
                                     </span>
                                     <span>
-                                        Final Remarks:
-                                        <span className="font-semibold text-gray-700"> {admissionTestResultData.FinalRemark == 1 && (<>Qualified</>)}</span>
+                                        Mother's Email:{""}
+                                        <span className="font-semibold text-gray-700"> {generatedLetterData.MothersEmail}</span>
+                                    </span>
+                                    <span>
+                                        Last sent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            {generatedLetterData.DateCreated
+                                                ? new Date(generatedLetterData.DateCreated).toLocaleDateString()
+                                                : "—"}
+                                        </span>
+                                    </span>
+                                    <span>
+                                        Send this letter to parent:{" "}
+                                        <span className="font-semibold text-gray-700">
+                                            <BlueBtn label="Send" onClick={handleSendLetter} />
+                                        </span>
                                     </span>
                                 </div>
                             ) : (
                                 <span className="text-gray-400 text-sm">No data found</span>
-                            )}  */}
+                            )}
                         </div>
 
                         <div className="w-2/3 flex flex-col gap-2">
@@ -557,7 +574,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             if (generatedLetterData?.PdfBase64) {
                                 const link = document.createElement("a");
                                 link.href = `data:application/pdf;base64,${generatedLetterData.PdfBase64}`;
-                                link.download = "Letter.pdf";
+                                link.download = `${generatedLetterData.Fname} ${generatedLetterData.Mname ?? ""} ${generatedLetterData.Lname} - Letter.pdf`;
                                 link.click();
                             }
                         },
@@ -783,7 +800,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             if (religionWaverData?.PdfBase64) {
                                 const link = document.createElement("a");
                                 link.href = `data:application/pdf;base64,${religionWaverData.PdfBase64}`;
-                                link.download = "TestPermit.pdf";
+                                link.download = `${religionWaverData.Fname} ${religionWaverData.Mname ?? ""} ${religionWaverData.Lname}-Religion Waiver.pdf`;
                                 link.click();
                             }
                         },
@@ -898,7 +915,7 @@ const AppFormOthersComponent = ({ studentId }) => {
                             if (academicWaiverData?.PdfBase64) {
                                 const link = document.createElement("a");
                                 link.href = `data:application/pdf;base64,${academicWaiverData.PdfBase64}`;
-                                link.download = "TestPermit.pdf";
+                                link.download = `${academicWaiverData.Fname} ${academicWaiverData.Mname ?? ""} ${academicWaiverData.Lname}-Academic Waiver.pdf`;
                                 link.click();
                             }
                         },

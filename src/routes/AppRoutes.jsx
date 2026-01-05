@@ -14,7 +14,7 @@ import CfwStudentOnlineAppForm from "../pages/CFW/StudentOnlineAppForm";
 import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
 import CfwTemplates from "../pages/CFW/Templates";
 import CashierDashboard from "../pages/Cashier/Dashboard";
-import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
+//import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
 import FinanceDashboard from "../pages/Finance/Dashboard";
 import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
@@ -31,7 +31,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["admission"]}>
+          <ProtectedRoutes allowedRoles={["1"]}>
             <AdmissionDashboard />
           </ProtectedRoutes>
         }
@@ -39,7 +39,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["admission"]}>
+          <ProtectedRoutes allowedRoles={["1"]}>
             <StudentOnlineApplication />
           </ProtectedRoutes>
         }
@@ -47,7 +47,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/studentappform"
         element={
-          <ProtectedRoutes allowedRoles={["admission"]}>
+          <ProtectedRoutes allowedRoles={["1"]}>
             <StudentOnlineAppForm />
           </ProtectedRoutes>
         }
@@ -55,7 +55,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/templatesform"
         element={
-          <ProtectedRoutes allowedRoles={["admission"]}>
+          <ProtectedRoutes allowedRoles={["1"]}>
             <AdmissionTemplatesForm />
           </ProtectedRoutes>
         }
@@ -66,7 +66,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["cfw"]}>
+          <ProtectedRoutes allowedRoles={["2"]}>
             <CfwDashboard />
           </ProtectedRoutes>
         }
@@ -74,7 +74,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["cfw"]}>
+          <ProtectedRoutes allowedRoles={["2"]}>
             <CfwStudentOnlineApplication />
           </ProtectedRoutes>
         }
@@ -82,7 +82,7 @@ const AppRoutes = () => (
        <Route
         path="/cfw/studentappform"
         element={
-          <ProtectedRoutes allowedRoles={["cfw"]}>
+          <ProtectedRoutes allowedRoles={["2"]}>
             <CfwStudentOnlineAppForm />
           </ProtectedRoutes>
         }
@@ -90,7 +90,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/examroomtemplates"
         element={
-          <ProtectedRoutes allowedRoles={["cfw"]}>
+          <ProtectedRoutes allowedRoles={["2"]}>
             <CfwExamRoomTemplate />
           </ProtectedRoutes>
         }
@@ -98,7 +98,7 @@ const AppRoutes = () => (
        <Route
         path="/cfw/templates"
         element={
-          <ProtectedRoutes allowedRoles={["cfw"]}>
+          <ProtectedRoutes allowedRoles={["2"]}>
             <CfwTemplates />
           </ProtectedRoutes>
         }
@@ -111,23 +111,23 @@ const AppRoutes = () => (
       <Route
         path="/cashier/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["cashier"]}>
+          <ProtectedRoutes allowedRoles={["3"]}>
             <CashierDashboard />
           </ProtectedRoutes>
         }
       />
-      <Route
+      {/* <Route
         path="/cashier/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["cashier"]}>
+          <ProtectedRoutes allowedRoles={["3"]}>
             <CashierStudentOnlineApplication />
           </ProtectedRoutes>
         }
-      />
+      /> */}
       <Route
         path="/cashier/cashierpayment"
         element={
-          <ProtectedRoutes allowedRoles={["cashier"]}>
+          <ProtectedRoutes allowedRoles={["3"]}>
             <CashierPayment />
           </ProtectedRoutes>
         }
@@ -141,7 +141,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["finance"]}>
+          <ProtectedRoutes allowedRoles={["4"]}>
             <FinanceDashboard />
           </ProtectedRoutes>
         }
@@ -149,7 +149,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/templates"
         element={
-          <ProtectedRoutes allowedRoles={["finance"]}>
+          <ProtectedRoutes allowedRoles={["4"]}>
             <FinanceTemplatesForm />
           </ProtectedRoutes>
         }

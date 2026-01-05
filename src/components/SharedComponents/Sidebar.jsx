@@ -40,7 +40,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
     }, []);
     const roleMenus = {
-        admission: [
+        1: [
             { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
             { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
             { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
@@ -50,7 +50,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
-        cfw: [
+        2: [
             { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
             { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
             { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
@@ -60,18 +60,18 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
-        cashier: [
+        3: [
             { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
-            { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
-            { name: "Payment Form", icon: CreditCardIcon, path: "/cashier/paymentform" },
+            // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
+            { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
-        finance: [
+        4: [
             { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
-            { name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
+            //{ name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
             { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },

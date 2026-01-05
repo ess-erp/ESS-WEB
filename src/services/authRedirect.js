@@ -11,16 +11,16 @@ export const handleAuthRedirect = (navigate) => {
     console.log("Redirect role:", role);
 
     switch (role) {
-      case "admission":
+      case "1":
         navigate("/admission/dashboard");
         break;
-      case "cfw":
+      case "2":
         navigate("/cfw/dashboard");
         break;
-      case "cashier":
+      case "3":
         navigate("/cashier/dashboard");
         break;
-      case "finance":
+      case "4":
         navigate("/finance/dashboard");
         break;
       default:
