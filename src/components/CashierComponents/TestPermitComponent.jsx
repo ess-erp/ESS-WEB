@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Printer } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import TestPermit from "./TestPermitComponent";
 import {
+    fetchInsertSubmitPaymentData,
     fetchPrintTestPermitData,
-    fetchInsertSubmitTestData,
     fetchStudentAppData,
     fetchOrNumberData,
 } from "../../states/CashierState/Action";
@@ -15,6 +14,13 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
     const dispatch = useDispatch();
     const studentAppState = useSelector((state) => state.cashier.studentAppState || {});
     const studentApp = studentAppState.data || [];
+    console.log(studentApp);
+
+    const printTestPermitState = useSelector((state) => state.cashier.printTestPermitState || {});
+    const permitData = printTestPermitState.data || [];
+    const permitLoading = printTestPermitState.loading;
+
+    console.log(permitData);
 
     useEffect(() => {
         dispatch(fetchStudentAppData());
@@ -38,7 +44,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
 
         setFiltered(result);
     }, [query, studentApp]);
-
+    const [studentId, setStudentId] = useState(0);
     const [fullName, setFullname] = useState("");
 
     const amountValue = parseFloat(amount) || 0;
@@ -58,47 +64,56 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
         dispatch(fetchOrNumberData(userId));
     }, [userId, dispatch]);
 
-
+    console.log(query);
 
     const [isOpenModal, setIsOpenModal] = useState(false);
+    const [isWarningModal, setIsWarningModal] = useState(false);
+    const [errors, setErrors] = useState("");
 
     const handlePrint = async () => {
-        if (!amount || Number(amount) <= 0) {
-            setAmountError("Please enter a valid amount greater than 0.");
-
-            setTimeout(() => {
-                setAmountError("");
-            }, 3000);
-
-            return;
+        if (!query || query.trim().length === 0) {
+            setErrors("Application number is required.");
+            return; // ⛔ stop execution
         }
-        // const payload = {
-        //     StudentId: studentData.StudentId,
-        //     // AppId: AppId,
-        //     // OrId: orNumber.OrId,
-        //     // CreatedByUserId: user.UserId,
-        //     // Amount: amount,
-        //     // OrNumberUsed: orNumber.LatestOrNo,
-        // };
+        setErrors("");
+        const payload = {
+            UserId: studentId,
+            ReferenceId: query,
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            OrChildDtos: [{
+                OrChildId: orNumberData.OrChildId,
+                OrNumberUsed: orNumberData.LastOrNoUsed,
+                Amount: amountValue.toString(),
+            }]
+        };
 
-        // console.log(payload);
-        // await dispatch(fetchPrintTestPermitData(payload));
-        // setIsOpenModal(true);
+        console.log(payload);
+        await dispatch(fetchPrintTestPermitData(payload));
+        setIsOpenModal(true);
     };
 
-    const handleSubmitOrNumber = async () => {
+    const handleSubmitOrNumber = () => {
 
-        // const payload = {
-        //     StudentId: studentData.StudentId,
-        //     AppId: AppId,
-        //     OrId: orNumber.OrId,
-        //     CreatedByUserId: user.UserId,
-        //     Amount: amount,
-        //     OrNumberUsed: orNumber.LatestOrNo,
-        // };
-        // console.log(payload);
-        // await dispatch(fetchInsertSubmitTestData(payload));
+        const payload = {
+            UserId: studentId,
+            ReferenceId: query,
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            OrChildDtos: [{
+                OrChildId: orNumberData.OrChildId,
+                OrNumberUsed: orNumberData.LatestOrAvailable,
+                Amount: amountValue.toString(),
+                FromTransaction: "Test-Permit",
+            }]
+        };
+        console.log(payload);
+        dispatch(fetchInsertSubmitPaymentData(payload));
         setIsOpenModal(true);
+        setIsWarningModal(false);
+
     };
 
 
@@ -117,20 +132,24 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     >
                         Application Number
                     </label>
-
                     <input
                         id="appNumber"
                         type="text"
                         value={query}
                         onChange={(e) => {
                             setQuery(e.target.value);
+                            setErrors("");          
                             setShow(true);
                         }}
                         onFocus={() => setShow(true)}
                         onBlur={() => setTimeout(() => setShow(false), 150)}
                         placeholder="Type application number"
-                        className="px-4 py-3.5 w-full text-sm border border-gray-300 rounded-lg outline-none"
+                        className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
+                        ${errors ? "border-red-500" : "border-gray-300"}`}
                     />
+                    {errors && (
+                        <p className="text-red-500 text-sm">{errors}</p>
+                    )}
                 </div>
 
                 {/* Suggestions */}
@@ -143,6 +162,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                                     setQuery(item.AppNumber);
                                     setShow(false);
                                     setFullname(item.Fname + " " + (item?.Mname ?? "") + " " + item.Lname);
+                                    setStudentId(item.StudentId);
                                 }}
                                 className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100"
                             >
@@ -166,7 +186,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     id="officialReceipt"
                     type="text"
                     className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
-                    value={orNumberData.LatestOrNo ?? orNumberData.StartNo}
+                    value={orNumberData.LatestOrAvailable}
                     readOnly
                 />
                 <p className="text-xs text-gray-500">
@@ -186,8 +206,6 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     type="text"
                     className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
                     readOnly
-                // value={`${studentData.Fname ?? ""} ${studentData.Mname ?? ""} ${studentData.Lname ?? ""}`.trim()}
-                // readOnly
                 />
             </div>
             <div className="flex flex-col gap-2 w-full">
@@ -203,6 +221,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     placeholder="Enter Amount."
                     className={`px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg`}
                     value={amountValue}
+                    readOnly
                 />
             </div>
             <div className="mt-8 flex gap-4">
@@ -215,7 +234,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     Print
                 </button>
             </div>
-               <ModalComponent
+            <ModalComponent
                 isOpen={isOpenModal}
                 onClose={() => setIsOpenModal(false)}
                 title="Official Receipt Preview"
@@ -226,7 +245,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                                 Preview
                             </label>
                             <div className="border rounded-lg shadow overflow-hidden flex justify-center items-center">
-                                {/* {permitLoading ? (
+                                {permitLoading ? (
                                     <div className="flex items-center justify-center h-[60vh] text-gray-400">
                                         Loading preview...
                                     </div>
@@ -240,7 +259,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                                     <div className="flex items-center justify-center h-[60vh] text-gray-400">
                                         No preview available
                                     </div>
-                                )} */}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -249,8 +268,30 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     {
                         label: "Print",
                         type: "green",
-                        onClick: () => {
+                        onClick: () => setIsWarningModal(true),
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsOpenModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
+            <ModalComponent
+                isOpen={isWarningModal}
+                onClose={() => setIsWarningModal(false)}
+                title="Warning"
+                body={"Are you sure you want to print?"}
+                buttons={[
+                    {
+                        label: "Yes",
+                        type: "green",
+                        onClick: async () => {
+
                             if (permitData?.PdfBase64) {
+                                handleSubmitOrNumber();
                                 const pdfWindow = window.open("", "_blank");
                                 if (pdfWindow) {
                                     pdfWindow.document.write(
@@ -264,7 +305,6 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                                     }, 500);
                                 }
 
-                                handleSubmitOrNumber();
                             }
                         },
                     },
@@ -274,7 +314,6 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                         onClick: () => setIsOpenModal(false),
                     },
                 ]}
-                size="w-[1000px]"
                 maxHeight="100vh"
             />
         </div>

@@ -55,14 +55,14 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
     console.log(allUserData);
 
     useEffect(() => {
-        dispatch(fetchExamSettingsCodeData());
+        dispatch(fetchExamSettingsCodeData(levelId));
         dispatch(fetchExamScheduleCreatedData(levelId));
-        dispatch(fetchAllUserByUserRoleData("cfw"));
+        dispatch(fetchAllUserByUserRoleData("2"));
     }, [dispatch, levelId]);
 
     useEffect(() => {
         dispatch(fetchExamSettingsCodeByStudentIdData(studentId));
-
+        
     }, [dispatch, studentId]);
 
     const [isEditable, setIsEditable] = useState(false);
@@ -79,7 +79,25 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [listOfSubjects, setListOfSubjects] = useState([]);
+    // const [examDate, setExamDate] = useState(null);
+    // const [startTime, setStartTime] = useState("-");
+    // const [endTime, setEndTime] = useState("-");
+    // const [numberOfSlot, setNumberOfSlot] = useState("-");
 
+
+    useEffect(() => {
+        if(examSettingsCodeByStudentIdData){
+            setListOfSubjects(examSettingsCodeByStudentIdData?.ListOfSubjectDtos || []);
+        }
+        
+        
+    }, [examSettingsCodeByStudentIdData?.ListOfSubjectDtos]);
+
+    const handleChangeListOfSubjects = (val) => {
+        console.log(val);
+        setListOfSubjects(val.ExamSettingsCodeChildDtos);
+    };
 
 
     console.log(examCodeVal);
@@ -161,7 +179,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                         <li>
                             <strong>Exam Settings Validation From-To: </strong>
                             {
-                                examSettingsCodeByStudentIdData
+                                examSettingsCodeByStudentIdData.length !== 0
                                     ? `${formatDate(examSettingsCodeByStudentIdData.StartDate)} - ${formatDate(examSettingsCodeByStudentIdData.EndDate)}`
                                     : `${formatDate(examSchedVal?.StartDate)} - ${formatDate(examSchedVal?.EndDate)}` || "-"
                             }
@@ -170,7 +188,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                         <li>
                             <strong>Exam Start Time: </strong>
                             {
-                                examSettingsCodeByStudentIdData
+                                examSettingsCodeByStudentIdData.length !== 0
                                     ? `${formatToAMPM(examSettingsCodeByStudentIdData.StartTime)}`
                                     : `${formatToAMPM(examSchedVal?.StartTime)}` || "-"
                             }
@@ -178,7 +196,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                         <li>
                             <strong>Exam End Time: </strong>
                             {
-                                examSettingsCodeByStudentIdData
+                                examSettingsCodeByStudentIdData.length !== 0
                                     ? `${formatToAMPM(examSettingsCodeByStudentIdData.EndTime)}`
                                     : `${formatToAMPM(examSchedVal?.EndTime)}` || "-"
                             }
@@ -186,7 +204,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                         <li>
                             <strong>Number of slot: </strong>
                             {
-                                examSettingsCodeByStudentIdData
+                                examSettingsCodeByStudentIdData.length !== 0
                                     ? examSettingsCodeByStudentIdData.NoOfSlot
                                     : examSchedVal?.NoOfSlot || "-"
                             }
@@ -196,19 +214,20 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                     <h4 className="text-md font-bold text-black-700 mb-3">
                         List of Subjects Offered
                     </h4>
-                    {
+                    <ul className="mt-3 space-y-2 text-gray-700 text-sm">
+                        {listOfSubjects.map(child => (
+                            <li key={child.GenSubChildId} className="mb-2">
+                                <strong>Subject: </strong>
+                                {child.SubjectCode || "-"} - {child.SubjectName || "-"} <br />
+                                <strong>Number of Item: </strong>
+                                {child.NumberOfItems || "-"}
+                            </li>
+                        ))}
+                    </ul>
+                    {/* {
                         examSettingsCodeByStudentIdData ? (
-                            <ul className="mt-3 space-y-2 text-gray-700 text-sm">
-                                {examSettingsCodeByStudentIdData.ListOfSubjectDtos?.map(child => (
-                                    <li key={child.GenSubChildId} className="mb-2">
-                                        <strong>Subject: </strong>
-                                        {child.SubjectCode || "-"} - {child.SubjectName || "-"} <br />
-                                        <strong>Number of Item: </strong>
-                                        {child.NumberOfItems || "-"}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : examCodeVal?.ExamSettingsCodeChildDtos?.length > 0 ? (
+                           
+                        ) : examCodeVal?.ExamSettingsCodeChildDtos?.length != 0 ? (
                             <ul className="mt-3 space-y-2 text-gray-700 text-sm">
                                 {examCodeVal.ExamSettingsCodeChildDtos.map(child => (
                                     <li key={child.GenSubChildId} className="mb-2">
@@ -224,7 +243,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                                 No subjects found for this exam.
                             </div>
                         )
-                    }
+                    } */}
                 </div>
 
                 {/* Right side - Form */}
@@ -235,7 +254,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Examination Code
                             </label>
-                            <Listbox value={examCodeVal} onChange={setExamCodeVal} disabled={!isEditable}>
+                            <Listbox value={examCodeVal} onChange={(val) => { setExamCodeVal(val); handleChangeListOfSubjects(val);}} disabled={!isEditable}>
                                 <div className="relative">
                                     <Listbox.Button className="w-full border rounded-md px-3 py-2 text-left bg-white shadow-xs disabled:bg-gray-100">
                                         {examCodeVal

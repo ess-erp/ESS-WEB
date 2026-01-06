@@ -419,11 +419,11 @@ export const fetchExamSettingsCodeRequest = () => ({ type: FETCH_EXAMSETTINGSCOD
 export const fetchExamSettingsCodeSuccess = (data) => ({ type: FETCH_EXAMSETTINGSCODE_SUCCESS, payload: data });
 export const fetchExamSettingsCodeFailure = (error) => ({ type: FETCH_EXAMSETTINGSCODE_FAILURE, payload: error });
 
-export const fetchExamSettingsCodeData = () => async (dispatch) => {
+export const fetchExamSettingsCodeData = (levelId) => async (dispatch) => {
     dispatch(fetchExamSettingsCodeRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cfw/get-exam-settings-code`;
+        const url = `${baseUrl}/cfw/get-exam-settings-code?levelId=${levelId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {

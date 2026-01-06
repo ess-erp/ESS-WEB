@@ -3,7 +3,7 @@ import {
     FETCH_STUDENT_APPLICATION_REQUEST, FETCH_STUDENT_APPLICATION_SUCCESS, FETCH_STUDENT_APPLICATION_FAILURE,
     FETCH_ORNUMBER_REQUEST, FETCH_ORNUMBER_SUCCESS, FETCH_ORNUMBER_FAILURE,
     FETCH_PRINTTESTPERMIT_REQUEST, FETCH_PRINTTESTPERMIT_SUCCESS, FETCH_PRINTTESTPERMIT_FAILURE,
-    // FETCH_INSERTSUBMITTEST_REQUEST, FETCH_INSERTSUBMITTEST_SUCCESS, FETCH_INSERTSUBMITTEST_FAILURE,
+    FETCH_INSERT_SUBMIT_PAYMENT_REQUEST, FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, FETCH_INSERT_SUBMIT_PAYMENT_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -125,33 +125,33 @@ export const fetchPrintTestPermitData = (formData) => async (dispatch) => {
     }
 };
 
-// export const fetchInsertSubmitTestRequest = () => ({ type: FETCH_INSERTSUBMITTEST_REQUEST });
-// export const fetchInsertSubmitTestSuccess = (data) => ({ type: FETCH_INSERTSUBMITTEST_SUCCESS, payload: data });
-// export const fetchInsertSubmitTestFailure = (error) => ({ type: FETCH_INSERTSUBMITTEST_FAILURE, payload: error });
+export const fetchInsertSubmitPaymentRequest = () => ({ type: FETCH_INSERT_SUBMIT_PAYMENT_REQUEST });
+export const fetchInsertSubmitPaymentSuccess = (data) => ({ type: FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, payload: data });
+export const fetchInsertSubmitPaymentFailure = (error) => ({ type: FETCH_INSERT_SUBMIT_PAYMENT_FAILURE, payload: error });
 
-// export const fetchInsertSubmitTestData = (formData) => async (dispatch) => {
-//     dispatch(fetchInsertSubmitTestRequest());
+export const fetchInsertSubmitPaymentData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertSubmitPaymentRequest());
 
-//     try{
-//         const token = getToken();
-//         const url = `${baseUrl}/cashier/insert-test-payment`;
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/cashier/insert-payment`;
 
-//         const response = await fetch(url, {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`,
-//             },
-//             body: JSON.stringify(formData)
-//         });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData)
+        });
 
-//         const res = await response.json();
-//         dispatch(fetchInsertSubmitSuccess(res));
-//         return { ok: true, data: res.data };
-//     }
-//     catch(error){
-//         dispatch(fetchInsertSubmitTestFailure(error.message));
-//         return { ok: false, error };
-//     }
+        const res = await response.json();
+        dispatch(fetchInsertSubmitPaymentSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchInsertSubmitPaymentFailure(error.message));
+        return { ok: false, error };
+    }
 
-// };
+};

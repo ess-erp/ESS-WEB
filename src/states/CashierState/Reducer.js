@@ -3,7 +3,7 @@ import {
     FETCH_STUDENT_APPLICATION_REQUEST, FETCH_STUDENT_APPLICATION_SUCCESS, FETCH_STUDENT_APPLICATION_FAILURE,
     FETCH_ORNUMBER_REQUEST, FETCH_ORNUMBER_SUCCESS, FETCH_ORNUMBER_FAILURE,
     FETCH_PRINTTESTPERMIT_REQUEST, FETCH_PRINTTESTPERMIT_SUCCESS, FETCH_PRINTTESTPERMIT_FAILURE,
-    // FETCH_INSERTSUBMITTEST_REQUEST, FETCH_INSERTSUBMITTEST_SUCCESS, FETCH_INSERTSUBMITTEST_FAILURE,
+    FETCH_INSERT_SUBMIT_PAYMENT_REQUEST, FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, FETCH_INSERT_SUBMIT_PAYMENT_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -18,7 +18,7 @@ const initialGeneralState = {
     studentAppState: { ...initialState },
     orNumberState: { ...initialState },
     printTestPermitState: { ...initialState },
-    insertSubmitTestState: { ...initialState },
+    insertSubmitPaymentState: { ...initialState },
 }
 
 const cashierReducer = (state = initialGeneralState, action) => {
@@ -55,12 +55,12 @@ const cashierReducer = (state = initialGeneralState, action) => {
             return { ...state, printTestPermitState: { loading: false, data: [], error: action.payload } };
 
         //print test permit
-        // case FETCH_INSERTSUBMITTEST_REQUEST:
-        //     return { ...state, insertSubmitTestState: { loading: true, data: [], error: '' } };
-        // case FETCH_INSERTSUBMITTEST_SUCCESS:
-        //     return { ...state, insertSubmitTestState: { loading: false, data: action.payload, error: '' } };
-        // case FETCH_INSERTSUBMITTEST_FAILURE:
-        //     return { ...state, insertSubmitTestState: { loading: false, data: [], error: action.payload } };
+        case FETCH_INSERT_SUBMIT_PAYMENT_REQUEST:
+            return { ...state, insertSubmitPaymentState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS:
+            return { ...state, insertSubmitPaymentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SUBMIT_PAYMENT_FAILURE:
+            return { ...state, insertSubmitPaymentState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

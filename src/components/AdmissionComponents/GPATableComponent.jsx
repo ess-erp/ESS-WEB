@@ -23,7 +23,11 @@ const GPATableComponent = ({divId, studentId }) => {
     const [page, setPage] = useState(1); const [pageSize, setPageSize] = useState(10);
     const [editedGrades, setEditedGrades] = useState({});
     const [editingRowId, setEditingRowId] = useState(null);
+    // const [isKeyField, setIsKeyField] = useState(0);
 
+    // if(table.length != 0 ){
+    //     setIsKeyField(table.TempId);
+    // }
 
     const fetchTemplates = async (divId, studentId, page = 1, pageSize = 10, search = "") => {
         setLoadingTable(true);

@@ -4,6 +4,7 @@ import TestPermitComponent from "./TestPermitComponent";
 import {
     fetchTransactionTypeData,
 } from "../../states/CashierState/Action";
+import EnrollmentComponent from "./EnrollmentComponent";
 
 const PaymentComponent = () => {
     const dispatch = useDispatch();
@@ -90,6 +91,11 @@ const PaymentComponent = () => {
 
                                         <>
                                             <TestPermitComponent userId={userId} amount={amountValue} onAmountChange={setAmountValue} onTotalChange={setTotal} />
+                                        </>
+                                    )}
+                                    {transDropdown == 2 && (
+                                        <>
+                                            <EnrollmentComponent userId={userId} amount={amountValue} onAmountChange={setAmountValue} onTotalChange={setTotal}/>
                                         </>
                                     )}
 
