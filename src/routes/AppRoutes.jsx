@@ -18,6 +18,9 @@ import CashierDashboard from "../pages/Cashier/Dashboard";
 import CashierPayment from "../pages/Cashier/CashierPayment";
 import FinanceDashboard from "../pages/Finance/Dashboard";
 import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
+import SruDashboard from "../pages/SRU/Dashboard";
+import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
+import StudentMasterFile from "../pages/SRU/StudentMasterFile";
 
 const AppRoutes = () => (
   <Router>
@@ -79,7 +82,7 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-       <Route
+      <Route
         path="/cfw/studentappform"
         element={
           <ProtectedRoutes allowedRoles={["2"]}>
@@ -95,7 +98,7 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-       <Route
+      <Route
         path="/cfw/templates"
         element={
           <ProtectedRoutes allowedRoles={["2"]}>
@@ -155,6 +158,33 @@ const AppRoutes = () => (
         }
       />
       {/* End of finance module */}
+
+      {/* SRU Modules */}
+      <Route
+        path="/sru/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["7"]}>
+            <SruDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sru/studentlist"
+        element={
+          <ProtectedRoutes allowedRoles={["7"]}>
+            <SruOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sru/StudentMasterFile"
+        element={
+          <ProtectedRoutes allowedRoles={["7"]}>
+            <StudentMasterFile />
+          </ProtectedRoutes>
+        }
+      />
+      {/* End of Sru modules */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

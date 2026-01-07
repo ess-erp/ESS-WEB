@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus  } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
@@ -73,6 +73,19 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
             //{ name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
             { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
+        7: [
+            { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
+            { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
+            { name: "Create a Section", icon: FilePlus, path: "/sru/templatesform" },
+            { name: "Add Student House", icon: BookPlus, path: "/sru/addhouse" },
+            { name: "Add No. Of School Days", icon: CalendarPlus, path: "/sru/addhouse" },
+            { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },

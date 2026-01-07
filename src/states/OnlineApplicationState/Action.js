@@ -32,7 +32,7 @@ export const fetchCampusData = () => (async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchCampusSuccess(res));
         return { ok: true, data: res }
     }
@@ -59,7 +59,7 @@ export const fetchDivisionData = () => async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchDivisionSuccess(res));
         return { ok: true, data: res }
     } catch (error) {
@@ -85,7 +85,7 @@ export const fetchLevelData = (DivId = '') => async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchLevelSuccess(res));
         return { ok: true, data: res }
     } catch (error) {
@@ -111,7 +111,7 @@ export const fetchStrandData = (LevelId = '') => async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchStrandSuccess(res));
         return { ok: true, data: res };
     } catch (error) {
@@ -202,8 +202,12 @@ export const fetchProvinceData = () => async (dispatch) => {
         const response = await fetch('/assets/PhAddress/province.json');
 
         const res = await response.json();
-        dispatch(fetchProvinceSuccess(res));
-        return { ok: true, data: res };
+
+        const sorted = res.sort((a, b) =>
+            a.province_name.localeCompare(b.province_name)
+        );
+        dispatch(fetchProvinceSuccess(sorted));
+        return { ok: true, data: sorted };
     } catch (error) {
         dispatch(fetchProvinceFailure(error.message));
         return { ok: false, error };
@@ -220,7 +224,6 @@ export const fetchCityData = (ProvinceCode = '') => async (dispatch) => {
     dispatch(fetchCityRequest());
     try {
 
-        console.log(ProvinceCode);
         const response = await fetch('/assets/PhAddress/city.json');
 
         const res = await response.json();
@@ -229,8 +232,12 @@ export const fetchCityData = (ProvinceCode = '') => async (dispatch) => {
             ? res.filter(city => city.province_code === ProvinceCode)
             : res;
 
-        dispatch(fetchCitySuccess(filtered));
-        return { ok: true, data: filtered };
+        const sorted = filtered.sort((a, b) =>
+            a.city_name.localeCompare(b.city_name)
+        );
+
+        dispatch(fetchCitySuccess(sorted));
+        return { ok: true, data: sorted };
     } catch (error) {
         dispatch(fetchCityFailure(error.message));
         return { ok: false, error };
@@ -247,7 +254,6 @@ export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
     dispatch(fetchBarangayRequest());
     try {
 
-        console.log(CityCode);
         const response = await fetch('/assets/PhAddress/barangay.json');
 
         const res = await response.json();
@@ -256,8 +262,12 @@ export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
             ? res.filter(city => city.city_code === CityCode)
             : res;
 
-        dispatch(fetchBarangaySuccess(filtered));
-        return { ok: true, data: filtered };
+        const sorted = filtered.sort((a, b) =>
+            a.brgy_name.localeCompare(b.brgy_name)
+        );
+
+        dispatch(fetchBarangaySuccess(sorted));
+        return { ok: true, data: sorted };
     } catch (error) {
         dispatch(fetchBarangayFailure(error.message));
         return { ok: false, error };
@@ -317,7 +327,7 @@ export const fetchOldStudentData = () => async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchOldStudentSuccess(res));
         return { ok: true, data: res };
     }
@@ -332,7 +342,7 @@ export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST 
 export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCCESS, payload: data });
 export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
 
-export const fetchStudentByIdData = (StudentId="") => async (dispatch) => {
+export const fetchStudentByIdData = (StudentId = "") => async (dispatch) => {
     dispatch(fetchStudentByIdRequest());
     try {
         const url = `${baseUrl}/auth/get-student-id?StudentId=${StudentId}`;
@@ -342,7 +352,7 @@ export const fetchStudentByIdData = (StudentId="") => async (dispatch) => {
         });
 
         const res = await response.json();
-        console.log(res);
+
         dispatch(fetchStudentByIdSuccess(res));
         return { ok: true, data: res };
     }
