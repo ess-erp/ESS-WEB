@@ -68,11 +68,11 @@ export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST 
 export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCCESS, payload: data });
 export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
 
-export const fetchStudentByIdData = (AppId = "") => async (dispatch) => {
+export const fetchStudentByIdData = (appId) => async (dispatch) => {
     dispatch(fetchStudentByIdRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-student-appid?AppId=${AppId}`;
+        const url = `${baseUrl}/admission/get-student-appid?AppId=${appId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -90,6 +90,37 @@ export const fetchStudentByIdData = (AppId = "") => async (dispatch) => {
         dispatch(fetchStudentByIdFailure(error.message));
         return { ok: false, error };
     }
+};
+
+//update student information form
+export const fetchUpdateStudentInfoRequest = () => ({ type: FETCH_UPDATE_STUDENT_INFO_REQUEST });
+export const fetchUpdateStudentInfoSuccess = (data) => ({ type: FETCH_UPDATE_STUDENT_INFO_SUCCESS, payload: data });
+export const fetchUpdateStudentInfoFailure = (error) => ({ type: FETCH_UPDATE_STUDENT_INFO_FAILURE, payload: error });
+
+export const fetchUpdateStudentInfoData = (formData) => async (dispatch) => {
+    dispatch(fetchStudentInfoRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/update-student-data`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchUpdateStudentInfoSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchUpdateStudentInfoFailure(error.message));
+        return { ok: false, error };
+    };
 };
 
 //Insert new templates form

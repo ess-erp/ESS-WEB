@@ -1,6 +1,7 @@
 import {
     FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_STUDENT_INFO_REQUEST, FETCH_STUDENT_INFO_SUCCESS, FETCH_STUDENT_INFO_FAILURE,
+    FETCH_UPDATE_STUDENT_INFO_REQUEST, FETCH_UPDATE_STUDENT_INFO_SUCCESS, FETCH_UPDATE_STUDENT_INFO_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -13,6 +14,7 @@ const initialState = {
 const initialGeneralState = {
     tableState: { ...initialState },
     studentDataState: { ...initialState },
+    updateStudentDataState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -32,6 +34,12 @@ const sruReducer = (state = initialGeneralState, action) => {
         case FETCH_STUDENT_INFO_FAILURE:
             return { ...state, studentDataState: { loading: false, data: [], error: action.payload } };
 
+        case FETCH_UPDATE_STUDENT_INFO_REQUEST:
+            return { ...state, updateStudentDataState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATE_STUDENT_INFO_SUCCESS:
+            return { ...state, updateStudentDataState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATE_STUDENT_INFO_FAILURE:
+            return { ...state, updateStudentDataState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

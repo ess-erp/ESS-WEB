@@ -3,3 +3,8 @@ export const getFormatDate = (date) => {
     const d = new Date(date);
     return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
 };
+
+export const getDateInputValue = (dateTime) => {
+    if (!dateTime) return "";
+    return dateTime.split("T")[0];
+};

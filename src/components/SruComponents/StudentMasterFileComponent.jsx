@@ -2,13 +2,21 @@
 import { useEffect, useState } from "react";
 // import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
+import OutlineGreenBtn from "../ButtonsComponents/OutlineGreenBtn";
+import { motion, AnimatePresence } from "framer-motion";
 import StudentInfoComponent from "./StudentInfoComponent";
+
 const StudentMasterFileComponent = () => {
 
     const { search } = useLocation();
     const query = new URLSearchParams(search);
     const studentId = query.get("StudentId");
     const [isEditing, setIsEditing] = useState(false);
+    const [active, setActive] = useState("one");
+    const user = useState(() => {
+        const savedUser = localStorage.getItem("userData");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
     return (
         <div>
             <div className="flex items-center mt-2">
@@ -38,7 +46,86 @@ const StudentMasterFileComponent = () => {
                     </span>
                 </label>
             </div>
-            <StudentInfoComponent studentId={studentId} isEditing={isEditing} />
+            <StudentInfoComponent studentId={studentId} isEditing={isEditing} userId={user[0].UserId} />
+            <div className="flex items-center pt-4">
+                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
+                    Other Information
+                </h2>
+                <div className="flex-grow">
+                    <hr className="border-t border-gray-400" />
+                </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-6 pt-4">
+                <OutlineGreenBtn label="Enrollment History" onClick={() => setActive("one")} />
+                <OutlineGreenBtn label="House" onClick={() => setActive("two")} />
+                <OutlineGreenBtn label="Others" onClick={() => setActive("four")} />
+            </div>
+            <div className="relative min-h-[150px]"> {/* min-h ensures smooth height */}
+                <AnimatePresence mode="wait">
+                    {active === "one" && (
+                        <motion.div
+                            key="one"
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -50, opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            {/* <ListOfDocsTableComponent studentId={formData.StudentId} /> */}
+
+                        </motion.div>
+                    )}
+
+                    {/* {active === "two" && (
+                        <motion.div
+                            key="two"
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -50, opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            <GPATableComponent divId={formData.DivId} studentId={formData.StudentId} />
+                        </motion.div>
+                    )}
+
+                    {active === "three" && (
+                        <motion.div
+                            key="three"
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -50, opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            <ExamSchedulerComponent studentId={formData.StudentId} levelId={formData.LevelId} />
+                        </motion.div>
+                    )}
+
+                    {active === "four" && (
+                        <motion.div
+                            key="four"
+                            initial={{ x: 50, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: -50, opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            <AppFormOthersComponent studentId={formData.StudentId} />
+                        </motion.div>
+                    )} */}
+                </AnimatePresence>
+                {/* <ModalComponent
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    title={<span className="font-bold text-lg text-red-700">Warning</span>}
+                    body="Are you sure you want to submit?"
+                    buttons={[
+                        { label: "Yes", type: "green", onClick: handleSubmit },
+                        { label: "No", type: "red" },
+                    ]}
+                /> */}
+            </div>
         </div>
     );
 };

@@ -10,10 +10,11 @@ const RHFListbox = ({
     labelKey,
     isEditing,
     displayValue = "—",
+    divClassName = "p-2",
 }) => {
 
     return (
-        <div className="p-2">
+        <div className={divClassName}>
             <label className="block mb-2 text-sm font-medium text-gray-900">
                 <strong>{label}</strong>
             </label>

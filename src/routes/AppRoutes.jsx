@@ -21,6 +21,8 @@ import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
 import SruDashboard from "../pages/SRU/Dashboard";
 import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
 import StudentMasterFile from "../pages/SRU/StudentMasterFile";
+import CreateSection from "../pages/SRU/CreateSection";
+
 
 const AppRoutes = () => (
   <Router>
@@ -181,6 +183,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={["7"]}>
             <StudentMasterFile />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sru/CreateSection"
+        element={
+          <ProtectedRoutes allowedRoles={["7"]}>
+            <CreateSection />
           </ProtectedRoutes>
         }
       />

@@ -82,9 +82,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         7: [
             { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
             { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
-            { name: "Create a Section", icon: FilePlus, path: "/sru/templatesform" },
-            { name: "Add Student House", icon: BookPlus, path: "/sru/addhouse" },
-            { name: "Add No. Of School Days", icon: CalendarPlus, path: "/sru/addhouse" },
+            { name: "Section Entry", icon: FilePlus, path: "/sru/CreateSection" },
+            { name: "Grade Report Entry", icon: BookPlus, path: "/sru/templatesform" },
+            // { name: "Add Student House", icon: BookPlus, path: "/sru/addhouse" },
+            { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
             { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },

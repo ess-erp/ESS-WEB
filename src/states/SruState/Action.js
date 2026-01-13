@@ -1,7 +1,7 @@
 import {
     FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_STUDENT_INFO_REQUEST, FETCH_STUDENT_INFO_SUCCESS, FETCH_STUDENT_INFO_FAILURE,
-
+    FETCH_UPDATE_STUDENT_INFO_REQUEST, FETCH_UPDATE_STUDENT_INFO_SUCCESS, FETCH_UPDATE_STUDENT_INFO_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -62,6 +62,36 @@ export const fetchStudentInfoData = (studentId) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchStudentInfoFailure(error));
+        return { ok: false, error };
+    };
+};
+
+export const fetchUpdateStudentInfoRequest = () => ({ type: FETCH_UPDATE_STUDENT_INFO_REQUEST });
+export const fetchUpdateStudentInfoSuccess = (data) => ({ type: FETCH_UPDATE_STUDENT_INFO_SUCCESS, payload: data });
+export const fetchUpdateStudentInfoFailure = (error) => ({ type: FETCH_UPDATE_STUDENT_INFO_FAILURE, payload: error });
+
+export const fetchUpdateStudentInfoData = (formData) => async (dispatch) => {
+    dispatch(fetchStudentInfoRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/update-student-data`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchUpdateStudentInfoSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchUpdateStudentInfoFailure(error.message));
         return { ok: false, error };
     };
 };
