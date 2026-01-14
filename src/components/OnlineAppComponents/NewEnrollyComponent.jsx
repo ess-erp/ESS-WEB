@@ -56,13 +56,12 @@ const NewEnrollyComponent = () => {
             Email: "",
             DateOfBirth: "",
             Gender: "",
-            CampusId: 0,
-            DivId: 0,
-            LevelId: 0,
-            StrandId: 0,
-            NationalityId: 0,
-            ReligionId: 0,
-            ReligionName: "",
+            Campus: null,
+            Division: null,
+            Level: null,
+            Strand: null,
+            Nationality: null,
+            Religion: null,
             FathersFname: "",
             FathersMname: "",
             FathersLname: "",
@@ -78,6 +77,7 @@ const NewEnrollyComponent = () => {
             MothersMobileNo: "",
             ContactPerson: "",
             ContactEmail: "",
+            ContactMobileNo: "",
             VerificationEmailCode: "",
             Relationship: "",
             ProvinceCode: "",
@@ -306,9 +306,9 @@ const NewEnrollyComponent = () => {
                                         transition={{ duration: 0.4 }}
                                     >
                                         <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                            <InputField name="Fname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" />
+                                            <InputField name="Fname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" required errors={errors.Fname} errorMessage={errors.Fname?.message}/>
                                             <InputField name="Mname" label="Middle Name" register={register} isEditing={true} placeholder="Please input middle name...." divClassName="" />
-                                            <InputField name="Lname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" />
+                                            <InputField name="Lname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" required errors={errors.Lname} errorMessage={errors.Lname?.message}/>
                                             <RadioGroupField
                                                 name="Gender"
                                                 label="Gender"
@@ -320,6 +320,7 @@ const NewEnrollyComponent = () => {
                                                     { label: "Female", value: "female" },
                                                 ]}
                                                 divClassName=""
+                                                error={errors.Gender}
                                             />
                                             <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={true} divClassName="" type="date" />
                                         </div>
@@ -337,15 +338,15 @@ const NewEnrollyComponent = () => {
                                         transition={{ duration: 0.4 }}
                                     >
                                         <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                            <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={false} divClassName="" />
-                                            <RHFListbox name="Division" control={control} list={divisionList} label="Division" labelKey="DivName" isEditing={false} divClassName="" />
-                                            <RHFListbox name="Level" control={control} list={levelList} label="Level" labelKey="LevelName" isEditing={false} divClassName="" />
+                                            <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={false} divClassName="" required error={errors.Campus}/>
+                                            <RHFListbox name="Division" control={control} list={divisionList} label="Division" labelKey="DivName" isEditing={false} divClassName="" required error={errors.Division}/>
+                                            <RHFListbox name="Level" control={control} list={levelList} label="Level" labelKey="LevelName" isEditing={false} divClassName="" required error={errors.Level}/>
 
                                             {level?.LevelId === 15 && (
-                                                <RHFListbox name="Strand" control={control} list={strandList} label="Strand" labelKey="StrandName" isEditing={false} divClassName="" />
+                                                <RHFListbox name="Strand" control={control} list={strandList} label="Strand" labelKey="StrandName" isEditing={false} divClassName="" required error={errors.Strand} />
                                             )}
-                                            <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={false} divClassName="" />
-                                            <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={false} divClassName="" />
+                                            <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={false} divClassName="" required error={errors.Religion}/>
+                                            <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={false} divClassName="" required error={errors.Nationality}/>
                                         </div>
                                         <RedBtn label="← Back" onClick={handleBack} />
                                         <GreenBtn label="Next →" onClick={handleNext} />
@@ -384,11 +385,11 @@ const NewEnrollyComponent = () => {
                                         transition={{ duration: 0.4 }}
                                     >
                                         <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                            <InputField name="MothersFname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" />
+                                            <InputField name="MothersFname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" required errors={errors.MothersFname} errorMessage={errors.MothersFname?.message}/>
                                             <InputField name="MothersMname" label="Middle Name" register={register} isEditing={true} placeholder="Please input middle name...." divClassName="" />
-                                            <InputField name="MothersLname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" />
-                                            <InputField name="MothersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" />
-                                            <InputField name="MothersMobilePhoneNo" label="Mobile Phone No." register={register} isEditing={true} placeholder="Please input mobile phone...." divClassName="" />
+                                            <InputField name="MothersLname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" required errors={errors.MothersLname} errorMessage={errors.MothersLname?.message}/>
+                                            <InputField name="MothersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.MothersEmail} errorMessage={errors.MothersEmail?.message}/>
+                                            <InputField name="MothersMobilePhoneNo" label="Mobile Phone No." register={register} isEditing={true} placeholder="Please input mobile phone...." divClassName="" required errors={errors.MothersMobilePhoneNo} errorMessage={errors.MothersMobilePhoneNo?.message}/>
                                             <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input occupation...." divClassName="" />
                                         </div>
                                         <RedBtn label="← Back" onClick={handleBack} />
@@ -406,11 +407,10 @@ const NewEnrollyComponent = () => {
                                         transition={{ duration: 0.4 }}
                                     >
                                         <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                            <InputField name="ContactPerson" label="Fullname" register={register} isEditing={true} placeholder="Please input fullname...." divClassName="" />
-                                            <InputField name="ContactEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName=""/>
+                                            <InputField name="ContactPerson" label="Fullname" register={register} isEditing={true} placeholder="Please input fullname...." divClassName="" required errors={errors.ContactPerson} errorMessage={errors.ContactPerson?.message}  />
+                                            <InputField name="ContactEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.ContactEmail} errorMessage={errors.ContactEmail?.message}/>
                                             <InputField name="OtpCode" label="Email Verification Code" register={register} isEditing={true} placeholder="Please input otp code...." divClassName="relative" addButton={true} handleClick={handleSendVerificationCode} />
-                                            <InputField name="ContactMobilePhoneNo" label="Mobile Phone No." register={register} isEditing={true} placeholder="Please input mobile phone...." divClassName="" />
-                                            <InputField name="Relationship" label="Relationship" register={register} isEditing={true} placeholder="Please input relationship...." divClassName="" />
+                                           
                                         </div>
                                         <RedBtn label="← Back" onClick={handleBack} />
                                         <GreenBtn label="Next →" onClick={handleNext} />

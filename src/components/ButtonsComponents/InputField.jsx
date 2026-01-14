@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import BlueBtn from "./BlueBtn";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 
@@ -19,14 +20,30 @@ const InputField = ({
     errorMessage = "",
 }) => {
 
+    const [showError, setShowError] = useState(false);
+
+    useEffect(() => {
+        if (errors && errorMessage) {
+            setShowError(true);
+
+            const timer = setTimeout(() => {
+                setShowError(false);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [errors, errorMessage]);
     return (
+
 
         <div className={divClassName}>
             <label className="block mb-2 text-sm font-medium text-gray-900">
                 <strong>{label} {required && (<span className='text-red-500'>*</span>)}</strong>
             </label>
-            {errors && (
-                <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
+            {showError && (
+                <p className="text-red-500 text-sm mt-1">
+                    {errorMessage}
+                </p>
             )}
             <input
                 type={type}

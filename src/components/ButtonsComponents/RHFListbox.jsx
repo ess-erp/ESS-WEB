@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Controller } from "react-hook-form";
 import { Listbox } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/24/solid";
@@ -11,13 +12,32 @@ const RHFListbox = ({
     isEditing,
     displayValue = "—",
     divClassName = "p-2",
+    required = false,
+    error = false,
 }) => {
+    const [showError, setShowError] = useState(false);
 
+    useEffect(() => {
+        if (error) {
+            setShowError(true);
+
+            const timer = setTimeout(() => {
+                setShowError(false);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
     return (
         <div className={divClassName}>
             <label className="block mb-2 text-sm font-medium text-gray-900">
-                <strong>{label}</strong>
+                <strong>{label} {required && <span className="text-red-500"> *</span>}</strong>
             </label>
+            {showError && (
+                <p className="text-red-500 text-sm mb-2">
+                    {error.message}
+                </p>
+            )}
             {isEditing ? (
                 <input
                     type="text"
@@ -29,6 +49,9 @@ const RHFListbox = ({
                 <Controller
                     name={name}
                     control={control}
+                    rules={{
+                        required: required ? `${label} is required` : false,
+                    }}
                     render={({ field }) => (
                         <Listbox value={field.value} onChange={field.onChange}>
                             <div className="relative mt-1">

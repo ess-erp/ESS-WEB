@@ -6,7 +6,7 @@ import admissionReducer from './AdmissionState/Reducer';
 import cfwReducer from './CfwState/Reducer';
 import cashierReducer from './CashierState/Reducer';
 import financeReducer from './FinanceState/Reducer';
-import sruReducer from './SruState/Reducer';
+import studentRecordReducer from './SruState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -15,7 +15,7 @@ const rootReducer = combineReducers({
   cfw: cfwReducer,
   cashier: cashierReducer,
   finance: financeReducer,
-  sru: sruReducer
+  studentRecord: studentRecordReducer
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
