@@ -4,8 +4,9 @@ import Login from "../pages/Auth/Login";
 import AccessDenied from "../components/SharedComponents/AccessDenied";
 import AdmissionDashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
-import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
+import ReturneeFormComponent from "../components/OnlineAppComponents/ReturneeFormComponent";
 import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
+import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
 import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
 import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
 import CfwDashboard from "../pages/CFW/Dashboard";
@@ -29,6 +30,7 @@ const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/onlineapplication" element={<OnlineApplication />} />
+      <Route path="/returneeform" element={<ReturneeFormComponent />} />
       <Route path="/congratulationletter" element={<CongratsComponent />} />
       <Route path="/accessdenied" element={<AccessDenied />} />
 

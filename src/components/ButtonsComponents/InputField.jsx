@@ -13,11 +13,17 @@ const InputField = ({
     divClassName = "p-2",
     addButton = false,
     handleClick,
-    disabled = 0,
-    isOtpValid = false,
     required = false,
     errors = false,
     errorMessage = "",
+    isValidEmail,
+    isOtpValid = false,
+    isOtp = false,
+    onChange,
+    isMessage = false,
+    successMessage = "",
+    disabled = 0,
+    color = "",
 }) => {
 
     const [showError, setShowError] = useState(false);
@@ -48,7 +54,26 @@ const InputField = ({
             <input
                 type={type}
                 // {...register(name)}
-                {...register(name, { required: required ? `${label} is required` : false })}
+                // {...register(name, { required: required ? `${label} is required` : false })}
+                {...register(name, {
+                    required: required ? `${label} is required` : false,
+                    validate: (value) => {
+                        if (
+                            value &&
+                            (type === "email" || name.toLowerCase().includes("email"))
+                        ) {
+                            return isValidEmail(value) || "Invalid email format";
+                        }
+                        return true;
+                    },
+                })}
+                onChange={(e) => {
+                    register(name).onChange(e);
+
+                    if (isOtp && onChange) {
+                        onChange(e);
+                    }
+                }}
                 placeholder={placeholder}
                 value={!isEditing ? displayValue : undefined}
                 readOnly={!isEditing}
@@ -59,7 +84,11 @@ const InputField = ({
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
             />
-
+            {isMessage && (
+                <p className={`text-${color}-500 text-sm mt-1`}>
+                    {successMessage}
+                </p>
+            )}
             {addButton && (
                 <>
                     {isOtpValid && (
@@ -69,12 +98,14 @@ const InputField = ({
                     {isOtpValid === false && (
                         <XCircleIcon className="absolute right-3 top-[36px] h-5 w-5 text-red-500" />
                     )}
-                    <BlueBtn
-                        className="pt-1"
-                        label={disabled > 0 ? `Resend OTP in ${disabled}s` : "Send OTP"}
-                        onClick={handleClick}
-                        disabled={disabled > 0}
-                    />
+                    <div className="pt-2">
+                        <BlueBtn
+                            className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg ${disabled ? "bg-gray-400 hover:bg-gray-400" : ""}`}
+                            label={disabled > 0 ? `Resend OTP in ${disabled}s` : "Send OTP"}
+                            onClick={handleClick}
+                            disabled={disabled > 0}
+                        />
+                    </div>
                 </>
 
             )}

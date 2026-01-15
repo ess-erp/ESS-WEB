@@ -172,13 +172,14 @@ export const fetchOtpCodeRequest = () => ({ type: FETCH_OTPCODE_REQUEST });
 export const fetchOtpCodeSuccess = (data) => ({ type: FETCH_OTPCODE_SUCCESS, payload: data });
 export const fetchOtpCodeFailure = (error) => ({ type: FETCH_OTPCODE_FAILURE, payload: error });
 
-export const fetchOtpCodeData = (Email = "") => async (dispatch) => {
+export const fetchOtpCodeData = (formData) => async (dispatch) => {
     dispatch(fetchOtpCodeRequest());
     try {
-        const url = `${baseUrl}/auth/email-verification?Email=${Email}`
+        const url = `${baseUrl}/auth/email-verification`
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
         });
         const res = await response.json();
 
@@ -342,10 +343,10 @@ export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST 
 export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCCESS, payload: data });
 export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
 
-export const fetchStudentByIdData = (StudentId = "") => async (dispatch) => {
+export const fetchStudentByIdData = (studentId) => async (dispatch) => {
     dispatch(fetchStudentByIdRequest());
     try {
-        const url = `${baseUrl}/auth/get-student-id?StudentId=${StudentId}`;
+        const url = `${baseUrl}/auth/get-student-id?StudentId=${studentId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }

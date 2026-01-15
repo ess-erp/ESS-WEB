@@ -93,7 +93,20 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
         await dispatch(fetchPrintTestPermitData(payload));
         setIsOpenModal(true);
     };
-
+    const [amountToPay, setAmountToPay] = useState("");
+    const [amountError, setAmountError] = useState("");
+    const [isAmount, setIsAmount] = useState(false);
+    const handleChangeAmountToPay = (value) => {
+        if (value === "") {
+            setIsAmount(true);
+            setAmountError("Please enter amount before you proceed.");
+            setAmountToPay("");
+        } else {
+            setIsAmount(false);
+            setAmountError("");
+            setAmountToPay(value);
+        }
+    };
     const handleSubmitOrNumber = () => {
 
         const payload = {
@@ -138,7 +151,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                         value={query}
                         onChange={(e) => {
                             setQuery(e.target.value);
-                            setErrors("");          
+                            setErrors("");
                             setShow(true);
                         }}
                         onFocus={() => setShow(true)}
@@ -213,7 +226,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     htmlFor="amount"
                     className="text-sm font-medium text-gray-700"
                 >
-                    Amount
+                    Total Amount
                 </label>
                 <input
                     id="amount"
@@ -223,6 +236,33 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     value={amountValue}
                     readOnly
                 />
+            </div>
+            <div className="flex flex-col gap-2 w-full">
+                <label
+                    htmlFor="amount"
+                    className="text-sm font-medium text-gray-700"
+                >
+
+                    Amount
+                </label>
+                <input
+                    id="amount"
+                    type="number"
+                    placeholder="Enter Amount."
+                    className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
+                        ${isAmount ? "border-red-500" : "border-gray-300"}`}
+                    value={amountToPay}
+                    onChange={(e) => handleChangeAmountToPay(e.target.value)}
+                    onBlur={() => {
+                        if (!amountToPay) {
+                            setIsAmount(true);
+                            setAmountError("Please enter amount before you proceed.");
+                        }
+                    }}
+                />
+                {isAmount && (
+                    <p className="text-red-500 text-sm mt-1">{amountError}</p>
+                )}
             </div>
             <div className="mt-8 flex gap-4">
                 <button

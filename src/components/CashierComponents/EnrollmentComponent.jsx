@@ -213,7 +213,7 @@ const EnrollmentComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     htmlFor="amount"
                     className="text-sm font-medium text-gray-700"
                 >
-                    Amount
+                    Amount to pay
                 </label>
                 <input
                     id="amount"

@@ -1,32 +1,46 @@
-const BlueBtn = ({ label, onClick, type = "button" }) => {
+const BlueBtn = ({
+    className = null,
+    label,
+    onClick,
+    type = "button",
+    disabled = false,
+}) => {
+    const useInlineStyle = !className;
+
     const styles = {
-        // width: "100%",
         padding: "10px 20px",
-        backgroundColor: "#2563eb", // blue-600 equivalent
+        backgroundColor: "#2563eb",
         color: "#fff",
         fontWeight: "500",
         borderRadius: "8px",
         border: "none",
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
         boxShadow: "0 2px 6px rgba(0, 0, 0, 0.1)",
         transition: "background-color 0.2s ease",
-        margin: "2px"
-    };
-
-    const hoverStyles = {
-        backgroundColor: "#1d4ed8", // blue-700 equivalent
+        margin: "2px",
+        opacity: disabled ? 0.6 : 1,
     };
 
     return (
         <button
             type={type}
-            onClick={onClick}
-            style={styles}
-            onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = hoverStyles.backgroundColor)
+            disabled={disabled}
+            onClick={!disabled ? onClick : undefined}
+            className={
+                className
+                    ? `${className} ${disabled ? "opacity-60 cursor-not-allowed" : ""}`
+                    : undefined
             }
-            onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = styles.backgroundColor)
+            style={useInlineStyle ? styles : undefined}
+            onMouseOver={
+                useInlineStyle && !disabled
+                    ? (e) => (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                    : undefined
+            }
+            onMouseOut={
+                useInlineStyle && !disabled
+                    ? (e) => (e.currentTarget.style.backgroundColor = "#2563eb")
+                    : undefined
             }
         >
             {label}

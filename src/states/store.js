@@ -15,7 +15,7 @@ const rootReducer = combineReducers({
   cfw: cfwReducer,
   cashier: cashierReducer,
   finance: financeReducer,
-  studentRecord: studentRecordReducer
+  sru: studentRecordReducer
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
