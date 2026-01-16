@@ -226,7 +226,7 @@ const TestPermitComponent = ({ userId, amount, onAmountChange, onTotalChange }) 
                     htmlFor="amount"
                     className="text-sm font-medium text-gray-700"
                 >
-                    Total Amount
+                    Price
                 </label>
                 <input
                     id="amount"

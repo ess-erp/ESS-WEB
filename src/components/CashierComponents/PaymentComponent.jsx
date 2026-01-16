@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import TestPermitComponent from "./TestPermitComponent";
+// import TestPermitComponent from "./TestPermitComponent";
+import { Printer } from "lucide-react";
+import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchTransactionTypeData,
+    fetchStudentAppData,
+    fetchOrNumberData,
 } from "../../states/CashierState/Action";
-import EnrollmentComponent from "./EnrollmentComponent";
+import SearchBoxAppNo from "../ButtonsComponents/SearchBoxAppNo";
+// import EnrollmentComponent from "./EnrollmentComponent";
 
 const PaymentComponent = () => {
     const dispatch = useDispatch();
@@ -14,30 +19,40 @@ const PaymentComponent = () => {
     });
     const userId = user.UserId;
 
-    const [transList, setTransList] = useState([]);
+
 
     const transactionTypeState = useSelector((state) => state.cashier.transactionTypeState || {});
     const transData = transactionTypeState.data || [];
+    const studentAppState = useSelector((state) => state.cashier.studentAppState || {});
+    const studentApp = studentAppState.data || [];
+    const orNumberState = useSelector((state) => state.cashier.orNumberState || {});
+    const orNumberData = orNumberState.data || [];
+    const printTestPermitState = useSelector((state) => state.cashier.printTestPermitState || {});
+    const permitData = printTestPermitState.data || [];
+    const permitLoading = printTestPermitState.loading;
+    const [transList, setTransList] = useState([]);
+    const [transType, setIsTransType] = useState("");
     const [amountValue, setAmountValue] = useState(0);
     const [total, setTotal] = useState(0);
+    const [studentId, setStudentId] = useState(0);
+    const [fullName, setFullname] = useState("");
+    const [transDropdown, setTransDrpopdown] = useState(0);
+
     useEffect(() => {
         setTransList(transData);
     }, [transData]);
 
-    const [transDropdown, setTransDrpopdown] = useState(0);
     const setTransType = (transId) => {
         console.log(transId);
         console.log(transData);
         switch (transId) {
             case transId:
                 setAmountValue(transData[transId - 1].Value);
+                setIsTransType(transData[transId - 1].TransType);
                 break;
         }
         setTransDrpopdown(transId);
     };
-
-    const studentAppState = useSelector((state) => state.cashier.studentAppState || {});
-    const studentApp = studentAppState.data || [];
 
     console.log(studentApp);
 
@@ -45,8 +60,85 @@ const PaymentComponent = () => {
         dispatch(fetchTransactionTypeData());
     }, [dispatch]);
 
+    console.log(permitData);
+
+    useEffect(() => {
+        dispatch(fetchStudentAppData());
+    }, [dispatch]);
 
 
+    const handleStudentSelect = (student) => {
+        console.log(student);
+    };
+
+    useEffect(() => {
+        dispatch(fetchOrNumberData(userId));
+    }, [userId, dispatch]);
+
+
+    const [isOpenModal, setIsOpenModal] = useState(false);
+    const [isWarningModal, setIsWarningModal] = useState(false);
+    const [errors, setErrors] = useState("");
+
+    const [amountToPay, setAmountToPay] = useState("");
+    const [amountError, setAmountError] = useState("");
+    const [isAmount, setIsAmount] = useState(false);
+
+    const handleChangeAmountToPay = (value) => {
+        if (value === "") {
+            setIsAmount(true);
+            setAmountError("Please enter amount before you proceed.");
+            setAmountToPay("");
+        } else {
+            setIsAmount(false);
+            setAmountError("");
+            setAmountToPay(value);
+        }
+    };
+
+
+    const handlePrint = async () => {
+
+        setErrors("");
+        const payload = {
+            UserId: studentId,
+            ReferenceId: "",
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            OrChildDtos: [{
+                OrChildId: orNumberData.OrChildId,
+                OrNumberUsed: orNumberData.LastOrNoUsed,
+                Amount: amountValue.toString(),
+            }]
+        };
+
+        console.log(payload);
+        // await dispatch(fetchPrintTestPermitData(payload));
+        setIsOpenModal(true);
+    };
+
+    const handleSubmitOrNumber = () => {
+
+        const payload = {
+            UserId: studentId,
+            ReferenceId: query,
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            OrChildDtos: [{
+                OrChildId: orNumberData.OrChildId,
+                OrNumberUsed: orNumberData.LatestOrAvailable,
+                Amount: amountValue.toString(),
+                FromTransaction: "Test-Permit",
+            }]
+        };
+        console.log(payload);
+        // dispatch(fetchInsertSubmitPaymentData(payload));
+        setIsOpenModal(true);
+        setIsWarningModal(false);
+
+    };
 
     return (
         <div className="bg-white p-4">
@@ -86,22 +178,121 @@ const PaymentComponent = () => {
                                             ))}
                                         </select>
                                     </div>
-                                    {/* App Number */}
-                                    {transDropdown == 1 && (
+                                    {transType && (
+                                        <div>
+                                            <hr className="mt-4" />
+                                            <h2 className="mt-2 my-2 font-semibold text-slate-900">
+                                                {transType}
+                                            </h2>
+                                            <div className="relative w-full">
+                                                <div className="flex flex-col gap-2 w-full">
+                                                    <label
+                                                        htmlFor="appNumber"
+                                                        className="text-sm font-medium text-gray-700"
+                                                    >
+                                                        Application Number
+                                                    </label>
+                                                    <SearchBoxAppNo
+                                                        label="Search Student"
+                                                        placeholder={"Search by application number or fullname..."}
+                                                        required
+                                                        options={studentApp}
+                                                        onSelect={handleStudentSelect}
+                                                    />
+                                                    {errors && (
+                                                        <p className="text-red-500 text-sm">{errors}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-2 w-full">
+                                                <label
+                                                    htmlFor="officialReceipt"
+                                                    className="text-sm font-medium text-gray-700"
+                                                >
+                                                    Official Receipt
+                                                </label>
+                                                <input
+                                                    id="officialReceipt"
+                                                    type="text"
+                                                    className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
+                                                    value={orNumberData.LatestOrAvailable}
+                                                    readOnly
+                                                />
+                                                <p className="text-xs text-gray-500">
+                                                    Required for payment verification
+                                                </p>
+                                            </div>
+                                            <div className="flex flex-col gap-2 w-full">
+                                                <label
+                                                    htmlFor="fullName"
+                                                    className="text-sm font-medium text-gray-700"
+                                                >
+                                                    Fullname
+                                                </label>
+                                                <input
+                                                    id="fullName"
+                                                    value={fullName || ""}
+                                                    type="text"
+                                                    className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-2 w-full">
+                                                <label
+                                                    htmlFor="amount"
+                                                    className="text-sm font-medium text-gray-700"
+                                                >
+                                                    Price
+                                                </label>
+                                                <input
+                                                    id="amount"
+                                                    type="number"
+                                                    placeholder="Enter Amount."
+                                                    className={`px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg`}
+                                                    value={amountValue}
+                                                    readOnly
+                                                />
+                                            </div>
+                                            <div className="flex flex-col gap-2 w-full">
+                                                <label
+                                                    htmlFor="amount"
+                                                    className="text-sm font-medium text-gray-700"
+                                                >
 
-                                        <>
-                                            <TestPermitComponent userId={userId} amount={amountValue} onAmountChange={setAmountValue} onTotalChange={setTotal} />
-                                        </>
+                                                    Amount
+                                                </label>
+                                                <input
+                                                    id="amount"
+                                                    type="number"
+                                                    placeholder="Enter Amount."
+                                                    className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
+                                                    ${isAmount ? "border-red-500" : "border-gray-300"}`}
+                                                    value={amountToPay}
+                                                    onChange={(e) => handleChangeAmountToPay(e.target.value)}
+                                                    onBlur={() => {
+                                                        if (!amountToPay) {
+                                                            setIsAmount(true);
+                                                            setAmountError("Please enter amount before you proceed.");
+                                                        }
+                                                    }}
+                                                />
+                                                {isAmount && (
+                                                    <p className="text-red-500 text-sm mt-1">{amountError}</p>
+                                                )}
+                                            </div>
+                                            <div className="mt-8 flex gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePrint}
+                                                    className="w-40 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 tracking-wide cursor-pointer"
+                                                >
+                                                    <Printer className="w-5 h-5" />
+                                                    Print
+                                                </button>
+                                            </div>
+                                        </div>
                                     )}
-                                    {transDropdown == 2 && (
-                                        <>
-                                            <EnrollmentComponent userId={userId} amount={amountValue} onAmountChange={setAmountValue} onTotalChange={setTotal}/>
-                                        </>
-                                    )}
-
                                 </div>
-
-
                             </div>
                         </div>
                     </div>
@@ -109,11 +300,39 @@ const PaymentComponent = () => {
                     {/* Order Summary */}
                     <div className="bg-gray-100 p-6 rounded-md">
                         <h2 className="text-2xl font-semibold text-slate-900">
+                            Cashier Daily Cash Balance
+                        </h2>
+                        <ul className="text-slate-500 font-medium mt-8 space-y-4">
+                            <li className="flex flex-wrap gap-4 text-sm">
+                                Daily Starting Balance
+                                <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{Number(amountValue).toFixed(2)}
+                                </span>
+                                Current Balance
+                                <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{Number(amountValue).toFixed(2)}
+                                </span>
+                            </li>
+                            < hr/>
+                        </ul>
+                        <h2 className="text-2xl font-semibold text-slate-900">
                             Payment Information
                         </h2>
                         <ul className="text-slate-500 font-medium mt-8 space-y-4">
                             <li className="flex flex-wrap gap-4 text-sm">
-                                Test Permit{" "}
+                                {transType}{" "}
+                                <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{Number(amountValue).toFixed(2)}
+                                </span>
+                            </li>
+                            <li className="flex flex-wrap gap-4 text-sm">
+                                Amount{" "}
+                                <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{Number(amountValue).toFixed(2)}
+                                </span>
+                            </li>
+                            <li className="flex flex-wrap gap-4 text-sm">
+                                Change{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
                                     ₱{Number(amountValue).toFixed(2)}
                                 </span>
@@ -126,7 +345,88 @@ const PaymentComponent = () => {
                     </div>
                 </div>
             </div>
+            <ModalComponent
+                isOpen={isOpenModal}
+                onClose={() => setIsOpenModal(false)}
+                title="Official Receipt Preview"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex justify-center items-center">
+                        <div className="w-3/4 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600 text-center">
+                                Preview
+                            </label>
+                            <div className="border rounded-lg shadow overflow-hidden flex justify-center items-center">
+                                {permitLoading ? (
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : permitData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${permitData.PdfBase64}`}
+                                        className="w-full h-[60vh]"
+                                        title="Test Permit Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Print",
+                        type: "green",
+                        onClick: () => setIsWarningModal(true),
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsOpenModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
+            <ModalComponent
+                isOpen={isWarningModal}
+                onClose={() => setIsWarningModal(false)}
+                title="Warning"
+                body={"Are you sure you want to print?"}
+                buttons={[
+                    {
+                        label: "Yes",
+                        type: "green",
+                        onClick: async () => {
 
+                            if (permitData?.PdfBase64) {
+                                handleSubmitOrNumber();
+                                const pdfWindow = window.open("", "_blank");
+                                if (pdfWindow) {
+                                    pdfWindow.document.write(
+                                        `<iframe width='100%' height='100%' src='data:application/pdf;base64,${permitData.PdfBase64}'></iframe>`
+                                    );
+
+                                    // Wait a bit before calling print (ensure iframe is loaded)
+                                    setTimeout(() => {
+                                        pdfWindow.focus();
+                                        pdfWindow.print();
+                                    }, 500);
+                                }
+
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsOpenModal(false),
+                    },
+                ]}
+                maxHeight="100vh"
+            />
 
         </div>
     );
