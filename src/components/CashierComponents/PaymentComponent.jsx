@@ -33,7 +33,6 @@ const PaymentComponent = () => {
     const [transList, setTransList] = useState([]);
     const [transType, setIsTransType] = useState("");
     const [amountValue, setAmountValue] = useState(0);
-    const [total, setTotal] = useState(0);
     const [studentId, setStudentId] = useState(0);
     const [fullName, setFullname] = useState("");
     const [transDropdown, setTransDrpopdown] = useState(0);
@@ -69,6 +68,7 @@ const PaymentComponent = () => {
 
     const handleStudentSelect = (student) => {
         console.log(student);
+        setFullname(student.Fname + " " + student?.Mname + " " + student.Lname);
     };
 
     useEffect(() => {
@@ -80,22 +80,47 @@ const PaymentComponent = () => {
     const [isWarningModal, setIsWarningModal] = useState(false);
     const [errors, setErrors] = useState("");
 
-    const [amountToPay, setAmountToPay] = useState("");
+    const [amountToPay, setAmountToPay] = useState(0);
     const [amountError, setAmountError] = useState("");
     const [isAmount, setIsAmount] = useState(false);
+    const [change, setChange] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
 
+    // const handleChangeAmountToPay = (value) => {
+    //     if (value === "") {
+    //         setIsAmount(true);
+    //         setAmountError("Please enter amount before you proceed.");
+    //         setAmountToPay("");
+    //     } else {
+    //         setIsAmount(false);
+    //         setAmountError("");
+    //         setAmountToPay(value);
+    //         setChange(Number(value).toFixed(2) - amountToPay);
+    //         setTotalAmount(amountToPay);
+    //     }
+    // };
     const handleChangeAmountToPay = (value) => {
         if (value === "") {
             setIsAmount(true);
             setAmountError("Please enter amount before you proceed.");
             setAmountToPay("");
-        } else {
-            setIsAmount(false);
-            setAmountError("");
-            setAmountToPay(value);
+            setChange(0);
+            setTotalAmount(0);
+            return;
         }
-    };
 
+        const cash = Number(value);
+        const price = Number(amountValue);
+
+        setIsAmount(false);
+        setAmountError("");
+        setAmountToPay(value);
+
+        const computedChange = cash - price;
+
+        setChange(Number(computedChange.toFixed(2)));
+        setTotalAmount(price);
+    };
 
     const handlePrint = async () => {
 
@@ -313,7 +338,7 @@ const PaymentComponent = () => {
                                     ₱{Number(amountValue).toFixed(2)}
                                 </span>
                             </li>
-                            < hr/>
+                            < hr />
                         </ul>
                         <h2 className="text-2xl font-semibold text-slate-900">
                             Payment Information
@@ -328,18 +353,19 @@ const PaymentComponent = () => {
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Amount{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountValue).toFixed(2)}
+                                    ₱{Number(amountToPay).toFixed(2)}
                                 </span>
                             </li>
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Change{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountValue).toFixed(2)}
+                                    ₱{Number(change).toFixed(2)}
                                 </span>
                             </li>
                             <li className="flex flex-wrap gap-4 text-[15px] font-semibold text-slate-900 border-t border-gray-300 pt-4">
+
                                 Total{" "}
-                                <span className="ml-auto">₱{Number(total).toFixed(2)}</span>
+                                <span className="ml-auto">₱{Number(totalAmount).toFixed(2)}</span>
                             </li>
                         </ul>
                     </div>
