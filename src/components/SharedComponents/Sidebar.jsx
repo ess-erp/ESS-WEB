@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus  } from "lucide-react";
+import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus, ScrollText  } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
@@ -64,6 +64,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
             // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
             { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
+            { name: "Transaction History", icon: ScrollText, path: "/cashier/cashierpayment" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },

@@ -12,7 +12,8 @@ const ModalComponent = ({
     buttons = [],
     backgroundImage,
     size,
-    maxHeight
+    maxHeight,
+    showCloseButton = true,
 }) => {
     const getButtonComponent = (type) => {
         switch (type) {
@@ -60,12 +61,15 @@ const ModalComponent = ({
                         transition={{ duration: 0.5, ease: "easeOut" }}
                     >
                         {/* Close button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                        >
-                            ✕
-                        </button>
+                        {showCloseButton && (
+                            <button
+                                onClick={onClose}
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                            >
+                                ✕
+                            </button>
+                        )}
+
 
                         <h2 className="text-xl font-bold text-center text-green-700">{title}</h2>
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />

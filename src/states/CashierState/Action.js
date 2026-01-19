@@ -4,6 +4,8 @@ import {
     FETCH_ORNUMBER_REQUEST, FETCH_ORNUMBER_SUCCESS, FETCH_ORNUMBER_FAILURE,
     FETCH_PRINTTESTPERMIT_REQUEST, FETCH_PRINTTESTPERMIT_SUCCESS, FETCH_PRINTTESTPERMIT_FAILURE,
     FETCH_INSERT_SUBMIT_PAYMENT_REQUEST, FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, FETCH_INSERT_SUBMIT_PAYMENT_FAILURE,
+    FETCH_GET_DAILY_BALANCE_REQUEST, FETCH_GET_DAILY_BALANCE_SUCCESS, FETCH_GET_DAILY_BALANCE_FAILURE,
+    FETCH_INSERT_DAILY_BALANCE_REQUEST, FETCH_INSERT_DAILY_BALANCE_SUCCESS, FETCH_INSERT_DAILY_BALANCE_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -151,6 +153,66 @@ export const fetchInsertSubmitPaymentData = (formData) => async (dispatch) => {
     }
     catch(error){
         dispatch(fetchInsertSubmitPaymentFailure(error.message));
+        return { ok: false, error };
+    }
+
+};
+
+export const fetchGetDailyBalanceRequest = () => ({ type: FETCH_GET_DAILY_BALANCE_REQUEST });
+export const fetchGetDailyBalanceSuccess = (data) => ({ type: FETCH_GET_DAILY_BALANCE_SUCCESS, payload: data });
+export const fetchGetDailyBalanceFailure = (error) => ({ type: FETCH_GET_DAILY_BALANCE_FAILURE, payload: error });
+
+export const fetchGetDailyBalanceData = (userId) => async (dispatch) => {
+    dispatch(fetchGetDailyBalanceRequest());
+
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/cashier/current-balance?userId=${userId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchGetDailyBalanceSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchGetDailyBalanceFailure(error.message));
+        return { ok: false, error };
+    }
+
+};
+
+export const fetchInsertDailyBalanceRequest = () => ({ type: FETCH_INSERT_DAILY_BALANCE_REQUEST });
+export const fetchInsertDailyBalanceSuccess = (data) => ({ type: FETCH_INSERT_DAILY_BALANCE_SUCCESS, payload: data });
+export const fetchInsertDailyBalanceFailure = (error) => ({ type: FETCH_INSERT_DAILY_BALANCE_FAILURE, payload: error });
+
+export const fetchInsertDailyBalanceData = (userId, amount) => async (dispatch) => {
+    dispatch(fetchInsertDailyBalanceRequest());
+
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/cashier/insert-current-balance?userId=${userId}&amount=${amount}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertDailyBalanceSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchInsertDailyBalanceFailure(error.message));
         return { ok: false, error };
     }
 
