@@ -6,6 +6,7 @@ import {
     FETCH_INSERT_SUBMIT_PAYMENT_REQUEST, FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, FETCH_INSERT_SUBMIT_PAYMENT_FAILURE,
     FETCH_GET_DAILY_BALANCE_REQUEST, FETCH_GET_DAILY_BALANCE_SUCCESS, FETCH_GET_DAILY_BALANCE_FAILURE,
     FETCH_INSERT_DAILY_BALANCE_REQUEST, FETCH_INSERT_DAILY_BALANCE_SUCCESS, FETCH_INSERT_DAILY_BALANCE_FAILURE,
+    FETCH_GET_REALTIME_DAILY_BALANCE_REQUEST, FETCH_GET_REALTIME_DAILY_BALANCE_SUCCESS, FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -48,7 +49,7 @@ export const fetchStudentAppData = () => async (dispatch) => {
     dispatch(fetchStudentAppRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cashier/get-student-application`;
+        const url = `${baseUrl}/cashier/get-student-dropdown`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -213,6 +214,36 @@ export const fetchInsertDailyBalanceData = (userId, amount) => async (dispatch) 
     }
     catch(error){
         dispatch(fetchInsertDailyBalanceFailure(error.message));
+        return { ok: false, error };
+    }
+
+};
+
+export const fetchGetRealtimeDailyBalanceRequest = () => ({ type: FETCH_GET_REALTIME_DAILY_BALANCE_REQUEST });
+export const fetchGetRealtimeDailyBalanceSuccess = (data) => ({ type: FETCH_GET_REALTIME_DAILY_BALANCE_SUCCESS, payload: data });
+export const fetchGetRealtimeDailyBalanceFailure = (error) => ({ type: FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE, payload: error });
+
+export const fetchGetRealtimeDailyBalanceData = (userId) => async (dispatch) => {
+    dispatch(fetchGetRealtimeDailyBalanceRequest());
+
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/cashier/get-realtime-balance?userId=${userId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchGetRealtimeDailyBalanceSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchGetRealtimeDailyBalanceFailure(error.message));
         return { ok: false, error };
     }
 

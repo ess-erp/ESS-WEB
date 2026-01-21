@@ -7,8 +7,12 @@ import {
     fetchTransactionTypeData,
     fetchStudentAppData,
     fetchOrNumberData,
+    fetchGetRealtimeDailyBalanceData,
+    fetchGetDailyBalanceData,
+    fetchPrintTestPermitData,
 } from "../../states/CashierState/Action";
 import SearchBoxAppNo from "../ButtonsComponents/SearchBoxAppNo";
+import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 // import EnrollmentComponent from "./EnrollmentComponent";
 
 const PaymentComponent = () => {
@@ -27,37 +31,48 @@ const PaymentComponent = () => {
     const studentApp = studentAppState.data || [];
     const orNumberState = useSelector((state) => state.cashier.orNumberState || {});
     const orNumberData = orNumberState.data || [];
+    const dailyBalanceState = useSelector((state) => state.cashier.dailyBalanceState || {});
+    const dailyBalance = dailyBalanceState.data || [];
+    const realtimeBalanceState = useSelector((state) => state.cashier.realtimeBalanceState || {});
+    const realtimeBalance = realtimeBalanceState.data || [];
     const printTestPermitState = useSelector((state) => state.cashier.printTestPermitState || {});
     const permitData = printTestPermitState.data || [];
     const permitLoading = printTestPermitState.loading;
     const [transList, setTransList] = useState([]);
     const [transType, setIsTransType] = useState("");
+    const [transDropdown, setTransDropdown] = useState(null);
     const [amountValue, setAmountValue] = useState(0);
     const [studentId, setStudentId] = useState(0);
     const [fullName, setFullname] = useState("");
-    const [transDropdown, setTransDrpopdown] = useState(0);
+    const [referenceNumber, setReferenceNumber] = useState("");
+    console.log(realtimeBalance);
 
+    console.log(transData);
+    console.log(transType);
     useEffect(() => {
-        setTransList(transData);
+        const mappedOptions = transData.map((item) => ({
+            value: item.FeeChildId,
+            label: item.TransType,
+            amount: item.Value,
+        }));
+
+        setTransList(mappedOptions);
     }, [transData]);
 
-    const setTransType = (transId) => {
-        console.log(transId);
-        console.log(transData);
-        switch (transId) {
-            case transId:
-                setAmountValue(transData[transId - 1].Value);
-                setIsTransType(transData[transId - 1].TransType);
-                break;
-        }
-        setTransDrpopdown(transId);
+    const setTransType = (data) => {
+        console.log(data);
+        setAmountValue(data.amount);
+        setIsTransType(data.label);
+        setTransDropdown(data);
     };
 
     console.log(studentApp);
 
     useEffect(() => {
         dispatch(fetchTransactionTypeData());
-    }, [dispatch]);
+        dispatch(fetchGetDailyBalanceData(userId));
+        dispatch(fetchGetRealtimeDailyBalanceData(userId));
+    }, [dispatch, userId]);
 
     console.log(permitData);
 
@@ -68,6 +83,14 @@ const PaymentComponent = () => {
 
     const handleStudentSelect = (student) => {
         console.log(student);
+        console.log(transType);
+        if (transType === "Enrollment Fee") {
+            setReferenceNumber(student.StudentNumber);
+        }
+        else {
+            setReferenceNumber(student.AppNumber);
+        }
+        setStudentId(student.StudentId);
         setFullname(student.Fname + " " + student?.Mname + " " + student.Lname);
     };
 
@@ -86,19 +109,6 @@ const PaymentComponent = () => {
     const [change, setChange] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
 
-    // const handleChangeAmountToPay = (value) => {
-    //     if (value === "") {
-    //         setIsAmount(true);
-    //         setAmountError("Please enter amount before you proceed.");
-    //         setAmountToPay("");
-    //     } else {
-    //         setIsAmount(false);
-    //         setAmountError("");
-    //         setAmountToPay(value);
-    //         setChange(Number(value).toFixed(2) - amountToPay);
-    //         setTotalAmount(amountToPay);
-    //     }
-    // };
     const handleChangeAmountToPay = (value) => {
         if (value === "") {
             setIsAmount(true);
@@ -124,7 +134,11 @@ const PaymentComponent = () => {
 
     const handlePrint = async () => {
 
-        setErrors("");
+        if (!isAmount) {
+            setIsAmount(true);
+            setAmountError("Please enter amount before you proceed.");
+            return;
+        }
         const payload = {
             UserId: studentId,
             ReferenceId: "",
@@ -139,7 +153,7 @@ const PaymentComponent = () => {
         };
 
         console.log(payload);
-        // await dispatch(fetchPrintTestPermitData(payload));
+        await dispatch(fetchPrintTestPermitData(payload));
         setIsOpenModal(true);
     };
 
@@ -147,21 +161,22 @@ const PaymentComponent = () => {
 
         const payload = {
             UserId: studentId,
-            ReferenceId: query,
+            ReferenceId: referenceNumber,
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
             OrChildDtos: [{
+                BalId: dailyBalance.BalId,
                 OrChildId: orNumberData.OrChildId,
                 OrNumberUsed: orNumberData.LatestOrAvailable,
                 Amount: amountValue.toString(),
-                FromTransaction: "Test-Permit",
+                FromTransaction: transType,
             }]
         };
         console.log(payload);
         // dispatch(fetchInsertSubmitPaymentData(payload));
-        setIsOpenModal(true);
-        setIsWarningModal(false);
+        // setIsOpenModal(true);
+        // setIsWarningModal(false);
 
     };
 
@@ -180,28 +195,13 @@ const PaymentComponent = () => {
                                 <div className="grid gap-4">
                                     {/* Dropdown for payment method */}
                                     <div className="flex flex-col gap-2 w-full">
-                                        <label
-                                            htmlFor="transType"
-                                            className="text-sm font-medium text-gray-700"
-                                        >
-                                            Select Transaction Type
-                                        </label>
-                                        <select
-                                            onChange={(e) => setTransType(e.target.value)}
-                                            className={`w-full rounded-lg border p-2`}
-                                        >
-                                            <option value="">
-                                                -- Select Transaction Type --
-                                            </option>
-                                            {transList.map((u) => (
-                                                <option
-                                                    key={u.FeeChildId}
-                                                    value={u.FeeChildId}
-                                                >
-                                                    {u.TransType}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <SearchableSelect
+                                            options={transList}
+                                            value={transDropdown}
+                                            onChange={(selected) => setTransType(selected)}
+                                            placeholder="-- Select Transaction Type --"
+                                            label="Select Transaction Type"
+                                        />
                                     </div>
                                     {transType && (
                                         <div>
@@ -331,11 +331,11 @@ const PaymentComponent = () => {
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Daily Starting Balance
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountValue).toFixed(2)}
+                                    ₱{Number(dailyBalance.Amount).toFixed(2)}
                                 </span>
                                 Current Balance
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountValue).toFixed(2)}
+                                    ₱{Number(realtimeBalance.Amount).toFixed(2)}
                                 </span>
                             </li>
                             < hr />

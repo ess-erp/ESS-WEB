@@ -28,13 +28,13 @@ const Dashboard = () => {
     }, [dispatch, userId]);
 
     useEffect(() => {
-        if (dailyBalanceState?.success === false) {
+        if (dailyBalance.success == false) {
             setIsModalOpen(true);
         }
         else{
             setIsModalOpen(false);
         }
-    }, [dailyBalanceState]);
+    }, [dailyBalance]);
 
 
     useEffect(() => {
