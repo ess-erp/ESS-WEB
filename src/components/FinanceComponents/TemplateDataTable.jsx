@@ -11,6 +11,9 @@ import {
     fetchInsertTableOfFeesData,
     fetchInsertOrSeriesData,
 } from "../../states/FinanceState/Action";
+import {
+    fetchLevelData,
+} from "../../states/AdmissionState/Action";
 import useTemplateStore from "../../zustands/FinanceZustands/useTemplateStore";
 
 const TemplateDataTable = ({ selectedStatus }) => {
@@ -30,9 +33,13 @@ const TemplateDataTable = ({ selectedStatus }) => {
 
     const usersState = useSelector((state) => state.finance.listOfUserState || {});
     const usersData = usersState.data || [];
+    const levelState = useSelector((state) => state.admission.levelState || {});
+    const level = levelState.data || [];
+
 
     useEffect(() => {
         dispatch(fetchListOfUserData());
+        dispatch(fetchLevelData());
     }, [dispatch]);
 
     // keep your dropdown controlled by Redux data
@@ -224,14 +231,19 @@ const TemplateDataTable = ({ selectedStatus }) => {
         setTemplateType,
         bookletForm,
         feesForm,
+        tuitionForm,
         setBookletFormField,
         setFeesFormField,
+        setTuitionFormField,
         updateBookletFormRow,
         updateFeesFormRow,
+        updateTuitionFormRow,
         addBookletFormRow,
         addFeesFormRow,
+        addTuitionFormRow,
         deleteBookletFormRow,
         deleteFeesFormRow,
+        deleteTuitionFormRow,
         setFileUpload,
         errors,
         setErrors,
@@ -517,141 +529,101 @@ const TemplateDataTable = ({ selectedStatus }) => {
                         )}
                         {templateType === "tuitionfee" && (
                             <div>
-                                <div className="flex-1">
-                                    <label className="block text-sm font-medium text-gray-700">Name of Template</label>
-                                    <input
-                                        type="text"
-                                        value={bookletForm.tempName}
-                                        placeholder="Enter name of template"
-                                        onChange={(e) => setBookletFormField("tempName", e.target.value)}
-                                        className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
-                                            }`}
-                                    />
-                                    {errors.description && (
-                                        <p className="text-red-500 text-sm">{errors.tempName}</p>
-                                    )}
+                                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Name of Template</label>
+                                        <input
+                                            type="text"
+                                            value={tuitionForm.tempName}
+                                            placeholder="Enter name of template"
+                                            onChange={(e) => setTuitionFormField("tempName", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
+                                                }`}
+                                        />
+                                        {errors.description && (
+                                            <p className="text-red-500 text-sm">{errors.tempName}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Select Plan</label>
+                                        <select
+                                            value={tuitionForm.plan ?? ""}
+                                            onChange={(e) => setTuitionFormField("plan", e.target.value)}
+                                            className={`w-full rounded-lg border p-2`}
+                                        >
+                                            <option value="">
+                                                -- Select Plan Type --
+                                            </option>
+                                            <option value="plan_a">Plan A</option>
+                                            <option value="plan_b">Plan B</option>
+                                            <option value="plan_c">Plan C</option>
+                                            <option value="plan_d">Plan D</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Level</label>
+                                        <select
+                                            value={tuitionForm.levelId ?? ""}
+                                            onChange={(e) => setTuitionFormField("levelId", e.target.value)}
+                                            className={`w-full rounded-lg border p-2`}
+                                        >
+                                            <option value="">-- Select Level --</option>
+                                            {level.map((lvl) => (
+                                                <option key={lvl.LevelId} value={lvl.LevelId}>
+                                                    {lvl.LevelName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.LevelId && (
+                                            <p className="text-red-500 text-sm">{errors.LevelId}</p>
+                                        )}
+                                    </div>
                                 </div>
 
-                                {bookletForm.orNumberList.map((row, index) => (
+
+                                {tuitionForm.tuitionChildForm.map((row, index) => (
                                     <div
                                         key={index}
-                                        className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
+                                        className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
                                     >
                                         {/* Start No */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Start no.
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={row.startNo ?? ""}
-                                                placeholder="Enter start number of OR"
-                                                onChange={(e) => updateBookletFormRow(index, "startNo", e.target.value)}
-                                                className={`w-full rounded-lg border p-2 ${errors[`startNo-${index}`] ? "border-red-500" : ""
-                                                    }`}
-                                            />
-                                            {errors[`startNo-${index}`] && (
-                                                <p className="text-red-500 text-sm">
-                                                    {errors[`startNo-${index}`]}
-                                                </p>
-                                            )}
-                                        </div>
 
-                                        {/* End No */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                End no.
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={row.endNo ?? ""}
-                                                placeholder="Enter end number of OR"
-                                                onChange={(e) => updateBookletFormRow(index, "endNo", e.target.value)}
-                                                className={`w-full rounded-lg border p-2 ${errors[`endNo-${index}`] ? "border-red-500" : ""
-                                                    }`}
-                                            />
-                                            {errors[`endNo-${index}`] && (
-                                                <p className="text-red-500 text-sm">
-                                                    {errors[`endNo-${index}`]}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* ✅ User Dropdown */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                User
-                                            </label>
-                                            <select
-                                                value={row.userId ?? ""}
-                                                onChange={(e) => updateBookletFormRow(index, "userId", e.target.value)}
-                                                className={`w-full rounded-lg border p-2 ${errors[`userId-${index}`] ? "border-red-500" : ""
-                                                    }`}
-                                            >
-                                                <option value="">
-                                                    -- Select User --
-                                                </option>
-                                                {listOfUsers.map((u) => (
-                                                    <option
-                                                        key={u.UserId}
-                                                        value={u.UserId}
-                                                    >
-                                                        {`${u.Fname || ""} ${u.Mname || ""} ${u.Lname || ""}`.replace(
-                                                            /\s+/g,
-                                                            " "
-                                                        )}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors[`userId-${index}`] && (
-                                                <p className="text-red-500 text-sm">
-                                                    {errors[`userId-${index}`]}
-                                                </p>
-                                            )}
-                                        </div>
 
                                         {/* OR Type */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
-                                                OR Type
+                                                Amount
                                             </label>
-                                            <select
-                                                value={row.orType ?? ""}
-                                                onChange={(e) => updateBookletFormRow(index, "orType", e.target.value)}
-                                                className={`w-full rounded-lg border p-2 ${errors[`orType-${index}`] ? "border-red-500" : ""
-                                                    }`}
-                                            >
-                                                <option value="">-- Select OR Type --</option>
-                                                <option value="For Enrollment Purpose">For Enrollment Purpose</option>
-                                                <option value="For Other Payment">For Other Payment</option>
-                                            </select>
-                                            {errors[`orType-${index}`] && (
-                                                <p className="text-red-500 text-sm">
-                                                    {errors[`orType-${index}`]}
-                                                </p>
-                                            )}
+                                            <input
+                                                type="number"
+                                                value={row.amount ?? ""}
+                                                placeholder="Enter Amount of Plan"
+                                                onChange={(e) => updateTuitionFormRow(index, "amount", e.target.value)}
+                                                className="w-full rounded-lg border p-2"
+                                            />
                                         </div>
 
                                         {/* Remarks */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
-                                                Remarks
+                                                Date Of Payment
                                             </label>
                                             <input
-                                                type="text"
-                                                value={row.remarks ?? ""}
+                                                type="date"
+                                                value={row.dateOfPayment ?? ""}
                                                 placeholder="Enter remarks"
-                                                onChange={(e) => updateBookletFormRow(index, "remarks", e.target.value)}
+                                                onChange={(e) => updateTuitionFormRow(index, "dateOfPayment", e.target.value)}
                                                 className="w-full rounded-lg border p-2"
                                             />
                                         </div>
 
                                         {/* Delete Button */}
                                         <div className="flex justify-center items-center">
-                                            {bookletForm.orNumberList.length > 1 && (
+                                            {tuitionForm.tuitionChildForm.length > 1 && (
                                                 <button
                                                     type="button"
-                                                    onClick={() => deleteBookletFormRow(index)}
+                                                    onClick={() => deleteTuitionFormRow(index)}
                                                     className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
                                                 >
                                                     <Trash2 size={18} />
@@ -664,14 +636,14 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 {/* Add Row */}
                                 <button
                                     type="button"
-                                    onClick={addBookletFormRow}
+                                    onClick={addTuitionFormRow}
                                     className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
                                 >
                                     + Add Row
                                 </button>
                             </div>
                         )}
-                         {templateType === "booklet" && (
+                        {templateType === "booklet" && (
                             <div>
                                 <div className="flex-1">
                                     <label className="block text-sm font-medium text-gray-700">Name of Template</label>

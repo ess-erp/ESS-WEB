@@ -18,6 +18,13 @@ const useTemplateStore = create((set) => ({
         feesChildForm: [{ transCode: "", transType: "", transGroup: "", value: "", }],
     },
 
+    tuitionForm: {
+        tempName: "",
+        plan: "",
+        levelId: "",
+        tuitionChildForm: [{ amount: "", dateOfPayment: "" }],
+    },
+
     openModal: () => set({ isModalOpen: true }),
     closeModal: () => set({ isModalOpen: false }),
 
@@ -33,6 +40,11 @@ const useTemplateStore = create((set) => ({
     setFeesFormField: (field, value) =>
         set((state) => ({
             feesForm: { ...state.feesForm, [field]: value },
+        })),
+    
+    setTuitionFormField: (field, value) =>
+        set((state) => ({
+            tuitionForm: { ...state.tuitionForm, [field]: value },
         })),
 
     updateBookletFormRow: (index, field, value) =>
@@ -54,7 +66,16 @@ const useTemplateStore = create((set) => ({
                 ),
             },
         })),
-
+    
+    updateTuitionFormRow: (index, field, value) =>
+        set((state) => ({
+            tuitionForm: {
+                ...state.tuitionForm,
+                tuitionChildForm: state.tuitionForm.tuitionChildForm.map((row, i) =>
+                    i === index ? { ...row, [field]: value } : row
+                ),
+            },
+        })),
 
     addBookletFormRow: () =>
         set((state) => ({
@@ -77,6 +98,17 @@ const useTemplateStore = create((set) => ({
                 ],
             },
         })),
+    
+    addTuitionFormRow: () => 
+        set((state) => ({
+            tuitionForm: {
+                ...state.tuitioForm,
+                tuitionChildForm: [
+                    ...state.tuitionForm.tuitionChildForm,
+                    { amount: "", dateOfPayment: "" }
+                ],
+            },
+        })),
 
     deleteBookletFormRow: (index) =>
         set((state) => ({
@@ -91,6 +123,14 @@ const useTemplateStore = create((set) => ({
             feesForm: {
                 ...state.feesForm,
                 feesChildForm: state.feesForm.feesChildForm.filter((_, i) => i !== index),
+            },
+        })),
+
+    deleteTuitionFormRow: (index) => 
+        set((state) => ({
+            tuitionForm: {
+                ...state.tuitionForm,
+                tuitionChildForm: state.tuitionForm.tuitionChildForm.filter((_, i) => i !== index),
             },
         })),
 
