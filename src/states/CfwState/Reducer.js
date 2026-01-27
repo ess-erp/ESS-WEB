@@ -1,5 +1,6 @@
 import { initial } from "lodash";
 import {
+    FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_INSERTEXAMROOM_REQUEST, FETCH_INSERTEXAMROOM_SUCCESS, FETCH_INSERTEXAMROOM_FAILURE,
     FETCH_TEMPLATETABLE_REQUEST, FETCH_TEMPLATETABLE_SUCCESS, FETCH_TEMPLATETABLE_FAILURE,
     FETCH_INSERTEXAMSCHEDULE_REQUEST, FETCH_INSERTEXAMSCHEDULE_SUCCESS, FETCH_INSERTEXAMSCHEDULE_FAILURE,
@@ -31,6 +32,7 @@ const initialState = {
 }
 
 const initialGeneralState = {
+    tableState: { ...initialState },
     insertExamRoomState: { ...initialState },
     templateTableState: { ...initialState },
     insertExamScheduleState: { ...initialState },
@@ -56,6 +58,13 @@ const initialGeneralState = {
 
 const cfwReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
+        //Get Enrollment table
+        case FETCH_ENROLLMENTTABLE_REQUEST:
+            return { ...state, tableState: { loading: true, data: [], error: '' } };
+        case FETCH_ENROLLMENTTABLE_SUCCESS:
+            return { ...state, tableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ENROLLMENTTABLE_FAILURE:
+            return { ...state, tableState: { loading: false, data: [], error: action.payload } };
 
         //insert exam room template
         case FETCH_INSERTEXAMROOM_REQUEST:

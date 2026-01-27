@@ -2,6 +2,11 @@ import {
     FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_STUDENT_INFO_REQUEST, FETCH_STUDENT_INFO_SUCCESS, FETCH_STUDENT_INFO_FAILURE,
     FETCH_UPDATE_STUDENT_INFO_REQUEST, FETCH_UPDATE_STUDENT_INFO_SUCCESS, FETCH_UPDATE_STUDENT_INFO_FAILURE,
+    FETCH_INSERT_SECTION_NAME_REQUEST, FETCH_INSERT_SECTION_NAME_SUCCESS, FETCH_INSERT_SECTION_NAME_FAILURE,
+    FETCH_GET_SECTION_NAME_REQUEST, FETCH_GET_SECTION_NAME_SUCCESS, FETCH_GET_SECTION_NAME_FAILURE,
+    FETCH_GET_ENROLLED_STUDENT_REQUEST, FETCH_GET_ENROLLED_STUDENT_SUCCESS, FETCH_GET_ENROLLED_STUDENT_FAILURE,
+    FETCH_INSERT_STUDENT_SECTION_REQUEST, FETCH_INSERT_STUDENT_SECTION_SUCCESS, FETCH_INSERT_STUDENT_SECTION_FAILURE,
+    FETCH_GET_STUDENT_SECTION_LIST_REQUEST, FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, FETCH_GET_STUDENT_SECTION_LIST_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -92,6 +97,155 @@ export const fetchUpdateStudentInfoData = (formData) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchUpdateStudentInfoFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+
+export const fetchInsertSectionNameRequest = () => ({ type: FETCH_INSERT_SECTION_NAME_REQUEST });
+export const fetchInsertSectionNameSuccess = (data) => ({ type: FETCH_INSERT_SECTION_NAME_SUCCESS, payload: data });
+export const fetchInsertSectionNameFailure = (error) => ({ type: FETCH_INSERT_SECTION_NAME_FAILURE, payload: error });
+
+export const fetchInsertSectionNameData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertSectionNameRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-section-name`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertSectionNameSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertSectionNameFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetSectionNameRequest = () => ({ type: FETCH_GET_SECTION_NAME_REQUEST });
+export const fetchGetSectionNameSuccess = (data) => ({ type: FETCH_GET_SECTION_NAME_SUCCESS, payload: data });
+export const fetchGetSectionNameFailure = (error) => ({ type: FETCH_GET_SECTION_NAME_FAILURE, payload: error });
+
+export const fetchGetSectionNameData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetSectionNameRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-section-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetSectionNameSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetSectionNameFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetEnrolledStudentRequest = () => ({ type: FETCH_GET_ENROLLED_STUDENT_REQUEST });
+export const fetchGetEnrolledStudentSuccess = (data) => ({ type: FETCH_GET_ENROLLED_STUDENT_SUCCESS, payload: data });
+export const fetchGetEnrolledStudentFailure = (error) => ({ type: FETCH_GET_ENROLLED_STUDENT_FAILURE, payload: error });
+
+export const fetchGetEnrolledStudentData = (levelId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetEnrolledStudentRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-enrolled-student-list?levelId=${levelId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetEnrolledStudentSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetEnrolledStudentFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+
+export const fetchInsertStudentSectionRequest = () => ({ type: FETCH_INSERT_STUDENT_SECTION_REQUEST });
+export const fetchInsertStudentSectionSuccess = (data) => ({ type: FETCH_INSERT_STUDENT_SECTION_SUCCESS, payload: data });
+export const fetchInsertStudentSectionFailure = (error) => ({ type: FETCH_INSERT_STUDENT_SECTION_FAILURE, payload: error });
+
+export const fetchInsertStudentSectionData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertStudentSectionRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-student-section`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertStudentSectionSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertStudentSectionFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetStudentSectionListRequest = () => ({ type: FETCH_GET_STUDENT_SECTION_LIST_REQUEST });
+export const fetchGetStudentSectionListSuccess = (data) => ({ type: FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, payload: data });
+export const fetchGetStudentSectionListFailure = (error) => ({ type: FETCH_GET_STUDENT_SECTION_LIST_FAILURE, payload: error });
+
+export const fetchGetStudentSectionListData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetStudentSectionListRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-section-student-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetStudentSectionListSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetStudentSectionListFailure(error.message));
         return { ok: false, error };
     };
 };

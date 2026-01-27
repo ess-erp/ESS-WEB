@@ -22,7 +22,26 @@ const useTemplateStore = create((set) => ({
         tempName: "",
         plan: "",
         levelId: "",
-        tuitionChildForm: [{ amount: "", dateOfPayment: "" }],
+        amountA: "",
+        dateOfPaymentA: "",
+        amountB1: "",
+        dateOfPaymentB1: "",
+        amountB2: "",
+        dateOfPaymentB2: "",
+        amountC1: "",
+        dateOfPaymentC1: "",
+        amountC2: "",
+        dateOfPaymentC2: "",
+        amountC3: "",
+        dateOfPaymentC3: "",
+        amountD1: "",
+        dateOfPaymentD1: "",
+        amountD2: "",
+        dateOfPaymentD2: "",
+        amountD3: "",
+        dateOfPaymentD3: "",
+        amountD4: "",
+        dateOfPaymentD4: "",
     },
 
     openModal: () => set({ isModalOpen: true }),
@@ -66,16 +85,7 @@ const useTemplateStore = create((set) => ({
                 ),
             },
         })),
-    
-    updateTuitionFormRow: (index, field, value) =>
-        set((state) => ({
-            tuitionForm: {
-                ...state.tuitionForm,
-                tuitionChildForm: state.tuitionForm.tuitionChildForm.map((row, i) =>
-                    i === index ? { ...row, [field]: value } : row
-                ),
-            },
-        })),
+
 
     addBookletFormRow: () =>
         set((state) => ({
@@ -98,18 +108,6 @@ const useTemplateStore = create((set) => ({
                 ],
             },
         })),
-    
-    addTuitionFormRow: () => 
-        set((state) => ({
-            tuitionForm: {
-                ...state.tuitioForm,
-                tuitionChildForm: [
-                    ...state.tuitionForm.tuitionChildForm,
-                    { amount: "", dateOfPayment: "" }
-                ],
-            },
-        })),
-
     deleteBookletFormRow: (index) =>
         set((state) => ({
             bookletForm: {
@@ -123,14 +121,6 @@ const useTemplateStore = create((set) => ({
             feesForm: {
                 ...state.feesForm,
                 feesChildForm: state.feesForm.feesChildForm.filter((_, i) => i !== index),
-            },
-        })),
-
-    deleteTuitionFormRow: (index) => 
-        set((state) => ({
-            tuitionForm: {
-                ...state.tuitionForm,
-                tuitionChildForm: state.tuitionForm.tuitionChildForm.filter((_, i) => i !== index),
             },
         })),
 

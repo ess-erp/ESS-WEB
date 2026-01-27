@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
-import { fetchEnrollmentTableData } from "../../states/AdmissionState/Action";
+import { fetchEnrollmentTableData } from "../../states/CfwState/Action";
 
 const StudentDataTable = () => {
   const dispatch = useDispatch();
@@ -16,14 +16,14 @@ const StudentDataTable = () => {
   const loading = tableState.loading || false;
 
   const statuses = [
-    { label: "Ongoing", action: "ongoing-cfw", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" }
+    { label: "Ongoing", action: "ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" }
   ];
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tempStartDate, setTempStartDate] = useState('');
   const [tempEndDate, setTempEndDate] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('ongoing-cfw');
+  const [selectedStatus, setSelectedStatus] = useState('Ongoing');
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -34,7 +34,7 @@ const StudentDataTable = () => {
     { name: 'Fullname', selector: row => `${row.Lname}, ${row.Fname} ${row.Mname || ''}`, sortable: true },
     { name: 'Campus', selector: row => row.CampusName, sortable: true },
     { name: 'Level', selector: row => row.LevelName, sortable: true },
-    { name: 'Status', selector: row => row.AcitveStatus, sortable: true },
+    { name: 'Status', selector: row => row.ActiveStatus, sortable: true },
     { name: 'Date Created', selector: row => new Date(row.DateCreated).toLocaleDateString(), sortable: true },
     {
       name: 'Actions',

@@ -39,9 +39,10 @@ const AddNewTemplateComponent = forwardRef(
         newRow = { SubjectCode: "", SubjectName: "", DivId: 0, Remarks: "" };
       } else if (templateType === "document") {
         newRow = { DocumentName: "", DocumentTemplate: "", Remarks: "" };
-      } else if (templateType === "examroom") {
-        newRow = { RoomNumber: "", RoomName: "", LevelId: 0, DateAvailable: "", Remarks: "" };
       }
+      //  else if (templateType === "examroom") {
+      //   newRow = { RoomNumber: "", RoomName: "", LevelId: 0, DateAvailable: "", Remarks: "" };
+      // }
       setRows([...rows, newRow]);
     };
 
@@ -85,23 +86,23 @@ const AddNewTemplateComponent = forwardRef(
             //   newErrors[`Remarks_${idx}`] = "Remarks are required.";
             // }
           }
-          if (templateType === "examroom") {
-            if (!row.RoomNumber.trim()) {
-              newErrors[`RoomNumber_${idx}`] = "Room Number is required.";
-            }
-            if (!row.RoomNumber.trim()) {
-              newErrors[`RoomName_${idx}`] = "Room Name is required.";
-            }
-            if (!row.LevelId) {
-              newErrors[`LevelId_${idx}`] = "Level is required.";
-            }
-            if (!row.DateAvailable.trim()) {
-              newErrors[`DateAvailable_${idx}`] = "Date Available is required.";
-            }
-            // if (!row.Remarks.trim()) {
-            //   newErrors[`Remarks_${idx}`] = "Remarks are required.";
-            // }
-          }
+          // if (templateType === "examroom") {
+          //   if (!row.RoomNumber.trim()) {
+          //     newErrors[`RoomNumber_${idx}`] = "Room Number is required.";
+          //   }
+          //   if (!row.RoomNumber.trim()) {
+          //     newErrors[`RoomName_${idx}`] = "Room Name is required.";
+          //   }
+          //   if (!row.LevelId) {
+          //     newErrors[`LevelId_${idx}`] = "Level is required.";
+          //   }
+          //   if (!row.DateAvailable.trim()) {
+          //     newErrors[`DateAvailable_${idx}`] = "Date Available is required.";
+          //   }
+          //   // if (!row.Remarks.trim()) {
+          //   //   newErrors[`Remarks_${idx}`] = "Remarks are required.";
+          //   // }
+          // }
         });
       }
 
@@ -145,7 +146,7 @@ const AddNewTemplateComponent = forwardRef(
             <option value="">-- Select Template Type --</option>
             <option value="document">List of Document Template</option>
             <option value="gpa">Grade Average Point Template</option>
-            <option value="examroom">Examination Room Template</option>
+            {/* <option value="examroom">Examination Room Template</option> */}
           </select>
           {errors.TemplateType && (
             <p className="text-red-500 text-xs mt-1">{errors.TemplateType}</p>
@@ -341,7 +342,7 @@ const AddNewTemplateComponent = forwardRef(
                     </div>
                   </>
                 )}
-                {templateType === "examroom" && (
+                {/* {templateType === "examroom" && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
@@ -455,7 +456,7 @@ const AddNewTemplateComponent = forwardRef(
                       )}
                     </div>
                   </>
-                )}
+                )} */}
                 {rows.length > 1 && (
                   <OutlineRedBtn
                     icon={<Trash size={14} />}

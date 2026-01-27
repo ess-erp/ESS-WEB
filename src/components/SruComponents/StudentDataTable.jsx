@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaClock, FaSpinner, FaCheckCircle } from "react-icons/fa";
 import DataTable from 'react-data-table-component';
 import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';

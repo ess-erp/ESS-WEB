@@ -3,6 +3,7 @@ import {
     FETCH_LISTOFUSER_REQUEST, FETCH_LISTOFUSER_SUCCESS, FETCH_LISTOFUSER_FAILURE,
     FETCH_INSERTORSERIES_REQUEST, FETCH_INSERTORSERIES_SUCCESS, FETCH_INSERTORSERIES_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_REQUEST, FETCH_INSERT_TABLE_OF_FEES_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_FAILURE,
+    FETCH_INSERT_TUITION_FEE_REQUEST, FETCH_INSERT_TUITION_FEE_SUCCESS, FETCH_INSERT_TUITION_FEE_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -17,6 +18,7 @@ const initialGeneralState = {
     listOfUserState: { ...initialState },
     insertOrSeriesState: { ...initialState },
     insertFeesState: { ...initialState },
+    tuitionFeeState: { ...initialState },
 }
 
 const financeReducer = (state = initialGeneralState, action) => {
@@ -53,6 +55,12 @@ const financeReducer = (state = initialGeneralState, action) => {
         case FETCH_INSERT_TABLE_OF_FEES_FAILURE:
             return { ...state, insertFeesState: { loading: false, data: [], error: action.payload } };
 
+        case FETCH_INSERT_TUITION_FEE_REQUEST:
+            return { ...state, tuitionFeeState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_TUITION_FEE_SUCCESS:
+            return { ...state, tuitionFeeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_TUITION_FEE_FAILURE:
+            return { ...state, tuitionFeeState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

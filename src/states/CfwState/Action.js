@@ -1,4 +1,5 @@
 import {
+    FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_INSERTEXAMROOM_REQUEST, FETCH_INSERTEXAMROOM_SUCCESS, FETCH_INSERTEXAMROOM_FAILURE,
     FETCH_TEMPLATETABLE_REQUEST, FETCH_TEMPLATETABLE_SUCCESS, FETCH_TEMPLATETABLE_FAILURE,
     FETCH_INSERTEXAMSCHEDULE_REQUEST, FETCH_INSERTEXAMSCHEDULE_SUCCESS, FETCH_INSERTEXAMSCHEDULE_FAILURE,
@@ -24,6 +25,36 @@ import {
 import { getToken } from "../../services/tokenServices";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
+
+export const fetchEnrollmentTableRequest = () => ({ type: FETCH_ENROLLMENTTABLE_REQUEST });
+export const fetchEnrollmentTableSuccess = (data) => ({ type: FETCH_ENROLLMENTTABLE_SUCCESS, payload: data });
+export const fetchEnrollmentTableFailure = (error) => ({ type: FETCH_ENROLLMENTTABLE_FAILURE, payload: error });
+
+export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchEnrollmentTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cfw/enrollment-table?startDate=${StartDate}&endDate=${EndDate}&TableType=${TableType}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        console.log(res);
+
+        dispatch(fetchEnrollmentTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchEnrollmentTableFailure(error));
+        return { ok: false, error };
+    };
+};
 
 
 //insert exam room template

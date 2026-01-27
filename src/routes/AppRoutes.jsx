@@ -17,6 +17,7 @@ import CfwTemplates from "../pages/CFW/Templates";
 import CashierDashboard from "../pages/Cashier/Dashboard";
 //import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
+import CashierTransactionHistory from "../pages/Cashier/TransactionHistory";
 import FinanceDashboard from "../pages/Finance/Dashboard";
 import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
 import SruDashboard from "../pages/SRU/Dashboard";
@@ -123,19 +124,19 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-      {/* <Route
-        path="/cashier/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={["3"]}>
-            <CashierStudentOnlineApplication />
-          </ProtectedRoutes>
-        }
-      /> */}
       <Route
         path="/cashier/cashierpayment"
         element={
           <ProtectedRoutes allowedRoles={["3"]}>
             <CashierPayment />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/cashier/transactionhistory"
+        element={
+          <ProtectedRoutes allowedRoles={["3"]}>
+            <CashierTransactionHistory />
           </ProtectedRoutes>
         }
       />

@@ -10,6 +10,7 @@ import {
     fetchListOfUserData,
     fetchInsertTableOfFeesData,
     fetchInsertOrSeriesData,
+    fetchInsertTuitioFeeData,
 } from "../../states/FinanceState/Action";
 import {
     fetchLevelData,
@@ -194,35 +195,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [modalBody, setModalBody] = useState("");
 
-    const validateForm = () => {
-        let newErrors = {};
 
-        if (templateType === "booklet") {
-            bookletForm.orNumberList.forEach((row, i) => {
-                if (!row.startNo.trim())
-                    newErrors[`startNo-${i}`] = "Start No is required";
-                if (!row.endNo.trim())
-                    newErrors[`endNo-${i}`] = "End No is required";
-                if (!row.userId)
-                    newErrors[`userId-${i}`] = "User is required";
-                if (!row.orType.trim())
-                    newErrors[`orType-${i}`] = "OR Type is required";
-            });
-        }
-        else {
-            feesForm.feesChildForm.forEach((row, i) => {
-                if (!row.transCode.trim())
-                    newErrors[`transCode-${i}`] = "Transaction Code is required";
-                if (!row.transType.trim())
-                    newErrors[`transType-${i}`] = "Transaction Type is required";
-                if (!row.transGroup)
-                    newErrors[`usertransGroupId-${i}`] = "Transaction Group is required";
-            });
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
     const {
         isModalOpen,
         openModal,
@@ -237,79 +210,207 @@ const TemplateDataTable = ({ selectedStatus }) => {
         setTuitionFormField,
         updateBookletFormRow,
         updateFeesFormRow,
-        updateTuitionFormRow,
         addBookletFormRow,
         addFeesFormRow,
-        addTuitionFormRow,
         deleteBookletFormRow,
         deleteFeesFormRow,
-        deleteTuitionFormRow,
         setFileUpload,
         errors,
         setErrors,
     } = useTemplateStore();
 
     const openSubmitModal = () => {
+        // const isValid = validateForm();
+        // if (!isValid) return;
+        if (!validateForm())
+            return;
         setIsSubmitModalOpen(true);
     };
 
+    // 
+    const validateForm = () => {
+        let newErrors = {};
+        console.log("TEMPLATE:", templateType);
+        switch (templateType) {
+            case "booklet":
+                bookletForm.orNumberList.forEach((row, i) => {
+                    if (!row.startNo?.trim())
+                        newErrors[`startNo-${i}`] = "Start No is required";
+                    if (!row.endNo?.trim())
+                        newErrors[`endNo-${i}`] = "End No is required";
+                    if (!row.userId)
+                        newErrors[`userId-${i}`] = "User is required";
+                    if (!row.orType?.trim())
+                        newErrors[`orType-${i}`] = "OR Type is required";
+                });
+                break;
+
+            case "fees":
+                feesForm.feesChildForm.forEach((row, i) => {
+                    if (!row.transCode?.trim())
+                        newErrors[`transCode-${i}`] = "Transaction Code is required";
+                    if (!row.transType?.trim())
+                        newErrors[`transType-${i}`] = "Transaction Type is required";
+                    if (!row.transGroup)
+                        newErrors[`transGroup-${i}`] = "Transaction Group is required";
+                });
+                break;
+
+            case "tuitionfee":
+                if (!tuitionForm.tempName?.trim())
+                    newErrors["tempName"] = "Name of template is required";
+                if (!tuitionForm.levelId)
+                    newErrors["levelId"] = "Please select target level";
+                //plan a
+                if (!tuitionForm.amountA)
+                    newErrors["amountA"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentA)
+                    newErrors["dateOfPaymentA"] = "Please enter date of payment";
+
+                //plan b
+                if (!tuitionForm.amountB1)
+                    newErrors["amountB1"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentB1)
+                    newErrors["dateOfPaymentB1"] = "Please enter date of payment";
+                if (!tuitionForm.amountB2)
+                    newErrors["amountB2"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentB2)
+                    newErrors["dateOfPaymentB2"] = "Please enter date of payment";
+
+                //plan c
+                if (!tuitionForm.amountC1)
+                    newErrors["amountC1"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentC1)
+                    newErrors["dateOfPaymentC1"] = "Please enter date of payment";
+                if (!tuitionForm.amountC2)
+                    newErrors["amountC2"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentC2)
+                    newErrors["dateOfPaymentC2"] = "Please enter date of payment";
+                if (!tuitionForm.amountC3)
+                    newErrors["amountC3"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentC3)
+                    newErrors["dateOfPaymentC3"] = "Please enter date of payment";
+
+                //plan d
+                if (!tuitionForm.amountD1)
+                    newErrors["amountD1"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentD1)
+                    newErrors["dateOfPaymentD1"] = "Please enter date of payment";
+                if (!tuitionForm.amountD2)
+                    newErrors["amountD2"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentD2)
+                    newErrors["dateOfPaymentD2"] = "Please enter date of payment";
+                if (!tuitionForm.amountD3)
+                    newErrors["amountD3"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentD3)
+                    newErrors["dateOfPaymentD3"] = "Please enter date of payment";
+                if (!tuitionForm.amountD4)
+                    newErrors["amountD4"] = "Please enter amount";
+                if (!tuitionForm.dateOfPaymentD4)
+                    newErrors["dateOfPaymentD4"] = "Please enter date of payment";
+                break;
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async () => {
-        if (!validateForm()) return;
+        // if (!validateForm()) return;
         let payload = null;
         let res = null;
         setIsLoadingModalOpen(true);
-        if (templateType == "fees") {
-            payload = {
-                TempName: feesForm.tempName,
-                Remarks: feesForm.remarks,
-                CreatedByUserId: currentUserId,
-                FeesChildDtos: feesForm.feesChildForm.map(r => ({
-                    TransCode: r.transCode,
-                    TransType: r.transType,
-                    TransGroup: r.transGroup,
-                    Value: r.value,
-                }))
-            };
-            res = await dispatch(fetchInsertTableOfFeesData(payload));
-            if (res.ok) {
-                setIsLoadingModalOpen(false);
-                setIsSuccessModalOpen(true);
-                setModalBody("Done saving the table of fees.");
-                if (isSuccessModalOpen == false) {
-                    setTimeout(() => window.location.reload(), 3000);
+
+        switch (templateType) {
+            case "fees":
+                payload = {
+                    TempName: feesForm.tempName,
+                    Remarks: feesForm.remarks,
+                    CreatedByUserId: currentUserId,
+                    FeesChildDtos: feesForm.feesChildForm.map(r => ({
+                        TransCode: r.transCode,
+                        TransType: r.transType,
+                        TransGroup: r.transGroup,
+                        Value: r.value,
+                    }))
+                };
+                res = await dispatch(fetchInsertTableOfFeesData(payload));
+                if (res.ok) {
+                    setIsLoadingModalOpen(false);
+                    setIsSuccessModalOpen(true);
+                    setModalBody("Done saving the table of fees.");
+                    if (isSuccessModalOpen == false) {
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
                 }
-            }
-            else {
-                setIsLoadingModalOpen(false);
-                setIsErrorModalOpen(true);
-            }
-        }
-        else {
-            payload = {
-                TempName: bookletForm.tempName,
-                CreatedByUserId: currentUserId,
-                OrSeriesBodyDtos: bookletForm.orNumberList.map(r => ({
-                    StartNo: r.startNo,
-                    EndNo: r.endNo,
-                    UserId: r.userId,
-                    OrType: r.orType,
-                    Remarks: r.remarks
-                }))
-            };
-            res = await dispatch(fetchInsertOrSeriesData(payload));
-            if (res.ok) {
-                setIsLoadingModalOpen(false);
-                setIsSuccessModalOpen(true);
-                setModalBody("Done saving the or number series.");
-                if (isSuccessModalOpen == false) {
-                    setTimeout(() => window.location.reload(), 3000);
+                else {
+                    setIsLoadingModalOpen(false);
+                    setIsErrorModalOpen(true);
                 }
-            }
-            else {
-                setIsLoadingModalOpen(false);
-                setIsErrorModalOpen(true);
-            }
+                break;
+            case "booklet":
+                payload = {
+                    TempName: bookletForm.tempName,
+                    CreatedByUserId: currentUserId,
+                    OrSeriesBodyDtos: bookletForm.orNumberList.map(r => ({
+                        StartNo: r.startNo,
+                        EndNo: r.endNo,
+                        UserId: r.userId,
+                        OrType: r.orType,
+                        Remarks: r.remarks
+                    }))
+                };
+                res = await dispatch(fetchInsertOrSeriesData(payload));
+                if (res.ok) {
+                    setIsLoadingModalOpen(false);
+                    setIsSuccessModalOpen(true);
+                    setModalBody("Done saving the or number series.");
+                    if (isSuccessModalOpen == false) {
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
+                }
+                else {
+                    setIsLoadingModalOpen(false);
+                    setIsErrorModalOpen(true);
+                }
+                break;
+            case "tuitionfee":
+                const plans = [
+                    { PlanName: "PLAN A", Amount: tuitionForm.amountA, DateOfPayment: tuitionForm.dateOfPaymentA },
+                    { PlanName: "PLAN B1", Amount: tuitionForm.amountB1, DateOfPayment: tuitionForm.dateOfPaymentB1 },
+                    { PlanName: "PLAN B2", Amount: tuitionForm.amountB2, DateOfPayment: tuitionForm.dateOfPaymentB2 },
+                    { PlanName: "PLAN C1", Amount: tuitionForm.amountC1, DateOfPayment: tuitionForm.dateOfPaymentC1 },
+                    { PlanName: "PLAN C2", Amount: tuitionForm.amountC2, DateOfPayment: tuitionForm.dateOfPaymentC2 },
+                    { PlanName: "PLAN C3", Amount: tuitionForm.amountC3, DateOfPayment: tuitionForm.dateOfPaymentC3 },
+                    { PlanName: "PLAN D1", Amount: tuitionForm.amountD1, DateOfPayment: tuitionForm.dateOfPaymentD1 },
+                    { PlanName: "PLAN D2", Amount: tuitionForm.amountD2, DateOfPayment: tuitionForm.dateOfPaymentD2 },
+                    { PlanName: "PLAN D3", Amount: tuitionForm.amountD3, DateOfPayment: tuitionForm.dateOfPaymentD3 },
+                    { PlanName: "PLAN D4", Amount: tuitionForm.amountD4, DateOfPayment: tuitionForm.dateOfPaymentD4 },
+                ];
+
+                payload = {
+                    TempName: tuitionForm.tempName,
+                    LevelId: tuitionForm.levelId,
+                    CreatedByUserId: currentUserId,
+                    TuitionFeeDtoChildDto: plans
+                };
+                console.log(payload);
+                res = await dispatch(fetchInsertTuitioFeeData(payload));
+                if (res.ok) {
+                    setIsLoadingModalOpen(false);
+                    setIsSuccessModalOpen(true);
+                    setModalBody("Done saving the tuition fee.");
+                    if (isSuccessModalOpen == false) {
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
+                }
+                else {
+                    setIsLoadingModalOpen(false);
+                    setIsErrorModalOpen(true);
+                }
+                break;
         }
+        console.log(payload);
     };
 
     return (
@@ -527,122 +628,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 </button>
                             </div>
                         )}
-                        {templateType === "tuitionfee" && (
-                            <div>
-                                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Name of Template</label>
-                                        <input
-                                            type="text"
-                                            value={tuitionForm.tempName}
-                                            placeholder="Enter name of template"
-                                            onChange={(e) => setTuitionFormField("tempName", e.target.value)}
-                                            className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
-                                                }`}
-                                        />
-                                        {errors.description && (
-                                            <p className="text-red-500 text-sm">{errors.tempName}</p>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Select Plan</label>
-                                        <select
-                                            value={tuitionForm.plan ?? ""}
-                                            onChange={(e) => setTuitionFormField("plan", e.target.value)}
-                                            className={`w-full rounded-lg border p-2`}
-                                        >
-                                            <option value="">
-                                                -- Select Plan Type --
-                                            </option>
-                                            <option value="plan_a">Plan A</option>
-                                            <option value="plan_b">Plan B</option>
-                                            <option value="plan_c">Plan C</option>
-                                            <option value="plan_d">Plan D</option>
-                                        </select>
-                                    </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Level</label>
-                                        <select
-                                            value={tuitionForm.levelId ?? ""}
-                                            onChange={(e) => setTuitionFormField("levelId", e.target.value)}
-                                            className={`w-full rounded-lg border p-2`}
-                                        >
-                                            <option value="">-- Select Level --</option>
-                                            {level.map((lvl) => (
-                                                <option key={lvl.LevelId} value={lvl.LevelId}>
-                                                    {lvl.LevelName}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        {errors.LevelId && (
-                                            <p className="text-red-500 text-sm">{errors.LevelId}</p>
-                                        )}
-                                    </div>
-                                </div>
-
-
-                                {tuitionForm.tuitionChildForm.map((row, index) => (
-                                    <div
-                                        key={index}
-                                        className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
-                                    >
-                                        {/* Start No */}
-
-
-                                        {/* OR Type */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Amount
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={row.amount ?? ""}
-                                                placeholder="Enter Amount of Plan"
-                                                onChange={(e) => updateTuitionFormRow(index, "amount", e.target.value)}
-                                                className="w-full rounded-lg border p-2"
-                                            />
-                                        </div>
-
-                                        {/* Remarks */}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700">
-                                                Date Of Payment
-                                            </label>
-                                            <input
-                                                type="date"
-                                                value={row.dateOfPayment ?? ""}
-                                                placeholder="Enter remarks"
-                                                onChange={(e) => updateTuitionFormRow(index, "dateOfPayment", e.target.value)}
-                                                className="w-full rounded-lg border p-2"
-                                            />
-                                        </div>
-
-                                        {/* Delete Button */}
-                                        <div className="flex justify-center items-center">
-                                            {tuitionForm.tuitionChildForm.length > 1 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteTuitionFormRow(index)}
-                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {/* Add Row */}
-                                <button
-                                    type="button"
-                                    onClick={addTuitionFormRow}
-                                    className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
-                                >
-                                    + Add Row
-                                </button>
-                            </div>
-                        )}
                         {templateType === "booklet" && (
                             <div>
                                 <div className="flex-1">
@@ -799,6 +785,482 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 </button>
                             </div>
                         )}
+                        {templateType === "tuitionfee" && (
+                            <div>
+                                <div className="grid grid-cols-[1fr_1fr_auto] gap-4 mb-2 items-end">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Name of Template</label>
+                                        <input
+                                            type="text"
+                                            value={tuitionForm.tempName}
+                                            placeholder="Enter name of template"
+                                            onChange={(e) => setTuitionFormField("tempName", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.tempName ? "border-red-500" : ""
+                                                }`}
+                                        />
+                                        {errors.tempName && (
+                                            <p className="text-red-500 text-sm">{errors.tempName}</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Level</label>
+                                        <select
+                                            value={tuitionForm.levelId ?? ""}
+                                            onChange={(e) => setTuitionFormField("levelId", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.levelId ? "border-red-500" : ""
+                                                }`}
+                                        >
+                                            <option value="">-- Select Level --</option>
+                                            {level.map((lvl) => (
+                                                <option key={lvl.LevelId} value={lvl.LevelId}>
+                                                    {lvl.LevelName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.levelId && (
+                                            <p className="text-red-500 text-sm">{errors.levelId}</p>
+                                        )}
+                                    </div>
+                                </div>
+                                {/* Plan A */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <h3 className="font-semibold whitespace-nowrap">Plan A</h3>
+                                    <hr className="flex-grow border-gray-300" />
+                                </div>
+                                <div className="grid grid-cols-[1fr_1fr_auto] gap-4 mb-2 items-end">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountA && (
+                                            <p className="text-red-500 text-sm">{errors.amountA}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountA ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountA", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountA ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Payment
+                                        </label>
+                                        {errors.dateOfPaymentA && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentA}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentA ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentA", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentA ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                </div>
+                                {/* Plan B */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <h3 className="font-semibold whitespace-nowrap">Plan B</h3>
+                                    <hr className="flex-grow border-gray-300" />
+                                </div>
+                                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end">
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountB1 && (
+                                            <p className="text-red-500 text-sm">{errors.amountB1}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountB1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountB1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountB1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of First Payment
+                                        </label>
+                                        {errors.dateOfPaymentB1 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentB1}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentB1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentB1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentB1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountB2 && (
+                                            <p className="text-red-500 text-sm">{errors.amountB2}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountB2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountB2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountB2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Second Payment
+                                        </label>
+                                        {errors.dateOfPaymentB2 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentB2}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentB2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentB2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentB2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                </div>
+                                {/* Plan C */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <h3 className="font-semibold whitespace-nowrap">Plan C</h3>
+                                    <hr className="flex-grow border-gray-300" />
+                                </div>
+                                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end">
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountC1 && (
+                                            <p className="text-red-500 text-sm">{errors.amountC1}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountC1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountC1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountC1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of First Payment
+                                        </label>
+                                        {errors.dateOfPaymentC1 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentC1}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentC1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentC1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentC1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountC2 && (
+                                            <p className="text-red-500 text-sm">{errors.amountC2}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountC2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountC2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountC2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Second Payment
+                                        </label>
+                                        {errors.dateOfPaymentC2 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentC2}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentC2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentC2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentC2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountC3 && (
+                                            <p className="text-red-500 text-sm">{errors.amountC3}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountC3 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountC3", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountC3 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Third Payment
+                                        </label>
+                                        {errors.dateOfPaymentC3 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentC3}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentC3 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentC3", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentC3 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+
+                                </div>
+                                {/* Plan D */}
+                                <div className="flex items-center gap-4 my-4">
+                                    <h3 className="font-semibold whitespace-nowrap">Plan D</h3>
+                                    <hr className="flex-grow border-gray-300" />
+                                </div>
+
+                                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end">
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountD1 && (
+                                            <p className="text-red-500 text-sm">{errors.amountD1}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountD1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountD1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountD1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of First Payment
+                                        </label>
+                                        {errors.dateOfPaymentD1 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentD1}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentD1 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentD1", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentD1 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountD2 && (
+                                            <p className="text-red-500 text-sm">{errors.amountD2}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountD2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountD2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountD2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Second Payment
+                                        </label>
+                                        {errors.dateOfPaymentD2 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentD2}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentD2 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentD2", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentD2 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountD3 && (
+                                            <p className="text-red-500 text-sm">{errors.amountD3}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountD3 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountD3", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountD3 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Third Payment
+                                        </label>
+                                        {errors.dateOfPaymentD3 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentD3}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentD3 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentD3", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentD3 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Amount
+                                        </label>
+                                        {errors.amountD4 && (
+                                            <p className="text-red-500 text-sm">{errors.amountD4}</p>
+                                        )}
+                                        <input
+                                            type="number"
+                                            value={tuitionForm.amountD4 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("amountD4", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.amountD4 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">
+                                            Date of Fourth Payment
+                                        </label>
+                                        {errors.dateOfPaymentD4 && (
+                                            <p className="text-red-500 text-sm">{errors.dateOfPaymentD4}</p>
+                                        )}
+                                        <input
+                                            type="date"
+                                            value={tuitionForm.dateOfPaymentD4 ?? ""}
+                                            placeholder="Enter Amount of Plan"
+                                            onChange={(e) => setTuitionFormField("dateOfPaymentD4", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.dateOfPaymentD4 ? "border-red-500" : ""
+                                                }`}
+                                        />
+
+                                    </div>
+                                </div>
+                                {/* {tuitionForm.tuitionChildForm.map((row, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-[1fr_1fr_1fr_auto] gap-4 mb-2 items-end"
+                                    >
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Amount
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={row.amount ?? ""}
+                                                placeholder="Enter Amount of Plan"
+                                                onChange={(e) => updateTuitionFormRow(index, "amount", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`amount-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`amount-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`amount-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Date Of Payment
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={row.dateOfPayment ?? ""}
+                                                placeholder="Enter remarks"
+                                                onChange={(e) => updateTuitionFormRow(index, "dateOfPayment", e.target.value)}
+                                                className={`w-full rounded-lg border p-2 ${errors[`dateOfPayment-${index}`] ? "border-red-500" : ""
+                                                    }`}
+                                            />
+                                            {errors[`dateOfPayment-${index}`] && (
+                                                <p className="text-red-500 text-sm">
+                                                    {errors[`dateOfPayment-${index}`]}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="flex justify-center items-center">
+                                            {tuitionForm.tuitionChildForm.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteTuitionFormRow(index)}
+                                                    className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+
+                                <button
+                                    type="button"
+                                    onClick={addTuitionFormRow}
+                                    className="mt-2 px-3 py-1 rounded-lg bg-green-700 text-white text-md"
+                                >
+                                    + Add Row
+                                </button> */}
+                            </div>
+                        )}
                     </div>
                 }
                 size="w-[800px]"
@@ -809,6 +1271,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
                         type: "green",
                         onClick: openSubmitModal,
                         // closeOnClick: false,
+                        closeOnClick: false,
                     },
                     { label: "No", type: "red", closeOnClick: true },
                 ]}

@@ -26,7 +26,7 @@ const SearchableSelect = ({
                     />
                 )}
 
-                <Select
+                {/* <Select
                     options={options}
                     value={value}
                     onChange={onChange}
@@ -41,6 +41,32 @@ const SearchableSelect = ({
                             paddingLeft: showSearchIcon ? "28px" : "8px",
                             borderRadius: "8px",
                             minHeight: "40px",
+                        }),
+                    }}
+                /> */}
+                <Select
+                    options={options}
+                    value={value}
+                    onChange={onChange}
+                    isSearchable
+                    isMulti={isMulti}
+                    isDisabled={isDisabled}
+                    placeholder={placeholder}
+                    classNamePrefix="react-select"
+
+                    menuPortalTarget={document.body}
+                    menuPosition="fixed"
+
+                    styles={{
+                        control: (base) => ({
+                            ...base,
+                            paddingLeft: showSearchIcon ? "28px" : "8px",
+                            borderRadius: "8px",
+                            minHeight: "40px",
+                        }),
+                        menuPortal: (base) => ({
+                            ...base,
+                            zIndex: 9999, // 🔥 VERY IMPORTANT
                         }),
                     }}
                 />

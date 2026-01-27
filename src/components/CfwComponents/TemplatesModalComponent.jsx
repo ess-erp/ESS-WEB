@@ -878,7 +878,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                         <option value="">-- Select Template Type --</option>
                                         <option value="transmutation">Transmutation Table</option>
                                         <option value="generalSubject">General List of Subjects</option>
-                                        <option value="examSubject">Exam Subject Settings</option>
+                                        <option value="examSubject">Exam Code Settings</option>
                                         <option value="room">Exam Room Template</option>
                                         <option value="schedule">Assign Exam Schedule Template</option>
                                     </select>
@@ -1209,7 +1209,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                             <div className="flex-1">
                                                 <label className="block text-sm font-medium text-gray-700">Level</label>
                                                 <select
-                                                    value={examSubjectForm.LevelId || ""} // ✅ change to match your level field
+                                                    value={examSubjectForm.levelId || ""} // ✅ change to match your level field
                                                     onChange={(e) => setExamSubjectField("levelId", e.target.value)}
                                                     className={`w-full rounded-lg border p-2 ${errors.LevelId ? "border-red-500" : ""
                                                         }`}

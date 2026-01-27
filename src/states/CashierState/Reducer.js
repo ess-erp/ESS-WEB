@@ -7,6 +7,8 @@ import {
     FETCH_GET_DAILY_BALANCE_REQUEST, FETCH_GET_DAILY_BALANCE_SUCCESS, FETCH_GET_DAILY_BALANCE_FAILURE,
     FETCH_INSERT_DAILY_BALANCE_REQUEST, FETCH_INSERT_DAILY_BALANCE_SUCCESS, FETCH_INSERT_DAILY_BALANCE_FAILURE,
     FETCH_GET_REALTIME_DAILY_BALANCE_REQUEST, FETCH_GET_REALTIME_DAILY_BALANCE_SUCCESS, FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE,
+    FETCH_GET_TUITION_FEE_REQUEST, FETCH_GET_TUITION_FEE_SUCCESS, FETCH_GET_TUITION_FEE_FAILURE,
+    FETCH_TRANSACTION_HISTORY_REQUEST, FETCH_TRANSACTION_HISTORY_SUCCESS, FETCH_TRANSACTION_HISTORY_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -25,6 +27,8 @@ const initialGeneralState = {
     dailyBalanceState: { ...initialState },
     insertBalanceState: { ...initialState },
     realtimeBalanceState: { ...initialState },
+    tuitionFeeState: { ...initialState },
+    transactionHistoryState: { ...initialState },
 }
 
 const cashierReducer = (state = initialGeneralState, action) => {
@@ -91,6 +95,22 @@ const cashierReducer = (state = initialGeneralState, action) => {
             return { ...state, realtimeBalanceState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE:
             return { ...state, realtimeBalanceState: { loading: false, data: [], error: action.payload } };
+
+        //print test permit
+        case FETCH_GET_TUITION_FEE_REQUEST:
+            return { ...state, tuitionFeeState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_TUITION_FEE_SUCCESS:
+            return { ...state, tuitionFeeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_TUITION_FEE_FAILURE:
+            return { ...state, tuitionFeeState: { loading: false, data: [], error: action.payload } };
+
+        //print test permit
+        case FETCH_TRANSACTION_HISTORY_REQUEST:
+            return { ...state, transactionHistoryState: { loading: true, data: [], error: '' } };
+        case FETCH_TRANSACTION_HISTORY_SUCCESS:
+            return { ...state, transactionHistoryState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_TRANSACTION_HISTORY_FAILURE:
+            return { ...state, transactionHistoryState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

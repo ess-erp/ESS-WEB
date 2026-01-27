@@ -3,6 +3,7 @@ import {
     FETCH_LISTOFUSER_REQUEST, FETCH_LISTOFUSER_SUCCESS, FETCH_LISTOFUSER_FAILURE,
     FETCH_INSERTORSERIES_REQUEST, FETCH_INSERTORSERIES_SUCCESS, FETCH_INSERTORSERIES_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_REQUEST, FETCH_INSERT_TABLE_OF_FEES_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_FAILURE,
+    FETCH_INSERT_TUITION_FEE_REQUEST, FETCH_INSERT_TUITION_FEE_SUCCESS, FETCH_INSERT_TUITION_FEE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -121,6 +122,35 @@ export const fetchInsertOrSeriesData = (formData) => async (dispatch) => {
     }
     catch(error){
         dispatch(fetchInsertOrSeriesFailure(error.message));
+        return { ok: false, error};
+    }
+}; 
+
+//insert OR series
+export const fetchInsertTuitioFeeRequest = () => ({ type: FETCH_INSERT_TUITION_FEE_REQUEST });
+export const fetchInsertTuitioFeeSuccess = (data) => ({ type: FETCH_INSERT_TUITION_FEE_SUCCESS, payload: data });
+export const fetchInsertTuitioFeeFailure = (error) => ({ type: FETCH_INSERT_TUITION_FEE_FAILURE, payload: error });
+
+export const fetchInsertTuitioFeeData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertTuitioFeeRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/finance/insert-tuition-fee`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertTuitioFeeSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchInsertTuitioFeeFailure(error.message));
         return { ok: false, error};
     }
 }; 

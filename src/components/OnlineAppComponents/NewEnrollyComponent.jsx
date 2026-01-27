@@ -152,13 +152,14 @@ const NewEnrollyComponent = () => {
         if (otpCooldown > 0) return;
         const isValid = await trigger("ContactEmail");
         const email = getValues("ContactEmail");
+        
+        //if contact email not valid it will throw an error
+        if (!isValid) return;
         setOtpCooldown(60);
         setOtpValid(null);
         setIsMessage(true);
         setIsColor("green");
-        setSuccessMessage("An OTP has been sent to the email above.")
-        //if contact email not valid it will throw an error
-        if (!isValid) return;
+        setSuccessMessage("An OTP has been sent to the email above.");
         const payload = {
             FatherEmail: "",
             MotherEmail: "",
@@ -281,8 +282,10 @@ const NewEnrollyComponent = () => {
         payload.append("DivName", formData.Division?.DivName || "");
         payload.append("LevelId", formData.Level?.LevelId ?? "");
         payload.append("LevelName", formData.Level?.LevelName || "");
-        payload.append("StrandId", formData.Strand?.StrandId ?? null);
-        payload.append("StrandName", formData.Strand?.StrandName || null);
+        if (formData.Strand?.StrandId) {
+            payload.append("StrandId", formData.Strand.StrandId);
+            payload.append("StrandName", formData.Strand.StrandName ?? "");
+        }
 
         payload.append("NationalityId", formData.Nationality?.NationalityId ?? "");
         payload.append("NationalityName", formData.Nationality?.NationalityName || "");
@@ -335,7 +338,7 @@ const NewEnrollyComponent = () => {
                 navigate('/congratulationletter');
             }
         }
-        else{
+        else {
             return;
         }
     };

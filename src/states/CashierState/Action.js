@@ -7,6 +7,8 @@ import {
     FETCH_GET_DAILY_BALANCE_REQUEST, FETCH_GET_DAILY_BALANCE_SUCCESS, FETCH_GET_DAILY_BALANCE_FAILURE,
     FETCH_INSERT_DAILY_BALANCE_REQUEST, FETCH_INSERT_DAILY_BALANCE_SUCCESS, FETCH_INSERT_DAILY_BALANCE_FAILURE,
     FETCH_GET_REALTIME_DAILY_BALANCE_REQUEST, FETCH_GET_REALTIME_DAILY_BALANCE_SUCCESS, FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE,
+    FETCH_GET_TUITION_FEE_REQUEST, FETCH_GET_TUITION_FEE_SUCCESS, FETCH_GET_TUITION_FEE_FAILURE,
+    FETCH_TRANSACTION_HISTORY_REQUEST, FETCH_TRANSACTION_HISTORY_SUCCESS, FETCH_TRANSACTION_HISTORY_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -45,11 +47,11 @@ export const fetchStudentAppRequest = () => ({ type: FETCH_STUDENT_APPLICATION_R
 export const fetchStudentAppSuccess = (data) => ({ type: FETCH_STUDENT_APPLICATION_SUCCESS, payload: data });
 export const fetchStudentAppFailure = (error) => ({ type: FETCH_STUDENT_APPLICATION_FAILURE, payload: error });
 
-export const fetchStudentAppData = () => async (dispatch) => {
+export const fetchStudentAppData = (status) => async (dispatch) => {
     dispatch(fetchStudentAppRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cashier/get-student-dropdown`;
+        const url = `${baseUrl}/cashier/get-student-dropdown?status=${status}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -247,4 +249,65 @@ export const fetchGetRealtimeDailyBalanceData = (userId) => async (dispatch) => 
         return { ok: false, error };
     }
 
+};
+
+
+export const fetchGetTuitionFeeRequest = () => ({ type: FETCH_GET_TUITION_FEE_REQUEST });
+export const fetchGetTuitionFeeSuccess = (data) => ({ type: FETCH_GET_TUITION_FEE_SUCCESS, payload: data });
+export const fetchGetTuitionFeeFailure = (error) => ({ type: FETCH_GET_TUITION_FEE_FAILURE, payload: error });
+
+export const fetchGetTuitionFeeData = (studentId,levelId) => async (dispatch) => {
+    dispatch(fetchGetTuitionFeeRequest());
+
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/cashier/get-tuition-fee?studentId=${studentId}&levelId=${levelId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchGetTuitionFeeSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchGetTuitionFeeFailure(error.message));
+        return { ok: false, error };
+    }
+
+};
+
+export const fetchTransactionHistoryRequest = () => ({ type: FETCH_TRANSACTION_HISTORY_REQUEST });
+export const fetchTransactionHistorySuccess = (data) => ({ type: FETCH_TRANSACTION_HISTORY_SUCCESS, payload: data });
+export const fetchTransactionHistoryFailure = (error) => ({ type: FETCH_TRANSACTION_HISTORY_FAILURE, payload: error });
+
+export const fetchTransactionHistoryData = (StartDate, EndDate, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchTransactionHistoryRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cashier/transaction-history-table?startDate=${StartDate}&endDate=${EndDate}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        console.log(res);
+
+        dispatch(fetchTransactionHistorySuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchTransactionHistoryFailure(error));
+        return { ok: false, error };
+    };
 };

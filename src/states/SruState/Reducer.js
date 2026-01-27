@@ -2,6 +2,11 @@ import {
     FETCH_ENROLLMENTTABLE_REQUEST, FETCH_ENROLLMENTTABLE_SUCCESS, FETCH_ENROLLMENTTABLE_FAILURE,
     FETCH_STUDENT_INFO_REQUEST, FETCH_STUDENT_INFO_SUCCESS, FETCH_STUDENT_INFO_FAILURE,
     FETCH_UPDATE_STUDENT_INFO_REQUEST, FETCH_UPDATE_STUDENT_INFO_SUCCESS, FETCH_UPDATE_STUDENT_INFO_FAILURE,
+    FETCH_INSERT_SECTION_NAME_REQUEST, FETCH_INSERT_SECTION_NAME_SUCCESS, FETCH_INSERT_SECTION_NAME_FAILURE,
+    FETCH_GET_SECTION_NAME_REQUEST, FETCH_GET_SECTION_NAME_SUCCESS, FETCH_GET_SECTION_NAME_FAILURE,
+    FETCH_GET_ENROLLED_STUDENT_REQUEST, FETCH_GET_ENROLLED_STUDENT_SUCCESS, FETCH_GET_ENROLLED_STUDENT_FAILURE,
+    FETCH_INSERT_STUDENT_SECTION_REQUEST, FETCH_INSERT_STUDENT_SECTION_SUCCESS, FETCH_INSERT_STUDENT_SECTION_FAILURE,
+    FETCH_GET_STUDENT_SECTION_LIST_REQUEST, FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, FETCH_GET_STUDENT_SECTION_LIST_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -15,6 +20,11 @@ const initialGeneralState = {
     tableState: { ...initialState },
     studentDataState: { ...initialState },
     updateStudentDataState: { ...initialState },
+    insertSectionName: { ...initialState },
+    sectionTableState: { ...initialState },
+    enrolledStudentState: { ...initialState },
+    insertStudentSection: { ...initialState },
+    studentSectionListState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -40,6 +50,41 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, updateStudentDataState: { loading: false, data: action.payload, error: '' } };
         case FETCH_UPDATE_STUDENT_INFO_FAILURE:
             return { ...state, updateStudentDataState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_SECTION_NAME_REQUEST:
+            return { ...state, insertSectionName: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SECTION_NAME_SUCCESS:
+            return { ...state, insertSectionName: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SECTION_NAME_FAILURE:
+            return { ...state, insertSectionName: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_SECTION_NAME_REQUEST:
+            return { ...state, sectionTableState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_SECTION_NAME_SUCCESS:
+            return { ...state, sectionTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_SECTION_NAME_FAILURE:
+            return { ...state, sectionTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_ENROLLED_STUDENT_REQUEST:
+            return { ...state, enrolledStudentState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_ENROLLED_STUDENT_SUCCESS:
+            return { ...state, enrolledStudentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_ENROLLED_STUDENT_FAILURE:
+            return { ...state, enrolledStudentState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_STUDENT_SECTION_REQUEST:
+            return { ...state, insertStudentSection: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_STUDENT_SECTION_SUCCESS:
+            return { ...state, insertStudentSection: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_STUDENT_SECTION_FAILURE:
+            return { ...state, insertStudentSection: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_STUDENT_SECTION_LIST_REQUEST:
+            return { ...state, studentSectionListState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_STUDENT_SECTION_LIST_SUCCESS:
+            return { ...state, studentSectionListState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_STUDENT_SECTION_LIST_FAILURE:
+            return { ...state, studentSectionListState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

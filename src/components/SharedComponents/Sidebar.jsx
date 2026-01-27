@@ -64,7 +64,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
             // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
             { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
-            { name: "Transaction History", icon: ScrollText, path: "/cashier/cashierpayment" },
+            { name: "Transaction History", icon: ScrollText, path: "/cashier/transactionhistory" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
