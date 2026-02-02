@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus, ScrollText  } from "lucide-react";
+import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus, ScrollText } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
@@ -83,11 +83,20 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         7: [
             { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
             { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
-            { name: "Section Entry", icon: FilePlus, path: "/sru/CreateSection" },
-            { name: "Grade Report Entry", icon: BookPlus, path: "/sru/templatesform" },
-            // { name: "Add Student House", icon: BookPlus, path: "/sru/addhouse" },
+            { name: "Section and House Entry", icon: FilePlus, path: "/sru/sectionandhouseentry" },
             { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
             { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
+        8: [
+            { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
+            { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
+            { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
+            { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },

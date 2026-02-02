@@ -7,6 +7,11 @@ import {
     FETCH_GET_ENROLLED_STUDENT_REQUEST, FETCH_GET_ENROLLED_STUDENT_SUCCESS, FETCH_GET_ENROLLED_STUDENT_FAILURE,
     FETCH_INSERT_STUDENT_SECTION_REQUEST, FETCH_INSERT_STUDENT_SECTION_SUCCESS, FETCH_INSERT_STUDENT_SECTION_FAILURE,
     FETCH_GET_STUDENT_SECTION_LIST_REQUEST, FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, FETCH_GET_STUDENT_SECTION_LIST_FAILURE,
+    FETCH_INSERT_HOUSE_NAME_REQUEST, FETCH_INSERT_HOUSE_NAME_SUCCESS, FETCH_INSERT_HOUSE_NAME_FAILURE,
+    FETCH_GET_HOUSE_NAME_REQUEST, FETCH_GET_HOUSE_NAME_SUCCESS, FETCH_GET_HOUSE_NAME_FAILURE,
+    FETCH_GET_HOUSE_STUDENT_REQUEST, FETCH_GET_HOUSE_STUDENT_SUCCESS, FETCH_GET_HOUSE_STUDENT_FAILURE,
+    FETCH_INSERT_STUDENT_HOUSE_REQUEST, FETCH_INSERT_STUDENT_HOUSE_SUCCESS, FETCH_INSERT_STUDENT_HOUSE_FAILURE,
+    FETCH_GET_STUDENT_HOUSE_LIST_REQUEST, FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS, FETCH_GET_STUDENT_HOUSE_LIST_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -246,6 +251,154 @@ export const fetchGetStudentSectionListData = (page, pageSize, search) => async 
     }
     catch (error) {
         dispatch(fetchGetStudentSectionListFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchInsertHouseNameRequest = () => ({ type: FETCH_INSERT_HOUSE_NAME_REQUEST });
+export const fetchInsertHouseNameSuccess = (data) => ({ type: FETCH_INSERT_HOUSE_NAME_SUCCESS, payload: data });
+export const fetchInsertHouseNameFailure = (error) => ({ type: FETCH_INSERT_HOUSE_NAME_FAILURE, payload: error });
+
+export const fetchInsertHouseNameData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertHouseNameRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-house-name`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertHouseNameSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertHouseNameFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetHouseNameRequest = () => ({ type: FETCH_GET_HOUSE_NAME_REQUEST });
+export const fetchGetHouseNameSuccess = (data) => ({ type: FETCH_GET_HOUSE_NAME_SUCCESS, payload: data });
+export const fetchGetHouseNameFailure = (error) => ({ type: FETCH_GET_HOUSE_NAME_FAILURE, payload: error });
+
+export const fetchGetHouseNameData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetHouseNameRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-house-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetHouseNameSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetHouseNameFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetHouseStudentRequest = () => ({ type: FETCH_GET_HOUSE_STUDENT_REQUEST });
+export const fetchGetHouseStudentSuccess = (data) => ({ type: FETCH_GET_HOUSE_STUDENT_SUCCESS, payload: data });
+export const fetchGetHouseStudentFailure = (error) => ({ type: FETCH_GET_HOUSE_STUDENT_FAILURE, payload: error });
+
+export const fetchGetHouseStudentData = (levelId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetHouseStudentRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-house-student?levelId=${levelId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetHouseStudentSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetHouseStudentFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+
+export const fetchInsertStudentHouseRequest = () => ({ type: FETCH_INSERT_STUDENT_HOUSE_REQUEST });
+export const fetchInsertStudentHouseSuccess = (data) => ({ type: FETCH_INSERT_STUDENT_HOUSE_SUCCESS, payload: data });
+export const fetchInsertStudentHouseFailure = (error) => ({ type: FETCH_INSERT_STUDENT_HOUSE_FAILURE, payload: error });
+
+export const fetchInsertStudentHouseData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertStudentHouseRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-student-house`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertStudentHouseSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertStudentHouseFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchGetStudentHouseListRequest = () => ({ type: FETCH_GET_STUDENT_HOUSE_LIST_REQUEST });
+export const fetchGetStudentHouseListSuccess = (data) => ({ type: FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS, payload: data });
+export const fetchGetStudentHouseListFailure = (error) => ({ type: FETCH_GET_STUDENT_HOUSE_LIST_FAILURE, payload: error });
+
+export const fetchGetStudentHouseListData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetStudentHouseListRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-house-student-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchGetStudentHouseListSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchGetStudentHouseListFailure(error.message));
         return { ok: false, error };
     };
 };

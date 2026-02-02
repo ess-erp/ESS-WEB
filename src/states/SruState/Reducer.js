@@ -7,6 +7,11 @@ import {
     FETCH_GET_ENROLLED_STUDENT_REQUEST, FETCH_GET_ENROLLED_STUDENT_SUCCESS, FETCH_GET_ENROLLED_STUDENT_FAILURE,
     FETCH_INSERT_STUDENT_SECTION_REQUEST, FETCH_INSERT_STUDENT_SECTION_SUCCESS, FETCH_INSERT_STUDENT_SECTION_FAILURE,
     FETCH_GET_STUDENT_SECTION_LIST_REQUEST, FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, FETCH_GET_STUDENT_SECTION_LIST_FAILURE,
+    FETCH_INSERT_HOUSE_NAME_REQUEST, FETCH_INSERT_HOUSE_NAME_SUCCESS, FETCH_INSERT_HOUSE_NAME_FAILURE,
+    FETCH_GET_HOUSE_NAME_REQUEST, FETCH_GET_HOUSE_NAME_SUCCESS, FETCH_GET_HOUSE_NAME_FAILURE,
+    FETCH_GET_HOUSE_STUDENT_REQUEST, FETCH_GET_HOUSE_STUDENT_SUCCESS, FETCH_GET_HOUSE_STUDENT_FAILURE,
+    FETCH_INSERT_STUDENT_HOUSE_REQUEST, FETCH_INSERT_STUDENT_HOUSE_SUCCESS, FETCH_INSERT_STUDENT_HOUSE_FAILURE,
+    FETCH_GET_STUDENT_HOUSE_LIST_REQUEST, FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS, FETCH_GET_STUDENT_HOUSE_LIST_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -25,6 +30,11 @@ const initialGeneralState = {
     enrolledStudentState: { ...initialState },
     insertStudentSection: { ...initialState },
     studentSectionListState: { ...initialState },
+    insertHouseName: { ...initialState },
+    houseTableState: { ...initialState },
+    houseStudentState: { ...initialState },
+    insertStudentHouse: { ...initialState },
+    studentHouseListState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -85,6 +95,42 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, studentSectionListState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GET_STUDENT_SECTION_LIST_FAILURE:
             return { ...state, studentSectionListState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_HOUSE_NAME_REQUEST:
+            return { ...state, insertHouseName: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_HOUSE_NAME_SUCCESS:
+            return { ...state, insertHouseName: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_HOUSE_NAME_FAILURE:
+            return { ...state, insertHouseName: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_HOUSE_NAME_REQUEST:
+            return { ...state, houseTableState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_HOUSE_NAME_SUCCESS:
+            return { ...state, houseTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_HOUSE_NAME_FAILURE:
+            return { ...state, houseTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_HOUSE_STUDENT_REQUEST:
+            return { ...state, houseStudentState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_HOUSE_STUDENT_SUCCESS:
+            return { ...state, houseStudentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_HOUSE_STUDENT_FAILURE:
+            return { ...state, houseStudentState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_STUDENT_HOUSE_REQUEST:
+            return { ...state, insertStudentHouse: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_STUDENT_HOUSE_SUCCESS:
+            return { ...state, insertStudentHouse: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_STUDENT_HOUSE_FAILURE:
+            return { ...state, insertStudentHouse: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GET_STUDENT_HOUSE_LIST_REQUEST:
+            return { ...state, studentHouseListState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS:
+            return { ...state, studentHouseListState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_STUDENT_HOUSE_LIST_FAILURE:
+            return { ...state, studentHouseListState: { loading: false, data: [], error: action.payload } };
+
 
         default:
             return state;

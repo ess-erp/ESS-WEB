@@ -40,7 +40,7 @@ const CashierPayment = () => {
                             <strong className="font-bold">Note: </strong>
                             <span className="block sm:inline">This is the Cashier Payment page. Please validate first before proceed. </span>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div>
                             <PaymentComponent/>
                             {/* <StudentDataTable /> */}
                         </div>

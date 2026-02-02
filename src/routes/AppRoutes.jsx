@@ -6,6 +6,7 @@ import AdmissionDashboard from "../pages/Admission/Dashboard";
 import OnlineApplication from "../pages/Index/OnlineApplication";
 import ReturneeFormComponent from "../components/OnlineAppComponents/ReturneeFormComponent";
 import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
+import EmployeeOnlineApplication from "../pages/EmployeeOnlineApplication/OnlineApplication";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
 import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
 import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
@@ -23,7 +24,10 @@ import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
 import SruDashboard from "../pages/SRU/Dashboard";
 import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
 import StudentMasterFile from "../pages/SRU/StudentMasterFile";
-import CreateSection from "../pages/SRU/CreateSection";
+import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
+import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
+import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
+import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
 
 
 const AppRoutes = () => (
@@ -34,6 +38,7 @@ const AppRoutes = () => (
       <Route path="/returneeform" element={<ReturneeFormComponent />} />
       <Route path="/congratulationletter" element={<CongratsComponent />} />
       <Route path="/accessdenied" element={<AccessDenied />} />
+      <Route path="/employeeonlineapplication" element={<EmployeeOnlineApplication/>} />
 
       {/* ✅ Admissions modules */}
       <Route
@@ -190,14 +195,41 @@ const AppRoutes = () => (
         }
       />
       <Route
-        path="/sru/CreateSection"
+        path="/sru/sectionandhouseentry"
         element={
           <ProtectedRoutes allowedRoles={["7"]}>
-            <CreateSection />
+            <SectionAndHouseEntry />
           </ProtectedRoutes>
         }
       />
       {/* End of Sru modules */}
+
+      {/* start of academics modules */}
+      <Route
+        path="/academic/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["8"]}>
+            <AcademicDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/academic/facultyloadentry"
+        element={
+          <ProtectedRoutes allowedRoles={["8"]}>
+            <AcadFacultyLoadEntry />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/academic/subjectloadentry"
+        element={
+          <ProtectedRoutes allowedRoles={["8"]}>
+            <AcadSubjectLoadEntry />
+          </ProtectedRoutes>
+        }
+      />
+      {/* end of academics modules */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
