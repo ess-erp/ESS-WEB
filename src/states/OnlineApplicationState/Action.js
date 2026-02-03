@@ -12,6 +12,7 @@ import {
     FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
     FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
+    FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -359,6 +360,43 @@ export const fetchStudentByIdData = (studentId) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchStudentByIdFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Insert Employee
+export const fetchInsertEmployeeRequest = () => ({ type: FETCH_INSERT_EMPLOYEE_REQUEST });
+export const fetchInsertEmployeeSuccess = (data) => ({ type: FETCH_INSERT_EMPLOYEE_SUCCESS, payload: data });
+export const fetchInsertEmployeeFailure = (error) => ({ type: FETCH_INSERT_EMPLOYEE_FAILURE, payload: error });
+
+export const fetchInsertEmployeeData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertEmployeeRequest());
+    try {
+        const url = `${baseUrl}/auth/student-online-application`; // also removed the stray " at the end
+
+        const response = await fetch(url, {
+            method: 'POST',
+            body: formData,
+        });
+
+        const text = await response.text();
+        let res;
+        try {
+            res = text ? JSON.parse(text) : {};
+        } catch {
+            res = { success: false, message: text || "Invalid JSON response" };
+        }
+
+        if (res.success === false) {
+            throw new Error(res.message || "Unknown error");
+        }
+
+        dispatch(fetchInsertEmployeeSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertEmployeeFailure(error.message));
         return { ok: false, error };
     }
 };

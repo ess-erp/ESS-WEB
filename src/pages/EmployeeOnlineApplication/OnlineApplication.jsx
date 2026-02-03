@@ -2,27 +2,20 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import BlueBtn from '../../components/ButtonsComponents/BlueBtn';
 import RedBtn from '../../components/ButtonsComponents/RedBtn';
 import GreenBtn from '../../components/ButtonsComponents/GreenBtn';
 import RHFListbox from "../../components/ButtonsComponents/RHFListbox";
 import InputField from "../../components/ButtonsComponents/InputField";
-import InputFileField from '../../components/ButtonsComponents/InputFileField';
 import RadioGroupField from '../../components/ButtonsComponents/RadioGroupField';
 import ModalComponent from '../../components/ButtonsComponents/ModalComponent';
 import { motion, AnimatePresence } from "framer-motion";
 import {
-    fetchCampusData,
-    fetchDivisionData,
-    fetchLevelData,
-    fetchStrandData,
     fetchNationalityData,
     fetchReligionData,
-    fetchOtpCodeData,
     fetchProvinceData,
     fetchCityData,
     fetchBarangayData,
-    fetchInsertStudentData
+    fetchInsertEmployeeData,
 } from '../../states/OnlineApplicationState/Action';
 
 
@@ -32,12 +25,11 @@ const OnlineApplication = () => {
     const [step, setStep] = useState(1);
     const stepTitle = {
         1: "Personal Information",
-        2: "Application Information",
-        3: "Father's Information",
-        4: "Mother's Maiden Information",
-        5: "Emergency Contact Person Information",
-        6: "Address Information",
-        7: "File Attachment"
+        2: "Other Personal Information",
+        3: "Family Information",
+        4: "Educational Background",
+        5: "Highest Educational Attainment",
+        6: "Address Information"
     };
     const {
         getValues,
@@ -53,33 +45,41 @@ const OnlineApplication = () => {
             Fname: "",
             Mname: "",
             Lname: "",
+            Nickname: "",
             Email: "",
-            DateOfBirth: "",
+            Position: "",
+            OtherPosition: "",
             Gender: "",
-            Campus: null,
-            Division: null,
-            Level: null,
-            Strand: null,
-            Nationality: null,
             Religion: null,
             OtherReligion: "",
-            FathersFname: "",
-            FathersMname: "",
-            FathersLname: "",
-            FathersEmail: "",
+            Nationality: null,
+            DateOfBirth: "",
+            PlaceOfBirth: "",
+            Resume: null,
+            CivilStatus: "",
+            NameOfSpouse: "",
+            SpouseOccupation: "",
+            NoOfYearsMarried: "",
+            NoOfChildren: "",
+            AgeOfEldestChild: "",
+            AgeOfYoungestChild: "",
+            IsPregnant: "",
+            FathersFullname: "",
+            FathersAge: "",
             FathersOccupation: "",
-            FathersEmail: "",
-            FathersMobileNo: "",
-            MothersFname: "",
-            MothersMname: "",
-            MothersLname: "",
-            MothersEmail: "",
-            MothersOccupation: "",
-            MothersMobileNo: "",
-            ContactPerson: "",
-            ContactEmail: "",
-            ContactMobileNo: "",
-            Relationship: "",
+            MothersFullname: "",
+            MothersAge: "",
+            MotherOccupation: "",
+            NoOfSiblings: "",
+            PrevEmployed: "",
+            PlanToWorkAbroad: "",
+            TargetYear: "",
+            TeachingLicense: "",
+            DateOfExamination: "",
+            SchoolName: "",
+            From: "",
+            To: "",
+            Degree: "",
             ProvinceCode: "",
             ProvinceName: "",
             CityCode: "",
@@ -87,48 +87,45 @@ const OnlineApplication = () => {
             BrgyCode: "",
             BrgyName: "",
             HomeStreet: "",
-            TwoByTwo: null,
-            BirthCert: null,
-            Baptismal: null,
-            GoodMoral: null,
-            ReportCard: null,
-            StudentType: "New",
         }
     });
-    const campusList = useSelector(state => state.online.campusState?.data || []);
-    const divisionList = useSelector(state => state.online.divisionState?.data || []);
-    const levelList = useSelector(state => state.online.levelState?.data || []);
-    const strandList = useSelector(state => state.online.strandState?.data || []);
     const nationalityList = useSelector(state => state.online.nationalityState?.data || []);
     const religionList = useSelector(state => state.online.religionState?.data || []);
     const provinceList = useSelector(state => state.online.provinceState?.data || []);
     const cityList = useSelector(state => state.online.cityState?.data || []);
     const brgyList = useSelector(state => state.online.barangayState?.data || []);
-
+    const position = [
+        { id: "faculty", value: "Faculty" },
+        { id: "ntf", value: "Non-Teaching Faculty" },
+        { id: "staff", value: "Staff" },
+        { id: "others", value: "Others" },
+    ];
+    const civilStatusList = [
+        { id: "single", civilName: "Single" },
+        { id: "married", civilName: "Married" },
+        { id: "single with child", civilName: "Single with child" },
+        { id: "widow", civilName: "Widow" },
+        { id: "seperated", civilName: "Separated" },
+        { id: "legally seperated", civilName: "Legally Separated" },
+    ];
+    const pregnantList = [
+        { id: "yes", value: "Yes" },
+        { id: "no", value: "No" },
+        { id: "unsure", value: "Unsure" },
+    ];
     useEffect(() => {
-        dispatch(fetchCampusData());
-        dispatch(fetchDivisionData());
         dispatch(fetchNationalityData());
         dispatch(fetchReligionData());
         dispatch(fetchProvinceData());
     }, [dispatch]);
-
+    const selectedPosition = watch("Position");
     const selectedReligion = watch("Religion");
-    const division = watch("Division");
-    const level = watch("Level");
+    const selectedCivilStatus = watch("CivilStatus");
     const province = watch("Province");
     const city = watch("City");
-
-
-    useEffect(() => {
-        if (!division?.DivId) return;
-        dispatch(fetchLevelData(division.DivId));
-    }, [division?.DivId]);
-
-    useEffect(() => {
-        if (level?.LevelId !== 15) return;
-        dispatch(fetchStrandData(level.LevelId));
-    }, [level?.LevelId]);
+    console.log(selectedPosition);
+    console.log(selectedCivilStatus);
+   
 
 
     useEffect(() => {
@@ -141,63 +138,6 @@ const OnlineApplication = () => {
         dispatch(fetchBarangayData(city.city_code));
     }, [city?.city_code]);
 
-
-    const [otpValid, setOtpValid] = useState(null);
-    const [otpCooldown, setOtpCooldown] = useState(0);
-    const [serverOtp, setServerOtp] = useState(null);
-    const [isMessage, setIsMessage] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
-    const [color, setIsColor] = useState("");
-    const handleSendVerificationCode = async () => {
-        if (otpCooldown > 0) return;
-        const isValid = await trigger("ContactEmail");
-        const email = getValues("ContactEmail");
-
-        //if contact email not valid it will throw an error
-        if (!isValid) return;
-        setOtpCooldown(60);
-        setOtpValid(null);
-        setIsMessage(true);
-        setIsColor("green");
-        setSuccessMessage("An OTP has been sent to the email above.");
-        const payload = {
-            FatherEmail: "",
-            MotherEmail: "",
-            ContactEmail: email,
-        }
-        const res = await dispatch(fetchOtpCodeData(payload));
-        if (res.ok) {
-            setServerOtp(res.data.OtpCode);
-        }
-    };
-    useEffect(() => {
-        if (otpCooldown <= 0) {
-            setIsMessage(false);
-            return;
-        }
-
-        const timer = setInterval(() => {
-            setOtpCooldown(prev => prev - 1);
-        }, 1000);
-
-        return () => clearInterval(timer);
-    }, [otpCooldown]);
-    const handleOtpChange = (value) => {
-        if (!serverOtp) return;
-
-        if (value === serverOtp) {
-            setOtpValid(true);
-        } else {
-            setOtpValid(false);
-        }
-    };
-
-
-    const [twoByTwoFile, setTwoByTwoFile] = useState(null);
-    const [birthCertificate, setBirthCertificate] = useState(null);
-    const [baptismal, setBaptismal] = useState(null);
-    const [goodMoral, setGoodMoral] = useState(null);
-    const [reportCard, setReportCard] = useState(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -214,39 +154,28 @@ const OnlineApplication = () => {
         let fieldsToValidate = [];
         switch (step) {
             case 1:
-                fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
+                fieldsToValidate = ["Fname", "Lname", "Gender", "Nickname", "Email", "Position", "Religion", "Nationality", "DateOfBirth", "Resume"];
                 break;
             case 2:
-                fieldsToValidate = ["Campus", "Division", "Level"];
-                if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
-                fieldsToValidate.push("Religion", "Nationality");
+                fieldsToValidate = ["CivilStatus"];
+                if (watch("CivilStatus")?.id === 2 || watch("CivilStatus")?.id === 6) {
+                    fieldsToValidate.push("NameOfSpouse", "SpouseOccupation", "NoOfYearsMarried", "NoOfChildren", "AgeOfEldestChild", "AgeOfYoungestChild");
+                }
                 break;
             case 3:
-                fieldsToValidate = [];
+                fieldsToValidate = ["MothersFullname", "MothersAge", "MothersOccupation", "NoOfSiblings"];
                 break;
             case 4:
-                fieldsToValidate = ["MothersFname", "MothersLname", "MothersEmail", "MothersMobilePhoneNo"];
+                fieldsToValidate = ["PrevEmployed", "PlanToWorkAbroad", "TargetYear", "TeachingLicense", "DateOfExamination"];
                 break;
             case 5:
-                fieldsToValidate = ["ContactPerson", "ContactEmail", "OtpCode", "ContactMobilePhoneNo", "Relationship"];
+                fieldsToValidate = ["SchoolName", "From", "To"];
                 break;
             case 6:
                 fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
                 break;
-            case 7:
-                fieldsToValidate = [];
-                break;
         }
         const valid = await trigger(fieldsToValidate);
-
-        if (step === 5) {
-            if (otpValid !== true) {
-                setIsMessage(true);
-                setIsColor("red");
-                setSuccessMessage("OTP is invalid or not verified.");
-                return; // prevent moving to next step
-            }
-        }
 
         if (valid) {
             setStep(step + 1);
@@ -272,45 +201,48 @@ const OnlineApplication = () => {
         payload.append("Fname", formData.Fname || "");
         payload.append("Mname", formData.Mname || "");
         payload.append("Lname", formData.Lname || "");
+        payload.append("Nickname", formData.Email || "");
         payload.append("Email", formData.Email || "");
-        payload.append("DateOfBirth", formData.DateOfBirth || "");
+        payload.append("Postion", formData.DateOfBirth || "");
+        payload.append("OthersPosition", formData.Email || "");
         payload.append("Gender", formData.Gender || "");
-
-        payload.append("CampusId", formData.Campus?.CampusId ?? "");
-        payload.append("CampusName", formData.Campus?.CampusName || "");
-        payload.append("DivId", formData.Division?.DivId ?? "");
-        payload.append("DivName", formData.Division?.DivName || "");
-        payload.append("LevelId", formData.Level?.LevelId ?? "");
-        payload.append("LevelName", formData.Level?.LevelName || "");
-        if (formData.Strand?.StrandId) {
-            payload.append("StrandId", formData.Strand.StrandId);
-            payload.append("StrandName", formData.Strand.StrandName ?? "");
-        }
-
-        payload.append("NationalityId", formData.Nationality?.NationalityId ?? "");
-        payload.append("NationalityName", formData.Nationality?.NationalityName || "");
         payload.append("ReligionId", formData.Religion?.ReligionId ?? "");
         payload.append("ReligionName", formData.Religion?.ReligionName || null);
         payload.append("OtherReligion", formData.OtherReligion || null);
+        payload.append("ReligionName", formData.Religion?.ReligionName || null);
+        payload.append("OtherReligion", formData.OtherReligion || null);
+        payload.append("NationalityId", formData.Nationality?.NationalityId ?? "");
+        payload.append("NationalityName", formData.Nationality?.NationalityName || "")
+        payload.append("DateOfBirth", formData.DateOfBirth ?? "");
+        payload.append("PlaceOfBirth", formData.PlaceOfBirth || "")
+        if (formData.Resume) payload.append("Resume", formData.Resume);
+        payload.append("CivilStatus", formData.CivilStatus || "");
+        if (formData.CivilStatus?.id) {
+            payload.append("NameOfSpouse", formData.NameOfSpouse || "");
+            payload.append("SpouseOccupation", formData.SpouseOccupation || "");
+            payload.append("NoOfYearsMarried", formData.NoOfYearsMarried || "");
+            payload.append("NoOfChildren", formData.NoOfChildren || "");
+            payload.append("AgeOfEldestChild", formData.AgeOfEldestChild || "");
+            payload.append("AgeOfYoungestChild", formData.AgeOfYoungestChild || "");
 
-        payload.append("FathersFname", formData.FathersFname || "");
-        payload.append("FathersMname", formData.FathersMname || "");
-        payload.append("FathersLname", formData.FathersLname || "");
-        payload.append("FathersEmail", formData.FathersEmail || "");
+        }
+        payload.append("IsPregnant", formData.AgeOfYoungestChild || "");
+        payload.append("FathersFullname", formData.FathersFullname || "");
+        payload.append("FathersAge", formData.FathersAge || "");
         payload.append("FathersOccupation", formData.FathersOccupation || "");
-        payload.append("FathersMobileNo", formData.FathersMobileNo || "");
-
-        payload.append("MothersFname", formData.MothersFname || "");
-        payload.append("MothersMname", formData.MothersMname || "");
-        payload.append("MothersLname", formData.MothersLname || "");
-        payload.append("MothersEmail", formData.MothersEmail || "");
-        payload.append("MothersOccupation", formData.MothersOccupation || "");
-        payload.append("MothersMobileNo", formData.MothersMobileNo || "");
-
-        payload.append("ContactPerson", formData.ContactPerson || "");
-        payload.append("ContactEmail", formData.ContactEmail || "");
-        payload.append("Relationship", formData.Relationship || "");
-
+        payload.append("MothersFullname", formData.MothersFullname || "");
+        payload.append("MothersAge", formData.MothersAge || "");
+        payload.append("MotherOccupation", formData.MotherOccupation || "");
+        payload.append("NoOfSiblings", formData.NoOfSiblings || "");
+        payload.append("PrevEmployed", formData.PrevEmployed || "");
+        payload.append("PlanToWorkAbroad", formData.PlanToWorkAbroad || "");
+        payload.append("TargetYear", formData.TargetYear || "");
+        payload.append("TeachingLicense", formData.TeachingLicense || "");
+        payload.append("DateOfExamination", formData.DateOfExamination || "");
+        payload.append("SchoolName", formData.SchoolName || "");
+        payload.append("From", formData.From || "");
+        payload.append("To", formData.To || "");
+        payload.append("Degree", formData.Degree || "");
         payload.append("ProvinceCode", formData.Province?.province_code || "");
         payload.append("ProvinceName", formData.Province?.province_name || "");
         payload.append("CityCode", formData.City?.city_code || "");
@@ -319,23 +251,13 @@ const OnlineApplication = () => {
         payload.append("BrgyName", formData.Barangay?.brgy_name || "");
         payload.append("HomeStreet", formData.HomeStreet || "");
 
-        payload.append("StudentType", formData.StudentType || "New");
-        payload.append("DocId", formData.DocId || 0);
-
-        // Append files if present
-        if (formData.TwoByTwo) payload.append("TwoByTwo", formData.TwoByTwo);
-        if (formData.BirthCert) payload.append("BirthCert", formData.BirthCert);
-        if (formData.Baptismal) payload.append("Baptismal", formData.Baptismal);
-        if (formData.GoodMoral) payload.append("GoodMoral", formData.GoodMoral);
-        if (formData.ReportCard) payload.append("ReportCard", formData.ReportCard);
-
         console.log("SUBMIT PAYLOAD:", payload);
 
-        const res = await dispatch(fetchInsertStudentData(payload));
+        const res = await dispatch(fetchInsertEmployeeData(payload));
         if (res.ok) {
             setIsSuccessModalOpen(true);
             if (isSuccessModalOpen == false) {
-                navigate('/congratulationletter');
+                navigate('/employeecongratulationletter');
             }
         }
         else {
@@ -386,8 +308,12 @@ const OnlineApplication = () => {
                                                 <InputField name="Fname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" required errors={errors.Fname} errorMessage={errors.Fname?.message} />
                                                 <InputField name="Mname" label="Middle Name" register={register} isEditing={true} placeholder="Please input middle name...." divClassName="" />
                                                 <InputField name="Lname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" required errors={errors.Lname} errorMessage={errors.Lname?.message} />
-                                                <InputField name="Lname" label="Nickname" register={register} isEditing={true} placeholder="Please input nickname...." divClassName="" required errors={errors.Lname} errorMessage={errors.Lname?.message} />
-                                                 <RHFListbox name="Religion" control={control} list={religionList} label="Desired Position" labelKey="ReligionName" isEditing={false} divClassName="" required error={errors.Religion} />
+                                                <InputField name="Nickname" label="Nickname" register={register} isEditing={true} placeholder="Please input nickname...." divClassName="" required errors={errors.Nickname} errorMessage={errors.Nickname?.message} />
+                                                <InputField name="Email" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.Email} errorMessage={errors.Email?.message} type="email" isValidEmail={isValidEmail} />
+                                                <RHFListbox name="Position" control={control} list={position} label="Desired Position" labelKey="value" isEditing={false} divClassName="" required error={errors.Position} />
+                                                {selectedPosition?.id === "others" && (
+                                                    <InputField name="OtherPosition" label="Other Position" register={register} isEditing={true} placeholder="Please input other position...." divClassName="" required errors={errors.OtherPosition} errorMessage={errors.OtherPosition?.message} />
+                                                )}
                                                 <RadioGroupField
                                                     name="Gender"
                                                     label="Gender"
@@ -408,6 +334,7 @@ const OnlineApplication = () => {
                                                 <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={false} divClassName="" required error={errors.Nationality} />
                                                 <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={true} divClassName="" type="date" required errors={errors.DateOfBirth} errorMessage={errors.DateOfBirth?.message} />
                                                 <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={true} placeholder="Please input place of birth...." divClassName="" />
+                                                <InputField name="Resume" label="Upload Resume" register={register} isEditing={true} divClassName="" type="file" required errors={errors.Resume} errorMessage={errors.Resume?.message} />
                                             </div>
                                             <div className='pt-2'>
                                                 <GreenBtn label="Next →" onClick={handleNext} />
@@ -415,32 +342,6 @@ const OnlineApplication = () => {
                                         </motion.div>
                                     </>
                                 )}
-                                {/* {step === 2 && (
-                                    <>
-                                        <motion.div
-                                            key="two"
-                                            initial={{ x: 50, opacity: 0 }}
-                                            animate={{ x: 0, opacity: 1 }}
-                                            exit={{ x: -50, opacity: 0 }}
-                                            transition={{ duration: 0.4 }}
-                                        >
-                                            <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                                <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={false} divClassName="" required error={errors.Campus} />
-                                                <RHFListbox name="Division" control={control} list={divisionList} label="Division" labelKey="DivName" isEditing={false} divClassName="" required error={errors.Division} />
-                                                <RHFListbox name="Level" control={control} list={levelList} label="Level" labelKey="LevelName" isEditing={false} divClassName="" required error={errors.Level} />
-
-                                                {level?.LevelId === 15 && (
-                                                    <RHFListbox name="Strand" control={control} list={strandList} label="Strand" labelKey="StrandName" isEditing={false} divClassName="" required error={errors.Strand} />
-                                                )}
-
-                                            </div>
-                                            <div className='pt-2'>
-                                                <RedBtn label="← Back" onClick={handleBack} />
-                                                <GreenBtn label="Next →" onClick={handleNext} />
-                                            </div>
-                                        </motion.div>
-                                    </>
-                                )} */}
                                 {step === 2 && (
                                     <>
                                         <motion.div
@@ -451,12 +352,22 @@ const OnlineApplication = () => {
                                             transition={{ duration: 0.4 }}
                                         >
                                             <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                                <InputField name="FathersFname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" />
-                                                <InputField name="FathersMname" label="Middle Name" register={register} isEditing={true} placeholder="Please input middle name...." divClassName="" />
-                                                <InputField name="FathersLname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" />
-                                                <InputField name="FathersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" />
-                                                <InputField name="FathersMobilePhoneNo" label="Mobile Phone No." register={register} isEditing={true} placeholder="Please input mobile phone...." divClassName="" />
-                                                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input occupation...." divClassName="" />
+                                                <RHFListbox name="CivilStatus" control={control} list={civilStatusList} label="Civil Status" labelKey="civilName" isEditing={false} divClassName="" required error={errors.Religion} />
+                                                {(selectedCivilStatus?.id === "married" || selectedCivilStatus?.id === "legally seperated") && (
+                                                    <>
+                                                        <InputField name="NameOfSpouse" label="Name of Spouse" register={register} isEditing={true} placeholder="Please input name of spouse...." divClassName="" required errors={errors.NameOfSpouse} errorMessage={errors.NameOfSpouse?.message} />
+                                                        <InputField name="SpouseOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input spouse occupation...." divClassName="" required errors={errors.SpouseOccupation} errorMessage={errors.SpouseOccupation?.message} />
+                                                        <InputField name="NoOfYearsMarried" label="No. of years married" register={register} isEditing={true} placeholder="Please input no. of years married...." divClassName="" required errors={errors.NoOfYearsMarried} errorMessage={errors.NoOfYearsMarried?.message} />
+                                                        <InputField name="NoOfChildren" label="No. of children" register={register} isEditing={true} placeholder="Please input no. of years married...." divClassName="" required errors={errors.NoOfChildren} errorMessage={errors.NoOfChildren?.message} />
+                                                        <InputField name="AgeOfEldestChild" label="Age of Eldest Child" register={register} isEditing={true} placeholder="Please input occupation...." divClassName="" required errors={errors.AgeOfEldestChild} errorMessage={errors.AgeOfEldestChild?.message} />
+                                                        <InputField name="AgeOfYoungestChild" label="Age of Youngest Child" register={register} isEditing={true} placeholder="Please input occupation...." divClassName="" required errors={errors.AgeOfYoungestChild} errorMessage={errors.AgeOfYoungestChild?.message} />
+                                                    </>
+                                                )}
+                                                <hr />
+                                                <h2 className="text-xl font-bold text-green-800 mb-6">
+                                                    For Female Applicant Only
+                                                </h2>
+                                                <RHFListbox name="IsPregnant" control={control} list={pregnantList} label="Pregnant" labelKey="value" isEditing={false} divClassName="" />
                                             </div>
                                             <div className='pt-2'>
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -475,12 +386,21 @@ const OnlineApplication = () => {
                                             transition={{ duration: 0.4 }}
                                         >
                                             <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                                <InputField name="MothersFname" label="First Name" register={register} isEditing={true} placeholder="Please input first name...." divClassName="" required errors={errors.MothersFname} errorMessage={errors.MothersFname?.message} />
-                                                <InputField name="MothersMname" label="Middle Name" register={register} isEditing={true} placeholder="Please input middle name...." divClassName="" />
-                                                <InputField name="MothersLname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" required errors={errors.MothersLname} errorMessage={errors.MothersLname?.message} />
-                                                <InputField name="MothersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.MothersEmail} errorMessage={errors.MothersEmail?.message} type="email" isValidEmail={isValidEmail} />
-                                                <InputField name="MothersMobilePhoneNo" label="Mobile Phone No." register={register} isEditing={true} placeholder="Please input mobile phone...." divClassName="" required errors={errors.MothersMobilePhoneNo} errorMessage={errors.MothersMobilePhoneNo?.message} />
-                                                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input occupation...." divClassName="" />
+                                                <hr />
+                                                <h2 className="text-xl font-bold text-green-800 mb-6">
+                                                    Father Information
+                                                </h2>
+                                                <InputField name="FathersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input father's fullname...." />
+                                                <InputField name="FathersAge" label="Age" register={register} isEditing={true} placeholder="Please input father's age...." divClassName="" />
+                                                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input father's occupation...." divClassName="" />
+                                                <hr />
+                                                <h2 className="text-xl font-bold text-green-800 mb-6">
+                                                    Mother Information
+                                                </h2>
+                                                <InputField name="MothersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input mother's fullname...." divClassName="" />
+                                                <InputField name="MothersAge" label="Age" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersFullname} errorMessage={errors.MothersFullname?.message} />
+                                                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersAge} errorMessage={errors.MothersAge?.message} />
+                                                <InputField name="NoOfSiblings" label="No. of siblings" register={register} isEditing={true} placeholder="Please input no. of siblings...." divClassName="" required errors={errors.MothersOccupation} errorMessage={errors.MothersOccupation?.message} />
                                             </div>
                                             <div className='pt-2'>
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -499,29 +419,35 @@ const OnlineApplication = () => {
                                             transition={{ duration: 0.4 }}
                                         >
                                             <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                                <InputField name="ContactPerson" label="Fullname" register={register} isEditing={true} placeholder="Please input fullname...." divClassName="" required errors={errors.ContactPerson} errorMessage={errors.ContactPerson?.message} />
-                                                <InputField name="ContactEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.ContactEmail} errorMessage={errors.ContactEmail?.message} type="email" isValidEmail={isValidEmail} />
-                                                <InputField
-                                                    name="OtpCode"
-                                                    label="Email Verification Code"
+                                                <RadioGroupField
+                                                    name="PrevEmployed"
+                                                    label="Have you been previously employed by Elizabeth Seton School?"
                                                     register={register}
                                                     isEditing={true}
-                                                    placeholder="Please input otp code...."
-                                                    divClassName="relative"
-                                                    addButton={true}
-                                                    handleClick={handleSendVerificationCode}
                                                     required
-                                                    errors={errors.OtpCode}
-                                                    errorMessage={errors.OtpCode?.message}
-                                                    isOtpValid={otpValid}
-                                                    isOtp={true}
-                                                    onChange={(e) => handleOtpChange(e.target.value)}
-                                                    isMessage={isMessage}
-                                                    successMessage={successMessage}
-                                                    disabled={otpCooldown}
-                                                    color={color}
+                                                    options={[
+                                                        { label: "Yes", value: "Y" },
+                                                        { label: "No", value: "N" },
+                                                    ]}
+                                                    divClassName=""
+                                                    error={errors.PrevEmployed}
                                                 />
-
+                                                <RadioGroupField
+                                                    name="PlanToWorkAbroad"
+                                                    label="Do you have plans to work abroad?"
+                                                    register={register}
+                                                    isEditing={true}
+                                                    required
+                                                    options={[
+                                                        { label: "Yes", value: "Y" },
+                                                        { label: "No", value: "N" },
+                                                    ]}
+                                                    divClassName=""
+                                                    error={errors.PlanToWorkAbroad}
+                                                />
+                                                <InputField name="TargetYear" label="Target year (If yes, please specify your target year of application/travel.)" register={register} isEditing={true} placeholder="Please input target year...." divClassName="" required errors={errors.TargetYear} errorMessage={errors.TargetYear?.message} />
+                                                <InputField name="TeachingLicense" label="Teaching License No" register={register} isEditing={true} placeholder="Please input teaching license no...." divClassName="" required errors={errors.TeachingLicense} errorMessage={errors.TeachingLicense?.message} />
+                                                <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={true} type="date" placeholder="Please input last name...." divClassName="" required errors={errors.DateOfExamination} errorMessage={errors.DateOfExamination?.message} />
                                             </div>
                                             <div className="pt-2">
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -541,10 +467,10 @@ const OnlineApplication = () => {
                                             transition={{ duration: 0.4 }}
                                         >
                                             <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
-                                                <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={false} divClassName="" required error={errors.Province} />
-                                                <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={false} divClassName="" required error={errors.City} />
-                                                <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={false} divClassName="" required error={errors.Barangay} />
-                                                <InputField name="HomeStreet" label="Home Steet Number" register={register} isEditing={true} placeholder="Please input street no(Block 1 Lot 1)." divClassName="" required errors={errors.HomeStreet} errorMessage={errors.HomeStreet?.message} />
+                                                <InputField name="SchoolName" label="Name of school" register={register} isEditing={true} placeholder="Please input school name...." divClassName="" required errors={errors.SchoolName} errorMessage={errors.SchoolName?.message} />
+                                                <InputField name="From" label="From" register={register} isEditing={true} type="date" divClassName="" required errors={errors.From} errorMessage={errors.From?.message} />
+                                                <InputField name="To" label="Two" register={register} isEditing={true} type="date" divClassName="" required errors={errors.To} errorMessage={errors.To?.message} />
+                                                <InputField name="Degree" label="Degree" register={register} isEditing={true} placeholder="Please input degree...." divClassName="" />
                                             </div>
                                             <div className='pt-2'>
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -553,70 +479,20 @@ const OnlineApplication = () => {
                                         </motion.div>
                                     </>
                                 )}
-                                {/* {step === 6 && (
+                                {step === 6 && (
                                     <>
                                         <motion.div
-                                            key="seven"
+                                            key="six"
                                             initial={{ x: 50, opacity: 0 }}
                                             animate={{ x: 0, opacity: 1 }}
                                             exit={{ x: -50, opacity: 0 }}
                                             transition={{ duration: 0.4 }}
                                         >
-                                            <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
-                                                <strong className="font-bold">Note: </strong>
-                                                <span className="block sm:inline">PNG and JPG are Allowed..</span>
-                                            </div>
-                                            <div className="max-h-96 overflow-y-auto pr-2 space-y-6 pt-2">
-                                                <InputFileField
-                                                    name="TwoByTwo"
-                                                    label="Upload 2x2 Picture"
-                                                    register={register}
-                                                    isEditing={true}
-                                                    type="file"
-                                                    onFileChange={setTwoByTwoFile}
-                                                    file={twoByTwoFile}
-                                                    altFileName="2x2 Preview"
-                                                />
-                                                <InputFileField
-                                                    name="BirthCert"
-                                                    label="Upload Birth Certificate"
-                                                    register={register}
-                                                    isEditing={true}
-                                                    type="file"
-                                                    onFileChange={setBirthCertificate}
-                                                    file={birthCertificate}
-                                                    altFileName="Birth Certificate Preview"
-                                                />
-                                                <InputFileField
-                                                    name="Baptismal"
-                                                    label="Upload Baptismal"
-                                                    register={register}
-                                                    isEditing={true}
-                                                    type="file"
-                                                    onFileChange={setBaptismal}
-                                                    file={baptismal}
-                                                    altFileName="Birth Certificate Preview"
-                                                />
-                                                <InputFileField
-                                                    name="GoodMoral"
-                                                    label="Upload Good Moral"
-                                                    register={register}
-                                                    isEditing={true}
-                                                    type="file"
-                                                    onFileChange={setGoodMoral}
-                                                    file={goodMoral}
-                                                    altFileName="Good Moral Preview"
-                                                />
-                                                <InputFileField
-                                                    name="ReportCard"
-                                                    label="Upload Report Card"
-                                                    register={register}
-                                                    isEditing={true}
-                                                    type="file"
-                                                    onFileChange={setReportCard}
-                                                    file={reportCard}
-                                                    altFileName="Report Card Preview"
-                                                />
+                                            <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
+                                                <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={false} divClassName="" required error={errors.Province} />
+                                                <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={false} divClassName="" required error={errors.City} />
+                                                <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={false} divClassName="" required error={errors.Barangay} />
+                                                <InputField name="HomeStreet" label="Home Steet Number" register={register} isEditing={true} placeholder="Please input street no(Block 1 Lot 1)." divClassName="" required errors={errors.HomeStreet} errorMessage={errors.HomeStreet?.message} />
                                             </div>
                                             <div className='pt-2'>
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -624,7 +500,7 @@ const OnlineApplication = () => {
                                             </div>
                                         </motion.div>
                                     </>
-                                )} */}
+                                )}
                             </AnimatePresence>
                         </form>
                     </div>

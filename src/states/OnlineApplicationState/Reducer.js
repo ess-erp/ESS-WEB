@@ -12,6 +12,7 @@ import {
     FETCH_INSERTSTUDENT_REQUEST, FETCH_INSERTSTUDENT_SUCCESS, FETCH_INSERTSTUDENT_FAILURE,
     FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
+    FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -35,6 +36,7 @@ const initialState = {
     insertStudentState: { ...initialFormState },
     oldStudentState: { ...initialFormState },
     studentDataState: { ...initialFormState },
+    insertEmployeeState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -140,6 +142,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, studentDataState: { loading: false, data: action.payload, error: '' } };
         case FETCH_STUDENTBYID_FAILURE:
             return { ...state, studentDataState: { loading: false, data: '', error: action.payload } };
+
+        //Insert New Employee
+        case FETCH_INSERT_EMPLOYEE_REQUEST:
+            return { ...state, insertEmployeeState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_EMPLOYEE_SUCCESS:
+            return { ...state, insertEmployeeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_EMPLOYEE_FAILURE:
+            return { ...state, insertEmployeeState: { loading: false, data: '', error: action.payload } };
 
         default:
             return state;

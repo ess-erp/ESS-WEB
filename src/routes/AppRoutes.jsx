@@ -7,6 +7,7 @@ import OnlineApplication from "../pages/Index/OnlineApplication";
 import ReturneeFormComponent from "../components/OnlineAppComponents/ReturneeFormComponent";
 import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
 import EmployeeOnlineApplication from "../pages/EmployeeOnlineApplication/OnlineApplication";
+import EmployeeCongratsLetter from "../pages/EmployeeOnlineApplication/CongratsLetter";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
 import StudentOnlineAppForm from "../pages/Admission/StudentOnlineAppForm";
 import AdmissionTemplatesForm from "../pages/Admission/TemplatesForm";
@@ -38,8 +39,8 @@ const AppRoutes = () => (
       <Route path="/returneeform" element={<ReturneeFormComponent />} />
       <Route path="/congratulationletter" element={<CongratsComponent />} />
       <Route path="/accessdenied" element={<AccessDenied />} />
-      <Route path="/employeeonlineapplication" element={<EmployeeOnlineApplication/>} />
-
+      <Route path="/employeeonlineapplication" element={<EmployeeOnlineApplication />} />
+      <Route path="/employeecongratulationletter" element={<EmployeeCongratsLetter />} />
       {/* ✅ Admissions modules */}
       <Route
         path="/admission/dashboard"
@@ -221,7 +222,7 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-       <Route
+      <Route
         path="/academic/subjectloadentry"
         element={
           <ProtectedRoutes allowedRoles={["8"]}>
