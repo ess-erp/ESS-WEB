@@ -373,7 +373,7 @@ export const fetchInsertEmployeeFailure = (error) => ({ type: FETCH_INSERT_EMPLO
 export const fetchInsertEmployeeData = (formData) => async (dispatch) => {
     dispatch(fetchInsertEmployeeRequest());
     try {
-        const url = `${baseUrl}/auth/student-online-application`; // also removed the stray " at the end
+        const url = `${baseUrl}/auth/employee-online-application`; // also removed the stray " at the end
 
         const response = await fetch(url, {
             method: 'POST',

@@ -103,6 +103,17 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
             { name: "Profile", icon: SettingsIcon, path: "/settings" },
         ],
+        9: [
+            { name: "Dashboard", icon: DashboardIcon, path: "/hr/dashboard" },
+            { name: "Employee Online Application", icon: UserIconSolid, path: "/hr/onlineapplication" },
+            // { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
+            // { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
+            { separator: true },
+            { name: "Notification", icon: Bell, path: "/tickets" },
+            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+            { name: "Profile", icon: SettingsIcon, path: "/settings" },
+        ],
     };
 
     // Pick menu by role

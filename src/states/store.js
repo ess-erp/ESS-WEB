@@ -7,6 +7,7 @@ import cfwReducer from './CfwState/Reducer';
 import cashierReducer from './CashierState/Reducer';
 import financeReducer from './FinanceState/Reducer';
 import studentRecordReducer from './SruState/Reducer';
+import hrReducer from './HumanResourcesState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -15,7 +16,8 @@ const rootReducer = combineReducers({
   cfw: cfwReducer,
   cashier: cashierReducer,
   finance: financeReducer,
-  sru: studentRecordReducer
+  sru: studentRecordReducer,
+  hr: hrReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));

@@ -29,6 +29,8 @@ import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
+import HrDashboard from "../pages/HumanResources/Dashboard";
+import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
 
 
 const AppRoutes = () => (
@@ -231,6 +233,27 @@ const AppRoutes = () => (
         }
       />
       {/* end of academics modules */}
+
+      {/* start of hr modules */}
+
+      <Route
+        path="/hr/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={["9"]}>
+            <HrDashboard />
+          </ProtectedRoutes>
+        }
+      />
+
+      <Route
+        path="/hr/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={["9"]}>
+            <HrOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+      {/* end of hr modules */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

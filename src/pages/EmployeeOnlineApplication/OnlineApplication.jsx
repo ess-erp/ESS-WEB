@@ -47,7 +47,7 @@ const OnlineApplication = () => {
             Lname: "",
             Nickname: "",
             Email: "",
-            Position: "",
+            Position: null,
             OtherPosition: "",
             Gender: "",
             Religion: null,
@@ -125,7 +125,7 @@ const OnlineApplication = () => {
     const city = watch("City");
     console.log(selectedPosition);
     console.log(selectedCivilStatus);
-   
+
 
 
     useEffect(() => {
@@ -166,7 +166,7 @@ const OnlineApplication = () => {
                 fieldsToValidate = ["MothersFullname", "MothersAge", "MothersOccupation", "NoOfSiblings"];
                 break;
             case 4:
-                fieldsToValidate = ["PrevEmployed", "PlanToWorkAbroad", "TargetYear", "TeachingLicense", "DateOfExamination"];
+                fieldsToValidate = ["PrevEmployed", "PlanToWorkAbroad"];
                 break;
             case 5:
                 fieldsToValidate = ["SchoolName", "From", "To"];
@@ -201,10 +201,10 @@ const OnlineApplication = () => {
         payload.append("Fname", formData.Fname || "");
         payload.append("Mname", formData.Mname || "");
         payload.append("Lname", formData.Lname || "");
-        payload.append("Nickname", formData.Email || "");
+        payload.append("Nickname", formData.Nickname || "");
         payload.append("Email", formData.Email || "");
-        payload.append("Postion", formData.DateOfBirth || "");
-        payload.append("OthersPosition", formData.Email || "");
+        payload.append("Position", formData.Position?.value ?? "");
+        payload.append("OthersPosition", formData.OtherPosition || "");
         payload.append("Gender", formData.Gender || "");
         payload.append("ReligionId", formData.Religion?.ReligionId ?? "");
         payload.append("ReligionName", formData.Religion?.ReligionName || null);
@@ -215,7 +215,7 @@ const OnlineApplication = () => {
         payload.append("NationalityName", formData.Nationality?.NationalityName || "")
         payload.append("DateOfBirth", formData.DateOfBirth ?? "");
         payload.append("PlaceOfBirth", formData.PlaceOfBirth || "")
-        if (formData.Resume) payload.append("Resume", formData.Resume);
+        payload.append("Resume", formData.Resume);
         payload.append("CivilStatus", formData.CivilStatus || "");
         if (formData.CivilStatus?.id) {
             payload.append("NameOfSpouse", formData.NameOfSpouse || "");
@@ -334,7 +334,23 @@ const OnlineApplication = () => {
                                                 <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={false} divClassName="" required error={errors.Nationality} />
                                                 <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={true} divClassName="" type="date" required errors={errors.DateOfBirth} errorMessage={errors.DateOfBirth?.message} />
                                                 <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={true} placeholder="Please input place of birth...." divClassName="" />
-                                                <InputField name="Resume" label="Upload Resume" register={register} isEditing={true} divClassName="" type="file" required errors={errors.Resume} errorMessage={errors.Resume?.message} />
+                                                <InputField
+                                                    name="Resume"
+                                                    label="Upload Resume"
+                                                    register={register}
+                                                    isEditing={true} d
+                                                    ivClassName=""
+                                                    type="file"
+                                                    required errors={errors.Resume}
+                                                    errorMessage={errors.Resume?.message}
+                                                    onChange={(e) =>
+                                                        setFormData(prev => ({
+                                                            ...prev,
+                                                            Resume: e.target.files[0], // ✅ IMPORTANT
+                                                        }))
+                                                    }
+                                                />
+
                                             </div>
                                             <div className='pt-2'>
                                                 <GreenBtn label="Next →" onClick={handleNext} />
@@ -390,17 +406,17 @@ const OnlineApplication = () => {
                                                 <h2 className="text-xl font-bold text-green-800 mb-6">
                                                     Father Information
                                                 </h2>
-                                                <InputField name="FathersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input father's fullname...." />
+                                                <InputField name="FathersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input father's fullname...." divClassName="" />
                                                 <InputField name="FathersAge" label="Age" register={register} isEditing={true} placeholder="Please input father's age...." divClassName="" />
                                                 <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input father's occupation...." divClassName="" />
                                                 <hr />
                                                 <h2 className="text-xl font-bold text-green-800 mb-6">
                                                     Mother Information
                                                 </h2>
-                                                <InputField name="MothersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input mother's fullname...." divClassName="" />
-                                                <InputField name="MothersAge" label="Age" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersFullname} errorMessage={errors.MothersFullname?.message} />
-                                                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersAge} errorMessage={errors.MothersAge?.message} />
-                                                <InputField name="NoOfSiblings" label="No. of siblings" register={register} isEditing={true} placeholder="Please input no. of siblings...." divClassName="" required errors={errors.MothersOccupation} errorMessage={errors.MothersOccupation?.message} />
+                                                <InputField name="MothersFullname" label="Fullname" register={register} isEditing={true} placeholder="Please input mother's fullname...." divClassName="" required errors={errors.MothersFullname} errorMessage={errors.MothersFullname?.message} />
+                                                <InputField name="MothersAge" label="Age" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersAge} errorMessage={errors.MothersAge?.message} />
+                                                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={true} placeholder="Please input mother's age...." divClassName="" required errors={errors.MothersOccupation} errorMessage={errors.MothersOccupation?.message} />
+                                                <InputField name="NoOfSiblings" label="No. of siblings" register={register} isEditing={true} placeholder="Please input no. of siblings...." divClassName="" required errors={errors.NoOfSiblings} errorMessage={errors.NoOfSiblings?.message} />
                                             </div>
                                             <div className='pt-2'>
                                                 <RedBtn label="← Back" onClick={handleBack} />
@@ -445,9 +461,9 @@ const OnlineApplication = () => {
                                                     divClassName=""
                                                     error={errors.PlanToWorkAbroad}
                                                 />
-                                                <InputField name="TargetYear" label="Target year (If yes, please specify your target year of application/travel.)" register={register} isEditing={true} placeholder="Please input target year...." divClassName="" required errors={errors.TargetYear} errorMessage={errors.TargetYear?.message} />
-                                                <InputField name="TeachingLicense" label="Teaching License No" register={register} isEditing={true} placeholder="Please input teaching license no...." divClassName="" required errors={errors.TeachingLicense} errorMessage={errors.TeachingLicense?.message} />
-                                                <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={true} type="date" placeholder="Please input last name...." divClassName="" required errors={errors.DateOfExamination} errorMessage={errors.DateOfExamination?.message} />
+                                                <InputField name="TargetYear" label="Target year (If yes, please specify your target year of application/travel.)" register={register} isEditing={true} placeholder="Please input target year...." divClassName="" />
+                                                <InputField name="TeachingLicense" label="Teaching License No" register={register} isEditing={true} placeholder="Please input teaching license no...." divClassName="" />
+                                                <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={true} type="date" placeholder="Please input last name...." divClassName="" />
                                             </div>
                                             <div className="pt-2">
                                                 <RedBtn label="← Back" onClick={handleBack} />
