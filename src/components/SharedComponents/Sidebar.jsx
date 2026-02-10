@@ -96,7 +96,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
             { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
             { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
-            { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
+            { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/subjectscheduleloadentry" },
             { separator: true },
             { name: "Notification", icon: Bell, path: "/tickets" },
             { name: "Tickets", icon: TicketIcon, path: "/tickets" },

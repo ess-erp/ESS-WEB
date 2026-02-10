@@ -29,6 +29,7 @@ import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
+import AcadSubjectScheduleLoadEntry from "../pages/AcademicStaff/SubjectScheduleLoadEntry";
 import HrDashboard from "../pages/HumanResources/Dashboard";
 import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
 
@@ -229,6 +230,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={["8"]}>
             <AcadSubjectLoadEntry />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/academic/subjectscheduleloadentry"
+        element={
+          <ProtectedRoutes allowedRoles={["8"]}>
+            <AcadSubjectScheduleLoadEntry />
           </ProtectedRoutes>
         }
       />

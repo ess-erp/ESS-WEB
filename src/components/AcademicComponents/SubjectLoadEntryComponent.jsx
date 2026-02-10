@@ -1,155 +1,127 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useForm, useFieldArray } from "react-hook-form";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
+import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
+import InputField from "../ButtonsComponents/InputField";
+import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
-    fetchLevelData,
-} from "../../states/AdmissionState/Action";
-import {
-    fetchCampusData,
-} from "../../states/OnlineApplicationState/Action";
-import {
-    fetchGetSectionNameData,
-    fetchInsertSectionNameData,
-} from "../../states/SruState/Action";
+    fetchInsertGeneralOfferedSubjectsData,
+    fetchGeneralOfferedSubjectData,
+} from "../../states/AcademicState/Action";
 
 const SubjectLoadEntryComponent = () => {
     const dispatch = useDispatch();
-    const levelState = useSelector((state) => state.admission.levelState || {});
-    const level = levelState.data || [];
-    const [levelList, setLevelList] = useState([]);
-    const [selectedLevel, setSelectedLevel] = useState(null);
-
-    const campusState = useSelector((state) => state.online.campusState || {});
-    const campus = campusState.data || [];
-    const [campusList, setCampusList] = useState([]);
-    const [selectedCampus, setSelectedCampus] = useState(null);
-
-    const [sectionName, setSectionName] = useState("");
-    const [remarks, setRemarks] = useState("");
-
-    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [modalSuccessBody, setModalSuccessBody] = useState("");
-    useEffect(() => {
-        setLevelList(
-            (level || []).map(item => ({
-                value: item.LevelId,
-                label: item.LevelName,
-            }))
-        );
-
-        setCampusList(
-            (campus || []).map(item => ({
-                value: item.CampusId,
-                label: item.CampusName,
-            }))
-        );
-    }, [level, campus]);
-
+    const [user] = useState(() => {
+        const savedUser = localStorage.getItem("userData");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+    const userId = user?.UserId;
     const [addNewModal, setAddNewModal] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const {
+        register,
+        handleSubmit,
+        control,
+        formState: { errors },
+    } = useForm({
+        defaultValues: {
+            rows: [
+                { subjectCode: "", subjectName: "", subjectUnit: "" }
+            ]
+        }
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "rows",
+    });
+
+
     const openAddNewModal = () => {
         setAddNewModal(true);
-        dispatch(fetchLevelData());
-        dispatch(fetchCampusData());
     };
 
+    const [formData, setFormData] = useState(null);
+    const onSubmit = (data) => {
+        console.log(data);
+        setFormData(data);
+        setIsModalOpen(true);
+    };
     const handleSubmitModal = async () => {
 
-        console.log(selectedLevel);
-        const payload = {
-            SectionName: sectionName,
-            LevelId: selectedLevel.value,
-            CampusId: selectedCampus.value,
-            Remarks: remarks,
-            CreatedByUserId: userId,
-        };
+        console.log(formData);
 
-        const res = await dispatch(fetchInsertSectionNameData(payload));
+        const payload = {
+            SubjectRowDtos: formData.rows.map(r => ({
+                SubjectCode: r.subjectCode,
+                SubjectName: r.subjectName,
+                SubjectUnit: r.subjectUnit,
+                CreatedByUserId: userId
+            }))
+        };
+        console.log(payload);
+        const res = await dispatch(fetchInsertGeneralOfferedSubjectsData(payload));
 
         if (res.ok) {
-            setModalSuccessBody("Done creating a section!");
             setIsSuccessModalOpen(true);
-            setTimeout(() => window.location.reload(), 3000);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
         }
     };
 
-    const [inactiveSections, setInactiveSections] = useState([]);
-    const sectionTableState = useSelector((state) => state.sru.sectionTableState || {});
-    const sectionTable = sectionTableState.data.data || [];
-    const sectionTotalRows = sectionTableState.data.totalRecords || 0;
-    const sectionLoading = sectionTableState.loading || false;
-    const [filterSectionText, setSectionFilterText] = useState('');
-    const [sectionCurrentPage, setSectionCurrentPage] = useState(1);
-    const [sectionRowsPerPage, setSectionRowsPerPage] = useState(10);
+    const [generalOfferedSubject, setInactiveGeneralOfferedSubject] = useState([]);
+    const generalOfferedSubjectState = useSelector((state) => state.academic.generalOfferedSubjectState || {});
+    const generealOfferedTable = generalOfferedSubjectState.data.data || [];
+    const generealOfferedTotalRows = generalOfferedSubjectState.data.totalRecords || 0;
+    const generealOfferedLoading = generalOfferedSubjectState.loading || false;
+    const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
+    const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
+    const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
 
     useEffect(() => {
-        dispatch(fetchGetSectionNameData(sectionCurrentPage, sectionRowsPerPage, filterSectionText));
-    }, [sectionCurrentPage, sectionRowsPerPage, filterSectionText, dispatch]);
+        dispatch(fetchGeneralOfferedSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
+    }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, dispatch]);
     useEffect(() => {
-        if (sectionTable.length == 0) return;
-        setInactiveSections(sectionTable);
-    }, [sectionTable]);
+        if (generealOfferedTable.length == 0) return;
+        setInactiveGeneralOfferedSubject(generealOfferedTable);
+    }, [generealOfferedTable]);
 
-    console.log(inactiveSections);
-    const inactiveColumns = [
-        { name: 'Subject Code', selector: row => row.SectionName, sortable: true },
-        { name: 'Subject Name', selector: row => row.LevelName, sortable: true },
-        { name: 'Unit', selector: row => row.CampusName, sortable: true },
+    const subjectColumns = [
+        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
+        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
+        { name: 'Unit', selector: row => row.SubjectUnit, sortable: true },
+        { name: 'Created By', selector: row => row.Fullname, sortable: true },
+        { name: 'Date Created', selector: row => row.DateCreated, sortable: true },
         {
             name: "Action",
             cell: row => (
-                <button
-                    onClick={() => handleActivate(row)}
-                    className="bg-green-500 text-white px-3 py-1 rounded text-sm"
-                >
-                    Add
-                </button>
-            )
-        }
-    ];
-    const [activeSections, setActiveSections] = useState([]);
-    const handleActivate = (row) => {
-        setActiveSections(prev => [...prev, row]);
 
-        setInactiveSections(prev =>
-            prev.filter(s => s.SectionId !== row.SectionId)
-        );
-    };
-    const handleSelectSection = (row) => {
-        setLevel(row);
-        setSelection(true);
-    };
-    const handleDeactivate = (row) => {
-        setActiveSections(prev =>
-            prev.filter(s => s.SectionId !== row.SectionId)
-        );
-
-        setInactiveSections(prev => [...prev, row]);
-        setSelection(false);
-    };
-    const activeColumns = [
-        { name: "Subject Code", selector: row => row.SectionName, sortable: true },
-        { name: "Subject Name", selector: row => row.SectionName, sortable: true },
-        { name: "Unit", selector: row => row.LevelName, sortable: true },
-        {
-            name: "Actions",
-            cell: row => (
-                <div className="flex gap-2">
+                <div className="flex gap-4 items-center">
                     <button
-                        onClick={() => handleDeactivate(row)}
-                        className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                        //onClick={() => handleActivate(row)}
+                        className="bg-yellow-500 text-white px-2 py-1 rounded text-sm"
                     >
-                        Remove
+                        <Pencil size={18} />
+
                     </button>
+
+                    <RowToggleComponent
+                        row={row}
+                        //onToggle={handleToggleActive}
+                    />
                 </div>
             )
         }
-
     ];
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        // <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
 
             {/* LEFT — Inactive */}
             <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -174,10 +146,10 @@ const SubjectLoadEntryComponent = () => {
                             type="text"
                             placeholder="Search..."
                             className="px-3 py-2 border border-gray-300 rounded w-64"
-                            value={filterSectionText}
+                            value={generalOfferedFilterText}
                             onChange={(e) => {
-                                setSectionFilterText(e.target.value);
-                                setSectionCurrentPage(1);
+                                setGeneralOfferedFilterText(e.target.value);
+                                setGeneralOfferedCurrentPage(1);
                             }}
                         />
                     </div>
@@ -186,17 +158,17 @@ const SubjectLoadEntryComponent = () => {
                 <div className="p-4">
 
                     <DataTable
-                        columns={inactiveColumns}
-                        data={inactiveSections}
-                        progressPending={sectionLoading}
+                        columns={subjectColumns}
+                        data={generalOfferedSubject}
+                        progressPending={generealOfferedLoading}
                         pagination
                         paginationServer
-                        paginationTotalRows={sectionTotalRows}
-                        paginationDefaultPage={sectionCurrentPage}
-                        onChangePage={(page) => setSectionCurrentPage(page)}
+                        paginationTotalRows={generealOfferedTotalRows}
+                        paginationDefaultPage={generalOfferedCurrentPage}
+                        onChangePage={(page) => setGeneralOfferedCurrentPage(page)}
                         onChangeRowsPerPage={(newPerPage, page) => {
-                            setSectionRowsPerPage(newPerPage);
-                            setSectionCurrentPage(page);
+                            setGeneralOfferedRowsPerPage(newPerPage);
+                            setGeneralOfferedCurrentPage(page);
                         }}
                         highlightOnHover
                         responsive
@@ -204,107 +176,110 @@ const SubjectLoadEntryComponent = () => {
                 </div>
 
             </div>
-
-            {/* RIGHT — Active */}
-            <div className="bg-white rounded-lg shadow border border-gray-200">
-
-                <div className="px-4 py-3 border-b bg-green-50 rounded-t-lg flex items-center justify-between">
-                    <div>
-                        <h3 className="text-lg font-semibold text-green-600">
-                            List of subject per Level
-                        </h3>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                        <SearchableSelect
-                            options={levelList}
-                            value={selectedLevel}
-                            onChange={(selected) => setSelectedLevel(selected)}
-                            placeholder="-- Select Level --"
-                            label="Select Level"
-                        />
-                    </div>
-                </div>
-
-                <div className="p-4">
-                    <DataTable
-                        columns={activeColumns}
-                        data={activeSections}
-                        pagination
-                        highlightOnHover
-                        dense
-                        responsive
-                    />
-                </div>
-                 <div className="m-2 flex justify-end gap-3">
-                    <button
-                        // onClick={() => setIsWarningModal(true)}
-                        // disabled={!addedStudents.length}
-                        className="bg-green-600 text-white px-6 py-2 rounded-lg text-md font-medium
-                                disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Save
-                    </button>
-                </div>
-            </div>
             <ModalComponent
                 isOpen={addNewModal}
                 onClose={() => setAddNewModal(false)}
-                title="Create a new section"
+                title="Create subject template"
                 body={
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            {fields.map((field, index) => (
+                                <div
+                                    key={field.id}
+                                    className="grid grid-cols-1 md:grid-cols-[40px_1fr_1fr_1fr_40px] gap-3 items-center p-3 rounded-lg"
 
-                        <label className="flex flex-col">
-                            <span className="text-sm font-medium mb-1">Section Name</span>
-                            <input
-                                type="text"
-                                placeholder="Enter Section Name"
-                                value={sectionName}
-                                onChange={(e) => setSectionName(e.target.value)}
-                                className="w-full rounded-lg border p-2"
-                            />
-                        </label>
-                        <SearchableSelect
-                            options={levelList}
-                            value={selectedLevel}
-                            onChange={(selected) => setSelectedLevel(selected)}
-                            placeholder="-- Select Level --"
-                            label="Select Level"
-                        />
+                                >
+                                    <div className="text-center font-semibold">
+                                        {index + 1}:
+                                    </div>
+                                    <InputField
+                                        name={`rows.${index}.subjectCode`}
+                                        label="Subject Code"
+                                        register={register}
+                                        isEditing={true}
+                                        placeholder="Please input subject code...."
+                                        divClassName=""
+                                        required
+                                        errors={errors.SubjectCode}
+                                        errorMessage={errors.SubjectCode?.message}
+                                    />
 
-                        <SearchableSelect
-                            options={campusList}
-                            value={selectedCampus}
-                            onChange={(selected) => setSelectedCampus(selected)}
-                            placeholder="-- Select Campus --"
-                            label="Select Campus"
-                        />
+                                    <InputField
+                                        name={`rows.${index}.subjectName`}
+                                        label="Subject Name"
+                                        register={register}
+                                        isEditing={true}
+                                        placeholder="Please input subject code...."
+                                        divClassName=""
+                                        required
+                                        errors={errors.SubjectName}
+                                        errorMessage={errors.SubjectName?.message}
+                                    />
 
-                        <label className="flex flex-col">
-                            <span className="text-sm font-medium mb-1">Remarks</span>
-                            <input
-                                type="text"
-                                placeholder="Enter Remarks"
-                                value={remarks}
-                                onChange={(e) => setRemarks(e.target.value)}
-                                className="w-full rounded-lg border p-2"
-                            />
-                        </label>
+                                    <InputField
+                                        name={`rows.${index}.subjectUnit`}
+                                        label="Subject Unit"
+                                        register={register}
+                                        isEditing={true}
+                                        placeholder="Please input subject code...."
+                                        divClassName=""
+                                        required
+                                        errors={errors.SubjectUnit}
+                                        errorMessage={errors.SubjectUnit?.message}
+                                        type="number"
+                                    />
+
+                                    {/* REMOVE BUTTON — only show if more than 1 row */}
+                                    {fields.length > 1 && (
+                                        <div className="flex justify-center items-center">
+                                            <button
+                                                type="button"
+                                                onClick={() => remove(index)}
+                                                className="p-2 text-red-500 hover:bg-red-100 rounded-lg"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+
+                                    )}
+                                </div>
+                            ))}
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    append({ subjectCode: "", subjectName: "", subjectUnit: "" })
+                                }
+                                className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                            >
+                                + Add Row
+                            </button>
+                        </form>
 
                     </div>
                 }
-                size="w-[600px]"
+                size="w-[800px]"
                 maxHeight="100vh"
                 buttons={[
-                    { label: "Submit", type: "green", onClick: handleSubmitModal },
+                    { label: "Submit", type: "green", onClick: handleSubmit(onSubmit), closeOnClick: false },
                     { label: "Cancel", type: "red", onClick: () => setAddNewModal(false) },
+                ]}
+            />
+            <ModalComponent
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Warning"
+                body="Are you sure you want to continue?"
+                buttons={[
+                    { label: "Yes", type: "green", onClick: handleSubmitModal },
+                    { label: "No", type: "red", onClick: () => console.log("No clicked") },
                 ]}
             />
             <ModalComponent
                 isOpen={isSuccessModalOpen}
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={<span className="font-bold text-lg text-green-700">Success</span>}
-                body={<p>{modalSuccessBody}</p>}
+                body={<p>Done creating general offered subjects.</p>}
             />
         </div>
     );
