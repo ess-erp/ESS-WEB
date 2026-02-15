@@ -22,62 +22,9 @@ const SubjectDataTable = ({ onPayloadChange }) => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
     const userId = user?.UserId;
-    const [addNewModal, setAddNewModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const {
-        register,
-        handleSubmit,
-        control,
-        formState: { errors },
-    } = useForm({
-        defaultValues: {
-            secId: "",
-            levelName: "",
-            rows: [
-                { subjectId: "", nonSubjectId: "", teacherId: "", timeIn: "", timeOut: "", firstTerm: "", secondTerm: "", thirdTerm: "" }
-            ]
-        }
-    });
-
-    const { fields, append, remove } = useFieldArray({
-        control,
-        name: "rows",
-    });
-
-    const openAddNewModal = () => {
-        setAddNewModal(true);
-    };
-
-    const [formData, setFormData] = useState(null);
-    const onSubmit = (data) => {
-        console.log(data);
-        setFormData(data);
-        setIsModalOpen(true);
-    };
-    const handleSubmitModal = async () => {
-
-        console.log(formData);
-
-        const payload = {
-            SubjectRowDtos: formData.rows.map(r => ({
-                SubjectCode: r.subjectCode,
-                SubjectName: r.subjectName,
-                SubjectUnit: r.subjectUnit,
-                CreatedByUserId: userId
-            }))
-        };
-        console.log(payload);
-        const res = await dispatch(fetchInsertGeneralOfferedSubjectsData(payload));
-
-        if (res.ok) {
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
-        }
-    };
-
+   
     const [generalOfferedSubject, setInactiveGeneralOfferedSubject] = useState([]);
     const generalOfferedSubjectState = useSelector((state) => state.academic.generalOfferedSubjectState || {});
     const generealOfferedTable = generalOfferedSubjectState.data.data || [];
@@ -108,18 +55,6 @@ const SubjectDataTable = ({ onPayloadChange }) => {
             }))
         );
     }, [sectionData]);
-    // useEffect(() => {
-
-    //     if (sectionData.length == 0) return;
-
-    //     const mappedOptions = sectionData.map((item) => ({
-    //         value: item.SectionId,
-    //         label: item.SectionName,
-    //         levelName: item.LevelName,
-    //     }));
-
-    //     setSectionList(mappedOptions);
-    // }, [sectionData]);
 
     useEffect(() => {
         dispatch(fetchGeneralOfferedSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
@@ -161,9 +96,9 @@ const SubjectDataTable = ({ onPayloadChange }) => {
                 SubjectName: row.SubjectName,
                 SubjectUnit: row.SubjectUnit,
                 dropdownValue: null,
-                term1: false,
-                term2: false,
-                term3: false
+                term1: true,
+                term2: true,
+                term3: true
             }
         ]);
 
@@ -203,10 +138,6 @@ const SubjectDataTable = ({ onPayloadChange }) => {
         },
         {
             name: "Subject Name",
-            selector: row => row.SubjectName
-        },
-        {
-            name: "Subject Type",
             selector: row => row.SubjectName
         },
         {
@@ -285,10 +216,10 @@ const SubjectDataTable = ({ onPayloadChange }) => {
     ];
 
     useEffect(() => {
-        if (!onPayloadChange) return;
+        if (onPayloadChange) return;
 
         const payload = {
-            SectionId: selectedSection?.value || null,
+            SecId: selectedSection?.value || null,
             Subjects: addedSubjects.map(s => ({
                 SubjectId: s.SubjectId,
                 Room: s.Room,
@@ -301,7 +232,8 @@ const SubjectDataTable = ({ onPayloadChange }) => {
         };
 
         onPayloadChange(payload);
-    }, [addedSubjects, selectedSection, onPayloadChange]);
+        console.log(payload);
+    }, [addedSubjects, selectedSection]);
     return (
         <div>
             <div className="px-4 py-3 rounded-t-lg flex justify-between">
@@ -382,7 +314,7 @@ const SubjectDataTable = ({ onPayloadChange }) => {
                     noDataComponent="No subjects added yet"
                 />
             </div>
-            <ModalComponent
+            {/* <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title="Warning"
@@ -391,13 +323,13 @@ const SubjectDataTable = ({ onPayloadChange }) => {
                     { label: "Yes", type: "green", onClick: handleSubmitModal },
                     { label: "No", type: "red", onClick: () => console.log("No clicked") },
                 ]}
-            />
-            <ModalComponent
+            /> */}
+            {/* <ModalComponent
                 isOpen={isSuccessModalOpen}
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={<span className="font-bold text-lg text-green-700">Success</span>}
                 body={<p>Done creating general offered subjects.</p>}
-            />
+            /> */}
         </div>
     );
 };

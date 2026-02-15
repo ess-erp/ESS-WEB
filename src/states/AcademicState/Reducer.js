@@ -6,6 +6,7 @@ import {
     FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
+    FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE,
 } from "./ActionType";
 
 const initialDataState = {
@@ -23,6 +24,7 @@ const initialState = {
     subjectScheduleState: { ...initialDataState },
     sectionListState: { ...initialDataState },
     nonCurriculumState: { ...initialDataState },
+    curriculumAndNonCurriculumSubjectState: { ...initialDataState },
 };
 
 const academicReducer = (state = initialState, action) => {
@@ -77,6 +79,13 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, nonCurriculumState: { loading: false, data: action.payload, error: '' } };
         case FETCH_NON_CURRICULUM_FAILURE:
             return { ...state, nonCurriculumState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST:
+            return { ...state, curriculumAndNonCurriculumSubjectState: { loading: true, data: [], error: '' } };
+        case FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS:
+            return { ...state, curriculumAndNonCurriculumSubjectState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE:
+            return { ...state, curriculumAndNonCurriculumSubjectState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

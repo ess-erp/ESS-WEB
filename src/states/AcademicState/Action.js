@@ -6,6 +6,7 @@ import {
     FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
+    FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -215,6 +216,35 @@ export const fetchNonCurriculumData = (page, pageSize, search) => async (dispatc
     }
     catch(error){
         dispatch(fetchNonCurriculumFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchCurriculumAndNonCurriculumSubjectRequest = () => ({ type: FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST });
+export const fetchCurriculumAndNonCurriculumSubjectSuccess = (data) => ({ type: FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS, payload: data });
+export const fetchCurriculumAndNonCurriculumSubjectFailure = (error) => ({ type: FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE, payload: error });
+
+export const fetchCurriculumAndNonCurriculumSubjectData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchCurriculumAndNonCurriculumSubjectRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-curriculum-and-non-curriculum?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchCurriculumAndNonCurriculumSubjectSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch(error){
+        dispatch(fetchCurriculumAndNonCurriculumSubjectFailure(error.message));
         return { ok: false, error };
     }
 };
