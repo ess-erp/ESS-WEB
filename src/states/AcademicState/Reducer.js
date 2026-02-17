@@ -7,6 +7,10 @@ import {
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
     FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE,
+    FETCH_INSERT_SUBJECT_SCHEDULE_REQUEST, FETCH_INSERT_SUBJECT_SCHEDULE_SUCCESS, FETCH_INSERT_SUBJECT_SCHEDULE_FAILURE,
+    FETCH_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SUBJECT_SCHEDULE_TABLE_FAILURE,
+    FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_FAILURE,
+    FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE,
 } from "./ActionType";
 
 const initialDataState = {
@@ -25,6 +29,10 @@ const initialState = {
     sectionListState: { ...initialDataState },
     nonCurriculumState: { ...initialDataState },
     curriculumAndNonCurriculumSubjectState: { ...initialDataState },
+    insertSubjectScheduleState: { ...initialDataState },
+    subjectScheduleState: { ...initialDataState },
+    masterSubjectScheduleState: { ...initialDataState },
+    sectionSubjectScheduleState: { ...initialDataState },
 };
 
 const academicReducer = (state = initialState, action) => {
@@ -86,6 +94,35 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, curriculumAndNonCurriculumSubjectState: { loading: false, data: action.payload, error: '' } };
         case FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE:
             return { ...state, curriculumAndNonCurriculumSubjectState: { loading: false, data: [], error: action.payload } };
+
+
+        case FETCH_INSERT_SUBJECT_SCHEDULE_REQUEST:
+            return { ...state, insertSubjectScheduleState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SUBJECT_SCHEDULE_SUCCESS:
+            return { ...state, insertSubjectScheduleState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SUBJECT_SCHEDULE_FAILURE:
+            return { ...state, insertSubjectScheduleState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SUBJECT_SCHEDULE_TABLE_REQUEST:
+            return { ...state, subjectScheduleState: { loading: true, data: [], error: '' } };
+        case FETCH_SUBJECT_SCHEDULE_TABLE_SUCCESS:
+            return { ...state, subjectScheduleState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SUBJECT_SCHEDULE_TABLE_FAILURE:
+            return { ...state, subjectScheduleState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_REQUEST:
+            return { ...state, masterSubjectScheduleState: { loading: true, data: [], error: '' } };
+        case FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_SUCCESS:
+            return { ...state, masterSubjectScheduleState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_FAILURE:
+            return { ...state, masterSubjectScheduleState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_REQUEST:
+            return { ...state, sectionSubjectScheduleState: { loading: true, data: [], error: '' } };
+        case FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_SUCCESS:
+            return { ...state, sectionSubjectScheduleState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE:
+            return { ...state, sectionSubjectScheduleState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;
