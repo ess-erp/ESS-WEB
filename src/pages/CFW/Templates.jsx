@@ -82,7 +82,7 @@ const Templates = () => {
                             </div>
 
 
-                            <div className="overflow-x-auto">
+                            <div>
                                 <AnimatePresence mode="wait">
 
                                     <motion.div

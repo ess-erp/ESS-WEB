@@ -32,6 +32,7 @@ import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
 import AcadSubjectScheduleLoadEntry from "../pages/AcademicStaff/SubjectScheduleLoadEntry";
 import HrDashboard from "../pages/HumanResources/Dashboard";
 import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
+import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
 
 
 const AppRoutes = () => (
@@ -259,6 +260,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={["9"]}>
             <HrOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/hr/employeeappform"
+        element={
+          <ProtectedRoutes allowedRoles={["9"]}>
+            <HrEmployeeAppForm />
           </ProtectedRoutes>
         }
       />

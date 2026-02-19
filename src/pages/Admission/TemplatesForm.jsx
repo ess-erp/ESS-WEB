@@ -180,11 +180,13 @@ const TemplatesForm = () => {
             name: "Template Type",
             selector: (row) => row.TempType || "—",
             sortable: true,
+            wrap: true,
         },
         {
             name: "Created by",
             selector: (row) => row.CreatedByFullname || "—",
             sortable: true,
+            wrap: true,
         },
         {
             name: "Date Created",

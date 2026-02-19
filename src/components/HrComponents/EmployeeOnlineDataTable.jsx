@@ -61,7 +61,8 @@ const EmployeeOnlineDataTable = () => {
   }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
 console.log(selectedStatus);
   const handleButtonClick = (row) => {
-    const url = `/admission/studentappform?AppId=${row.AppId}`;
+    console.log(row);
+    const url = `/hr/employeeappform?employeeAppId=${row.EmployeeAppId}`;
     window.open(url, '_blank');
   };
 
