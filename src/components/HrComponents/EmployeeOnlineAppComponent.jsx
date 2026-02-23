@@ -31,7 +31,7 @@
 // export default EmployeeAppForm;
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import RHFListbox from "../ButtonsComponents/RHFListbox";
 import InputField from "../ButtonsComponents/InputField";
@@ -60,9 +60,7 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     const dispatch = useDispatch();
     const formatDate = getFormatDate;
     const toDateInputValue = getDateInputValue;
-    const { search } = useLocation();
-    const query = new URLSearchParams(search);
-    const employeeAppId = query.get("employeeAppId");
+    const navigate = useNavigate();
     const {
         register,
         handleSubmit,
@@ -72,49 +70,62 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     } = useForm({
         mode: "onSubmit",
         defaultValues: {
-            StudentId: "",
-            AppNumber: "",
-            Lrn: "",
+            EmployeeId: "",
+            EmployeeNumber: "",
+            EmployeeAppId: "",
+            EmployeeAppNo: "",
             Fname: "",
             Mname: "",
             Lname: "",
+            Nickname: "",
             Gender: "",
+            Designation: "",
             DateOfBirth: "",
             PlaceOfBirth: "",
-            Campus: null,
-            Division: null,
-            Level: null,
-            Strand: null,
-            Nationality: null,
-            Religion: null,
-            Province: null,
-            City: null,
-            Barangay: null,
-            HomeStreet: "",
-            StudentType: "",
-            FathersEmail: "",
-            FathersFname: "",
-            FathersMname: "",
-            FathersLname: "",
-            FathersMobileNo: "",
+            MobilePhoneNo: "",
+            ReligionId: "",
+            ReligionName: "",
+            NationalityId: "",
+            NationalityName: "",
+            CampusId: "",
+            CampusName: "",
+            CivilStatus: "",
+            NameOfSpouse: "",
+            SpouseOccupation: "",
+            NoOfyearsMarried: "",
+            NoOfChildren: "",
+            AgeEldestChild: "",
+            AgeYoungestChild: "",
+            IsPregnant: "",
+            FathersFullname: "",
+            FathersAge: "",
             FathersOccupation: "",
-            MothersEmail: "",
-            MothersFname: "",
-            MothersMname: "",
-            MothersLname: "",
-            MothersMobileNo: "",
+            MothersFullname: "",
+            MothersAge: "",
             MothersOccupation: "",
-            ContactPerson: "",
-            ContactEmail: "",
-            Relationship: "",
+            NoOfSiblings: "",
+            PrevEmployed: "",
+            PlanToWorkAbroad: "",
+            TargetYear: "",
+            TeachingLicense: "",
+            DateOfExamination: "",
+            SchoolName: "",
+            From: "",
+            To: "",
+            Degree: "",
+            ProvinceCode: "",
+            ProvinceName: "",
+            CityCode: "",
+            CityName: "",
+            BrgyCode: "",
+            BrgyName: "",
+            HomeStreet: "",
+            DateCreated: "",
+            ActiveStatus: "",
         }
     });
 
-    const studentData = useSelector(state => state.admission.studentDataState?.data || {});
-    const campusList = useSelector(state => state.online.campusState?.data || []);
-    const divisionList = useSelector(state => state.online.divisionState?.data || []);
-    const levelList = useSelector(state => state.online.levelState?.data || []);
-    const strandList = useSelector(state => state.online.strandState?.data || []);
+    const employeeData = useSelector(state => state.hr.employeeInfoState?.data || {});
     const nationalityList = useSelector(state => state.online.nationalityState?.data || []);
     const religionList = useSelector(state => state.online.religionState?.data || []);
     const provinceList = useSelector(state => state.online.provinceState?.data || []);
@@ -122,166 +133,139 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     const brgyList = useSelector(state => state.online.barangayState?.data || []);
 
     useEffect(() => {
-        dispatch(fetchStudentByIdData(appId));
-        dispatch(fetchEmployeeApplicationInfoData(employeeAppId));
-        dispatch(fetchCampusData());
-        dispatch(fetchDivisionData());
+        // dispatch(fetchStudentByIdData(appId));
+        dispatch(fetchEmployeeApplicationInfoData(appId));
         dispatch(fetchNationalityData());
         dispatch(fetchReligionData());
         dispatch(fetchProvinceData());
     }, [dispatch, appId]);
 
     useEffect(() => {
-        if (!studentData || !isEditing) return;
+        if (!employeeData || !isEditing) return;
 
         reset({
-            StudentId: studentData.StudentId ?? "",
-            AppNumber: studentData.AppNumber ?? "",
-            Lrn: studentData.Lrn ?? "",
-            Fname: studentData.Fname ?? "",
-            Mname: studentData.Mname ?? "",
-            Lname: studentData.Lname ?? "",
-            Gender: studentData.Gender ?? "",
-            DateOfBirth: toDateInputValue(studentData.DateOfBirth) ?? null,
-            PlaceOfBirth: studentData.PlaceOfBirth ?? "",
-            HomeStreet: studentData.HomeStreet ?? "",
-            StudentType: studentData.StudentType ?? "",
-            FathersEmail: studentData.FathersEmail ?? "",
-            FathersFname: studentData.FathersFname ?? "",
-            FathersMname: studentData.FathersMname ?? "",
-            FathersLname: studentData.FathersLname ?? "",
-            FathersMobileNo: studentData.FathersMobileNo ?? "",
-            FathersOccupation: studentData.FathersOccupation ?? "",
-            MothersEmail: studentData.MothersEmail ?? "",
-            MothersFname: studentData.MothersFname ?? "",
-            MothersMname: studentData.MothersMname ?? "",
-            MothersLname: studentData.MothersLname ?? "",
-            MothersMobileNo: studentData.MothersMobileNo ?? "",
-            MothersOccupation: studentData.MothersOccupation ?? "",
-            ContactPerson: studentData.ContactPerson ?? "",
-            ContactEmail: studentData.ContactEmail ?? "",
-            Relationship: studentData.Relationship ?? "",
-            Campus: null,
-            Division: null,
-            Level: null,
-            Strand: null,
+            EmployeeId: employeeData.EmployeeId ?? "",
+            EmployeeNumber: employeeData.EmployeeNumber ?? "",
+            EmployeeAppId: employeeData.EmployeeAppId ?? "",
+            EmployeeAppNo: employeeData.EmployeeAppNo ?? "",
+            Fname: employeeData.Fname ?? "",
+            Mname: employeeData.Mname ?? "",
+            Lname: employeeData.Lname ?? "",
+            Nickname: employeeData.Nickname ?? "",
+            Gender: employeeData.Gender ?? "",
+            Designation: employeeData.Designation ?? "",
+            DateOfBirth: employeeData.DateOfBirth ?? "",
+            PlaceOfBirth: employeeData.PlaceOfBirth ?? "",
+            MobilePhoneNo: employeeData.MobilePhoneNo ?? "",
+            ReligionId: employeeData.ReligionId ?? "",
+            ReligionName: employeeData.ReligionName ?? "",
+            NationalityId: employeeData.NationalityId ?? "",
+            NationalityName: employeeData.NationalityName ?? "",
+            CampusId: employeeData.CampusId ?? "",
+            CampusName: employeeData.CampusName ?? "",
+            CivilStatus: employeeData.CivilStatus ?? "",
+            NameOfSpouse: employeeData.NameOfSpouse ?? "",
+            SpouseOccupation: employeeData.SpouseOccupation ?? "",
+            NoOfyearsMarried: employeeData.NoOfyearsMarried ?? "",
+            NoOfChildren: employeeData.NoOfChildren ?? "",
+            AgeEldestChild: employeeData.AgeEldestChild ?? "",
+            AgeYoungestChild: employeeData.AgeYoungestChild ?? "",
+            IsPregnant: employeeData.IsPregnant ?? "",
+            FathersFullname: employeeData.FathersFullname ?? "",
+            FathersAge: employeeData.FathersAge ?? "",
+            FathersOccupation: employeeData.FathersOccupation ?? "",
+            MothersFullname: employeeData.MothersFullname ?? "",
+            MothersAge: employeeData.MothersAge ?? "",
+            MothersOccupation: employeeData.MothersOccupation ?? "",
+            NoOfSiblings: employeeData.NoOfSiblings ?? "",
+            PrevEmployed: employeeData.PrevEmployed ?? "",
+            PlanToWorkAbroad: employeeData.PlanToWorkAbroad ?? "",
+            TargetYear: employeeData.TargetYear ?? "",
+            TeachingLicense: employeeData.TeachingLicense ?? "",
+            DateOfExamination: employeeData.DateOfExamination ?? "",
+            SchoolName: employeeData.SchoolName ?? "",
+            From: employeeData.From ?? "",
+            To: employeeData.To ?? "",
+            Degree: employeeData.Degree ?? "",
+            ProvinceCode: employeeData.ProvinceCode ?? "",
+            ProvinceName: employeeData.ProvinceName ?? "",
+            CityCode: employeeData.CityCode ?? "",
+            CityName: employeeData.CityName ?? "",
+            BrgyCode: employeeData.BrgyCode ?? "",
+            BrgyName: employeeData.BrgyName ?? "",
+            HomeStreet: employeeData.HomeStreet ?? "",
+            DateCreated: employeeData.DateCreated ?? "",
+            ActiveStatus: employeeData.ActiveStatus ?? "",
             Nationality: null,
             Religion: null,
             Province: null,
             City: null,
             Barangay: null,
         });
-    }, [studentData, isEditing, reset]);
+    }, [employeeData, isEditing, reset]);
 
     useEffect(() => {
-        if (!isEditing || !studentData?.CampusName || !campusList.length) return;
-
-        const campus = campusList.find(
-            c => c.CampusName === studentData.CampusName
-        );
-
-        if (campus) {
-            reset(prev => ({ ...prev, Campus: campus }));
-        }
-    }, [campusList, studentData?.CampusName, isEditing]);
-    useEffect(() => {
-        if (!isEditing || !studentData?.DivName || !divisionList.length) return;
-
-        const division = divisionList.find(
-            d => d.DivName === studentData.DivName
-        );
-
-        if (division) {
-            reset(prev => ({ ...prev, Division: division }));
-        }
-    }, [divisionList, studentData?.DivName, isEditing]);
-
-    useEffect(() => {
-        if (!isEditing || !studentData?.LevelName || !levelList.length) return;
-
-        const level = levelList.find(
-            l => l.LevelName === studentData.LevelName
-        );
-
-        if (level) {
-            reset(prev => ({ ...prev, Level: level }));
-        }
-    }, [levelList, studentData?.LevelName, isEditing]);
-
-    useEffect(() => {
-        if (!isEditing || !studentData?.NationalityName || !nationalityList.length) return;
+        if (!isEditing || !employeeData?.NationalityName || !nationalityList.length) return;
 
         const nationality = nationalityList.find(
-            n => n.NationalityName === studentData.NationalityName
+            n => n.NationalityName === employeeData.NationalityName
         );
 
         if (nationality) {
             reset(prev => ({ ...prev, Nationality: nationality }));
         }
-    }, [nationalityList, studentData?.NationalityName, isEditing]);
+    }, [nationalityList, employeeData?.NationalityName, isEditing]);
 
     useEffect(() => {
-        if (!isEditing || !studentData?.ReligionName || !religionList.length) return;
+        if (!isEditing || !employeeData?.ReligionName || !religionList.length) return;
 
         const religion = religionList.find(
-            r => r.ReligionName === studentData.ReligionName
+            r => r.ReligionName === employeeData.ReligionName
         );
 
         if (religion) {
             reset(prev => ({ ...prev, Religion: religion }));
         }
-    }, [religionList, studentData?.ReligionName, isEditing]);
+    }, [religionList, employeeData?.ReligionName, isEditing]);
 
     useEffect(() => {
-        if (!isEditing || !studentData?.ProvinceName || !provinceList.length) return;
+        if (!isEditing || !employeeData?.ProvinceName || !provinceList.length) return;
 
         const province = provinceList.find(
-            r => r.province_name === studentData.ProvinceName
+            r => r.province_name === employeeData.ProvinceName
         );
 
         if (province) {
             reset(prev => ({ ...prev, Province: province }));
         }
-    }, [provinceList, studentData?.ProvinceName, isEditing]);
+    }, [provinceList, employeeData?.ProvinceName, isEditing]);
 
     useEffect(() => {
-        if (!isEditing || !studentData?.CityName || !cityList.length) return;
+        if (!isEditing || !employeeData?.CityName || !cityList.length) return;
 
         const city = cityList.find(
-            r => r.city_name === studentData.CityName
+            r => r.city_name === employeeData.CityName
         );
 
         if (city) {
             reset(prev => ({ ...prev, City: city }));
         }
-    }, [cityList, studentData?.CityName, isEditing]);
+    }, [cityList, employeeData?.CityName, isEditing]);
 
     useEffect(() => {
-        if (!isEditing || !studentData?.BrgyName || !brgyList.length) return;
+        if (!isEditing || !employeeData?.BrgyName || !brgyList.length) return;
 
         const brgy = brgyList.find(
-            r => r.brgy_name === studentData.BrgyName
+            r => r.brgy_name === employeeData.BrgyName
         );
 
         if (brgy) {
             reset(prev => ({ ...prev, Barangay: brgy }));
         }
-    }, [brgyList, studentData?.BrgyName, isEditing]);
+    }, [brgyList, employeeData?.BrgyName, isEditing]);
 
-    const division = watch("Division");
-    const level = watch("Level");
     const province = watch("Province");
     const city = watch("City");
-
-    useEffect(() => {
-        if (!division?.DivId) return;
-        dispatch(fetchLevelData(division.DivId));
-    }, [division?.DivId]);
-
-    useEffect(() => {
-        if (level?.LevelId !== 15) return;
-        dispatch(fetchStrandData(level.LevelId));
-    }, [level?.LevelId]);
 
     useEffect(() => {
         if (!province?.province_code) return;
@@ -351,22 +335,32 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
         }
     };
 
+    const handleProceed = () => {
+        navigate(`/hr/employeehiringprocess?employeeAppId=${employeeData.EmployeeAppId}`);
+    };
+
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             <div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="StudentNumber" label="Student Number" register={register} isEditing={isEditing} displayValue={studentData.AppNumber} />
-                    <InputField name="Lrn" label="LRN" register={register} isEditing={isEditing} displayValue={studentData.Lrn} />
+                    <InputField name="EmployeeAppNo" label="Employee Application Number" register={register} isEditing={isEditing} displayValue={employeeData.EmployeeAppNo} />
                 </div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="Fname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.Fname} />
-                    <InputField name="Mname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.Mname} />
-                    <InputField name="Lname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.Lname} />
-                    <InputField name="Gender" label="Gender" register={register} isEditing={isEditing} displayValue={studentData.Gender} />
-                    <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(studentData.DateOfBirth) : formatDate(studentData.DateOfBirth)} {...(isEditing ? { type: "date" } : {})} />
-                    <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={isEditing} displayValue={studentData.PlaceOfBirth} />
-
-                    <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={studentData.CampusName} />
+                    <InputField name="Fname" label="First Name" register={register} isEditing={isEditing} displayValue={employeeData.Fname} />
+                    <InputField name="Mname" label="Middle Name" register={register} isEditing={isEditing} displayValue={employeeData.Mname} />
+                    <InputField name="Lname" label="Last Name" register={register} isEditing={isEditing} displayValue={employeeData.Lname} />
+                    <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData.Nickname} />
+                    <InputField name="Gender" label="Gender" register={register} isEditing={isEditing} displayValue={employeeData.Gender} />
+                    <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfBirth) : formatDate(employeeData.DateOfBirth)} {...(isEditing ? { type: "date" } : {})} />
+                    <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={isEditing} displayValue={employeeData.PlaceOfBirth} />
+                    <InputField name="MobilePhoneNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={employeeData.MobilePhoneNo} />
+                    <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={!isEditing} displayValue={employeeData.NationalityName} />
+                    <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={!isEditing} displayValue={employeeData.ReligionName} />
+                    <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={!isEditing} displayValue={employeeData.ProvinceName} />
+                    <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={!isEditing} displayValue={employeeData.CityName} />
+                    <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={!isEditing} displayValue={employeeData.BrgyName} />
+                    <InputField name="HomeStreet" label="Home Street No." register={register} isEditing={isEditing} displayValue={employeeData.HomeStreet} />
+                    {/*<RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={studentData.CampusName} />
                     <RHFListbox name="Division" control={control} list={divisionList} label="Division" labelKey="DivName" isEditing={!isEditing} displayValue={studentData.DivName} />
                     <RHFListbox name="Level" control={control} list={levelList} label="Level" labelKey="LevelName" isEditing={!isEditing} displayValue={studentData.LevelName} />
 
@@ -374,16 +368,45 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
                         <RHFListbox name="Strand" control={control} list={strandList} label="Strand" labelKey="StrandName" isEditing={!isEditing} displayValue={studentData.StrandName} />
                     )}
 
-                    <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={!isEditing} displayValue={studentData.NationalityName} />
-                    <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={!isEditing} displayValue={studentData.ReligionName} />
+                    
                     <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={!isEditing} displayValue={studentData.ProvinceName} />
                     <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={!isEditing} displayValue={studentData.CityName} />
                     <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={!isEditing} displayValue={studentData.BrgyName} />
                     <InputField name="HomeStreet" label="Home Street No." register={register} isEditing={isEditing} displayValue={studentData.HomeStreet} />
-                    <InputField name="Student Type" label="Student Type" register={register} isEditing={isEditing} displayValue={studentData.StudentType} />
+                    <InputField name="Student Type" label="Student Type" register={register} isEditing={isEditing} displayValue={studentData.StudentType} /> */}
                 </div>
 
             </div>
+            {employeeData?.CivilStatus != "single" && (
+                <>
+                    <div className="flex items-center pt-4">
+                        <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
+                            Spouse Information
+                        </h2>
+                        <div className="flex-grow">
+                            <hr className="border-t border-gray-400" />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 pt-4">
+                        <InputField name="NameOfSpouse" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.NameOfSpouse} />
+                        <InputField name="SpouseOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.SpouseOccupation} />
+                        <InputField name="NoOfyearsMarried" label="No of Years Married" register={register} isEditing={isEditing} displayValue={employeeData.NoOfyearsMarried} />
+                        <InputField name="NoOfChildren" label="No of Children" register={register} isEditing={isEditing} displayValue={employeeData.NoOfChildren} />
+                        <InputField name="AgeEldestChild" label="Age of Eldest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeEldestChild} />
+                        <InputField name="AgeYoungestChild" label="Age of Youngest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeYoungestChild} />
+                        <InputField name="IsPregnant" label="Is pregnant?" register={register} isEditing={isEditing} displayValue={employeeData.IsPregnant} />
+                        {/* <InputField name="FathersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.FathersFname} />
+                <InputField name="FathersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.FathersMname} />
+                <InputField name="FathersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.FathersLname} />
+                <InputField name="FathersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.FathersEmail} />
+                <InputField name="FathersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.FathersMobileNo} />
+                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.FathersOccupation} /> */}
+                    </div>
+                </>
+            )}
+
+
             <div className="flex items-center pt-4">
                 <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
                     Parents Information
@@ -403,12 +426,15 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
             </div>
 
             <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="FathersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.FathersFname} />
+                <InputField name="FathersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.FathersFullname} />
+                <InputField name="FathersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.FathersAge} />
+                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.FathersOccupation} />
+                {/* <InputField name="FathersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.FathersFname} />
                 <InputField name="FathersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.FathersMname} />
                 <InputField name="FathersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.FathersLname} />
                 <InputField name="FathersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.FathersEmail} />
                 <InputField name="FathersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.FathersMobileNo} />
-                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.FathersOccupation} />
+                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.FathersOccupation} /> */}
             </div>
             <div className="flex items-center pt-4">
                 <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
@@ -420,37 +446,66 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
                 </h2>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="MothersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.MothersFname} />
+                <InputField name="MothersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.MothersFullname} />
+                <InputField name="MothersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.MothersAge} />
+                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.MothersOccupation} />
+                <InputField name="NoOfSiblings" label="No of Siblings" register={register} isEditing={isEditing} displayValue={employeeData.NoOfSiblings} />
+                {/* <InputField name="MothersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.MothersFname} />
                 <InputField name="MothersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.MothersMname} />
                 <InputField name="MothersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.MothersLname} />
                 <InputField name="MothersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.MothersEmail} />
                 <InputField name="MothersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.MothersMobileNo} />
-                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.MothersOccupation} />
+                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.MothersOccupation} /> */}
             </div>
             <div className="flex items-center pt-4">
                 <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Emergency Contact Person Information
+                    Highest Educational Attainment
                 </h2>
                 <div className="flex-grow">
                     <hr className="border-t border-gray-400" />
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="ContactPerson" label="Fullname" register={register} isEditing={isEditing} displayValue={studentData.ContactPerson} />
-                <InputField name="ContactEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.ContactEmail} />
-                <InputField name="Relationship" label="Relationship" register={register} isEditing={isEditing} displayValue={studentData.Relationship} />
+                <InputField name="SchoolName" label="School Name" register={register} isEditing={isEditing} displayValue={employeeData.SchoolName} />
+                <InputField name="From" label="From" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.From) : formatDate(employeeData.From)} {...(isEditing ? { type: "date" } : {})} />
+                <InputField name="To" label="To" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.To) : formatDate(employeeData.To)} {...(isEditing ? { type: "date" } : {})} />
+                <InputField name="Degree" label="Degree" register={register} isEditing={isEditing} displayValue={employeeData.Degree} />
             </div>
-            {isEditing && (
-                <div className="flex justify-end items-end pt-2">
+            <div className="flex items-center pt-4">
+                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
+                    Other Information
+                </h2>
+                <div className="flex-grow">
+                    <hr className="border-t border-gray-400" />
+                </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-4">
+                <InputField name="PrevEmployed" label="Prev Employed" register={register} isEditing={isEditing} displayValue={employeeData.PrevEmployed} />
+                <InputField name="PlanToWorkAbroad" label="Plan to Work Abroad " register={register} isEditing={isEditing} displayValue={employeeData.PlanToWorkAbroad} />
+                <InputField name="TargetYear" label="Target Year" register={register} isEditing={isEditing} displayValue={employeeData.TargetYear} />
+                <InputField name="TeachingLicense" label="Teaching License" register={register} isEditing={isEditing} displayValue={employeeData.TeachingLicense} />
+                <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfExamination) : formatDate(employeeData.DateOfExamination)} {...(isEditing ? { type: "date" } : {})} />
+            </div>
+            <div className="flex justify-end items-end pt-2">
+                <button
+                    type="submit"
+                    className="px-6 py-2 mr-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-800 transition"
+                    onClick={handleProceed}
+                >
+                    Proceed to hiring Process
+                </button>
+                {isEditing && (
                     <button
                         type="submit"
                         className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-800 transition"
                         onClick={handleSubmit(onSubmit)}
                     >
-                        Submit
+                        Save
                     </button>
-                </div>
-            )}
+                )}
+
+            </div>
+
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}

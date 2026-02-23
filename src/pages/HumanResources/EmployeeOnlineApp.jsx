@@ -5,12 +5,12 @@ import EmployeeOnlineDataTable from "../../components/HrComponents/EmployeeOnlin
 
 const EmployeeOnlineApp = () => {
     useEffect(() => {
-        document.title = 'Online Application | Admission';
+        document.title = 'Employee Online Application';
     }, []);
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/hr/dashboard' },
-        { label: 'Online Application', href: '/hr/onlineapplication' }
+        { label: 'Employee Online Application', href: '/hr/onlineapplication' }
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -22,7 +22,7 @@ const EmployeeOnlineApp = () => {
             <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
-                    <h2 className="text-sm font-bold text-black mt-2">Online Application</h2>
+                    <h2 className="text-sm font-bold text-black mt-2">Employee Online Application</h2>
                 </div>
 
                 <section className="flex items-center justify-center h-[calc(100%-5rem)]">
@@ -35,7 +35,7 @@ const EmployeeOnlineApp = () => {
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
                         <div className="flex justify-center">
                             <h2 className="text-2xl font-bold text-green-500 mt-2">
-                                Online Application Table
+                               Employee Online Application Table
                             </h2>
                         </div>
                         <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">

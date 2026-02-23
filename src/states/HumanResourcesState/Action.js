@@ -1,6 +1,7 @@
 import {
     FETCH_EMPLOYEE_ONLINE_APP_REQUEST, FETCH_EMPLOYEE_ONLINE_APP_SUCCESS, FETCH_EMPLOYEE_ONLINE_APP_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_INFO_REQUEST, FETCH_EMPLOYEE_APPLICATION_INFO_SUCCESS, FETCH_EMPLOYEE_APPLICATION_INFO_FAILURE,
+    FETCH_INSERT_HIRING_PROCESS_REQUEST, FETCH_INSERT_HIRING_PROCESS_SUCCESS, FETCH_INSERT_HIRING_PROCESS_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -60,6 +61,37 @@ export const fetchEmployeeApplicationInfoData = (employeeAppId) => async (dispat
     }
     catch(error){
         dispatch(fetchEmployeeApplicationInfoFailure(error.message));
+        return({ ok: false, error })
+    }
+};
+
+
+export const fetchInsertHiringProcessRequest = () => ({ type: FETCH_INSERT_HIRING_PROCESS_REQUEST });
+export const fetchInsertHiringProcessSuccess = (data) => ({ type: FETCH_INSERT_HIRING_PROCESS_SUCCESS, payload: data });
+export const fetchInsertHiringProcessFailure = (error) => ({ type: FETCH_INSERT_HIRING_PROCESS_FAILURE, payload: error });
+
+export const fetchInsertHiringProcessData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertHiringProcessRequest());
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/hr/insert-hiring-process`;
+
+        const response = await fetch(url,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertHiringProcessSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchInsertHiringProcessFailure(error.message));
         return({ ok: false, error })
     }
 };

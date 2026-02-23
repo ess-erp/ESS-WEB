@@ -106,6 +106,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         9: [
             { name: "Dashboard", icon: DashboardIcon, path: "/hr/dashboard" },
             { name: "Employee Online Application", icon: UserIconSolid, path: "/hr/onlineapplication" },
+            { name: "Templates", icon: DocumentIcon, path: "/hr/templates" },
             // { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
             // { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
             { separator: true },

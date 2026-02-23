@@ -24,6 +24,7 @@ const InputField = ({
     successMessage = "",
     disabled = 0,
     color = "",
+    rules = {},
 }) => {
 
     const [showError, setShowError] = useState(false);
@@ -57,6 +58,7 @@ const InputField = ({
                 // {...register(name, { required: required ? `${label} is required` : false })}
                 {...register(name, {
                     required: required ? `${label} is required` : false,
+                    ...rules,
                     validate: (value) => {
                         if (
                             value &&
