@@ -1,0 +1,403 @@
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import DataTable from "react-data-table-component";
+import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
+import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
+import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
+import RowToggleComponent from '../../components/ButtonsComponents/RowToggleComponent';
+import RHFListbox from '../ButtonsComponents/RHFListbox';
+import InputField from '../ButtonsComponents/InputField';
+import SearchableSelect from '../ButtonsComponents/SearchableSelect';
+import {
+    fetchUpdateRowTemplateData,
+} from "../../states/CfwState/Action";
+import {
+    fetchUserRoleData,
+    fetchInsertCriteriaTemplateData,
+} from '../../states/HumanResourcesState/Action';
+
+const TemplatesModalComponent = ({ selectedStatus }) => {
+
+
+    const dispatch = useDispatch();
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem("userData");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+    const currentUserId = user.UserId;
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isRowModalOpen, setIsRowModalOpen] = useState(false);
+
+    const tempList = [
+        { id: 1, TempType: "Criteria Template Table" },
+        { id: 2, TempType: "Other Template Table" }
+    ];
+
+    const {
+        register,
+        handleSubmit,
+        control,
+        watch,
+        formState: { errors },
+    } = useForm({
+        mode: "onSubmit",
+        defaultValues: {
+            TempName: "",
+            UserRoleId: "",
+            CriteriaChildDtos: []
+        }
+    });
+    const selectedTemplate = watch("TempType");
+    const { fields: criteriaFields, append, remove } = useFieldArray({
+        control,
+        name: "CriteriaChildDtos"
+    });
+    useEffect(() => {
+        if (selectedTemplate?.id === 1 && criteriaFields.length === 0) {
+            append({ CriteriaName: "", Remarks: "" });
+        }
+    }, [selectedTemplate]);
+
+
+
+    const handleToggleActive = async (selectedRow, newStatus) => {
+        const CreatedByUserId = user.UserId;
+        const activeStatus = newStatus ? "Y" : "DR";
+        console.log(selectedRow);
+        try {
+            const result = await dispatch(fetchUpdateRowTemplateData(
+                selectedRow.TempId,
+                selectedRow.TempType,
+                CreatedByUserId,
+                activeStatus
+            ));
+
+            if (result.ok) {
+                setTable(prev =>
+                    prev.map(row =>
+                        row.TempId === selectedRow.TempId
+                            ? { ...row, isActive: newStatus }
+                            : row
+                    )
+                );
+
+                fetchTemplates(selectedStatus, page, pageSize, search);
+            }
+        } catch (error) {
+            console.error("Error updating template:", error);
+        }
+    };
+
+    const userRoleState = useSelector((state) => state.hr.userRoleState?.data || {});
+    const [userRoleList, setUserRoleList] = useState([]);
+
+    const addNewModal = async () => {
+        console.log("test");
+        setIsModalOpen(true);
+        dispatch(fetchUserRoleData());
+
+        console.log(userRoleState);
+    };
+
+    useEffect(() => {
+
+        if (!Array.isArray(userRoleState) || userRoleState.length == 0) return;
+
+        setUserRoleList(
+            userRoleState.map(item => ({
+                value: item.UserRoleId,
+                label: item.UserRole,
+                name: item.UserRole,
+            }))
+        );
+
+    }, [userRoleState]);
+
+
+    const [payload, setPayload] = useState(null);
+    const [isWarningModal, setIsWarningModal] = useState(false);
+    const onSubmit = (data) => {
+        setPayload(data);
+        setIsWarningModal(true);
+    };
+
+    const handleSubmitModal = async () => {
+        const {
+            TempType,
+            ...rest
+        } = payload;
+        const formData = {
+            ...rest,
+            CreatedByUserId: currentUserId,
+        };
+
+        const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
+        if(res.ok){
+            console.log(res);
+        }
+        console.log(formData);
+    };
+
+
+    return (
+        <>
+            <div className="bg-white shadow rounded-lg p-4">
+                {/* top bar with title + search + add button */}
+                <div className="flex justify-between items-center mb-4">
+                    <span className="font-bold text-lg text-green-700">
+                        List of {selectedStatus === "active" ? "Active" : "Draft"} Templates
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                        <OutlineBlueBtn
+                            label="Add new"
+                            onClick={addNewModal}
+                        >
+                            <Plus size={16} className="mr-1" />
+                        </OutlineBlueBtn>
+                        {/* <input
+                            type="text"
+                            placeholder="Search..."
+                            className="px-3 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring focus:ring-blue-300"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        /> */}
+                    </div>
+                </div>
+
+                {/* data table */}
+
+                {/* <DataTable
+                    columns={columns}
+                    data={table}
+                    progressPending={loadingTable}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={totalRecords}
+                    onChangePage={handlePageChange}
+                    onChangeRowsPerPage={handlePerRowsChange}
+                    highlightOnHover
+                    striped
+                    responsive
+                /> */}
+                <ModalComponent
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    title="Add New Template"
+                    body={
+                        <>
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                <div className="max-h-[70vh] overflow-y-auto p-2 space-y-4">
+                                    <div className="flex justify-center">
+                                        <div className="w-full max-w-md">
+                                            <RHFListbox
+                                                name="TempType"
+                                                control={control}
+                                                list={tempList}
+                                                label="Select Template Type"
+                                                labelKey="TempType"
+                                                isEditing={false}
+                                                required
+                                                error={errors.TempType}
+                                            />
+                                        </div>
+
+                                    </div>
+
+                                    {selectedTemplate?.id === 1 && (
+                                        <div>
+                                            <div className="flex gap-2 mb-2 justify-center">
+                                                <InputField
+                                                    name="TempName"
+                                                    label="Name of Template"
+                                                    register={register}
+                                                    isEditing={true}
+                                                    placeholder="Please input name of template...."
+                                                    divClassName=""
+                                                    required
+                                                    errors={errors.TempName}
+                                                    errorMessage={errors.TempName?.message}
+                                                />
+                                                {/* <SearchableSelect
+                                                    options={userRoleList}
+                                                    value={selectedUserRole}
+                                                    onChange={(selected) => setSelectedUserRole(selected)}
+                                                    placeholder="-- Select User Role --"
+                                                    label="Select User Role"
+                                                    required
+                                                    errors={errors.UserRoleId}
+                                                    errorMessage={errors.UserRoleId?.message}
+                                                /> */}
+                                                <Controller
+                                                    name="UserRoleId"
+                                                    control={control}
+                                                    rules={{ required: "User Role is required" }}
+                                                    render={({ field }) => (
+                                                        <SearchableSelect
+                                                            options={userRoleList}
+                                                            value={userRoleList.find(
+                                                                option => option.value === field.value
+                                                            )}
+                                                            onChange={(selected) => {
+                                                                field.onChange(selected?.value);
+                                                            }}
+                                                            placeholder="-- Select User Role --"
+                                                            label="Select User Role"
+                                                            required
+                                                            errors={errors.UserRoleId}
+                                                            errorMessage={errors.UserRoleId?.message}
+                                                        />
+                                                    )}
+                                                />
+                                            </div>
+                                            {criteriaFields.map((field, index) => (
+                                                <div
+                                                    key={field.id}
+                                                    className="flex gap-2 mb-2 items-end"
+                                                >
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`CriteriaChildDtos.${index}.CriteriaName`}
+                                                            label="Name of Criteria"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input name of criteria...."
+                                                            required
+                                                            errors={errors?.TemplateDetails?.[index]?.CriteriaName}
+                                                            errorMessage={
+                                                                errors?.TemplateDetails?.[index]?.CriteriaName?.message
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`CriteriaChildDtos.${index}.Remarks`}
+                                                            label="Remarks"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input remarks...."
+                                                        />
+                                                    </div>
+
+                                                    {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
+                                                    {criteriaFields.length > 1 && (
+                                                        <div className="mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => remove(index)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded h-fit"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-end mb-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        append({
+                                                            CriteriaName: "",
+                                                            Remarks: ""
+                                                        })
+                                                    }
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    + Add Row
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </form>
+                        </>
+                    }
+                    size="w-[800px]"
+                    maxHeight="100vh"
+                    buttons={[
+                        { label: "Submit", type: "green", onClick: handleSubmit(onSubmit), closeOnClick: false },
+                        { label: "No", type: "red", closeOnClick: true },
+                    ]}
+                />
+                <ModalComponent
+                    isOpen={isWarningModal}
+                    onClose={() => setIsWarningModal(false)}
+                    title={<span className="font-bold text-lg text-red-700">Warning</span>}
+                    body={<p>Are you sure you want to submit?</p>}
+                    buttons={[
+                        { label: "Ok", type: "green", onClick: handleSubmitModal },
+                        { label: "Cancel", type: "red", onClick: () => setIsSuccessModalOpen(false) }
+                    ]}
+                />
+                <ModalComponent
+                    isOpen={isSuccessModalOpen}
+                    onClose={() => setIsSuccessModalOpen(false)}
+                    title={<span className="font-bold text-lg text-green-700">Success</span>}
+                    body={<p>Your template has been inserted successfully!</p>}
+                // buttons={[
+                //     { label: "OK", type: "green", onClick: () => setIsSuccessModalOpen(false) }
+                // ]}
+                />
+                <ModalComponent
+                    isOpen={isRowModalOpen}
+                    onClose={() => setIsRowModalOpen(false)}
+                    title={<span className="font-bold text-lg text-blue-700">Test</span>}
+                    body={
+                        <>
+                            {/* <div className="flex justify-between items-center mb-4">
+                                <span className="font-bold text-lg text-green-700">
+                                    Template of {rowTitle}
+                                </span>
+
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        className="px-3 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring focus:ring-blue-300"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex justify-end mb-2">
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="px-3 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring focus:ring-blue-300"
+                                    value={searchRow}
+                                    onChange={(e) => setSearchRow(e.target.value)}
+                                />
+                            </div>
+
+                            <DataTable
+                                columns={rowColumns()}
+                                data={rowTable}
+                                progressPending={loadingRowTable}
+                                pagination
+                                paginationServer
+                                paginationTotalRows={rowTotalRecords}
+                                onChangePage={handleRowPageChange}
+                                onChangeRowsPerPage={handleRowPerRowsChange}
+                                highlightOnHover
+                                striped
+                                responsive
+                            /> */}
+                        </>
+                    }
+                    size="w-[800px]"
+                    maxHeight="100vh"
+                    buttons={[
+                        { label: "OK", type: "green", onClick: () => setIsRowModalOpen(false) }
+                    ]}
+                />
+            </div>
+        </>
+    );
+};
+
+export default TemplatesModalComponent;

@@ -2,6 +2,8 @@ import {
     FETCH_EMPLOYEE_ONLINE_APP_REQUEST, FETCH_EMPLOYEE_ONLINE_APP_SUCCESS, FETCH_EMPLOYEE_ONLINE_APP_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_INFO_REQUEST, FETCH_EMPLOYEE_APPLICATION_INFO_SUCCESS, FETCH_EMPLOYEE_APPLICATION_INFO_FAILURE,
     FETCH_INSERT_HIRING_PROCESS_REQUEST, FETCH_INSERT_HIRING_PROCESS_SUCCESS, FETCH_INSERT_HIRING_PROCESS_FAILURE,
+    FETCH_USER_ROLE_REQUEST, FETCH_USER_ROLE_SUCCESS, FETCH_USER_ROLE_FAILURE,
+    FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -92,6 +94,65 @@ export const fetchInsertHiringProcessData = (formData) => async (dispatch) => {
     }
     catch(error){
         dispatch(fetchInsertHiringProcessFailure(error.message));
+        return({ ok: false, error })
+    }
+};
+
+
+export const fetchUserRoleRequest = () => ({ type: FETCH_USER_ROLE_REQUEST });
+export const fetchUserRoleSuccess = (data) => ({ type: FETCH_USER_ROLE_SUCCESS, payload: data });
+export const fetchUserRoleFailure = (error) => ({ type: FETCH_USER_ROLE_FAILURE, payload: error });
+
+export const fetchUserRoleData = () => async (dispatch) => {
+    dispatch(fetchUserRoleRequest());
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-user-role`;
+
+        const response = await fetch(url,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchUserRoleSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchUserRoleFailure(error.message));
+        return({ ok: false, error })
+    }
+};
+
+export const fetchInsertCriteriaTemplateRequest = () => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST });
+export const fetchInsertCriteriaTemplateSuccess = (data) => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, payload: data });
+export const fetchInsertCriteriaTemplateFailure = (error) => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE, payload: error });
+
+export const fetchInsertCriteriaTemplateData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertCriteriaTemplateRequest());
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/hr/insert-criteria-template`;
+
+        const response = await fetch(url,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertCriteriaTemplateSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchInsertCriteriaTemplateFailure(error.message));
         return({ ok: false, error })
     }
 };
