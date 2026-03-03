@@ -35,6 +35,7 @@ import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
 import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
 import HrEmployeeHiringProcess from "../pages/HumanResources/EmployeeHiringProcess";
 import HrTemplates from "../pages/HumanResources/Templates";
+import HrEmployeeInitialInterview from "../pages/HumanResources/EmployeeInitialInterview";
 
 
 const AppRoutes = () => (
@@ -215,7 +216,7 @@ const AppRoutes = () => (
       <Route
         path="/academic/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["8"]}>
+          <ProtectedRoutes allowedRoles={[6]}>
             <AcademicDashboard />
           </ProtectedRoutes>
         }
@@ -223,7 +224,7 @@ const AppRoutes = () => (
       <Route
         path="/academic/facultyloadentry"
         element={
-          <ProtectedRoutes allowedRoles={["8"]}>
+          <ProtectedRoutes allowedRoles={[6]}>
             <AcadFacultyLoadEntry />
           </ProtectedRoutes>
         }
@@ -231,7 +232,7 @@ const AppRoutes = () => (
       <Route
         path="/academic/subjectloadentry"
         element={
-          <ProtectedRoutes allowedRoles={["8"]}>
+          <ProtectedRoutes allowedRoles={[6]}>
             <AcadSubjectLoadEntry />
           </ProtectedRoutes>
         }
@@ -239,7 +240,7 @@ const AppRoutes = () => (
       <Route
         path="/academic/subjectscheduleloadentry"
         element={
-          <ProtectedRoutes allowedRoles={["8"]}>
+          <ProtectedRoutes allowedRoles={[6]}>
             <AcadSubjectScheduleLoadEntry />
           </ProtectedRoutes>
         }
@@ -249,43 +250,51 @@ const AppRoutes = () => (
       {/* start of hr modules */}
 
       <Route
-        path="/hr/dashboard"
+        path="/hrd/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["9"]}>
+          <ProtectedRoutes allowedRoles={[7,8,9,10]}>
             <HrDashboard />
           </ProtectedRoutes>
         }
       />
 
       <Route
-        path="/hr/onlineapplication"
+        path="/hrd/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["9"]}>
+          <ProtectedRoutes allowedRoles={[7,10]}>
             <HrOnlineApplication />
           </ProtectedRoutes>
         }
       />
       <Route
-        path="/hr/employeeappform"
+        path="/hrd/employeeappform"
         element={
-          <ProtectedRoutes allowedRoles={["9"]}>
+          <ProtectedRoutes allowedRoles={[7,10]}>
             <HrEmployeeAppForm />
           </ProtectedRoutes>
         }
       />
       <Route
-        path="/hr/employeehiringprocess"
+        path="/hrd/employeehiringprocess"
         element={
-          <ProtectedRoutes allowedRoles={["9"]}>
+          <ProtectedRoutes allowedRoles={[7,10]}>
             <HrEmployeeHiringProcess />
           </ProtectedRoutes>
         }
       />
       <Route
-        path="/hr/templates"
+        path="/hrd/templates"
         element={
-          <ProtectedRoutes allowedRoles={["9"]}>
+          <ProtectedRoutes allowedRoles={[7,8,9,10]}>
             <HrTemplates />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/hrd/employeeinitialinterview"
+        element={
+          <ProtectedRoutes allowedRoles={[10]}>
+            <HrEmployeeInitialInterview />
           </ProtectedRoutes>
         }
       />

@@ -7,30 +7,39 @@ export const handleAuthRedirect = (navigate) => {
   try {
     const userData = JSON.parse(localStorage.getItem("userData"));
     console.log(userData);
-    const role = userData?.UserRole;
+    const role = userData?.UserRoleId;
     console.log("Redirect role:", role);
 
     switch (role) {
-      case "1":
+      case 1:
         navigate("/admission/dashboard");
         break;
-      case "2":
+      case 2:
         navigate("/cfw/dashboard");
         break;
-      case "3":
+      case 3:
         navigate("/cashier/dashboard");
         break;
-      case "4":
+      case 4:
         navigate("/finance/dashboard");
         break;
-      case "7":
+      case 5:
         navigate("/sru/dashboard");
         break;
-      case "8":
+      case 6:
         navigate("/academic/dashboard");
         break;
-      case "9":
-        navigate("/hr/dashboard");
+      case 7:
+        navigate("/hrd/dashboard");
+        break;
+      case 8:
+        navigate("/hrd/dashboard");
+        break;
+      case 9:
+        navigate("/hrd/dashboard");
+        break;
+      case 10:
+        navigate("/hrd/dashboard");
         break;
       default:
         navigate("/");

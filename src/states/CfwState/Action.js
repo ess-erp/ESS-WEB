@@ -533,11 +533,11 @@ export const fetchAllUserByUserRoleRequest = () => ({ type: FETCH_ALLUSERBYUSERR
 export const fetchAllUserByUserRoleSuccess = (data) => ({ type: FETCH_ALLUSERBYUSERROLE_SUCCESS, payload: data });
 export const fetchAllUserByUserRoleFailure = (error) => ({ type: FETCH_ALLUSERBYUSERROLE_FAILURE, payload: error });
 
-export const fetchAllUserByUserRoleData = (userRole) => async (dispatch) => {
+export const fetchAllUserByUserRoleData = (userRoleId) => async (dispatch) => {
     dispatch(fetchAllUserByUserRoleRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cfw/get-all-user-by-user-role?userRole=${userRole}`;
+        const url = `${baseUrl}/cfw/get-all-user-by-user-role?userRoleId=${userRoleId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {

@@ -57,7 +57,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
     useEffect(() => {
         dispatch(fetchExamSettingsCodeData(levelId));
         dispatch(fetchExamScheduleCreatedData(levelId));
-        dispatch(fetchAllUserByUserRoleData("2"));
+        dispatch(fetchAllUserByUserRoleData(2));
     }, [dispatch, levelId]);
 
     useEffect(() => {

@@ -9,8 +9,8 @@ const EmployeeOnlineApp = () => {
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/hr/dashboard' },
-        { label: 'Employee Online Application', href: '/hr/onlineapplication' }
+        { label: 'Dashboard', href: '/hrd/dashboard' },
+        { label: 'Employee Online Application', href: '/hrd/onlineapplication' }
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);

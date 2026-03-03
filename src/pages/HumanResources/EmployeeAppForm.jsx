@@ -12,9 +12,9 @@ const EmployeeAppForm = () => {
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/hr/dashboard' },
-        { label: 'Online Application', href: '/hr/onlineapplication' },
-        { label: 'Employee Application Information', href: '/hr/employeeappform' }
+        { label: 'Dashboard', href: '/hrd/dashboard' },
+        { label: 'Online Application', href: '/hrd/onlineapplication' },
+        { label: 'Employee Application Information', href: '/hrd/employeeappform' }
     ];
     const { search } = useLocation();
     const query = new URLSearchParams(search);

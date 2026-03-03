@@ -15,6 +15,7 @@ import {
 import {
     fetchUserRoleData,
     fetchInsertCriteriaTemplateData,
+    fetchHrTemplateData,
 } from '../../states/HumanResourcesState/Action';
 
 const TemplatesModalComponent = ({ selectedStatus }) => {
@@ -26,6 +27,118 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
     const currentUserId = user.UserId;
+
+
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [loadingTable, setLoadingTable] = useState(false);
+    const [table, setTable] = useState([]);
+
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const fetchTemplates = async (selectedStatus, page = 1, pageSize = 10, search) => {
+        setLoadingTable(true);
+
+        const result = await dispatch(fetchHrTemplateData(selectedStatus, page, pageSize, search));
+
+        if (result.ok) {
+            const docsWithActive = (result.data || []).map(doc => ({
+                ...doc,
+                isActive: selectedStatus === "active" ? true : doc.isActive ?? false,
+            }));
+            setTable(docsWithActive);
+            setTotalRecords(result.totalRecords || 0);
+        } else {
+            console.error("Failed to fetch table data:", result.error);
+            setTable([]);
+        }
+
+        setLoadingTable(false);
+    };
+
+    useEffect(() => {
+        fetchTemplates(selectedStatus, page, pageSize, search);
+    }, [selectedStatus, page, pageSize, dispatch]);
+
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+    };
+
+    const handlePerRowsChange = (newPerPage, newPage) => {
+        setPageSize(newPerPage);
+        setPage(newPage);
+    };
+
+    const getTemplateTypeTitle = (type) => {
+        switch (type) {
+            case "CRITERIA":
+                return "Criteria Template Table";
+            default:
+                return "—";
+        }
+    };
+    const columns = [
+        {
+            name: "Template Name",
+            selector: (row) => row.TempName,
+            sortable: true,
+            wrap: true,
+        },
+        {
+            name: "Template Type",
+            selector: (row) => getTemplateTypeTitle(row.TempType),
+            sortable: true,
+        },
+        {
+            name: "Assign to",
+            selector: (row) => row.UserRoleName,
+            sortable: true,
+        },
+        {
+            name: "Created by",
+            selector: (row) => { if (!row.CreatedByFullname) return "—"; return row.CreatedByFullname.toLowerCase().replace(/\b\w/g, c => c.toUpperCase()); },
+            sortable: true,
+        },
+        {
+            name: "Date Created",
+            selector: (row) => row.DateCreated ? new Date(row.DateCreated).toLocaleDateString() : "—",
+            sortable: true,
+        },
+        {
+            name: "Date Modified",
+            selector: (row) => row.DateModified ? new Date(row.DateModified).toLocaleDateString() : "—",
+            sortable: true,
+        },
+        {
+            name: "Actions",
+            cell: (row) => (
+                <div className="flex gap-4 items-center">
+                    <button
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        onClick={() => openRowModal(row, "view")}
+                    >
+                        <Eye size={18} />
+                    </button>
+
+                    <button
+                        className="p-1 text-yellow-600 hover:text-yellow-800"
+                        onClick={() => openRowModal(row, "edit")}
+                    >
+                        <Pencil size={18} />
+                    </button>
+
+                    <RowToggleComponent row={row} onToggle={handleToggleActive} />
+                </div>
+            ),
+            ignoreRowClick: true,
+            width: "180px",
+        }
+
+    ];
+
+
+
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRowModalOpen, setIsRowModalOpen] = useState(false);
@@ -108,8 +221,8 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         setUserRoleList(
             userRoleState.map(item => ({
                 value: item.UserRoleId,
-                label: item.UserRole,
-                name: item.UserRole,
+                label: item.UserRoleName,
+                name: item.UserRoleName,
             }))
         );
 
@@ -134,7 +247,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         };
 
         const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
-        if(res.ok){
+        if (res.ok) {
             console.log(res);
         }
         console.log(formData);
@@ -157,19 +270,19 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                         >
                             <Plus size={16} className="mr-1" />
                         </OutlineBlueBtn>
-                        {/* <input
+                        <input
                             type="text"
                             placeholder="Search..."
                             className="px-3 py-2 border rounded-lg text-sm w-64 focus:outline-none focus:ring focus:ring-blue-300"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                        /> */}
+                        />
                     </div>
                 </div>
 
                 {/* data table */}
 
-                {/* <DataTable
+                <DataTable
                     columns={columns}
                     data={table}
                     progressPending={loadingTable}
@@ -181,7 +294,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                     highlightOnHover
                     striped
                     responsive
-                /> */}
+                />
                 <ModalComponent
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}

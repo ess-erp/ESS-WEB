@@ -5,11 +5,11 @@ import AnnouncementComponent from '../../components/AdmissionComponents/Announce
 
 const Dashboard = () => {
     useEffect(() => {
-        document.title = 'Dashboard | CFW';
+        document.title = 'Dashboard | HRD';
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/cfw/dashboard' }
+        { label: 'Dashboard', href: '/hrd/dashboard' }
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);

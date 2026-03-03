@@ -12,13 +12,17 @@ import { fetchEmployeeOnlineAppData } from "../../states/HumanResourcesState/Act
 const EmployeeOnlineDataTable = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useState(() => {
+    const savedUser = localStorage.getItem("userData");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const tableState = useSelector((state) => state.hr.employeeOnlineState || {});
   const table = tableState.data.data || [];
   const totalRows = tableState.data.totalRecords || 0;
   const loading = tableState.loading || false;
 
   const statuses = [
-    { label: "Pending", action: "P",icon: <FaClock className="text-red-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
+    { label: "Pending", action: "P", icon: <FaClock className="text-red-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
     { label: "Hired", action: "Y", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
   ];
 
@@ -51,6 +55,7 @@ const EmployeeOnlineDataTable = () => {
     dispatch(fetchEmployeeOnlineAppData(
       startDate,
       endDate,
+      user[0]?.UserRoleId,
       selectedStatus,
       currentPage,
       rowsPerPage,
@@ -60,11 +65,16 @@ const EmployeeOnlineDataTable = () => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
-console.log(selectedStatus);
+  }, [startDate, endDate, user[0]?.UserRoleId,selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
+  console.log(selectedStatus);
   const handleButtonClick = (row) => {
     console.log(row);
-    navigate(`/hr/employeeappform?employeeAppId=${row.EmployeeAppId}`);
+    if(user[0]?.UserRoleId === 7){
+      navigate(`/hrd/employeeappform?employeeAppId=${row.EmployeeAppId}`);
+    }
+    else{
+      navigate(`/hrd/employeeinitialinterview?employeeAppId=${row.EmployeeAppId}`);
+    }
   };
 
   const handleSubmit = () => {

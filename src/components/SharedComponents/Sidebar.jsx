@@ -39,86 +39,211 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
 
     }, []);
+
+
+    // const sharedMenu = [
+    //     { separator: true },
+    //     { name: "Notification", icon: Bell, path: "/tickets" },
+    //     { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //     { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //     { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    // ];
+
+    // const roleMenus = {
+    //     1: [
+    //         { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
+    //         { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
+    //         { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     2: [
+    //         { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
+    //         { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
+    //         { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     3: [
+    //         { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
+    //         // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
+    //         { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
+    //         { name: "Transaction History", icon: ScrollText, path: "/cashier/transactionhistory" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     4: [
+    //         { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
+    //         //{ name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
+    //         { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     5: [
+    //         { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
+    //         { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
+    //         { name: "Section and House Entry", icon: FilePlus, path: "/sru/sectionandhouseentry" },
+    //         { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
+    //         { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     6: [
+    //         { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
+    //         { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
+    //         { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
+    //         { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/subjectscheduleloadentry" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    //     7: [
+    //         { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+    //         { name: "Employee Online Application", icon: UserIconSolid, path: "/hrd/onlineapplication" },
+    //         { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+    //         // { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
+    //         // { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
+    //         { separator: true },
+    //         { name: "Notification", icon: Bell, path: "/tickets" },
+    //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+    //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+    //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    //     ],
+    // };
+    // 🔹 Shared bottom menu (used by most roles)
+    const sharedMenu = [
+        { separator: true },
+        { name: "Notification", icon: Bell, path: "/tickets" },
+        { name: "Tickets", icon: TicketIcon, path: "/tickets" },
+        { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+        { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    ];
+
+    // 🔹 Role-specific menus
+    const admissionMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
+        { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
+        { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
+        ...sharedMenu
+    ];
+
+    const cfwMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
+        { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
+        { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
+        ...sharedMenu
+    ];
+
+    const cashierMenu = [
+        { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
+        { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
+        { name: "Transaction History", icon: ScrollText, path: "/cashier/transactionhistory" },
+        { separator: true },
+        { name: "Notification", icon: Bell, path: "/tickets" },
+        { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+        { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    ];
+
+    const financeMenu = [
+        { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
+        { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
+        ...sharedMenu
+    ];
+
+    const sruMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
+        { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
+        { name: "Section and House Entry", icon: FilePlus, path: "/sru/sectionandhouseentry" },
+        { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
+        { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
+        ...sharedMenu
+    ];
+
+    const academicMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
+        { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
+        { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
+        { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/subjectscheduleloadentry" },
+        ...sharedMenu
+    ];
+
+    const hrMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+        { name: "Employee Online Application", icon: UserIconSolid, path: "/hrd/onlineapplication" },
+        { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+        ...sharedMenu
+    ];
+    const hrAdminMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+        { name: "Employee Online Application", icon: UserIconSolid, path: "/hrd/onlineapplication" },
+        { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+        ...sharedMenu
+    ];
+
+
+    // 🔥 MULTIPLE ROLE SUPPORT HERE
     const roleMenus = {
-        1: [
-            { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
-            { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
-            { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        2: [
-            { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
-            { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
-            { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        3: [
-            { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
-            // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
-            { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
-            { name: "Transaction History", icon: ScrollText, path: "/cashier/transactionhistory" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        4: [
-            { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
-            //{ name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
-            { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        7: [
-            { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
-            { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
-            { name: "Section and House Entry", icon: FilePlus, path: "/sru/sectionandhouseentry" },
-            { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
-            { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        8: [
-            { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
-            { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
-            { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
-            { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/subjectscheduleloadentry" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
-        9: [
-            { name: "Dashboard", icon: DashboardIcon, path: "/hr/dashboard" },
-            { name: "Employee Online Application", icon: UserIconSolid, path: "/hr/onlineapplication" },
-            { name: "Templates", icon: DocumentIcon, path: "/hr/templates" },
-            // { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
-            // { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
-            { separator: true },
-            { name: "Notification", icon: Bell, path: "/tickets" },
-            { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-            { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-            { name: "Profile", icon: SettingsIcon, path: "/settings" },
-        ],
+        1: admissionMenu,
+        2: cfwMenu,
+        3: cashierMenu,
+        4: financeMenu,
+        5: sruMenu,
+        6: academicMenu,
+        7: hrMenu,
+        10: hrAdminMenu,        
     };
 
+
     // Pick menu by role
-    const menuItems = roleMenus[user?.UserRole] || [];
+    // const menuItems = roleMenus[user?.UserRoleId] || [];
+
+    const getMenuByRoles = (userRoles) => {
+        if (!userRoles) return [];
+
+        // Ensure roles is always an array
+        const rolesArray = Array.isArray(userRoles)
+            ? userRoles
+            : [userRoles];
+
+        // Merge menus from all roles
+        const mergedMenus = rolesArray.flatMap(role => roleMenus[role] || []);
+
+        // Remove duplicates (by name)
+        const uniqueMenus = [];
+        const seen = new Set();
+
+        for (let item of mergedMenus) {
+            if (item.separator) {
+                uniqueMenus.push(item);
+                continue;
+            }
+
+            if (!seen.has(item.name)) {
+                seen.add(item.name);
+                uniqueMenus.push(item);
+            }
+        }
+
+        return uniqueMenus;
+    };
+
+    const menuItems = getMenuByRoles(user?.UserRoleId);
 
     const getActiveItem = () => {
         if (location.pathname.includes("/dashboard")) return "Dashboard";

@@ -17,10 +17,10 @@ const EmployeeHiringProcess = () => {
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/hr/dashboard' },
-        { label: 'Online Application', href: '/hr/onlineapplication' },
-        { label: 'Employee Application Information', href: '/hr/employeeappform' },
-        { label: 'Employee Hiring Process', href: '/hr/employeehiringprocess' },
+        { label: 'Dashboard', href: '/hrd/dashboard' },
+        { label: 'Online Application', href: '/hrd/onlineapplication' },
+        { label: 'Employee Application Information', href: '/hrd/employeeappform' },
+        { label: 'Employee Hiring Process', href: '/hrd/employeehiringprocess' },
     ];
     const [isEditing, setIsEditing] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);

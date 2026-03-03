@@ -336,7 +336,7 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     };
 
     const handleProceed = () => {
-        navigate(`/hr/employeehiringprocess?employeeAppId=${employeeData.EmployeeAppId}`);
+        navigate(`/hrd/employeehiringprocess?employeeAppId=${employeeData.EmployeeAppId}`);
     };
 
     return (

@@ -4,6 +4,8 @@ import {
     FETCH_INSERT_HIRING_PROCESS_REQUEST, FETCH_INSERT_HIRING_PROCESS_SUCCESS, FETCH_INSERT_HIRING_PROCESS_FAILURE,
     FETCH_USER_ROLE_REQUEST, FETCH_USER_ROLE_SUCCESS, FETCH_USER_ROLE_FAILURE,
     FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
+    FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
+    FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -13,11 +15,11 @@ export const fetchEmployeeOnlineAppRequest = () => ({ type: FETCH_EMPLOYEE_ONLIN
 export const fetchEmployeeOnlineAppSuccess = (data) => ({ type: FETCH_EMPLOYEE_ONLINE_APP_SUCCESS, payload: data });
 export const fetchEmployeeOnlineAppFailure = (error) => ({ type: FETCH_EMPLOYEE_ONLINE_APP_FAILURE, payload: error });
 
-export const fetchEmployeeOnlineAppData = (startDate,endDate,status,page, pageSize, search) => async (dispatch) => {
+export const fetchEmployeeOnlineAppData = (startDate,endDate,userRoleId,status,page, pageSize, search) => async (dispatch) => {
     dispatch(fetchEmployeeOnlineAppRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/employee-online-app?startDate=${startDate}&endDate=${endDate}&status=${status}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/hr/employee-online-app?startDate=${startDate}&endDate=${endDate}&userRoleId=${userRoleId}&status=${status}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -153,6 +155,65 @@ export const fetchInsertCriteriaTemplateData = (formData) => async (dispatch) =>
     }
     catch(error){
         dispatch(fetchInsertCriteriaTemplateFailure(error.message));
+        return({ ok: false, error })
+    }
+};
+
+
+export const fetchHrTemplateRequest = () => ({ type: FETCH_HR_TEMPLATE_REQUEST });
+export const fetchHrTemplateSuccess = (data) => ({ type: FETCH_HR_TEMPLATE_SUCCESS, payload: data });
+export const fetchHrTemplateFailure = (error) => ({ type: FETCH_HR_TEMPLATE_FAILURE, payload: error });
+
+export const fetchHrTemplateData = (status,page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchHrTemplateRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-hr-template?status=${status}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchHrTemplateSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch(error){
+        dispatch(fetchHrTemplateFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchEmployeeApplicationScreeningRequest = () => ({ type: FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST });
+export const fetchEmployeeApplicationScreeningSuccess = (data) => ({ type: FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, payload: data });
+export const fetchEmployeeApplicationScreeningFailure = (error) => ({ type: FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE, payload: error });
+
+export const fetchEmployeeApplicationScreeningData = (employeeAppId) => async (dispatch) => {
+    dispatch(fetchEmployeeApplicationScreeningRequest());
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-employee-application-screening?employeeAppId=${employeeAppId}`;
+
+        const response = await fetch(url,{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchEmployeeApplicationScreeningSuccess(res));
+        return({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchEmployeeApplicationScreeningFailure(error.message));
         return({ ok: false, error })
     }
 };
