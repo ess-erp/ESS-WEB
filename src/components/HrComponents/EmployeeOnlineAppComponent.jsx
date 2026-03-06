@@ -153,6 +153,8 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
             Lname: employeeData.Lname ?? "",
             Nickname: employeeData.Nickname ?? "",
             Gender: employeeData.Gender ?? "",
+            TempEmail: employeeData.TempEmail ?? "",
+            Position: employeeData.Position ?? "",
             Designation: employeeData.Designation ?? "",
             DateOfBirth: employeeData.DateOfBirth ?? "",
             PlaceOfBirth: employeeData.PlaceOfBirth ?? "",
@@ -350,6 +352,8 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
                     <InputField name="Mname" label="Middle Name" register={register} isEditing={isEditing} displayValue={employeeData.Mname} />
                     <InputField name="Lname" label="Last Name" register={register} isEditing={isEditing} displayValue={employeeData.Lname} />
                     <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData.Nickname} />
+                    <InputField name="TempEmail" label="Other Email" register={register} isEditing={isEditing} displayValue={employeeData.TempEmail} />
+                    <InputField name="Position" label="Desired Position" register={register} isEditing={isEditing} displayValue={employeeData.Position} />
                     <InputField name="Gender" label="Gender" register={register} isEditing={isEditing} displayValue={employeeData.Gender} />
                     <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfBirth) : formatDate(employeeData.DateOfBirth)} {...(isEditing ? { type: "date" } : {})} />
                     <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={isEditing} displayValue={employeeData.PlaceOfBirth} />

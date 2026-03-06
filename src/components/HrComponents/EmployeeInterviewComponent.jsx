@@ -12,6 +12,7 @@ import {
 import {
     fetchEmployeeApplicationInfoData,
     fetchEmployeeApplicationScreeningData,
+    fetchHrCriteriaTableData,
 } from "../../states/HumanResourcesState/Action";
 const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
@@ -68,8 +69,14 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             Position: employeeData.Position ?? "",
             CampusId: employeeData.CampusId ?? "",
             CampusName: employeeData.CampusName ?? "",
+            ApplicationThru: employeScreeningData.ApplicationThru,
+            ApplicationThruOthers: employeScreeningData.ApplicationThruOthers,
+            ApplicationType: employeScreeningData.ApplicationType,
+            EmployeeNumber: employeScreeningData.EmployeeNumber,
+            WorkExperience: employeScreeningData.WorkExperience,
+            NoOfYearMonth: employeScreeningData.NoOfYearMonth
         });
-    }, [employeeData, isEditing, reset]);
+    }, [employeeData, employeScreeningData, isEditing, reset]);
 
     useEffect(() => {
         if (!isEditing || !employeeData?.CampusName || !campusList.length) return;
@@ -82,6 +89,101 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             reset(prev => ({ ...prev, Campus: campus }));
         }
     }, [campusList, employeeData?.CampusName, isEditing]);
+
+    const selectedApplicationThru = watch("ApplicationThru");
+    const selectedApplicationType = watch("ApplicationType");
+    const selectedWorkExperience = watch("WorkExperience");
+
+
+    const [hrCriteriaList, setHrCriteriaList] = useState([]);
+    const hrCriteriaTableState = useSelector((state) => state.hr.hrCriteriaTableState || {});
+    const hrCriteriaTable = hrCriteriaTableState.data.data || [];
+    const hrCriteriaTableTotalRows = hrCriteriaTableState.data.totalRecords || 0;
+    const hrCriteriaTableLoading = hrCriteriaTableState.loading || false;
+    const [hrCriteriaTableCurrentPage, setHrCriteriaTableCurrentPage] = useState(1);
+    const [hrCriteriaTableRowsPerPage, setHrCriteriaTableRowsPerPage] = useState(10);
+
+    useEffect(() => {
+        dispatch(fetchHrCriteriaTableData(userId, hrCriteriaTableCurrentPage, hrCriteriaTableRowsPerPage));
+    }, [userId, hrCriteriaTableCurrentPage, hrCriteriaTableRowsPerPage, dispatch]);
+
+    useEffect(() => {
+        if (hrCriteriaTable.length == 0) return;
+        setHrCriteriaList(hrCriteriaTable);
+    }, [hrCriteriaTable]);
+
+    console.log(hrCriteriaList);
+
+    const [ratings, setRatings] = useState({});
+
+    const hrCriteriaColumn = [
+        {
+            name: 'Criteria Name',
+            selector: row => row.CriteriaName,
+            sortable: true
+        },
+        {
+            name: 'Poor',
+            cell: (row) => (
+                <input
+                    type="radio"
+                    name={`rating-${row.Id}`}
+                    value="1"
+                    onChange={() => handleRatingChange(row.Id, 1)}
+                    checked={ratings[row.Id] === 1}
+                />
+            )
+        },
+        {
+            name: 'Marginal',
+            cell: (row) => (
+                <input
+                    type="radio"
+                    name={`rating-${row.Id}`}
+                    value="2"
+                    onChange={() => handleRatingChange(row.Id, 2)}
+                    checked={ratings[row.Id] === 2}
+                />
+            )
+        },
+        {
+            name: 'Good',
+            cell: (row) => (
+                <input
+                    type="radio"
+                    name={`rating-${row.Id}`}
+                    value="3"
+                    onChange={() => handleRatingChange(row.Id, 3)}
+                    checked={ratings[row.Id] === 3}
+                />
+            )
+        },
+        {
+            name: 'Excellent',
+            cell: (row) => (
+                <input
+                    type="radio"
+                    name={`rating-${row.Id}`}
+                    value="4"
+                    onChange={() => handleRatingChange(row.Id, 4)}
+                    checked={ratings[row.Id] === 4}
+                />
+            )
+        }
+    ];
+
+
+    const handleRatingChange = (rowId, value) => {
+        setRatings(prev => ({
+            ...prev,
+            [rowId]: value
+        }));
+    };
+
+    const formattedData = Object.keys(ratings).map(key => ({
+        CriteriaChildId: key,
+        Rating: ratings[key]
+    }));
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -119,7 +221,21 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         //     }
         // }
     };
-
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#027407', // header background
+                color: '#ffffff',           // header text color
+                fontWeight: 'bold',
+                fontSize: '14px',
+            },
+        },
+        headCells: {
+            style: {
+                color: '#ffffff',
+            },
+        },
+    };
     // console.log(employeeAppId);
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -204,7 +320,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     ]}
                     error={errors.ApplicationType}
                 />
-                {/* <InputField name="EmployeeNumber" label="Employee Number" register={register} isEditing={isEditing} /> */}
                 {selectedApplicationType === "3" && (
                     <InputField
                         name="EmployeeNumber"
@@ -230,7 +345,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     ]}
                     error={errors.WorkExperience}
                 />
-                {/* <InputField name="NoOfYearMonth" label="Years and Months" register={register} isEditing={isEditing} /> */}
                 {selectedWorkExperience === "3" && (
                     <InputField
                         name="NoOfYearMonth"
@@ -259,11 +373,30 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     <hr className="border-t border-gray-400" />
                 </div>
             </div>
-            <div className="flex justify-end items-end pt-2">
+            <div className="pt-4">
+                <DataTable
+                    columns={hrCriteriaColumn}
+                    data={hrCriteriaList}
+                    progressPending={hrCriteriaTableLoading}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={hrCriteriaTableTotalRows}
+                    paginationDefaultPage={hrCriteriaTableCurrentPage}
+                    onChangePage={(page) => setHrCriteriaTableCurrentPage(page)}
+                    onChangeRowsPerPage={(newPerPage, page) => {
+                        setHrCriteriaTableRowsPerPage(newPerPage);
+                        setHrCriteriaTableCurrentPage(page);
+                    }}
+                    highlightOnHover
+                    responsive
+                    customStyles={customStyles}
+                />
+            </div>
+            <div className="flex justify-end items-end p-4">
                 {isEditing && (
                     <button
                         type="submit"
-                        className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-800 transition"
+                        className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition"
                     >
                         Submit
                     </button>

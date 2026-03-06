@@ -6,6 +6,7 @@ import {
     FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
     FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
+    FETCH_HR_CRITERIA_TABLE_REQUEST, FETCH_HR_CRITERIA_TABLE_SUCCESS, FETCH_HR_CRITERIA_TABLE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -215,5 +216,34 @@ export const fetchEmployeeApplicationScreeningData = (employeeAppId) => async (d
     catch(error){
         dispatch(fetchEmployeeApplicationScreeningFailure(error.message));
         return({ ok: false, error })
+    }
+};
+
+export const fetchHrCriteriaTableRequest = () => ({ type: FETCH_HR_CRITERIA_TABLE_REQUEST });
+export const fetchHrCriteriaTableSuccess = (data) => ({ type: FETCH_HR_CRITERIA_TABLE_SUCCESS, payload: data });
+export const fetchHrCriteriaTableFailure = (error) => ({ type: FETCH_HR_CRITERIA_TABLE_FAILURE, payload: error });
+
+export const fetchHrCriteriaTableData = (userId,page, pageSize) => async (dispatch) => {
+    dispatch(fetchHrCriteriaTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-hr-criteria-table?&userId=${userId}&page=${page}&pageSize=${pageSize}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchHrCriteriaTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch(error){
+        dispatch(fetchHrCriteriaTableFailure(error.message));
+        return { ok: false, error };
     }
 };

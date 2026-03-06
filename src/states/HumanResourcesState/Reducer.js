@@ -6,6 +6,7 @@ import {
     FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
     FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
+    FETCH_HR_CRITERIA_TABLE_REQUEST, FETCH_HR_CRITERIA_TABLE_SUCCESS, FETCH_HR_CRITERIA_TABLE_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -23,6 +24,7 @@ const initialGeneralState = {
     insertCriteriaTemplateState: { ...initialState },
     hrTemplateState: { ...initialState },
     employeeScreeningState: { ...initialState },
+    hrCriteriaTableState: { ...initialState },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -77,6 +79,14 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, employeeScreeningState: { loading: false, data: action.payload, error: '' } };
         case FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE:
             return { ...state, employeeScreeningState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_HR_CRITERIA_TABLE_REQUEST:
+            return { ...state, hrCriteriaTableState: { loading: true, data: [], error: '' } };
+        case FETCH_HR_CRITERIA_TABLE_SUCCESS:
+            return { ...state, hrCriteriaTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_HR_CRITERIA_TABLE_FAILURE:
+            return { ...state, hrCriteriaTableState: { loading: false, data: [], error: action.payload } };
+
 
         default:
             return state;
