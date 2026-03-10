@@ -28,7 +28,7 @@ const EmployeeHiringProcess = () => {
     return (
         <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
             <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
+            <div className="flex-1 bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">Employee Hiring Process</h2>

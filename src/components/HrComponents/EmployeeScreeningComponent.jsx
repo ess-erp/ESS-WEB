@@ -32,14 +32,16 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
             Fullname: "",
             Nickname: "",
             Position: "",
-            CampusId: "",
-            CampusName: "",
-            SetPositionName: "",
+            // CampusId: "",
+            // CampusName: "",
+            SetPosition: "",
             ApplicationThru: "",
             ApplicationThruOthers: "",
             ApplicationType: "",
             WorkExperience: "",
             NoOfYearMonth: "",
+            Campus: null,
+            SetPosition: null,
         }
     });
 
@@ -64,7 +66,7 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
             Position: employeeData.Position ?? "",
             CampusId: employeeData.CampusId ?? "",
             CampusName: employeeData.CampusName ?? "",
-            SetPositionName: employeeData.SetPositionName ?? "",
+            SetPosition: null,
         });
     }, [employeeData, isEditing, reset]);
 
@@ -81,10 +83,10 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
     }, [campusList, employeeData?.CampusName, isEditing]);
 
     const positionList = [
-        { SetPositionId: 1, SetPositionName: "Faculty" },
-        { SetPositionId: 2, SetPositionName: "Non-Teaching Staff" },
-        { SetPositionId: 3, SetPositionName: "Staff" },
-        { SetPositionId: 4, SetPositionName: "Others" }
+        { SetPositionId: 1, SetPosition: "Faculty" },
+        { SetPositionId: 2, SetPosition: "Non-Teaching Staff" },
+        { SetPositionId: 3, SetPosition: "Staff" },
+        { SetPositionId: 4, SetPosition: "Others" }
     ];
 
 
@@ -115,8 +117,8 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
         const payload = {
             ...rest,
             CampusId: formData.Campus?.CampusId,
-            // SetPositionId: formData.SetPositionId?.SetPositionId,
-            // SetPositionName: formData.SetPositionName?.SetPositionName,
+            // SetPositionId: formData.SetPosition?.SetPositionId,
+            SetPositionName: formData.SetPosition?.SetPosition,
             CampusName: "",
             CreatedByUserId: userId,
         };
@@ -158,14 +160,14 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
                         <InputField name="Position" label="Desired Position" register={register} isEditing={false} displayValue={employeeData.Position} />
                         <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={employeeData.CampusName} required error={errors.Campus} />
                         <RHFListbox
-                            name="SetPositionName"
+                            name="SetPosition"
                             control={control}
                             list={positionList}
                             label="Select Position"
-                            labelKey="SetPositionName"
+                            labelKey="SetPosition"
                             isEditing={false}
                             required
-                            error={errors.SetPositionName}
+                            error={errors.SetPosition}
                         />
                     </div>
 

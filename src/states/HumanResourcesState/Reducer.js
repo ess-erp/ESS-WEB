@@ -6,7 +6,10 @@ import {
     FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
     FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
-    FETCH_HR_CRITERIA_TABLE_REQUEST, FETCH_HR_CRITERIA_TABLE_SUCCESS, FETCH_HR_CRITERIA_TABLE_FAILURE,
+    FETCH_CRITERIA_TABLE_REQUEST, FETCH_CRITERIA_TABLE_SUCCESS, FETCH_CRITERIA_TABLE_FAILURE,
+    FETCH_SAC_USER_REQUEST, FETCH_SAC_USER_SUCCESS, FETCH_SAC_USER_FAILURE,
+    FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
+    FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -24,7 +27,10 @@ const initialGeneralState = {
     insertCriteriaTemplateState: { ...initialState },
     hrTemplateState: { ...initialState },
     employeeScreeningState: { ...initialState },
-    hrCriteriaTableState: { ...initialState },
+    criteriaTableState: { ...initialState },
+    sacUserState: { ...initialState, },
+    apUserState: { ...initialState },
+    principalUserState: { ...initialState },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -80,13 +86,33 @@ const hrReducer = (state = initialGeneralState, action) => {
         case FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE:
             return { ...state, employeeScreeningState: { loading: false, data: [], error: action.payload } };
 
-        case FETCH_HR_CRITERIA_TABLE_REQUEST:
-            return { ...state, hrCriteriaTableState: { loading: true, data: [], error: '' } };
-        case FETCH_HR_CRITERIA_TABLE_SUCCESS:
-            return { ...state, hrCriteriaTableState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_HR_CRITERIA_TABLE_FAILURE:
-            return { ...state, hrCriteriaTableState: { loading: false, data: [], error: action.payload } };
+        case FETCH_CRITERIA_TABLE_REQUEST:
+            return { ...state, criteriaTableState: { loading: true, data: [], error: '' } };
+        case FETCH_CRITERIA_TABLE_SUCCESS:
+            return { ...state, criteriaTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CRITERIA_TABLE_FAILURE:
+            return { ...state, criteriaTableState: { loading: false, data: [], error: action.payload } };
 
+        case FETCH_SAC_USER_REQUEST:
+            return { ...state, sacUserState: { loading: true, data: [], error: '' } };
+        case FETCH_SAC_USER_SUCCESS:
+            return { ...state, sacUserState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SAC_USER_FAILURE:
+            return { ...state, sacUserState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_AP_USER_REQUEST:
+            return { ...state, apUserState: { loading: true, data: [], error: '' } };
+        case FETCH_AP_USER_SUCCESS:
+            return { ...state, apUserState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_AP_USER_FAILURE:
+            return { ...state, apUserState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_PRINCIPAL_USER_REQUEST:
+            return { ...state, principalUserState: { loading: true, data: [], error: '' } };
+        case FETCH_PRINCIPAL_USER_SUCCESS:
+            return { ...state, principalUserState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_PRINCIPAL_USER_FAILURE:
+            return { ...state, principalUserState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

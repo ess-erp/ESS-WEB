@@ -52,7 +52,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["1"]}>
+          <ProtectedRoutes allowedRoles={[1]}>
             <AdmissionDashboard />
           </ProtectedRoutes>
         }
@@ -60,7 +60,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["1"]}>
+          <ProtectedRoutes allowedRoles={[1]}>
             <StudentOnlineApplication />
           </ProtectedRoutes>
         }
@@ -68,7 +68,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/studentappform"
         element={
-          <ProtectedRoutes allowedRoles={["1"]}>
+          <ProtectedRoutes allowedRoles={[1]}>
             <StudentOnlineAppForm />
           </ProtectedRoutes>
         }
@@ -76,7 +76,7 @@ const AppRoutes = () => (
       <Route
         path="/admission/templatesform"
         element={
-          <ProtectedRoutes allowedRoles={["1"]}>
+          <ProtectedRoutes allowedRoles={[1]}>
             <AdmissionTemplatesForm />
           </ProtectedRoutes>
         }
@@ -87,7 +87,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["2"]}>
+          <ProtectedRoutes allowedRoles={[2]}>
             <CfwDashboard />
           </ProtectedRoutes>
         }
@@ -95,7 +95,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={["2"]}>
+          <ProtectedRoutes allowedRoles={[2]}>
             <CfwStudentOnlineApplication />
           </ProtectedRoutes>
         }
@@ -103,7 +103,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/studentappform"
         element={
-          <ProtectedRoutes allowedRoles={["2"]}>
+          <ProtectedRoutes allowedRoles={[2]}>
             <CfwStudentOnlineAppForm />
           </ProtectedRoutes>
         }
@@ -119,7 +119,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/templates"
         element={
-          <ProtectedRoutes allowedRoles={["2"]}>
+          <ProtectedRoutes allowedRoles={[2]}>
             <CfwTemplates />
           </ProtectedRoutes>
         }
@@ -181,7 +181,7 @@ const AppRoutes = () => (
       <Route
         path="/sru/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["7"]}>
+          <ProtectedRoutes allowedRoles={[5]}>
             <SruDashboard />
           </ProtectedRoutes>
         }
@@ -189,7 +189,7 @@ const AppRoutes = () => (
       <Route
         path="/sru/studentlist"
         element={
-          <ProtectedRoutes allowedRoles={["7"]}>
+          <ProtectedRoutes allowedRoles={[5]}>
             <SruOnlineApplication />
           </ProtectedRoutes>
         }
@@ -197,7 +197,7 @@ const AppRoutes = () => (
       <Route
         path="/sru/StudentMasterFile"
         element={
-          <ProtectedRoutes allowedRoles={["7"]}>
+          <ProtectedRoutes allowedRoles={[5]}>
             <StudentMasterFile />
           </ProtectedRoutes>
         }
@@ -205,7 +205,7 @@ const AppRoutes = () => (
       <Route
         path="/sru/sectionandhouseentry"
         element={
-          <ProtectedRoutes allowedRoles={["7"]}>
+          <ProtectedRoutes allowedRoles={[5]}>
             <SectionAndHouseEntry />
           </ProtectedRoutes>
         }

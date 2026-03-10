@@ -12,8 +12,28 @@ import {
 import {
     fetchEmployeeApplicationInfoData,
     fetchEmployeeApplicationScreeningData,
-    fetchHrCriteriaTableData,
+    fetchCriteriaTableData,
+    fetchSacUserData,
+    fetchApUserData,
+    fetchPrincipalUserData,
 } from "../../states/HumanResourcesState/Action";
+
+const customStyles = {
+    headRow: {
+        style: {
+            backgroundColor: '#027407',
+            color: '#ffffff',
+            fontWeight: 'bold',
+            fontSize: '14px',
+        },
+    },
+    headCells: {
+        style: {
+            color: '#ffffff',
+        },
+    },
+};
+
 const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
     const dispatch = useDispatch();
@@ -23,6 +43,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         reset,
         control,
         watch,
+        setValue,
         formState: { errors },
     } = useForm({
         mode: "onSubmit",
@@ -34,15 +55,32 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             Fullname: "",
             Nickname: "",
             Position: "",
-            CampusId: "",
-            CampusName: "",
             ApplicationThru: "",
             ApplicationThruOthers: "",
             ApplicationType: "",
             WorkExperience: "",
             NoOfYearMonth: "",
+            SacFullname: "",
+            ApFullname: "",
+            PrincipalFullname: "",
+            Campus: null,
+            SetPosition: null,
+            SetPositionName: null,
+            SacUser: null,
+            SacUserId: "",
+            ApUser: null,
+            ApUserId: "",
+            PrincipalUser: null,
+            PrincipalUserId: "",
         }
     });
+
+    const positionList = [
+        { SetPositionId: 1, SetPositionName: "Faculty" },
+        { SetPositionId: 2, SetPositionName: "Non-Teaching Staff" },
+        { SetPositionId: 3, SetPositionName: "Staff" },
+        { SetPositionId: 4, SetPositionName: "Others" }
+    ];
 
     const employeeData = useSelector(state => state.hr.employeeInfoState?.data || {});
     const employeScreeningData = useSelector(state => state.hr.employeeScreeningState?.data || {});
@@ -67,17 +105,24 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             Fullname: `${employeeData.Fname ?? ""} ${employeeData.Mname ?? ""} ${employeeData.Lname ?? ""}`,
             Nickname: employeeData.Nickname ?? "",
             Position: employeeData.Position ?? "",
-            CampusId: employeeData.CampusId ?? "",
-            CampusName: employeeData.CampusName ?? "",
-            ApplicationThru: employeScreeningData.ApplicationThru,
-            ApplicationThruOthers: employeScreeningData.ApplicationThruOthers,
-            ApplicationType: employeScreeningData.ApplicationType,
-            EmployeeNumber: employeScreeningData.EmployeeNumber,
-            WorkExperience: employeScreeningData.WorkExperience,
-            NoOfYearMonth: employeScreeningData.NoOfYearMonth
+            ApplicationThru: employeScreeningData.ApplicationThru ?? "",
+            ApplicationThruOthers: employeScreeningData.ApplicationThruOthers ?? "",
+            ApplicationType: employeScreeningData.ApplicationType ?? "",
+            EmployeeNumber: employeScreeningData.EmployeeNumber ?? "",
+            WorkExperience: employeScreeningData.WorkExperience ?? "",
+            NoOfYearMonth: employeScreeningData.NoOfYearMonth ?? "",
+            Campus: null,
+            SetPosition: null,
+            SetPositionName: null,
+            SacUser: null,
+            SacUserId: "",
+            ApUser: null,
+            ApUserId: "",
+            PrincipalUser: null,
+            PrincipalUserId: "",
+            // SetPosition: null,
         });
     }, [employeeData, employeScreeningData, isEditing, reset]);
-
     useEffect(() => {
         if (!isEditing || !employeeData?.CampusName || !campusList.length) return;
 
@@ -88,35 +133,72 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         if (campus) {
             reset(prev => ({ ...prev, Campus: campus }));
         }
-    }, [campusList, employeeData?.CampusName, isEditing]);
+    }, [campusList, employeeData?.CampusName, isEditing, setValue]);
+
+    useEffect(() => {
+        if (!employeScreeningData?.SetPositionName) return;
+
+        const position = positionList.find(
+            p => p.SetPositionName === employeeData.SetPositionName
+        );
+
+        if (position) {
+            reset(prev => ({ ...prev, SetPosition: position }));
+        }
+    }, [employeeData]);
+
+
 
     const selectedApplicationThru = watch("ApplicationThru");
     const selectedApplicationType = watch("ApplicationType");
     const selectedWorkExperience = watch("WorkExperience");
 
 
-    const [hrCriteriaList, setHrCriteriaList] = useState([]);
-    const hrCriteriaTableState = useSelector((state) => state.hr.hrCriteriaTableState || {});
-    const hrCriteriaTable = hrCriteriaTableState.data.data || [];
-    const hrCriteriaTableTotalRows = hrCriteriaTableState.data.totalRecords || 0;
-    const hrCriteriaTableLoading = hrCriteriaTableState.loading || false;
-    const [hrCriteriaTableCurrentPage, setHrCriteriaTableCurrentPage] = useState(1);
-    const [hrCriteriaTableRowsPerPage, setHrCriteriaTableRowsPerPage] = useState(10);
+    const [criteriaList, setCriteriaList] = useState([]);
+    const criteriaTableState = useSelector((state) => state.hr.criteriaTableState || {});
+    const criteriaTable = criteriaTableState.data.data || [];
+    const criteriaTableTotalRows = criteriaTableState.data.totalRecords || 0;
+    const criteriaTableLoading = criteriaTableState.loading || false;
+    const [criteriaTableCurrentPage, setCriteriaTableCurrentPage] = useState(1);
+    const [criteriaTableRowsPerPage, setCriteriaTableRowsPerPage] = useState(10);
 
     useEffect(() => {
-        dispatch(fetchHrCriteriaTableData(userId, hrCriteriaTableCurrentPage, hrCriteriaTableRowsPerPage));
-    }, [userId, hrCriteriaTableCurrentPage, hrCriteriaTableRowsPerPage, dispatch]);
+        dispatch(fetchCriteriaTableData(criteriaTableCurrentPage, criteriaTableRowsPerPage));
+    }, [criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
+    // useEffect(() => {
+    //     if (criteriaTable.length == 0) return;
+    //     setCriteriaList(criteriaTable);
+    // }, [criteriaTable]);
     useEffect(() => {
-        if (hrCriteriaTable.length == 0) return;
-        setHrCriteriaList(hrCriteriaTable);
-    }, [hrCriteriaTable]);
+        if (!criteriaTable.length) return;
 
-    console.log(hrCriteriaList);
+        const orderMap = {
+            3: 1,
+            4: 2,
+            7: 3,
+            6: 4
+        };
+
+        const flattened = criteriaTable
+            .sort((a, b) => orderMap[a.CriteriaId] - orderMap[b.CriteriaId])
+            .flatMap(master =>
+                master.CriteriaChildTableDtos.map(child => ({
+                    ...child,
+                    CriteriaId: master.CriteriaId,
+                    CriteriaTempName: master.CriteriaTempName
+                }))
+            );
+
+        setCriteriaList(flattened);
+
+    }, [criteriaTable]);
+
+    console.log(criteriaTable);
 
     const [ratings, setRatings] = useState({});
 
-    const hrCriteriaColumn = [
+    const criteriaColumn = [
         {
             name: 'Criteria Name',
             selector: row => row.CriteriaName,
@@ -127,10 +209,10 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             cell: (row) => (
                 <input
                     type="radio"
-                    name={`rating-${row.Id}`}
+                    name={`rating-${row.CriteriaChildId}`}
                     value="1"
-                    onChange={() => handleRatingChange(row.Id, 1)}
-                    checked={ratings[row.Id] === 1}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, 1)}
+                    checked={ratings[row.CriteriaChildId] === 1}
                 />
             )
         },
@@ -139,10 +221,10 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             cell: (row) => (
                 <input
                     type="radio"
-                    name={`rating-${row.Id}`}
+                    name={`rating-${row.CriteriaChildId}`}
                     value="2"
-                    onChange={() => handleRatingChange(row.Id, 2)}
-                    checked={ratings[row.Id] === 2}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, 2)}
+                    checked={ratings[row.CriteriaChildId] === 2}
                 />
             )
         },
@@ -151,10 +233,10 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             cell: (row) => (
                 <input
                     type="radio"
-                    name={`rating-${row.Id}`}
+                    name={`rating-${row.CriteriaChildId}`}
                     value="3"
-                    onChange={() => handleRatingChange(row.Id, 3)}
-                    checked={ratings[row.Id] === 3}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, 3)}
+                    checked={ratings[row.CriteriaChildId] === 3}
                 />
             )
         },
@@ -163,10 +245,10 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             cell: (row) => (
                 <input
                     type="radio"
-                    name={`rating-${row.Id}`}
+                    name={`rating-${row.CriteriaChildId}`}
                     value="4"
-                    onChange={() => handleRatingChange(row.Id, 4)}
-                    checked={ratings[row.Id] === 4}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, 4)}
+                    checked={ratings[row.CriteriaChildId] === 4}
                 />
             )
         }
@@ -180,10 +262,42 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         }));
     };
 
-    const formattedData = Object.keys(ratings).map(key => ({
-        CriteriaChildId: key,
-        Rating: ratings[key]
-    }));
+
+    const sacUserList = useSelector((state) => state.hr.sacUserState?.data || []);
+    const apUserList = useSelector((state) => state.hr.apUserState?.data || []);
+    const principalUserList = useSelector((state) => state.hr.principalUserState?.data || []);
+
+    useEffect(() => {
+        dispatch(fetchSacUserData(11));
+        dispatch(fetchApUserData(12));
+        dispatch(fetchPrincipalUserData(13));
+    }, [dispatch]);
+
+    console.log(sacUserList);
+    console.log(apUserList);
+    console.log(principalUserList);
+    const userLists = {
+        11: sacUserList,
+        12: apUserList,
+        13: principalUserList
+    };
+
+    const getDropdownUser = (criteria) => {
+        if (criteria.UserRoleId === 11) return "SacUser";
+        if (criteria.UserRoleId === 12) return "ApUser";
+        return "PrincipalUser";
+    };
+    // useEffect(() => {
+    //     if (!sacUserList?.Fullname) return;
+
+    //     const sacUser = sacUserList.find(
+    //         p => p.Fullname === employeScreeningData.Fullname
+    //     );
+
+    //     if (sacUser) {
+    //         setValue("SacUser", sacUser);
+    //     }
+    // }, [sacUserList]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
@@ -221,21 +335,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         //     }
         // }
     };
-    const customStyles = {
-        headRow: {
-            style: {
-                backgroundColor: '#027407', // header background
-                color: '#ffffff',           // header text color
-                fontWeight: 'bold',
-                fontSize: '14px',
-            },
-        },
-        headCells: {
-            style: {
-                color: '#ffffff',
-            },
-        },
-    };
+
     // console.log(employeeAppId);
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -253,12 +353,40 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             <div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
                     <InputField name="EmployeeAppNo" label="Employee Application Number" register={register} isEditing={isEditing} displayValue={employeeData.EmployeeAppNo} />
-                    <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={employeeData.CampusName} required error={errors.Campus} />
                 </div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
                     <InputField name="Fullname" label="Full Name" register={register} isEditing={isEditing} displayValue={`${employeeData.Fname ?? ""} ${employeeData.Mname ?? ""} ${employeeData.Lname ?? ""}`} />
                     <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData.Nickname} />
                     <InputField name="Position" label="Desired Position" register={register} isEditing={false} displayValue={employeeData.Position} />
+                    {/* <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={employeeData.CampusName} />
+                    <RHFListbox
+                        name="SetPositionName"
+                        control={control}
+                        list={positionList}
+                        label="Select Position"
+                        labelKey="SetPositionName"
+                        isEditing={false}
+                        displayValue={employeScreeningData.SetPositionName}
+                    /> */}
+                    <RHFListbox
+                        name="Campus"
+                        control={control}
+                        list={campusList}
+                        label="Campus"
+                        labelKey="CampusName"
+                        isEditing={!isEditing}
+                        displayValue={employeeData.CampusName}
+                    />
+
+                    <RHFListbox
+                        name="SetPosition"
+                        control={control}
+                        list={positionList}
+                        label="Select Position"
+                        labelKey="SetPositionName"
+                        isEditing={!isEditing}
+                        displayValue={employeeData.SetPositionName}
+                    />
                 </div>
 
             </div>
@@ -362,36 +490,80 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     />
                 )}
             </div>
-            <div className="flex items-center pt-4">
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                    i
+            {criteriaTable.map((criteria, index) => (
+                <div key={criteria.CriteriaId} className="mb-10">
+
+                    {/* TITLE */}
+                    <div className="flex items-center pt-4">
+                        <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
+                            {index + 1}
+                        </div>
+
+                        <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
+                            {criteria.CriteriaTempName}
+                        </h2>
+
+                        <div className="flex-grow">
+                            <hr className="border-t border-gray-400" />
+                        </div>
+                    </div>
+                    {criteria.UserRoleId != 10 && (
+                        <div className="flex justify-end items-end">
+                            <div className="w-80">
+                                <RHFListbox
+                                    name={getDropdownUser(criteria)}        // form field
+                                    control={control}
+                                    list={userLists[criteria.UserRoleId] || []}  // array of options
+                                    label="Assign to"
+                                    labelKey={"Fullname"}                // property to display from list
+                                    isEditing={false}
+                                    divClassName="w-full"
+                                />
+                            </div>
+                        </div>
+                    )}
+                    <div className="pt-4">
+                        <DataTable
+                            columns={criteriaColumn}
+                            data={criteria.CriteriaChildTableDtos}
+                            progressPending={criteriaTableLoading}
+                            pagination
+                            paginationServer
+                            paginationTotalRows={criteriaTableTotalRows}
+                            paginationDefaultPage={criteriaTableCurrentPage}
+                            onChangePage={(page) => setCriteriaTableCurrentPage(page)}
+                            onChangeRowsPerPage={(newPerPage, page) => {
+                                setCriteriaTableRowsPerPage(newPerPage);
+                                setCriteriaTableCurrentPage(page);
+                            }}
+                            highlightOnHover
+                            responsive
+                            customStyles={customStyles}
+                        />
+                    </div>
+                    {criteria.UserRoleId == 10 && (
+                        <>
+                            <div className="grid grid-cols-4 gap-4 pt-4 items-end w-full">
+                                <RHFListbox
+                                    name="SetPositionName"
+                                    control={control}
+                                    list={positionList}
+                                    label="Recommendation"
+                                    labelKey="SetPositionName"
+                                    isEditing={false}
+                                />
+                                <InputField
+                                    name="EmployeeAppNo"
+                                    label="Remarks"
+                                    register={register}
+                                    isEditing={isEditing}
+                                    displayValue={employeeData.EmployeeAppNo}
+                                />
+                            </div>
+                        </>
+                    )}
                 </div>
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Initial Interview
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
-                </div>
-            </div>
-            <div className="pt-4">
-                <DataTable
-                    columns={hrCriteriaColumn}
-                    data={hrCriteriaList}
-                    progressPending={hrCriteriaTableLoading}
-                    pagination
-                    paginationServer
-                    paginationTotalRows={hrCriteriaTableTotalRows}
-                    paginationDefaultPage={hrCriteriaTableCurrentPage}
-                    onChangePage={(page) => setHrCriteriaTableCurrentPage(page)}
-                    onChangeRowsPerPage={(newPerPage, page) => {
-                        setHrCriteriaTableRowsPerPage(newPerPage);
-                        setHrCriteriaTableCurrentPage(page);
-                    }}
-                    highlightOnHover
-                    responsive
-                    customStyles={customStyles}
-                />
-            </div>
+            ))}
             <div className="flex justify-end items-end p-4">
                 {isEditing && (
                     <button
