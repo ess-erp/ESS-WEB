@@ -10,6 +10,7 @@ import {
     FETCH_SAC_USER_REQUEST, FETCH_SAC_USER_SUCCESS, FETCH_SAC_USER_FAILURE,
     FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
     FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
+    FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST, FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -334,6 +335,35 @@ export const fetchPrincipalUserData = (userRoleId) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchPrincipalUserFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchUpdateEmployeeScreeningRequest = () => ({ type: FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST });
+export const fetchUpdateEmployeeScreeningSuccess = (data) => ({ type: FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, payload: data });
+export const fetchUpdateEmployeeScreeningFailure = (error) => ({ type: FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE, payload: error });
+
+export const fetchUpdateEmployeeScreeningData = (formData) => async (dispatch) => {
+    dispatch(fetchUpdateEmployeeScreeningRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/update-employee-screening`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchUpdateEmployeeScreeningSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch (error) {
+        dispatch(fetchUpdateEmployeeScreeningFailure(error.message));
         return ({ ok: false, error })
     }
 };

@@ -111,7 +111,7 @@ const AppRoutes = () => (
       <Route
         path="/cfw/examroomtemplates"
         element={
-          <ProtectedRoutes allowedRoles={["2"]}>
+          <ProtectedRoutes allowedRoles={[2]}>
             <CfwExamRoomTemplate />
           </ProtectedRoutes>
         }
@@ -132,7 +132,7 @@ const AppRoutes = () => (
       <Route
         path="/cashier/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["3"]}>
+          <ProtectedRoutes allowedRoles={[3]}>
             <CashierDashboard />
           </ProtectedRoutes>
         }
@@ -140,7 +140,7 @@ const AppRoutes = () => (
       <Route
         path="/cashier/cashierpayment"
         element={
-          <ProtectedRoutes allowedRoles={["3"]}>
+          <ProtectedRoutes allowedRoles={[3]}>
             <CashierPayment />
           </ProtectedRoutes>
         }
@@ -148,7 +148,7 @@ const AppRoutes = () => (
       <Route
         path="/cashier/transactionhistory"
         element={
-          <ProtectedRoutes allowedRoles={["3"]}>
+          <ProtectedRoutes allowedRoles={[3]}>
             <CashierTransactionHistory />
           </ProtectedRoutes>
         }
@@ -162,7 +162,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={["4"]}>
+          <ProtectedRoutes allowedRoles={[3]}>
             <FinanceDashboard />
           </ProtectedRoutes>
         }
@@ -170,7 +170,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/templates"
         element={
-          <ProtectedRoutes allowedRoles={["4"]}>
+          <ProtectedRoutes allowedRoles={[3]}>
             <FinanceTemplatesForm />
           </ProtectedRoutes>
         }
