@@ -173,14 +173,15 @@ export const fetchOtpCodeRequest = () => ({ type: FETCH_OTPCODE_REQUEST });
 export const fetchOtpCodeSuccess = (data) => ({ type: FETCH_OTPCODE_SUCCESS, payload: data });
 export const fetchOtpCodeFailure = (error) => ({ type: FETCH_OTPCODE_FAILURE, payload: error });
 
-export const fetchOtpCodeData = (formData) => async (dispatch) => {
+export const fetchOtpCodeData = (email) => async (dispatch) => {
     dispatch(fetchOtpCodeRequest());
     try {
-        const url = `${baseUrl}/auth/email-verification`
+        // const url = `${baseUrl}/auth/email-verification?email=${email}`;
+        const url = `${baseUrl}/auth/email-verification?email=${email}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData),
+            // body: JSON.stringify(formData),
         });
         const res = await response.json();
 
