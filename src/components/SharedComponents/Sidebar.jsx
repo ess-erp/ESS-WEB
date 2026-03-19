@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus, ScrollText } from "lucide-react";
+import { Bell, BookPlus, CalendarPlus, Calendar, FilePlus, ScrollText, UserRoundPlus } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
 import AccountIcon from "../IconComponents/AccountIcon";
@@ -196,6 +196,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         ...sharedMenu
     ];
 
+    const parentMenu = [
+        { name: "Dashboard", icon: DashboardIcon, path: "/parent/dashboard" },
+        { name: "Enroll Student", icon: UserRoundPlus, path: "/parent/enrollstudent" },
+    ];
+
 
     // 🔥 MULTIPLE ROLE SUPPORT HERE
     const roleMenus = {
@@ -206,7 +211,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         5: sruMenu,
         6: academicMenu,
         7: hrMenu,
-        10: hrAdminMenu,        
+        10: hrAdminMenu, 
+        17:parentMenu,       
     };
 
 

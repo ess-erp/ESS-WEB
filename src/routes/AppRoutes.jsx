@@ -36,6 +36,8 @@ import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
 import HrEmployeeHiringProcess from "../pages/HumanResources/EmployeeHiringProcess";
 import HrTemplates from "../pages/HumanResources/Templates";
 import HrEmployeeInitialInterview from "../pages/HumanResources/EmployeeInitialInterview";
+import ParentDashboard from "../pages/ParentPortal/Dashboard";
+import ParentEnrollStudent from "../pages/ParentPortal/EnrollStudent";
 
 
 const AppRoutes = () => (
@@ -252,7 +254,7 @@ const AppRoutes = () => (
       <Route
         path="/hrd/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={[7,8,9,10]}>
+          <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
             <HrDashboard />
           </ProtectedRoutes>
         }
@@ -261,7 +263,7 @@ const AppRoutes = () => (
       <Route
         path="/hrd/onlineapplication"
         element={
-          <ProtectedRoutes allowedRoles={[7,10]}>
+          <ProtectedRoutes allowedRoles={[7, 10]}>
             <HrOnlineApplication />
           </ProtectedRoutes>
         }
@@ -269,7 +271,7 @@ const AppRoutes = () => (
       <Route
         path="/hrd/employeeappform"
         element={
-          <ProtectedRoutes allowedRoles={[7,10]}>
+          <ProtectedRoutes allowedRoles={[7, 10]}>
             <HrEmployeeAppForm />
           </ProtectedRoutes>
         }
@@ -277,7 +279,7 @@ const AppRoutes = () => (
       <Route
         path="/hrd/employeehiringprocess"
         element={
-          <ProtectedRoutes allowedRoles={[7,10]}>
+          <ProtectedRoutes allowedRoles={[7, 10]}>
             <HrEmployeeHiringProcess />
           </ProtectedRoutes>
         }
@@ -285,12 +287,12 @@ const AppRoutes = () => (
       <Route
         path="/hrd/templates"
         element={
-          <ProtectedRoutes allowedRoles={[7,8,9,10]}>
+          <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
             <HrTemplates />
           </ProtectedRoutes>
         }
       />
-       <Route
+      <Route
         path="/hrd/employeeinitialinterview"
         element={
           <ProtectedRoutes allowedRoles={[10]}>
@@ -299,6 +301,27 @@ const AppRoutes = () => (
         }
       />
       {/* end of hr modules */}
+
+      {/* Start of Parent Portal */}
+      <Route
+        path="/parent/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[17]}>
+            <ParentDashboard />
+          </ProtectedRoutes>
+        }
+      />
+
+      <Route
+        path="/parent/enrollstudent"
+        element={
+          <ProtectedRoutes allowedRoles={[17]}>
+            <ParentEnrollStudent />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/* End of Parent portal  */}
 
       {/* 🚨 Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
