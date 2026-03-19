@@ -45,6 +45,8 @@ const CongratsComponent = () => {
                 transition={{ delay: 0.2, duration: 1 }}
             >
                 Your application has been sent to the admission. Please wait for 2-3 business days to process your application.
+                We already created your primary temporary account in parent portal. 
+                Please check your email.
             </motion.p>
 
             {/* Styled link with icon */}

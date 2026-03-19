@@ -84,8 +84,8 @@ const NewEnrollyComponent = () => {
       OtpCode: "",
       ContactPerson: "",
       ContactEmail: "",
-      ContactMobileNo: "",
       Relationship: "",
+      ContactMobileNo: "",
       ProvinceCode: "",
       ProvinceName: "",
       CityCode: "",
@@ -291,7 +291,7 @@ const NewEnrollyComponent = () => {
         fieldsToValidate = [
           "ContactPerson",
           "ContactEmail",
-          "ContactMobilePhoneNo",
+          "ContactMobileNo",
           "Relationship",
         ];
         break;
@@ -375,14 +375,15 @@ const NewEnrollyComponent = () => {
     payload.append("PrimaryLname", formData.PrimaryLname || "");
     payload.append("PrimaryEmail", formData.PrimaryEmail || "");
     payload.append("PrimaryPassword", formData.PrimaryPassword || "");
-    payload.append(
-      "PrimaryConfirmPassword",
-      formData.PrimaryConfirmPassword || ""
-    );
+    // payload.append(
+    //   "PrimaryConfirmPassword",
+    //   formData.PrimaryConfirmPassword || ""
+    // );
 
     payload.append("ContactPerson", formData.ContactPerson || "");
     payload.append("ContactEmail", formData.ContactEmail || "");
     payload.append("Relationship", formData.Relationship || "");
+    payload.append("ContactMobileNo", formData.ContactMobileNo || "");
 
     payload.append("ProvinceCode", formData.Province?.province_code || "");
     payload.append("ProvinceName", formData.Province?.province_name || "");
@@ -404,15 +405,15 @@ const NewEnrollyComponent = () => {
 
     console.log("SUBMIT PAYLOAD:", payload);
 
-    // const res = await dispatch(fetchInsertStudentData(payload));
-    // if (res.ok) {
-    //   setIsSuccessModalOpen(true);
-    //   if (isSuccessModalOpen == false) {
-    //     navigate("/congratulationletter");
-    //   }
-    // } else {
-    //   return;
-    // }
+    const res = await dispatch(fetchInsertStudentData(payload));
+    if (res.ok) {
+      setIsSuccessModalOpen(true);
+      if (isSuccessModalOpen == false) {
+        navigate("/congratulationletter");
+      }
+    } else {
+      return;
+    }
   };
 
   return (
@@ -893,6 +894,28 @@ const NewEnrollyComponent = () => {
                         errorMessage={errors.ContactEmail?.message}
                         type="email"
                         isValidEmail={isValidEmail}
+                      />
+                      <InputField
+                        name="Relationship"
+                        label="Relationship"
+                        register={register}
+                        isEditing={true}
+                        placeholder="Please input relationship...."
+                        divClassName=""
+                        required
+                        errors={errors.Relationship}
+                        errorMessage={errors.ContactPerson?.message}
+                      />
+                      <InputField
+                        name="ContactMobileNo"
+                        label="Mobile Phone Number"
+                        register={register}
+                        isEditing={true}
+                        placeholder="Please input mobile number...."
+                        divClassName=""
+                        required
+                        errors={errors.ContactMobileNo}
+                        errorMessage={errors.ContactMobileNo?.message}
                       />
                       {/* <InputField
                                                 name="OtpCode"
