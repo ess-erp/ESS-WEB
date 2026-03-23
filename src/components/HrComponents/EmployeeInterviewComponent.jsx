@@ -348,13 +348,13 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         console.log(ratings);
         console.log("SUBMIT PAYLOAD:", payload);
 
-        const res = await dispatch(fetchUpdateEmployeeScreeningData(payload));
-        if (res.ok) {
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
-        }
+        // const res = await dispatch(fetchUpdateEmployeeScreeningData(payload));
+        // if (res.ok) {
+        //     setIsSuccessModalOpen(true);
+        //     if (isSuccessModalOpen == false) {
+        //         setTimeout(() => window.location.reload(), 3000);
+        //     }
+        // }
     };
 
     // console.log(employeeAppId);

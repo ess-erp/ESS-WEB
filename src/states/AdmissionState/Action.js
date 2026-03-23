@@ -552,7 +552,7 @@ export const fetchUpdateStudentFormData = (formData) => async (dispatch) => {
 //insert exam schedule date of applicant
 export const fetchInsertExamScheduleRequest = () => ({ type: FETCH_INSERTEXAMSCHEDULE_REQUEST });
 export const fetchInsertExamScheduleSuccess = (data) => ({ type: FETCH_INSERTEXAMSCHEDULE_SUCCESS, payload: data });
-export const fetchInsertExamSchedulreFailure = (error) => ({ type: FETCH_INSERTEXAMSCHEDULE_FAILURE, payload: error });
+export const fetchInsertExamScheduleFailure = (error) => ({ type: FETCH_INSERTEXAMSCHEDULE_FAILURE, payload: error });
 
 export const fetchInsertExamScheduleData = (formData) => async (dispatch) => {
     dispatch(fetchInsertExamScheduleRequest());

@@ -249,8 +249,8 @@ const AppFormOthersComponent = ({ studentId }) => {
         const payload = {
             StudentId: studentId,
             CreatedByUserId: user.UserId,
-            FatherId: religionWaverData.FatherId,
-            MotherId: religionWaverData.MotherId,
+            ParentId: religionWaverData.ParentId,
+            // MotherId: religionWaverData.MotherId,
         };
         console.log(payload);
         setIsReligionWaiverLoading(true);
@@ -283,8 +283,9 @@ const AppFormOthersComponent = ({ studentId }) => {
         const payload = {
             StudentId: studentId,
             CreatedByUserId: user.UserId,
-            FatherId: academicWaiverData.FatherId,
-            MotherId: academicWaiverData.MotherId,
+            ParentId: academicWaiverData.ParentId,
+            // FatherId: academicWaiverData.FatherId,
+            // MotherId: academicWaiverData.MotherId,
         };
         setIsAcademivWaiverLoading(true);
         let res = "";
@@ -346,13 +347,17 @@ const AppFormOthersComponent = ({ studentId }) => {
                                 <span className="text-gray-400 text-sm">Loading...</span>
                             ) : permitData ? (
                                 <div className="flex flex-col gap-2 text-sm text-gray-500">
-                                    <span>
+                                    {/* <span>
                                         Father's Email:{" "}
                                         <span className="font-semibold text-gray-700">{permitData.FatherEmail}</span>
                                     </span>
                                     <span>
                                         Mother's Email:{""}
                                         <span className="font-semibold text-gray-700">{permitData.MotherEmail}</span>
+                                    </span> */}
+                                    <span>
+                                        Parent's Email:{""}
+                                        <span className="font-semibold text-gray-700">{permitData.PrimaryEmail}</span>
                                     </span>
                                     <span>
                                         Last sent:{" "}
@@ -507,19 +512,23 @@ const AppFormOthersComponent = ({ studentId }) => {
                 title="Letter"
                 body={
                     <div className="max-h-[80vh] w-full p-6 flex gap-6">
-                         <div className="w-1/3 flex flex-col gap-2">
+                        <div className="w-1/3 flex flex-col gap-2">
                             <label className="text-sm font-medium text-gray-600">Information</label>
                             {generatedLetterLoading ? (
                                 <span className="text-gray-400 text-sm">Loading...</span>
                             ) : generatedLetterData ? (
                                 <div className="flex flex-col gap-2 text-sm text-gray-500">
-                                    <span>
+                                    {/* <span>
                                         Father's Email:{" "}
                                         <span className="font-semibold text-gray-700"> {generatedLetterData.FathersEmail}</span>
                                     </span>
                                     <span>
                                         Mother's Email:{""}
                                         <span className="font-semibold text-gray-700"> {generatedLetterData.MothersEmail}</span>
+                                    </span> */}
+                                    <span>
+                                        Parent's Email:{""}
+                                        <span className="font-semibold text-gray-700"> {generatedLetterData.PrimaryEmail}</span>
                                     </span>
                                     <span>
                                         Last sent:{" "}
