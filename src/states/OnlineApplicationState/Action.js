@@ -13,6 +13,7 @@ import {
     FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
+    FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -399,5 +400,32 @@ export const fetchInsertEmployeeData = (formData) => async (dispatch) => {
     catch (error) {
         dispatch(fetchInsertEmployeeFailure(error.message));
         return { ok: false, error };
+    }
+};
+
+
+export const fetchAccountActivationRequest = () => ({ type: FETCH_ACCOUNT_ACTIVATION_REQUEST });
+export const fetchAccountActivationSuccess = (data) => ({ type: FETCH_ACCOUNT_ACTIVATION_SUCCESS, payload: data });
+export const fetchAccountActivationFailure = (error) => ({ type: FETCH_ACCOUNT_ACTIVATION_FAILURE, payload: error });
+
+export const fetchAccountActivationData = (userId) => async (dispatch) => {
+    dispatch(fetchAccountActivationRequest());
+    try {
+        const url = `${baseUrl}/auth/parent-account-activate?userId=${userId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchAccountActivationSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch (error) {
+        dispatch(fetchAccountActivationFailure(error.message));
+        return ({ ok: false, error });
     }
 };

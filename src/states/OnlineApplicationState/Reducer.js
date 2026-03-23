@@ -13,6 +13,7 @@ import {
     FETCH_OLDSTUDENT_REQUEST, FETCH_OLDSTUDENT_SUCCESS, FETCH_OLDSTUDENT_FAILURE,
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
+    FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -37,6 +38,7 @@ const initialState = {
     oldStudentState: { ...initialFormState },
     studentDataState: { ...initialFormState },
     insertEmployeeState: { ...initialFormState },
+    accountActivationState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -150,6 +152,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, insertEmployeeState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_EMPLOYEE_FAILURE:
             return { ...state, insertEmployeeState: { loading: false, data: '', error: action.payload } };
+
+        //Insert New Employee
+        case FETCH_ACCOUNT_ACTIVATION_REQUEST:
+            return { ...state, accountActivationState: { loading: true, data: [], error: '' } };
+        case FETCH_ACCOUNT_ACTIVATION_SUCCESS:
+            return { ...state, accountActivationState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ACCOUNT_ACTIVATION_FAILURE:
+            return { ...state, accountActivationState: { loading: false, data: '', error: action.payload } };
 
         default:
             return state;
