@@ -37,6 +37,7 @@ const customStyles = {
 
 const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
+    const currUserId = userId;
     const dispatch = useDispatch();
     const {
         register,
@@ -70,11 +71,11 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             Recommendation: null,
             Remarks: "",
             SacUser: null,
-            SacUserId: "",
+            // SacUserId: "",
             ApUser: null,
-            ApUserId: "",
+            // ApUserId: "",
             PrincipalUser: null,
-            PrincipalUserId: "",
+            // PrincipalUserId: "",
         }
     });
 
@@ -125,11 +126,11 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             SetPosition: null,
             SetPositionName: null,
             SacUser: null,
-            SacUserId: "",
+            // SacUserId: "",
             ApUser: null,
-            ApUserId: "",
+            // ApUserId: "",
             PrincipalUser: null,
-            PrincipalUserId: "",
+            // PrincipalUserId: "",
             // SetPosition: null,
         });
     }, [employeeData, employeScreeningData, isEditing, reset]);
@@ -158,6 +159,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         }
     }, [employeeData, setValue]);
 
+    console.log(employeeData);
+
     const selectedApplicationThru = watch("ApplicationThru");
     const selectedApplicationType = watch("ApplicationType");
     const selectedWorkExperience = watch("WorkExperience");
@@ -182,15 +185,27 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
     useEffect(() => {
         if (!criteriaTable.length) return;
 
-        const orderMap = {
-            3: 1,
-            4: 2,
-            7: 3,
-            6: 4
-        };
+        let nameOrderMap = null;
+        // if(criteria)
+        if (employeeData?.SetPositionName == "Faculty") {
+            nameOrderMap = {
+                "Initial Interview": 1,
+                "Teaching Demonstration": 2,
+                "Assistant Principal Interview": 3,
+                "Principal Interview": 4
+            };
+        }
+        else{
+            nameOrderMap = {
+                "Initial Interview": 1,
+                "Department Head Interview": 2
+            };
+        }
 
         const flattened = criteriaTable
-            .sort((a, b) => orderMap[a.CriteriaId] - orderMap[b.CriteriaId])
+            .sort((a, b) =>
+                nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
+            )
             .flatMap(master =>
                 master.CriteriaChildTableDtos.map(child => ({
                     ...child,
@@ -200,6 +215,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             );
 
         setCriteriaList(flattened);
+        console.log(flattened);
+        console.log(criteriaTable);
 
     }, [criteriaTable]);
 
@@ -322,15 +339,55 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         const CriteriaRatingDtos = [];
 
         criteriaTable.forEach(criteria => {
+            if (criteria.CriteriaTempName !== "Initial Interview") return; // 👈 FILTER
+
             criteria.CriteriaChildTableDtos.forEach(child => {
                 if (ratings[child.CriteriaChildId]) {
                     CriteriaRatingDtos.push({
                         CriteriaId: criteria.CriteriaId,
                         CriteriaChildId: child.CriteriaChildId,
-                        Rating: (ratings[child.CriteriaChildId]).toString()
+                        Rating: ratings[child.CriteriaChildId].toString()
                     });
                 }
             });
+        });
+
+        const assignUsers = [];
+
+        criteriaTable.forEach(criteria => {
+            let userId = null;
+
+            switch (criteria.CriteriaTempName) {
+                case "Initial Interview":
+                    userId = currUserId;
+                    break;
+
+                case "Teaching Demonstration":
+                    userId = formData.ApUser?.UserId;
+                    break;
+
+                case "Assistant Principal Interview":
+                    userId = formData.ApUser?.UserId;
+                    break;
+
+                case "Principal Interview":
+                    userId = formData.PrincipalUser?.UserId;
+                    break;
+
+                case "Deparment Head Interview":
+                    userId = formData.DepartmentHeadUser?.UserId;
+                    break;
+
+                default:
+                    break;
+            }
+
+            if (userId) {
+                assignUsers.push({
+                    CriteriaId: criteria.CriteriaId,
+                    UserId: userId
+                });
+            }
         });
 
         const payload = {
@@ -338,11 +395,12 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             CampusId: formData.Campus?.CampusId,
             SetPositionName: formData.SetPosition?.SetPositionName,
             Recommendation: formData.Recommendation?.RecommendationName,
-            SacUserId: formData.SacUser?.UserId,
-            ApUserId: formData.ApUser?.UserId,
-            PrincipalUserId: formData.PrincipalUser?.UserId,
-            CreatedByUserId: userId,
-            CriteriaRatingDtos: CriteriaRatingDtos
+            // SacUserId: formData.SacUser?.UserId,
+            // ApUserId: formData.ApUser?.UserId,
+            // PrincipalUserId: formData.PrincipalUser?.UserId,
+            CreatedByUserId: currUserId,
+            CriteriaRatingDtos: CriteriaRatingDtos,
+            AssignRoleDtos: assignUsers
 
         };
         console.log(ratings);
