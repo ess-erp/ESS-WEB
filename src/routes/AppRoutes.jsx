@@ -166,7 +166,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={[3]}>
+          <ProtectedRoutes allowedRoles={[4]}>
             <FinanceDashboard />
           </ProtectedRoutes>
         }
@@ -174,7 +174,7 @@ const AppRoutes = () => (
       <Route
         path="/finance/templates"
         element={
-          <ProtectedRoutes allowedRoles={[3]}>
+          <ProtectedRoutes allowedRoles={[4]}>
             <FinanceTemplatesForm />
           </ProtectedRoutes>
         }
