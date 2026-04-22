@@ -39,7 +39,9 @@ import HrTemplates from "../pages/HumanResources/Templates";
 import HrEmployeeInitialInterview from "../pages/HumanResources/EmployeeInitialInterview";
 import ParentDashboard from "../pages/ParentPortal/Dashboard";
 import ParentEnrollStudent from "../pages/ParentPortal/EnrollStudent";
-
+import SacDashboard from "../pages/Sac/Dashboard";
+import SacOnlineApplication from "../pages/Sac/EmployeeOnlineApp";
+import SacEmployeeinitialInterview from "../pages/Sac/EmployeeInitialInterview";
 
 const AppRoutes = () => (
   <Router>
@@ -304,6 +306,35 @@ const AppRoutes = () => (
       />
       {/* end of hr modules */}
 
+      {/* start of sac modules */}
+
+      <Route
+        path="/sac/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[11]}>
+            <SacDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sac/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={[11]}>
+            <SacOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/sac/employeeinitialinterview"
+        element={
+          <ProtectedRoutes allowedRoles={[11]}>
+            <SacEmployeeinitialInterview />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/* end of sac modules */}
+
       {/* Start of Parent Portal */}
       <Route
         path="/parent/dashboard"
@@ -322,6 +353,8 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
+
+
 
       {/* End of Parent portal  */}
 

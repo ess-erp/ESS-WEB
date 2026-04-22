@@ -41,6 +41,9 @@ export const handleAuthRedirect = (navigate) => {
       case 10:
         navigate("/hrd/dashboard");
         break;
+      case 11:
+        navigate("/sac/dashboard");
+        break;
       case 17:
         navigate("/parent/dashboard");
         break;

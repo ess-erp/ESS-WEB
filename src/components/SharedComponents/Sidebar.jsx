@@ -252,6 +252,16 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
     ...sharedMenu,
   ];
+  const sacMenu = [
+    { name: "Dashboard", icon: DashboardIcon, path: "/sac/dashboard" },
+    {
+      name: "Employee Online Application",
+      icon: UserIconSolid,
+      path: "/sac/onlineapplication",
+    },
+    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+    // ...sharedMenu,
+  ];
   const parentMenu = [
     { name: "Dashboard", icon: DashboardIcon, path: "/parent/dashboard" },
     {
@@ -271,6 +281,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     6: academicMenu,
     7: hrMenu,
     10: hrAdminMenu,
+    11: sacMenu,
     17: parentMenu,
   };
 
@@ -329,9 +340,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 ${isSidebarOpen ? "w-[18.5rem]" : "w-16"}`}
     >
       <div
-        className={`flex items-center ${
-          isSidebarOpen ? "p-4" : "p-2"
-        } overflow-hidden`}
+        className={`flex items-center ${isSidebarOpen ? "p-4" : "p-2"
+          } overflow-hidden`}
       >
         {isSidebarOpen && (
           <div className="flex items-center flex-1 space-x-3">
@@ -432,11 +442,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 to={item.path}
                 key={item.name + index}
                 className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-                                ${
-                                  activeItem === item.name
-                                    ? "bg-gray-100 font-semibold"
-                                    : ""
-                                }`}
+                                ${activeItem === item.name
+                    ? "bg-gray-100 font-semibold"
+                    : ""
+                  }`}
               >
                 <item.icon className="h-5 w-5 text-gray-600" />
                 {isSidebarOpen && (
@@ -484,9 +493,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 {user?.Fname} {user?.Mname} {user?.Lname}
               </span>
               <svg
-                className={`w-4 h-4 ml-auto transition-transform ${
-                  isDropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`w-4 h-4 ml-auto transition-transform ${isDropdownOpen ? "rotate-180" : ""
+                  }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
