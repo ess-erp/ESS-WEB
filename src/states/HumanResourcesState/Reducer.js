@@ -11,6 +11,7 @@ import {
     FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
     FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
     FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST, FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE,
+    FETCH_EMPLOYEE_FULL_SCREENING_REQUEST, FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, FETCH_EMPLOYEE_FULL_SCREENING_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -33,6 +34,7 @@ const initialGeneralState = {
     apUserState: { ...initialState },
     principalUserState: { ...initialState },
     updateEmployeeScreeningState: { ...initialState },
+    employeeFullScreeningState: { ...initialState },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -122,6 +124,13 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, updateEmployeeScreeningState: { loading: false, data: action.payload, error: '' } };
         case FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE:
             return { ...state, updateEmployeeScreeningState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_EMPLOYEE_FULL_SCREENING_REQUEST:
+            return { ...state, employeeFullScreeningState: { loading: true, data: [], error: '' } };
+        case FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS:
+            return { ...state, employeeFullScreeningState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_EMPLOYEE_FULL_SCREENING_FAILURE:
+            return { ...state, employeeFullScreeningState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

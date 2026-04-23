@@ -262,6 +262,26 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
     // ...sharedMenu,
   ];
+  const apMenu = [
+    { name: "Dashboard", icon: DashboardIcon, path: "/ap/dashboard" },
+    {
+      name: "Employee Online Application",
+      icon: UserIconSolid,
+      path: "/ap/onlineapplication",
+    },
+    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+    // ...sharedMenu,
+  ];
+  const principalMenu = [
+    { name: "Dashboard", icon: DashboardIcon, path: "/principal/dashboard" },
+    {
+      name: "Employee Online Application",
+      icon: UserIconSolid,
+      path: "/principal/onlineapplication",
+    },
+    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+    // ...sharedMenu,
+  ];
   const parentMenu = [
     { name: "Dashboard", icon: DashboardIcon, path: "/parent/dashboard" },
     {
@@ -282,6 +302,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     7: hrMenu,
     10: hrAdminMenu,
     11: sacMenu,
+    12: apMenu,
+    13: principalMenu,
     17: parentMenu,
   };
 

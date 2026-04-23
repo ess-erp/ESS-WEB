@@ -17,9 +17,9 @@ const EmployeeInitialInterview = () => {
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/hrd/dashboard' },
-        { label: 'Online Application', href: '/hrd/onlineapplication' },
-        { label: 'Employee Initial Interview', href: '/hrd/employeeinitialinterview' },
+        { label: 'Dashboard', href: '/sac/dashboard' },
+        { label: 'Online Application', href: '/sac/onlineapplication' },
+        { label: 'Employee Initial Interview', href: '/sac/employeeinitialinterview' },
     ];
     const [isEditing, setIsEditing] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(true);

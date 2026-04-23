@@ -147,7 +147,7 @@ export const fetchInsertSacScreeningData = (formData) => async(dispatch) => {
         return ({ ok: true, data: res.data });
     }
     catch(error){
-        dispatch(fetchInsertSacSuccessFailure(error.message));
+        dispatch(fetchInsertSacFailure(error.message));
         return ({ ok: false, error });
     }
 }

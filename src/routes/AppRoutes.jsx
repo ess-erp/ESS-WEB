@@ -42,6 +42,12 @@ import ParentEnrollStudent from "../pages/ParentPortal/EnrollStudent";
 import SacDashboard from "../pages/Sac/Dashboard";
 import SacOnlineApplication from "../pages/Sac/EmployeeOnlineApp";
 import SacEmployeeinitialInterview from "../pages/Sac/EmployeeInitialInterview";
+import ApDashboard from "../pages/AssistantPrincipal/Dashboard";
+import ApOnlineApplication from "../pages/AssistantPrincipal/EmployeeOnlineApp";
+import ApEmployeeInitialInterview from "../pages/AssistantPrincipal/EmployeeInitialInterview";
+import PrincipalDashboard from "../pages/Principal/Dashboard";
+import PrincipalOnlineApplication from "../pages/Principal/EmployeeOnlineApp";
+import PrincipalEmployeeInitialInterview from "../pages/Principal/EmployeeInitialInterview";
 
 const AppRoutes = () => (
   <Router>
@@ -324,7 +330,7 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
-       <Route
+      <Route
         path="/sac/employeeinitialinterview"
         element={
           <ProtectedRoutes allowedRoles={[11]}>
@@ -334,6 +340,60 @@ const AppRoutes = () => (
       />
 
       {/* end of sac modules */}
+
+      {/* start of ap modules */}
+      <Route
+        path="/ap/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[12]}>
+            <ApDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/ap/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={[12]}>
+            <ApOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/ap/employeeinitialinterview"
+        element={
+          <ProtectedRoutes allowedRoles={[12]}>
+            <ApEmployeeInitialInterview />
+          </ProtectedRoutes>
+        }
+      />
+      {/* end of ap modules */}
+
+      {/* start of principal modules */}
+      <Route
+        path="/principal/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[13]}>
+            <PrincipalDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/principal/onlineapplication"
+        element={
+          <ProtectedRoutes allowedRoles={[13]}>
+            <PrincipalOnlineApplication />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/principal/employeeinitialinterview"
+        element={
+          <ProtectedRoutes allowedRoles={[13]}>
+            <PrincipalEmployeeInitialInterview />
+          </ProtectedRoutes>
+        }
+      />
+      {/* end of principal modules */}
 
       {/* Start of Parent Portal */}
       <Route
@@ -354,11 +414,9 @@ const AppRoutes = () => (
         }
       />
 
-
-
       {/* End of Parent portal  */}
 
-      {/* 🚨 Catch-all route → Redirect to home */}
+      {/* Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </Router>

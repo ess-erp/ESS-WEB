@@ -11,6 +11,7 @@ import {
     FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
     FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
     FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST, FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE,
+    FETCH_EMPLOYEE_FULL_SCREENING_REQUEST, FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, FETCH_EMPLOYEE_FULL_SCREENING_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -364,6 +365,34 @@ export const fetchUpdateEmployeeScreeningData = (formData) => async (dispatch) =
     }
     catch (error) {
         dispatch(fetchUpdateEmployeeScreeningFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchEmployeeFullScreeningRequest = () => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_REQUEST });
+export const fetchEmployeeFullScreeningSuccess = (data) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, payload: data });
+export const fetchEmployeeFullScreeningFailure = (error) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_FAILURE, payload: error });
+
+export const fetchEmployeeFullScreeningData = (page, pageSize) => async (dispatch) => {
+    dispatch(fetchEmployeeFullScreeningRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/employee-full-screening?page=${page}&pageSize=${pageSize}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchEmployeeFullScreeningSuccess(res));
+        return ({ ok: true, data: res.data, totalRecords: res.totalRecords });
+    }
+    catch (error) {
+        dispatch(fetchEmployeeFullScreeningFailure(error.message));
         return ({ ok: false, error })
     }
 };
