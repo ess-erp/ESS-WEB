@@ -373,11 +373,11 @@ export const fetchEmployeeFullScreeningRequest = () => ({ type: FETCH_EMPLOYEE_F
 export const fetchEmployeeFullScreeningSuccess = (data) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, payload: data });
 export const fetchEmployeeFullScreeningFailure = (error) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_FAILURE, payload: error });
 
-export const fetchEmployeeFullScreeningData = (page, pageSize) => async (dispatch) => {
+export const fetchEmployeeFullScreeningData = (employeeId,page, pageSize) => async (dispatch) => {
     dispatch(fetchEmployeeFullScreeningRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/employee-full-screening?page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/hr/employee-full-screening?employeeId=${employeeId}&page=${page}&pageSize=${pageSize}`;
 
         const response = await fetch(url, {
             method: 'POST',
