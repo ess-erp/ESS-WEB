@@ -9,7 +9,7 @@ import {
     fetchInsertGpaTableData
 } from "../../states/AdmissionState/Action";
 
-const GPATableComponent = ({divId, studentId }) => {
+const GPATableComponent = ({divId, appId }) => {
     const dispatch = useDispatch();
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
@@ -29,9 +29,9 @@ const GPATableComponent = ({divId, studentId }) => {
     //     setIsKeyField(table.TempId);
     // }
 
-    const fetchTemplates = async (divId, studentId, page = 1, pageSize = 10, search = "") => {
+    const fetchTemplates = async (divId, appId, page = 1, pageSize = 10, search = "") => {
         setLoadingTable(true);
-        const result = await dispatch(fetchGpaTableData(divId, studentId, page, pageSize, search));
+        const result = await dispatch(fetchGpaTableData(divId, appId, page, pageSize, search));
         if (result.ok) {
             setTable(result.data); setTotalRecords(result.totalRecords || 0);
         }
@@ -43,8 +43,8 @@ const GPATableComponent = ({divId, studentId }) => {
     };
 
     useEffect(() => {
-        fetchTemplates(divId, studentId, page, pageSize, search);
-    }, [divId, studentId, page, pageSize, search, dispatch]);
+        fetchTemplates(divId, appId, page, pageSize, search);
+    }, [divId, appId, page, pageSize, search, dispatch]);
 
 
     const handlePageChange = (newPage) => {

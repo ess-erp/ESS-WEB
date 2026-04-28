@@ -10,7 +10,7 @@ import {
     fetchInsertExamScheduleData,
 } from "../../states/AdmissionState/Action";
 
-const ExamSchedulerComponent = ({ studentId, levelId }) => {
+const ExamSchedulerComponent = ({ appId, levelId }) => {
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
@@ -26,13 +26,13 @@ const ExamSchedulerComponent = ({ studentId, levelId }) => {
     const insertExamScheduleState = useSelector((state) => state.admission.insertExamScheduleState || {});
 
     useEffect(() => {
-        if (studentId) {
-            dispatch(fetchExaminationSchedulerData(studentId));
+        if (appId) {
+            dispatch(fetchExaminationSchedulerData(appId));
         }
         if (levelId) {
             dispatch(fetchExamSchedTemplateData(levelId));
         }
-    }, [dispatch, studentId, levelId]);
+    }, [dispatch, appId, levelId]);
 
     const isScheduled = examSchedData && examSchedData.ExamId > 0;
 

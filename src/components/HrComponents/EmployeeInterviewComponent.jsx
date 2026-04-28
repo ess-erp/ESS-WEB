@@ -17,6 +17,7 @@ import {
     fetchApUserData,
     fetchPrincipalUserData,
     fetchUpdateEmployeeScreeningData,
+    fetchEmployeeFullScreeningData,
 } from "../../states/HumanResourcesState/Action";
 
 const customStyles = {
@@ -195,7 +196,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                 "Principal Interview": 4
             };
         }
-        else{
+        else {
             nameOrderMap = {
                 "Initial Interview": 1,
                 "Department Head Interview": 2
@@ -313,6 +314,50 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         if (criteria.UserRoleId === 12) return "ApUser";
         return "PrincipalUser";
     };
+
+    const [screeningCriteriaList, setScreeningCriteriaList] = useState([]);
+    const employeeFullScreeningState = useSelector((state) => state.hr.employeeFullScreeningState || {});
+    const screeningCriteriaTable = employeeFullScreeningState.data.data || [];
+    const screeningCriteriaTableTotalRows = employeeFullScreeningState.data.totalRecords || 0;
+    const screeningCriteriaTableLoading = employeeFullScreeningState.loading || false;
+    const [screeningCriteriaTableCurrentPage, setScreeningCriteriaTableCurrentPage] = useState(1);
+    const [screeningCriteriaTableRowsPerPage, setScreeningCriteriaTableRowsPerPage] = useState(10);
+
+    useEffect(() => {
+        if (!employeeAppId) return;
+
+        dispatch(
+            fetchEmployeeFullScreeningData(
+                employeeAppId,
+                screeningCriteriaTableCurrentPage,
+                screeningCriteriaTableRowsPerPage
+            )
+        );
+    }, [
+        dispatch,
+        employeeAppId,
+        screeningCriteriaTableCurrentPage,
+        screeningCriteriaTableRowsPerPage
+    ]);
+
+
+    // PRELOAD EXISTING RATINGS
+    useEffect(() => {
+        if (!screeningCriteriaTable.length) return;
+
+        const existingRatings = {};
+
+        screeningCriteriaTable.forEach(item => {
+            existingRatings[item.CriteriaChildId] = Number(item.Rating);
+        });
+
+        setRatings(existingRatings);
+
+        console.log("PRELOADED RATINGS:", existingRatings);
+
+    }, [screeningCriteriaTable]);
+
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [formData, setFormData] = useState(null);
@@ -339,7 +384,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         const CriteriaRatingDtos = [];
 
         criteriaTable.forEach(criteria => {
-            if (criteria.CriteriaTempName !== "Initial Interview") return; // 👈 FILTER
+            if (criteria.CriteriaTempName !== "Initial Interview") return; 
 
             criteria.CriteriaChildTableDtos.forEach(child => {
                 if (ratings[child.CriteriaChildId]) {

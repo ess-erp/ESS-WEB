@@ -86,7 +86,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <ListOfDocsTableComponent studentId={studentData.StudentId} />
+                            <ListOfDocsTableComponent appId={studentData.AppId} />
 
                         </motion.div>
                     )}
@@ -100,7 +100,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <GPATableComponent divId={studentData.DivId} studentId={studentData.StudentId} />
+                            <GPATableComponent divId={studentData.DivId} appId={studentData.AppId} />
                         </motion.div>
                     )}
 
@@ -113,7 +113,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <ExamSchedulerComponent studentId={studentData.StudentId} levelId={studentData.LevelId} />
+                            <ExamSchedulerComponent appId={studentData.appId} levelId={studentData.LevelId} />
                         </motion.div>
                     )}
 
@@ -126,7 +126,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <AppFormOthersComponent studentId={studentData.StudentId} />
+                            <AppFormOthersComponent appId={studentData.appId} />
                         </motion.div>
                     )}
                 </AnimatePresence>

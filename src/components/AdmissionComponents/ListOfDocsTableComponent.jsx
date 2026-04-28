@@ -8,7 +8,7 @@ import {
     fetchInsertDocumentData,
 } from "../../states/AdmissionState/Action";
 
-const ListOfDocsTableComponent = ({ studentId }) => {
+const ListOfDocsTableComponent = ({ appId }) => {
     const baseUrl = import.meta.env.VITE_FILE_URL;
 
     const [user, setUser] = useState(() => {
@@ -30,8 +30,8 @@ const ListOfDocsTableComponent = ({ studentId }) => {
     const [search, setSearch] = useState("");
 
     useEffect(() => {
-        dispatch(fetchDocumentTableData(studentId, page, pageSize, search));
-    }, [dispatch, studentId, page, pageSize, search]);
+        dispatch(fetchDocumentTableData(appId, page, pageSize, search));
+    }, [dispatch, appId, page, pageSize, search]);
 
     const [fixedDocId, setFixedDocId] = useState(0);
 
