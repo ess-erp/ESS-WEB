@@ -7,6 +7,7 @@ import {
   FilePlus,
   ScrollText,
   UserRoundPlus,
+  User,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -288,6 +289,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "Enroll Student",
       icon: UserRoundPlus,
       path: "/parent/enrollstudent",
+    },
+    {
+      name: "List of Student",
+      icon: User,
+      path: "/parent/listofstudent",
     },
   ];
 

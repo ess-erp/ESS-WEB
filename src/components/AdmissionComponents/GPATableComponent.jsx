@@ -167,7 +167,7 @@ const GPATableComponent = ({divId, appId }) => {
 
         let payload = {
             GpaTempId: table[0].GpaTempId,
-            StudentId: studentId,
+            AppId: appId,
             Status: status,
             GpaChildDtos: gpaPayload,
         };

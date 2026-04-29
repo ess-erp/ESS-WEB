@@ -1021,7 +1021,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <ExaminationSettingsComponent studentId={studentData.StudentId} levelId={studentData.LevelId} />
+                            <ExaminationSettingsComponent AppId={studentData.AppId} levelId={studentData.LevelId} />
                         </motion.div>
                     )}
 
@@ -1034,7 +1034,7 @@ const StudentAppFormComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <ExaminationResultComponent studentId={studentData.StudentId} />
+                            <ExaminationResultComponent AppId={studentData.AppId} />
                         </motion.div>
                     )}
                 </AnimatePresence>

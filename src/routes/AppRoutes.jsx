@@ -48,6 +48,9 @@ import ApEmployeeInitialInterview from "../pages/AssistantPrincipal/EmployeeInit
 import PrincipalDashboard from "../pages/Principal/Dashboard";
 import PrincipalOnlineApplication from "../pages/Principal/EmployeeOnlineApp";
 import PrincipalEmployeeInitialInterview from "../pages/Principal/EmployeeInitialInterview";
+import ListOfStudent from "../pages/ParentPortal/ListOfStudent";
+import PendingListStudentForm from "../components/ParentPortalComponents/PendingListStudentForm";
+
 
 const AppRoutes = () => (
   <Router>
@@ -410,6 +413,24 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[17]}>
             <ParentEnrollStudent />
+          </ProtectedRoutes>
+        }
+      />
+
+      <Route
+        path="/parent/listofstudent"
+        element={
+          <ProtectedRoutes allowedRoles={[17]}>
+            <ListOfStudent />
+          </ProtectedRoutes>
+        }
+      />
+
+      <Route
+        path="/parent/pendingliststudentform"
+        element={
+          <ProtectedRoutes allowedRoles={[17]}>
+            <PendingListStudentForm />
           </ProtectedRoutes>
         }
       />

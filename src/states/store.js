@@ -12,6 +12,7 @@ import academicReducer from './AcademicState/Reducer';
 import sacReducer from './SacState/Reducer';
 import apReducer from './AssistantPrincipalState/Reducer';
 import principalReducer from './PrincipalState/Reducer';
+import parentReducer from './ParentState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -26,6 +27,7 @@ const rootReducer = combineReducers({
   sac: sacReducer,
   ap: apReducer,
   principal: principalReducer,
+  parent: parentReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));

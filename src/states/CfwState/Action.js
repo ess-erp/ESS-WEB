@@ -505,11 +505,11 @@ export const fetcExamSettingsCodeByStudentIdRequest = () => ({ type: FETCH_EXAMS
 export const fetcExamSettingsCodeByStudentIdSuccess = (data) => ({ type: FETCH_EXAMSETTINGSCODEBYSTUDENTID_SUCCESS, payload: data });
 export const fetcExamSettingsCodeByStudentIdFailure = (error) => ({ type: FETCH_EXAMSETTINGSCODEBYSTUDENTID_FAILURE, payload: error });
 
-export const fetchExamSettingsCodeByStudentIdData = (studentId) => async (dispatch) => {
+export const fetchExamSettingsCodeByStudentIdData = (AppId) => async (dispatch) => {
     dispatch(fetcExamSettingsCodeByStudentIdRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cfw/get-exam-setting-code-by-studentid?studentId=${studentId}`;
+        const url = `${baseUrl}/cfw/get-exam-setting-code-by-studentid?AppId=${AppId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -589,11 +589,11 @@ export const fetchExamRawScoreTableRequest = () => ({ type: FETCH_EXAM_RAW_SCORE
 export const fetchExamRawScoreTableSuccess = (data) => ({ type: FETCH_EXAM_RAW_SCORE_TABLE_SUCCESS, payload: data });
 export const fetchExamRawScoreTableFailure = (error) => ({ type: FETCH_EXAM_RAW_SCORE_TABLE_FAILURE, payload: error });
 
-export const fetchExamRawScoreTableData = (studentId, page, pageSize) => async (dispatch) => {
+export const fetchExamRawScoreTableData = (AppId, page, pageSize) => async (dispatch) => {
     dispatch(fetchExamRawScoreTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cfw/get-exam-raw-score-table?studentId=${studentId}&page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/cfw/get-exam-raw-score-table?AppId=${AppId}&page=${page}&pageSize=${pageSize}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {

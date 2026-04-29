@@ -11,7 +11,7 @@ import {
 
 } from "../../states/CfwState/Action";
 
-const ExaminationResultComponent = ({ studentId }) => {
+const ExaminationResultComponent = ({ AppId }) => {
 
     const dispatch = useDispatch();
 
@@ -39,10 +39,10 @@ const ExaminationResultComponent = ({ studentId }) => {
     const [pageSize, setPageSize] = useState(10);
 
 
-    const fetchTemplates = async (studentId, page = 1, pageSize = 10) => {
+    const fetchTemplates = async (AppId, page = 1, pageSize = 10) => {
         setLoadingTable(true);
 
-        const result = await dispatch(fetchExamRawScoreTableData(studentId, page, pageSize));
+        const result = await dispatch(fetchExamRawScoreTableData(AppId, page, pageSize));
 
         if (result.ok) {
             setTable(result.data);
@@ -56,8 +56,8 @@ const ExaminationResultComponent = ({ studentId }) => {
     };
 
     useEffect(() => {
-        fetchTemplates(studentId, page, pageSize);
-    }, [studentId, page, pageSize, dispatch]);
+        fetchTemplates(AppId, page, pageSize);
+    }, [AppId, page, pageSize, dispatch]);
 
     const handlePageChange = (newPage) => {
         setPage(newPage);
@@ -145,7 +145,7 @@ const ExaminationResultComponent = ({ studentId }) => {
         const payload = {
 
             ExamCodeId: table[0]?.ExamCodeId,
-            StudentId: studentId,
+            AppId: AppId,
             CreatedByUserId: user[0]?.UserId, // since user = useState(...)
             InsertRawScoreChildDtos: table.map(item => ({
                 GenSubChildId: item.GenSubChildId,

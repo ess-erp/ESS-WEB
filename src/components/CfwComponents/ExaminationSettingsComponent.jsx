@@ -14,8 +14,8 @@ import {
 } from "../../states/CfwState/Action";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 
-const ExaminationSettingsComponent = ({ studentId, levelId }) => {
-    console.log(studentId);
+const ExaminationSettingsComponent = ({ AppId, levelId }) => {
+    console.log(AppId);
     const dispatch = useDispatch();
     const formatDate = getFormatDate;
     const formatToAMPM = getFormatToAMPM;
@@ -61,9 +61,9 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
     }, [dispatch, levelId]);
 
     useEffect(() => {
-        dispatch(fetchExamSettingsCodeByStudentIdData(studentId));
+        dispatch(fetchExamSettingsCodeByStudentIdData(AppId));
         
-    }, [dispatch, studentId]);
+    }, [dispatch, AppId]);
 
     const [isEditable, setIsEditable] = useState(false);
     const [examCodeVal, setExamCodeVal] = useState(null);
@@ -111,7 +111,7 @@ const ExaminationSettingsComponent = ({ studentId, levelId }) => {
         // alert("Test");
         setIsLoadingModalOpen(true);
         const payload = {
-            StudentId: studentId,
+            AppId: AppId,
             CfwExamId: examCodeVal.CfwExamId,
             SchedId: examSchedVal.SchedId,
             DateExamTaken: effectiveDate,
