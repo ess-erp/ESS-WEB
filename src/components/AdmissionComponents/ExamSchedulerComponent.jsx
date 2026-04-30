@@ -74,7 +74,7 @@ const ExamSchedulerComponent = ({ appId, levelId }) => {
         SchedTempId: selectedExam?.SchedTempId || 0,
         RoomId: selectedExam?.RoomId || 0,
         RoomTemp: selectedExam?.RoomTempId || 0,
-        StudentId: studentId,
+        AppId: appId,
         CreatedByUserId: user.UserId,
         ExamDate: formData?.examDate || null,
         ExamResultDate: formData?.examResultDate || null,
