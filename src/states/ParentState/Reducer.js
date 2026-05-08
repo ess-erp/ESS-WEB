@@ -7,7 +7,10 @@ import {
     FETCH_LISTOFSTUDENTTABLE_REQUEST , FETCH_LISTOFSTUDENTTABLE_SUCCESS, FETCH_LISTOFSTUDENTTABLE_FAILURE,
     FETCH_INSERT_STUDENT_ENROLLMENT_REQUEST,
     FETCH_INSERT_STUDENT_ENROLLMENT_SUCCESS,
-    FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE, 
+    FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE,
+    FETCH_LIST_OF_TUITION_FEE_REQUEST,
+    FETCH_LIST_OF_TUITION_FEE_SUCCESS,
+    FETCH_LIST_OF_TUITION_FEE_FAILURE, 
 } from "./ActionType";
 
 const initialState = {
@@ -23,6 +26,7 @@ const initialGeneralState = {
     tableState: { ...initialState },
     insertEnrollmentState: { ...initialState },
     updateStudentDataState: { ...initialState },
+    tuitionFeeState: { ...initialState },
 };
 
 const parentReducer = (state = initialGeneralState, action) => {
@@ -66,6 +70,14 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, insertEnrollmentState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE:
             return { ...state, insertEnrollmentState: { loading: false, data: [], error: action.payload } };
+
+        //Insert Tuition Fee
+        case FETCH_LIST_OF_TUITION_FEE_REQUEST:
+            return { ...state, tuitionFeeState: { loading: true, data: [], error: '' } };
+        case FETCH_LIST_OF_TUITION_FEE_SUCCESS:
+            return { ...state, tuitionFeeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_LIST_OF_TUITION_FEE_FAILURE:
+            return { ...state, tuitionFeeState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

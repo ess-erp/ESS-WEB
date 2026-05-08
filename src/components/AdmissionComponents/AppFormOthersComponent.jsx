@@ -20,7 +20,7 @@ import {
 } from "../../states/AdmissionState/Action";
 import BlueBtn from "../ButtonsComponents/BlueBtn";
 
-const AppFormOthersComponent = ({ studentId }) => {
+const AppFormOthersComponent = ({ appId }) => {
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
@@ -59,7 +59,7 @@ const AppFormOthersComponent = ({ studentId }) => {
     console.log(religionWaverData);
     const fetchData = () => {
         dispatch(fetchOthersTableData(
-            studentId,
+            appId,
             currentPage,
             rowsPerPage,
             filterText
@@ -68,7 +68,7 @@ const AppFormOthersComponent = ({ studentId }) => {
 
     useEffect(() => {
         fetchData();
-    }, [studentId, currentPage, rowsPerPage, filterText, dispatch]);
+    }, [appId, currentPage, rowsPerPage, filterText, dispatch]);
 
     const staticRows = [
         { TempName: "Test Permit", DateCreated: null, ActiveStatus: "Pending" },
@@ -150,12 +150,12 @@ const AppFormOthersComponent = ({ studentId }) => {
                 setIsTaggingLetterOpen(true);
                 break;
             case "Religion Waiver":
-                dispatch(fetchReligionWaverData(studentId));
+                dispatch(fetchReligionWaverData(appId));
                 setOtherId(row.OthersTableId);
                 setIsReligionWaverModal(true);
                 break;
             case "Academic Waiver":
-                dispatch(fetchAcademicWaiverData(studentId));
+                dispatch(fetchAcademicWaiverData(appId));
                 setOtherId(row.OthersTableId ?? 0);
                 setIsOpenAcademicWaiver(true);
                 break;
@@ -172,7 +172,7 @@ const AppFormOthersComponent = ({ studentId }) => {
         setIsLoadingModalOpen(true)
         console.log(permitData);
         console.log(permitData.EmailStatusId);
-        dispatch(fetchResendEmailData(permitData.EmailStatusId, permitData.StudentId, permitData.TempName, user.UserId));
+        dispatch(fetchResendEmailData(permitData.EmailStatusId, permitData.AppId, permitData.TempName, user.UserId));
 
         setTimeout(() => {
             setResendCooldown(false);
@@ -200,7 +200,7 @@ const AppFormOthersComponent = ({ studentId }) => {
     const handleGenerateLetter = async () => {
         const curUserId = user.UserId;
         setIsLetterLoadingModal(true);
-        const res = await dispatch(fetchGenerateLetterData(studentId, curUserId));
+        const res = await dispatch(fetchGenerateLetterData(appId, curUserId));
         if (res.ok) {
             setIsLetterLoadingModal(false);
             setIsLetterSuccessModal(true);
@@ -222,7 +222,7 @@ const AppFormOthersComponent = ({ studentId }) => {
     const handleSubmitTaggingLetter = async () => {
         setIsTaggingLetterLoading(true);
         const payload = {
-            StudentId: studentId,
+            AppId: appId,
             CreatedByUserId: user.UserId,
             DateOfEnrollment: dateOfEnrollment,
             DateOfFirstPayment: dateOfFirstPayment,
@@ -247,7 +247,7 @@ const AppFormOthersComponent = ({ studentId }) => {
     const [isReligionWaiverSuccess, setIsReligionWaiverSuccess] = useState(false);
     const handleSendReligionWaiver = async () => {
         const payload = {
-            StudentId: studentId,
+            AppId: appId,
             CreatedByUserId: user.UserId,
             ParentId: religionWaverData.ParentId,
             // MotherId: religionWaverData.MotherId,
@@ -281,7 +281,7 @@ const AppFormOthersComponent = ({ studentId }) => {
     const [isAcademicWaiverSuccess, setIsAcademicWaiverSuccess] = useState(false);
     const handleSendAcademicWaiver = async () => {
         const payload = {
-            StudentId: studentId,
+            AppId: appId,
             CreatedByUserId: user.UserId,
             ParentId: academicWaiverData.ParentId,
             // FatherId: academicWaiverData.FatherId,

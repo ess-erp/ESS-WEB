@@ -90,7 +90,7 @@ const PaymentComponent = () => {
                 status = "O-EXAMINATION-CASHIER";
                 dispatch(fetchStudentAppData(status));
                 break;
-            case "Reservation Fee":
+            case "Enlistment Fee":
                 status = "O-RESERVATION";
                 dispatch(fetchStudentAppData(status));
                 break;

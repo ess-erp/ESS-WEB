@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import DataTable from 'react-data-table-component';
-import { motion, AnimatePresence } from 'framer-motion';
-import BlueBtn from '../ButtonsComponents/BlueBtn';
-import ModalComponent from '../ButtonsComponents/ModalComponent';
+import DataTable from "react-data-table-component";
+import { motion, AnimatePresence } from "framer-motion";
+import BlueBtn from "../ButtonsComponents/BlueBtn";
+import ModalComponent from "../ButtonsComponents/ModalComponent";
 import { fetchListOfStudentTableData } from "../../states/ParentState/Action";
-import GreenBtn from '../ButtonsComponents/GreenBtn';
+import { fetchListOfTuitionFeeData } from "../../states/ParentState/Action";
+import GreenBtn from "../ButtonsComponents/GreenBtn";
+import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 
-const PendingListOfStudent = ({ type, userId }) => {
-
+const PendingListOfStudent = ({ type, userId, levelId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -19,49 +20,53 @@ const PendingListOfStudent = ({ type, userId }) => {
 
   const [table, setTable] = useState([]);
 
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [tempStartDate, setTempStartDate] = useState('');
-  const [tempEndDate, setTempEndDate] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [tempStartDate, setTempStartDate] = useState("");
+  const [tempEndDate, setTempEndDate] = useState("");
 
-  const [selectedStatus] = useState('Pending');
+  const [selectedStatus] = useState("Pending");
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(10);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+
   // table columns
   const columns = [
     // { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
-    { name: 'Fullname', selector: row => `${row.Lname}, ${row.Fname} ${row.Mname || ''}`, sortable: true },
-    { name: 'Campus', selector: row => row.CampusName, sortable: true },
-    { name: 'Level', selector: row => row.LevelName, sortable: true },
-    { name: 'Status', selector: row => row.ActiveStatus, sortable: true },
-    { name: 'Date Created', selector: row => new Date(row.DateCreated).toLocaleDateString(), sortable: true },
     {
-      name: 'Actions',
+      name: "Fullname",
+      selector: (row) => `${row.Lname}, ${row.Fname} ${row.Mname || ""}`,
+      sortable: true,
+    },
+    { name: "Campus", selector: (row) => row.CampusName, sortable: true },
+    { name: "Level", selector: (row) => row.LevelName, sortable: true },
+    { name: "Status", selector: (row) => row.ActiveStatus, sortable: true },
+    {
+      name: "Date Created",
+      selector: (row) => new Date(row.DateCreated).toLocaleDateString(),
+      sortable: true,
+    },
+    {
+      name: "Actions",
       cell: (row) => (
         <div className="flex items-center whitespace-nowrap">
-          <BlueBtn
-            label="View"
-            onClick={() => handleButtonClick(row)}
-          />
-          <GreenBtn
-            label="Payment"
-            onClick={() => handleButtonClick(row)}
-          />
+          <BlueBtn label="View" onClick={() => handleButtonClick(row)} />
+          <GreenBtn label="Payment" onClick={() => handlePaymentClick(row)} />
         </div>
       ),
       ignoreRowClick: true,
-    }
+    },
   ];
 
   // fetch data
   const fetchData = async () => {
     const res = await dispatch(
-      fetchListOfStudentTableData(userId, type, page, pageSize, search)
+      fetchListOfStudentTableData(userId, type, page, pageSize, search),
     );
     setTable(res?.data || []);
   };
@@ -81,16 +86,73 @@ const PendingListOfStudent = ({ type, userId }) => {
   const handleSubmit = () => {
     setStartDate(tempStartDate);
     setEndDate(tempEndDate);
-    setPage(1); 
+    setPage(1);
     setIsModalOpen(false);
   };
+
+  const [tuitionTable, setTuitionTable] = useState([]);
+  const [tuitionLoading, setTuitionLoading] = useState(false);
+
+  const handlePaymentClick = (row) => {
+    setIsPaymentOpen(true);
+    fetchTuitionFee(row.LevelId);
+  };
+
+  const tuitionColumns = [
+    {
+      name: "Plan Name",
+      selector: (row) => row.PlanName,
+      sortable: true,
+    },
+    {
+      name: "Number Of Payment",
+      selector: (row) => row.NumberOfPayment,
+      sortable: true,
+    },
+    {
+      name: "Amount",
+      selector: (row) => row.Amount,
+      sortable: true,
+    },
+    {
+      name: "Date of Payment",
+      selector: (row) =>
+        row.DateOfPayment
+          ? new Date(row.DateOfPayment).toLocaleDateString()
+          : "-",
+      sortable: true,
+    },
+  ];
+
+  const fetchTuitionFee = async (levelId) => {
+    setTuitionLoading(true);
+    const res = await dispatch(
+      fetchListOfTuitionFeeData(levelId, page, pageSize),
+    );
+    setTuitionTable(res?.data || []);
+    setTuitionLoading(false);
+  };
+
+  const [selectedTuitionPlan, setSelectedTuitionPlan] = useState(null);
+
+  const tuitionFeeOptions = React.useMemo(() => {
+    const map = new Map();
+
+    (tuitionTable || []).forEach((item) => {
+      map.set(item.TuitionChildId, {
+        value: item.TuitionChildId,
+        label: item.PlanName,
+      });
+    });
+
+    return Array.from(map.values());
+  }, [tuitionTable]);
 
   return (
     <div>
       {/* Table */}
       <div className="overflow-x-auto pt-2">
         <div className="p-6 bg-white rounded shadow">
-
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-green-500">
               {`List of ${selectedStatus} in Enrollment`}
@@ -136,7 +198,6 @@ const PendingListOfStudent = ({ type, userId }) => {
               />
             </motion.div>
           </AnimatePresence>
-
         </div>
       </div>
 
@@ -169,7 +230,69 @@ const PendingListOfStudent = ({ type, userId }) => {
         }
         buttons={[
           { label: "Submit", type: "green", onClick: handleSubmit },
-          { label: "Cancel", type: "red", onClick: () => setIsModalOpen(false) },
+          {
+            label: "Cancel",
+            type: "red",
+            onClick: () => setIsModalOpen(false),
+          },
+        ]}
+      />
+      <ModalComponent
+        isOpen={isPaymentOpen}
+        onClose={() => setIsPaymentOpen(false)}
+        size="w-[90vw] max-w-4xl"
+        title={
+          <span className="font-bold text-lg text-green-700">
+            Payment Method
+          </span>
+        }
+        body={
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 w-full">
+              <label className="text-sm font-medium mb-1 block text-left">
+                Tuition Fee Plan
+              </label>
+              <div className="rounded-lg bg-white pb-4 w-full overflow-hidden">
+                <DataTable
+                  columns={tuitionColumns}
+                  data={tuitionTable}
+                  progressPending={tuitionLoading}
+                  highlightOnHover
+                  responsive
+                  dense
+                  fixedHeader
+                  fixedHeaderScrollHeight="180px"
+                  noHeader
+                  className="text-sm border-t border-gray-400 "
+                />
+                <hr className="mt-3 border-gray-400" />
+              </div>
+              <div className="flex flex-col gap-1 items-center">
+                <label className="text-sm font-medium mb-1 block">
+                  Select Tuition Plan
+                </label>
+
+                <div className="w-1/2">
+                  <SearchableSelect
+                    placeholder="-- Select Plan --"
+                    options={tuitionFeeOptions}
+                    value={selectedTuitionPlan}
+                    onChange={setSelectedTuitionPlan}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        buttons={[
+          {
+            label: "Over The Counter",
+            type: "blue",
+          },
+          {
+            label: "Online Payment",
+            type: "green",
+          },
         ]}
       />
     </div>
