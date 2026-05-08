@@ -3,7 +3,7 @@ import {
     FETCH_EMPLOYEE_APPLICATION_INFO_REQUEST, FETCH_EMPLOYEE_APPLICATION_INFO_SUCCESS, FETCH_EMPLOYEE_APPLICATION_INFO_FAILURE,
     FETCH_INSERT_HIRING_PROCESS_REQUEST, FETCH_INSERT_HIRING_PROCESS_SUCCESS, FETCH_INSERT_HIRING_PROCESS_FAILURE,
     FETCH_USER_ROLE_REQUEST, FETCH_USER_ROLE_SUCCESS, FETCH_USER_ROLE_FAILURE,
-    FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
+    FETCH_INSERT_TEMPLATE_TABLE_REQUEST, FETCH_INSERT_TEMPLATE_TABLE_SUCCESS, FETCH_INSERT_TEMPLATE_TABLE_FAILURE,
     FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
     FETCH_CRITERIA_TABLE_REQUEST, FETCH_CRITERIA_TABLE_SUCCESS, FETCH_CRITERIA_TABLE_FAILURE,
@@ -11,7 +11,10 @@ import {
     FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
     FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
     FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST, FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE,
-    FETCH_EMPLOYEE_FULL_SCREENING_REQUEST, FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, FETCH_EMPLOYEE_FULL_SCREENING_FAILURE,
+    FETCH_DEPARTMENT_TEMPLATE_REQUEST, FETCH_DEPARTMENT_TEMPLATE_SUCCESS, FETCH_DEPARTMENT_TEMPLATE_FAILURE,
+    FETCH_POSITION_TEMPLATE_REQUEST, FETCH_POSITION_TEMPLATE_SUCCESS, FETCH_POSITION_TEMPLATE_FAILURE,
+    FETCH_GOLDEN_RANK_TEMPLATE_REQUEST, FETCH_GOLDEN_RANK_TEMPLATE_SUCCESS, FETCH_GOLDEN_RANK_TEMPLATE_FAILURE,
+    FETCH_INSERT_HIRED_EMPLOYEE_REQUEST, FETCH_INSERT_HIRED_EMPLOYEE_SUCCESS, FETCH_INSERT_HIRED_EMPLOYEE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -135,15 +138,29 @@ export const fetchUserRoleData = () => async (dispatch) => {
     }
 };
 
-export const fetchInsertCriteriaTemplateRequest = () => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST });
-export const fetchInsertCriteriaTemplateSuccess = (data) => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, payload: data });
-export const fetchInsertCriteriaTemplateFailure = (error) => ({ type: FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE, payload: error });
+export const fetchInsertTemplateTableRequest = () => ({ type: FETCH_INSERT_TEMPLATE_TABLE_REQUEST });
+export const fetchInsertTemplateTableSuccess = (data) => ({ type: FETCH_INSERT_TEMPLATE_TABLE_SUCCESS, payload: data });
+export const fetchInsertTemplateTableFailure = (error) => ({ type: FETCH_INSERT_TEMPLATE_TABLE_FAILURE, payload: error });
 
-export const fetchInsertCriteriaTemplateData = (formData) => async (dispatch) => {
-    dispatch(fetchInsertCriteriaTemplateRequest());
+export const fetchInsertTemplateTableData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertTemplateTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/insert-criteria-template`;
+        let url = "";
+        switch (formData.TempId) {
+            case 1:
+                url = `${baseUrl}/hr/insert-criteria-table`;
+                break;
+            case 2:
+                url = `${baseUrl}/hr/insert-department-table`;
+                break;
+            case 3:
+                url = `${baseUrl}/hr/insert-position-table`;
+                break;
+            case 4:
+                url = `${baseUrl}/hr/insert-golden-rank-table`;
+                break;
+        }
 
         const response = await fetch(url, {
             method: 'POST',
@@ -156,11 +173,11 @@ export const fetchInsertCriteriaTemplateData = (formData) => async (dispatch) =>
 
         const res = await response.json();
 
-        dispatch(fetchInsertCriteriaTemplateSuccess(res));
+        dispatch(fetchInsertTemplateTableSuccess(res));
         return ({ ok: true, data: res.data });
     }
     catch (error) {
-        dispatch(fetchInsertCriteriaTemplateFailure(error.message));
+        dispatch(fetchInsertTemplateTableFailure(error.message));
         return ({ ok: false, error })
     }
 };
@@ -228,11 +245,11 @@ export const fetchCriteriaTableRequest = () => ({ type: FETCH_CRITERIA_TABLE_REQ
 export const fetchCriteriaTableSuccess = (data) => ({ type: FETCH_CRITERIA_TABLE_SUCCESS, payload: data });
 export const fetchCriteriaTableFailure = (error) => ({ type: FETCH_CRITERIA_TABLE_FAILURE, payload: error });
 
-export const fetchCriteriaTableData = (page, pageSize) => async (dispatch) => {
+export const fetchCriteriaTableData = (employeeAppId, page, pageSize) => async (dispatch) => {
     dispatch(fetchCriteriaTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/get-criteria-table?page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/hr/get-criteria-table?employeeAppId=${employeeAppId}&page=${page}&pageSize=${pageSize}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -369,15 +386,15 @@ export const fetchUpdateEmployeeScreeningData = (formData) => async (dispatch) =
     }
 };
 
-export const fetchEmployeeFullScreeningRequest = () => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_REQUEST });
-export const fetchEmployeeFullScreeningSuccess = (data) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, payload: data });
-export const fetchEmployeeFullScreeningFailure = (error) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_FAILURE, payload: error });
+export const fetchDepartmentTemplateRequest = () => ({ type: FETCH_DEPARTMENT_TEMPLATE_REQUEST });
+export const fetchDepartmentTemplateSuccess = (data) => ({ type: FETCH_DEPARTMENT_TEMPLATE_SUCCESS, payload: data });
+export const fetchDepartmentTemplateFailure = (error) => ({ type: FETCH_DEPARTMENT_TEMPLATE_FAILURE, payload: error });
 
-export const fetchEmployeeFullScreeningData = (employeeId,page, pageSize) => async (dispatch) => {
-    dispatch(fetchEmployeeFullScreeningRequest());
+export const fetchDepartmentTemplateData = () => async (dispatch) => {
+    dispatch(fetchDepartmentTemplateRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/employee-full-screening?employeeId=${employeeId}&page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/hr/get-department-template`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -388,11 +405,124 @@ export const fetchEmployeeFullScreeningData = (employeeId,page, pageSize) => asy
         });
 
         const res = await response.json();
-        dispatch(fetchEmployeeFullScreeningSuccess(res));
-        return ({ ok: true, data: res.data, totalRecords: res.totalRecords });
+        dispatch(fetchDepartmentTemplateSuccess(res));
+        return ({ ok: true, data: res.data });
     }
     catch (error) {
-        dispatch(fetchEmployeeFullScreeningFailure(error.message));
+        dispatch(fetchDepartmentTemplateFailure(error.message));
         return ({ ok: false, error })
     }
 };
+
+export const fetchPositionTemplateRequest = () => ({ type: FETCH_POSITION_TEMPLATE_REQUEST });
+export const fetchPositionTemplateSuccess = (data) => ({ type: FETCH_POSITION_TEMPLATE_SUCCESS, payload: data });
+export const fetchPositionTemplateFailure = (error) => ({ type: FETCH_POSITION_TEMPLATE_FAILURE, payload: error });
+
+export const fetchPositionTemplateData = () => async (dispatch) => {
+    dispatch(fetchPositionTemplateRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-position-template`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchPositionTemplateSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch (error) {
+        dispatch(fetchPositionTemplateFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchGoldenRankTemplateRequest = () => ({ type: FETCH_GOLDEN_RANK_TEMPLATE_REQUEST });
+export const fetchGoldenRankTemplateSuccess = (data) => ({ type: FETCH_GOLDEN_RANK_TEMPLATE_SUCCESS, payload: data });
+export const fetchGoldenRankTemplateFailure = (error) => ({ type: FETCH_GOLDEN_RANK_TEMPLATE_FAILURE, payload: error });
+
+export const fetchGoldenRankTemplateData = () => async (dispatch) => {
+    dispatch(fetchGoldenRankTemplateRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-golden-rank-template`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchGoldenRankTemplateSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch (error) {
+        dispatch(fetchGoldenRankTemplateFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+export const fetchInsertHiredEmployeeRequest = () => ({ type: FETCH_INSERT_HIRED_EMPLOYEE_REQUEST });
+export const fetchInsertHiredEmployeeSuccess = (data) => ({ type: FETCH_INSERT_HIRED_EMPLOYEE_SUCCESS, payload: data });
+export const fetchInsertHiredEmployeeFailure = (error) => ({ type: FETCH_INSERT_HIRED_EMPLOYEE_FAILURE, payload: error });
+
+export const fetchInsertHiredEmployeeData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertHiredEmployeeRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/insert-hired-employee`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertHiredEmployeeSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch (error) {
+        dispatch(fetchInsertHiredEmployeeFailure(error.message));
+        return ({ ok: false, error })
+    }
+};
+
+// export const fetchEmployeeFullScreeningRequest = () => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_REQUEST });
+// export const fetchEmployeeFullScreeningSuccess = (data) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, payload: data });
+// export const fetchEmployeeFullScreeningFailure = (error) => ({ type: FETCH_EMPLOYEE_FULL_SCREENING_FAILURE, payload: error });
+
+// export const fetchEmployeeFullScreeningData = (employeeId,page, pageSize) => async (dispatch) => {
+//     dispatch(fetchEmployeeFullScreeningRequest());
+//     try {
+//         const token = getToken();
+//         const url = `${baseUrl}/hr/employee-full-screening?employeeId=${employeeId}&page=${page}&pageSize=${pageSize}`;
+
+//         const response = await fetch(url, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+//             },
+//         });
+
+//         const res = await response.json();
+//         dispatch(fetchEmployeeFullScreeningSuccess(res));
+//         return ({ ok: true, data: res.data, totalRecords: res.totalRecords });
+//     }
+//     catch (error) {
+//         dispatch(fetchEmployeeFullScreeningFailure(error.message));
+//         return ({ ok: false, error })
+//     }
+// };

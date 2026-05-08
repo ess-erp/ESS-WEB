@@ -375,24 +375,107 @@ const TemplateDataTable = ({ selectedStatus }) => {
                 }
                 break;
             case "tuitionfee":
-                const plans = [
-                    { PlanName: "PLAN A", Amount: tuitionForm.amountA, DateOfPayment: tuitionForm.dateOfPaymentA },
-                    { PlanName: "PLAN B1", Amount: tuitionForm.amountB1, DateOfPayment: tuitionForm.dateOfPaymentB1 },
-                    { PlanName: "PLAN B2", Amount: tuitionForm.amountB2, DateOfPayment: tuitionForm.dateOfPaymentB2 },
-                    { PlanName: "PLAN C1", Amount: tuitionForm.amountC1, DateOfPayment: tuitionForm.dateOfPaymentC1 },
-                    { PlanName: "PLAN C2", Amount: tuitionForm.amountC2, DateOfPayment: tuitionForm.dateOfPaymentC2 },
-                    { PlanName: "PLAN C3", Amount: tuitionForm.amountC3, DateOfPayment: tuitionForm.dateOfPaymentC3 },
-                    { PlanName: "PLAN D1", Amount: tuitionForm.amountD1, DateOfPayment: tuitionForm.dateOfPaymentD1 },
-                    { PlanName: "PLAN D2", Amount: tuitionForm.amountD2, DateOfPayment: tuitionForm.dateOfPaymentD2 },
-                    { PlanName: "PLAN D3", Amount: tuitionForm.amountD3, DateOfPayment: tuitionForm.dateOfPaymentD3 },
-                    { PlanName: "PLAN D4", Amount: tuitionForm.amountD4, DateOfPayment: tuitionForm.dateOfPaymentD4 },
+                // const plans = [
+                //     { NumberOfPayment: "PLAN A", Amount: tuitionForm.amountA, DateOfPayment: tuitionForm.dateOfPaymentA },
+                //     { NumberOfPayment: "PLAN B - FIRST PAYMENT", Amount: tuitionForm.amountB1, DateOfPayment: tuitionForm.dateOfPaymentB1 },
+                //     { NumberOfPayment: "PLAN B - SECOND PAYMENT", Amount: tuitionForm.amountB2, DateOfPayment: tuitionForm.dateOfPaymentB2 },
+                //     { NumberOfPayment: "PLAN C1", Amount: tuitionForm.amountC1, DateOfPayment: tuitionForm.dateOfPaymentC1 },
+                //     { NumberOfPayment: "PLAN C2", Amount: tuitionForm.amountC2, DateOfPayment: tuitionForm.dateOfPaymentC2 },
+                //     { NumberOfPayment: "PLAN C3", Amount: tuitionForm.amountC3, DateOfPayment: tuitionForm.dateOfPaymentC3 },
+                //     { NumberOfPayment: "PLAN D1", Amount: tuitionForm.amountD1, DateOfPayment: tuitionForm.dateOfPaymentD1 },
+                //     { NumberOfPayment: "PLAN D2", Amount: tuitionForm.amountD2, DateOfPayment: tuitionForm.dateOfPaymentD2 },
+                //     { NumberOfPayment: "PLAN D3", Amount: tuitionForm.amountD3, DateOfPayment: tuitionForm.dateOfPaymentD3 },
+                //     { NumberOfPayment: "PLAN D4", Amount: tuitionForm.amountD4, DateOfPayment: tuitionForm.dateOfPaymentD4 },
+                // ];
+                // const planHeader = {
+                //     PlanName: 
+                // }
+
+                // payload = {
+                //     TempName: tuitionForm.tempName,
+                //     LevelId: tuitionForm.levelId,
+                //     CreatedByUserId: currentUserId,
+                //     TuitionFeeDtoChildDto: plans,
+                //     TuitionFeeHeaderDto: plans
+                // };
+                const planHeaders = [
+                    {
+                        PlanName: "PLAN A",
+                        PaymentDtos: [
+                            {
+                                NumberOfPayment: "1st Payment",
+                                Amount: tuitionForm.amountA,
+                                DateOfPayment: tuitionForm.dateOfPaymentA
+                            }
+                        ]
+                    },
+                    {
+                        PlanName: "PLAN B",
+                        PaymentDtos: [
+                            {
+                                NumberOfPayment: "1st Payment",
+                                Amount: tuitionForm.amountB1,
+                                DateOfPayment: tuitionForm.dateOfPaymentB1
+                            },
+                            {
+                                NumberOfPayment: "2nd Payment",
+                                Amount: tuitionForm.amountB2,
+                                DateOfPayment: tuitionForm.dateOfPaymentB2
+                            }
+                        ]
+                    },
+                    {
+                        PlanName: "PLAN C",
+                        PaymentDtos: [
+                            {
+                                NumberOfPayment: "1st Payment",
+                                Amount: tuitionForm.amountC1,
+                                DateOfPayment: tuitionForm.dateOfPaymentC1
+                            },
+                            {
+                                NumberOfPayment: "2nd Payment",
+                                Amount: tuitionForm.amountC2,
+                                DateOfPayment: tuitionForm.dateOfPaymentC2
+                            },
+                            {
+                                NumberOfPayment: "3rd Payment",
+                                Amount: tuitionForm.amountC3,
+                                DateOfPayment: tuitionForm.dateOfPaymentC3
+                            }
+                        ]
+                    },
+                    {
+                        PlanName: "PLAN D",
+                        PaymentDtos: [
+                            {
+                                NumberOfPayment: "1st Payment",
+                                Amount: tuitionForm.amountD1,
+                                DateOfPayment: tuitionForm.dateOfPaymentD1
+                            },
+                            {
+                                NumberOfPayment: "2nd Payment",
+                                Amount: tuitionForm.amountD2,
+                                DateOfPayment: tuitionForm.dateOfPaymentD2
+                            },
+                            {
+                                NumberOfPayment: "3rd Payment",
+                                Amount: tuitionForm.amountD3,
+                                DateOfPayment: tuitionForm.dateOfPaymentD3
+                            },
+                            {
+                                NumberOfPayment: "4th Payment",
+                                Amount: tuitionForm.amountD4,
+                                DateOfPayment: tuitionForm.dateOfPaymentD4
+                            }
+                        ]
+                    }
                 ];
 
                 payload = {
                     TempName: tuitionForm.tempName,
                     LevelId: tuitionForm.levelId,
                     CreatedByUserId: currentUserId,
-                    TuitionFeeDtoChildDto: plans
+                    TuitionFeeDtoChildDto: planHeaders
                 };
                 console.log(payload);
                 res = await dispatch(fetchInsertTuitioFeeData(payload));

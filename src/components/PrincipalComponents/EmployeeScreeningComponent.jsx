@@ -52,6 +52,7 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
             Nickname: "",
             Position: "",
             SetPositionName: null,
+            Remarks: "",
         }
     });
 

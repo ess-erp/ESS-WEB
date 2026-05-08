@@ -14,7 +14,7 @@ import {
 } from "../../states/CfwState/Action";
 import {
     fetchUserRoleData,
-    fetchInsertCriteriaTemplateData,
+    fetchInsertTemplateTableData,
     fetchHrTemplateData,
 } from '../../states/HumanResourcesState/Action';
 
@@ -74,6 +74,12 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         switch (type) {
             case "CRITERIA":
                 return "Criteria Template Table";
+            case "DEPARTMENT":
+                return "Department Template Table";
+            case "POSITION":
+                return "Position Template Table";
+            case "GOLDENRANK":
+                return "Golden Rank Template Table";
             default:
                 return "—";
         }
@@ -145,7 +151,10 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
 
     const tempList = [
         { id: 1, TempType: "Criteria Template Table" },
-        { id: 2, TempType: "Other Template Table" }
+        { id: 2, TempType: "Department Template Table" },
+        { id: 3, TempType: "Position Template Table" },
+        { id: 4, TempType: "Golden Rank Template Table" },
+        { id: 5, TempType: "Other Template Table" }
     ];
 
     const {
@@ -159,17 +168,32 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         defaultValues: {
             TempName: "",
             UserRoleId: "",
-            CriteriaChildDtos: []
+            TemplateChildDtos: []
         }
     });
     const selectedTemplate = watch("TempType");
-    const { fields: criteriaFields, append, remove } = useFieldArray({
+    const { fields: templateFields, append, remove } = useFieldArray({
         control,
-        name: "CriteriaChildDtos"
+        name: "TemplateChildDtos"
     });
     useEffect(() => {
-        if (selectedTemplate?.id === 1 && criteriaFields.length === 0) {
-            append({ CriteriaName: "", Remarks: "" });
+        // if (selectedTemplate?.id === 1 && templateFields.length === 0) {
+        //     append({ CriteriaName: "", Remarks: "" });
+        // }
+
+        switch (selectedTemplate?.id) {
+            case 1:
+                append({ CriteriaName: "", Remarks: "" });
+                break;
+            case 2:
+                append({ DepartmentCode: "", DepartmentName: "", Remarks: "" });
+                break;
+            case 3:
+                append({ PositionCode: "", PositionName: "", Remarks: "" });
+                break;
+            case 4:
+                append({ GoldenRankCode: "", GolderRankName: "", Remarks: "" });
+                break;
         }
     }, [selectedTemplate]);
 
@@ -235,23 +259,119 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         setPayload(data);
         setIsWarningModal(true);
     };
-
     const handleSubmitModal = async () => {
-        const {
-            TempType,
-            ...rest
-        } = payload;
-        const formData = {
-            ...rest,
-            CreatedByUserId: currentUserId,
-        };
+        const { TempType, TemplateChildDtos, ...rest } = payload;
 
-        const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
-        if (res.ok) {
-            console.log(res);
+        let formattedChildren = [];
+
+        switch (TempType?.id) {
+            case 1: // CRITERIA
+                formattedChildren = TemplateChildDtos.map(item => ({
+                    CriteriaName: item.CriteriaName,
+                    Remarks: item.Remarks
+                }));
+                break;
+
+            case 2: // DEPARTMENT
+                formattedChildren = TemplateChildDtos.map(item => ({
+                    DepartmentCode: item.DepartmentCode,
+                    DepartmentName: item.DepartmentName,
+                    Remarks: item.Remarks
+                }));
+                break;
+
+            case 3: // POSITION
+                formattedChildren = TemplateChildDtos.map(item => ({
+                    PositionCode: item.PositionCode,
+                    PositionName: item.PositionName,
+                    Remarks: item.Remarks
+                }));
+                break;
+
+            case 4: // GOLDEN RANK
+                formattedChildren = TemplateChildDtos.map(item => ({
+                    GoldenRankCode: item.GoldenRankCode,
+                    GoldenRankName: item.GoldenRankName,
+                    Remarks: item.Remarks
+                }));
+                break;
         }
-        console.log(formData);
+
+
+        let formData = {};
+        switch (TempType?.id) {
+            case 1: // CRITERIA
+                formData = {
+                    TempName: rest.TempName,
+                    TempId: TempType?.id,
+                    UserRoleId: rest.UserRoleId,
+                    CreatedByUserId: currentUserId,
+                    CriteriaChildDtos: formattedChildren,
+                };
+                break;
+
+            case 2: // DEPARTMENT
+                formData = {
+                    TempName: rest.TempName,
+                    TempId: TempType?.id,
+                    CreatedByUserId: currentUserId,
+                    DepartmentChildDtos: formattedChildren,
+                };
+                break;
+
+            case 3: // POSITION
+                formData = {
+                    TempName: rest.TempName,
+                    TempId: TempType?.id,
+                    CreatedByUserId: currentUserId,
+                    PositionChildDtos: formattedChildren,
+                };
+                break;
+
+            case 4: // GOLDEN RANK
+                formData = {
+                    TempName: rest.TempName,
+                    TempId: TempType?.id,
+                    CreatedByUserId: currentUserId,
+                    GoldenRankChildDtos: formattedChildren,
+                };
+                break;
+
+            default:
+                formData = {};
+        }
+
+
+        console.log("FINAL PAYLOAD:", formData);
+
+        // const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
+        const res = await dispatch(fetchInsertTemplateTableData(formData));
+        if (res.ok) {
+            setIsSuccessModalOpen(true);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
     };
+    // const handleSubmitModal = async () => {
+    //     const {
+    //         TempType,
+    //         ...rest
+    //     } = payload;
+    //     const formData = {
+    //         ...rest,
+    //         CreatedByUserId: currentUserId,
+    //     };
+
+    //     // const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
+    //     // if (res.ok) {
+    //     //     setIsSuccessModalOpen(true);
+    //     //     if (isSuccessModalOpen == false) {
+    //     //         setTimeout(() => window.location.reload(), 3000);
+    //     //     }
+    //     // }
+    //     console.log(formData);
+    // };
 
 
     return (
@@ -316,7 +436,6 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                                 error={errors.TempType}
                                             />
                                         </div>
-
                                     </div>
 
                                     {selectedTemplate?.id === 1 && (
@@ -365,22 +484,22 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                                     )}
                                                 />
                                             </div>
-                                            {criteriaFields.map((field, index) => (
+                                            {templateFields.map((field, index) => (
                                                 <div
                                                     key={field.id}
                                                     className="flex gap-2 mb-2 items-end"
                                                 >
                                                     <div className="flex-1">
                                                         <InputField
-                                                            name={`CriteriaChildDtos.${index}.CriteriaName`}
+                                                            name={`TemplateChildDtos.${index}.CriteriaName`}
                                                             label="Name of Criteria"
                                                             register={register}
                                                             isEditing={true}
                                                             placeholder="Please input name of criteria...."
                                                             required
-                                                            errors={errors?.TemplateDetails?.[index]?.CriteriaName}
+                                                            errors={errors?.TemplateChildDtos?.[index]?.CriteriaName}
                                                             errorMessage={
-                                                                errors?.TemplateDetails?.[index]?.CriteriaName?.message
+                                                                errors?.TemplateChildDtos?.[index]?.CriteriaName?.message
                                                             }
                                                         />
                                                     </div>
@@ -396,7 +515,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                                     </div>
 
                                                     {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
-                                                    {criteriaFields.length > 1 && (
+                                                    {templateFields.length > 1 && (
                                                         <div className="mb-2">
                                                             <button
                                                                 type="button"
@@ -426,6 +545,279 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                             </div>
                                         </div>
                                     )}
+                                    {selectedTemplate?.id === 2 && (
+                                        <div>
+                                            <div className="flex gap-2 mb-2 justify-center">
+                                                <InputField
+                                                    name="TempName"
+                                                    label="Name of Template"
+                                                    register={register}
+                                                    isEditing={true}
+                                                    placeholder="Please input name of template...."
+                                                    divClassName=""
+                                                    required
+                                                    errors={errors.TempName}
+                                                    errorMessage={errors.TempName?.message}
+                                                />
+                                            </div>
+                                            {templateFields.map((field, index) => (
+                                                <div
+                                                    key={field.id}
+                                                    className="flex gap-2 mb-2 items-end"
+                                                >
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.DepartmentCode`}
+                                                            label="Department Code"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input department code...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.DepartmentCode}
+                                                            errorMessage={
+                                                                errors?.TemplateChildDtos?.[index]?.DepartmentCode?.message
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.DepartmentName`}
+                                                            label="Name of Department"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input name of department...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.DepartmentName}
+                                                            errorMessage={
+                                                                errors?.TemplateChildDtos?.[index]?.DepartmentName?.message
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.Remarks`}
+                                                            label="Remarks"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input remarks...."
+                                                        />
+                                                    </div>
+
+                                                    {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
+                                                    {templateFields.length > 1 && (
+                                                        <div className="mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => remove(index)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded h-fit"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-end mb-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        append({
+                                                            DepartmentCode: "",
+                                                            DepartmentName: "",
+                                                            Remarks: ""
+                                                        })
+                                                    }
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    + Add Row
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {selectedTemplate?.id === 3 && (
+                                        <div>
+                                            <div className="flex gap-2 mb-2 justify-center">
+                                                <InputField
+                                                    name="TempName"
+                                                    label="Name of Template"
+                                                    register={register}
+                                                    isEditing={true}
+                                                    placeholder="Please input name of template...."
+                                                    divClassName=""
+                                                    required
+                                                    errors={errors.TempName}
+                                                    errorMessage={errors.TempName?.message}
+                                                />
+                                            </div>
+                                            {templateFields.map((field, index) => (
+                                                <div
+                                                    key={field.id}
+                                                    className="flex gap-2 mb-2 items-end"
+                                                >
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.PositionCode`}
+                                                            label="Position Code"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input position code...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.PositionCode}
+                                                            errorMessage={
+                                                                errors?.TemplateChildDtos?.[index]?.PositionCode?.message
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.PositionName`}
+                                                            label="Name of Position"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input name of position...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.PositionName}
+                                                            errorMessage={
+                                                                errors?.TemplateChildDtos?.[index]?.PositionName?.message
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.Remarks`}
+                                                            label="Remarks"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input remarks...."
+                                                        />
+                                                    </div>
+
+                                                    {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
+                                                    {templateFields.length > 1 && (
+                                                        <div className="mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => remove(index)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded h-fit"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-end mb-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        append({
+                                                            PositionCode: "",
+                                                            PositionName: "",
+                                                            Remarks: ""
+                                                        })
+                                                    }
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    + Add Row
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {selectedTemplate?.id === 4 && (
+                                        <div>
+                                            <div className="flex gap-2 mb-2 justify-center">
+                                                <InputField
+                                                    name="TempName"
+                                                    label="Name of Template"
+                                                    register={register}
+                                                    isEditing={true}
+                                                    placeholder="Please input name of template...."
+                                                    divClassName=""
+                                                    required
+                                                    errors={errors.TempName}
+                                                    errorMessage={errors.TempName?.message}
+                                                />
+                                            </div>
+                                            {templateFields.map((field, index) => (
+                                                <div
+                                                    key={field.id}
+                                                    className="flex gap-2 mb-2 items-end"
+                                                >
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.GoldenRankCode`}
+                                                            label="Golden Rank Code"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input golder rank code...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.GoldenRankCode}
+                                                            errorMessage={
+                                                                errors?.TemplateDetails?.[index]?.GoldenRankCode?.message
+                                                            }
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.GoldenRankName`}
+                                                            label="Name of Golden Rank"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input name of golden rank...."
+                                                            required
+                                                            errors={errors?.TemplateChildDtos?.[index]?.GoldenRankName}
+                                                            errorMessage={
+                                                                errors?.TemplateChildDtos?.[index]?.GoldenRankName?.message
+                                                            }
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex-1">
+                                                        <InputField
+                                                            name={`TemplateChildDtos.${index}.Remarks`}
+                                                            label="Remarks"
+                                                            register={register}
+                                                            isEditing={true}
+                                                            placeholder="Please input remarks...."
+                                                        />
+                                                    </div>
+
+                                                    {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
+                                                    {templateFields.length > 1 && (
+                                                        <div className="mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => remove(index)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded h-fit"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-end mb-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        append({
+                                                            GoldenRankCode: "",
+                                                            GoldenRankName: "",
+                                                            Remarks: ""
+                                                        })
+                                                    }
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    + Add Row
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </form>
                         </>
@@ -444,7 +836,7 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                     body={<p>Are you sure you want to submit?</p>}
                     buttons={[
                         { label: "Ok", type: "green", onClick: handleSubmitModal },
-                        { label: "Cancel", type: "red", onClick: () => setIsSuccessModalOpen(false) }
+                        { label: "Cancel", type: "red", onClick: () => setIsWarningModal(false) }
                     ]}
                 />
                 <ModalComponent

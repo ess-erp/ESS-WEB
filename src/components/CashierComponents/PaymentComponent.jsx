@@ -290,7 +290,7 @@ const PaymentComponent = () => {
                 {
                     OrChildId: orNumberData.OrChildId,
                     OrNumberUsed: orNumberData.LastOrNoUsed,
-                    Amount: priceToUse.toString(),  // ✅ use priceToUse
+                    Amount: priceToUse.toString(), 
                 },
             ],
         };

@@ -3,7 +3,7 @@ import {
     FETCH_EMPLOYEE_APPLICATION_INFO_REQUEST, FETCH_EMPLOYEE_APPLICATION_INFO_SUCCESS, FETCH_EMPLOYEE_APPLICATION_INFO_FAILURE,
     FETCH_INSERT_HIRING_PROCESS_REQUEST, FETCH_INSERT_HIRING_PROCESS_SUCCESS, FETCH_INSERT_HIRING_PROCESS_FAILURE,
     FETCH_USER_ROLE_REQUEST, FETCH_USER_ROLE_SUCCESS, FETCH_USER_ROLE_FAILURE,
-    FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST, FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS, FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE,
+    FETCH_INSERT_TEMPLATE_TABLE_REQUEST, FETCH_INSERT_TEMPLATE_TABLE_SUCCESS, FETCH_INSERT_TEMPLATE_TABLE_FAILURE,
     FETCH_HR_TEMPLATE_REQUEST, FETCH_HR_TEMPLATE_SUCCESS, FETCH_HR_TEMPLATE_FAILURE,
     FETCH_EMPLOYEE_APPLICATION_SCREENING_REQUEST, FETCH_EMPLOYEE_APPLICATION_SCREENING_SUCCESS, FETCH_EMPLOYEE_APPLICATION_SCREENING_FAILURE,
     FETCH_CRITERIA_TABLE_REQUEST, FETCH_CRITERIA_TABLE_SUCCESS, FETCH_CRITERIA_TABLE_FAILURE,
@@ -11,7 +11,10 @@ import {
     FETCH_AP_USER_REQUEST, FETCH_AP_USER_SUCCESS, FETCH_AP_USER_FAILURE,
     FETCH_PRINCIPAL_USER_REQUEST, FETCH_PRINCIPAL_USER_SUCCESS, FETCH_PRINCIPAL_USER_FAILURE,
     FETCH_UPDATE_EMPLOYEE_SCREENING_REQUEST, FETCH_UPDATE_EMPLOYEE_SCREENING_SUCCESS, FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE,
-    FETCH_EMPLOYEE_FULL_SCREENING_REQUEST, FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS, FETCH_EMPLOYEE_FULL_SCREENING_FAILURE,
+    FETCH_DEPARTMENT_TEMPLATE_REQUEST, FETCH_DEPARTMENT_TEMPLATE_SUCCESS, FETCH_DEPARTMENT_TEMPLATE_FAILURE,
+    FETCH_POSITION_TEMPLATE_REQUEST, FETCH_POSITION_TEMPLATE_SUCCESS, FETCH_POSITION_TEMPLATE_FAILURE,
+    FETCH_GOLDEN_RANK_TEMPLATE_REQUEST, FETCH_GOLDEN_RANK_TEMPLATE_SUCCESS, FETCH_GOLDEN_RANK_TEMPLATE_FAILURE,
+    FETCH_INSERT_HIRED_EMPLOYEE_REQUEST, FETCH_INSERT_HIRED_EMPLOYEE_SUCCESS, FETCH_INSERT_HIRED_EMPLOYEE_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -26,7 +29,7 @@ const initialGeneralState = {
     employeeInfoState: { ...initialState },
     insertHiringProcessState: { ...initialState },
     userRoleState: { ...initialState },
-    insertCriteriaTemplateState: { ...initialState },
+    insertTemplateState: { ...initialState },
     hrTemplateState: { ...initialState },
     employeeScreeningState: { ...initialState },
     criteriaTableState: { ...initialState },
@@ -34,7 +37,10 @@ const initialGeneralState = {
     apUserState: { ...initialState },
     principalUserState: { ...initialState },
     updateEmployeeScreeningState: { ...initialState },
-    employeeFullScreeningState: { ...initialState },
+    departmentState: { ...initialState },
+    positionState: { ...initialState },
+    goldenRankState: { ...initialState },
+    insertHiredEmployeeState: { ...initialState },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -69,12 +75,12 @@ const hrReducer = (state = initialGeneralState, action) => {
         case FETCH_USER_ROLE_FAILURE:
             return { ...state, userRoleState: { loading: false, data: [], error: action.payload } };
 
-        case FETCH_INSERT_CRITERIA_TEMPLATE_REQUEST:
-            return { ...state, insertCriteriaTemplateState: { loading: true, data: [], error: '' } };
-        case FETCH_INSERT_CRITERIA_TEMPLATE_SUCCESS:
-            return { ...state, insertCriteriaTemplateState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_INSERT_CRITERIA_TEMPLATE_FAILURE:
-            return { ...state, insertCriteriaTemplateState: { loading: false, data: [], error: action.payload } };
+        case FETCH_INSERT_TEMPLATE_TABLE_REQUEST:
+            return { ...state, insertTemplateState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_TEMPLATE_TABLE_SUCCESS:
+            return { ...state, insertTemplateState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_TEMPLATE_TABLE_FAILURE:
+            return { ...state, insertTemplateState: { loading: false, data: [], error: action.payload } };
 
         case FETCH_HR_TEMPLATE_REQUEST:
             return { ...state, hrTemplateState: { loading: true, data: [], error: '' } };
@@ -125,12 +131,33 @@ const hrReducer = (state = initialGeneralState, action) => {
         case FETCH_UPDATE_EMPLOYEE_SCREENING_FAILURE:
             return { ...state, updateEmployeeScreeningState: { loading: false, data: [], error: action.payload } };
 
-        case FETCH_EMPLOYEE_FULL_SCREENING_REQUEST:
-            return { ...state, employeeFullScreeningState: { loading: true, data: [], error: '' } };
-        case FETCH_EMPLOYEE_FULL_SCREENING_SUCCESS:
-            return { ...state, employeeFullScreeningState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_EMPLOYEE_FULL_SCREENING_FAILURE:
-            return { ...state, employeeFullScreeningState: { loading: false, data: [], error: action.payload } };
+        case FETCH_DEPARTMENT_TEMPLATE_REQUEST:
+            return { ...state, departmentState: { loading: true, data: [], error: '' } };
+        case FETCH_DEPARTMENT_TEMPLATE_SUCCESS:
+            return { ...state, departmentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_DEPARTMENT_TEMPLATE_FAILURE:
+            return { ...state, departmentState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_POSITION_TEMPLATE_REQUEST:
+            return { ...state, positionState: { loading: true, data: [], error: '' } };
+        case FETCH_POSITION_TEMPLATE_SUCCESS:
+            return { ...state, positionState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_POSITION_TEMPLATE_FAILURE:
+            return { ...state, positionState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_GOLDEN_RANK_TEMPLATE_REQUEST:
+            return { ...state, goldenRankState: { loading: true, data: [], error: '' } };
+        case FETCH_GOLDEN_RANK_TEMPLATE_SUCCESS:
+            return { ...state, goldenRankState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GOLDEN_RANK_TEMPLATE_FAILURE:
+            return { ...state, goldenRankState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_HIRED_EMPLOYEE_REQUEST:
+            return { ...state, insertHiredEmployeeState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_HIRED_EMPLOYEE_SUCCESS:
+            return { ...state, insertHiredEmployeeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_HIRED_EMPLOYEE_FAILURE:
+            return { ...state, insertHiredEmployeeState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

@@ -6,8 +6,10 @@ import InputField from "../ButtonsComponents/InputField";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import DataTable from "react-data-table-component";
 import RadioGroupField from "../ButtonsComponents/RadioGroupField";
+import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import {
     fetchCampusData,
+    fetchDivisionData,
 } from "../../states/OnlineApplicationState/Action";
 import {
     fetchEmployeeApplicationInfoData,
@@ -17,7 +19,11 @@ import {
     fetchApUserData,
     fetchPrincipalUserData,
     fetchUpdateEmployeeScreeningData,
-    fetchEmployeeFullScreeningData,
+    fetchDepartmentTemplateData,
+    fetchPositionTemplateData,
+    fetchGoldenRankTemplateData,
+    fetchInsertHiredEmployeeData,
+    // fetchEmployeeFullScreeningData,
 } from "../../states/HumanResourcesState/Action";
 
 const customStyles = {
@@ -122,7 +128,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             EmployeeNumber: employeScreeningData.EmployeeNumber ?? "",
             WorkExperience: employeScreeningData.WorkExperience ?? "",
             NoOfYearMonth: employeScreeningData.NoOfYearMonth ?? "",
-            Remarks: employeScreeningData.Remarks ?? "",
+            Remarks: "",
+            Recommendation: "",
             Campus: null,
             SetPosition: null,
             SetPositionName: null,
@@ -166,7 +173,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
     const selectedApplicationType = watch("ApplicationType");
     const selectedWorkExperience = watch("WorkExperience");
 
-
     const [criteriaList, setCriteriaList] = useState([]);
     const criteriaTableState = useSelector((state) => state.hr.criteriaTableState || {});
     const criteriaTable = criteriaTableState.data.data || [];
@@ -174,20 +180,16 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
     const criteriaTableLoading = criteriaTableState.loading || false;
     const [criteriaTableCurrentPage, setCriteriaTableCurrentPage] = useState(1);
     const [criteriaTableRowsPerPage, setCriteriaTableRowsPerPage] = useState(10);
-
+    const [isRatingExist, setIsRatingExist] = useState(false);
     useEffect(() => {
-        dispatch(fetchCriteriaTableData(criteriaTableCurrentPage, criteriaTableRowsPerPage));
-    }, [criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
+        dispatch(fetchCriteriaTableData(employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
+    }, [employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
-    // useEffect(() => {
-    //     if (criteriaTable.length == 0) return;
-    //     setCriteriaList(criteriaTable);
-    // }, [criteriaTable]);
     useEffect(() => {
         if (!criteriaTable.length) return;
 
         let nameOrderMap = null;
-        // if(criteria)
+
         if (employeeData?.SetPositionName == "Faculty") {
             nameOrderMap = {
                 "Initial Interview": 1,
@@ -195,31 +197,81 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                 "Assistant Principal Interview": 3,
                 "Principal Interview": 4
             };
-        }
-        else {
+        } else {
             nameOrderMap = {
                 "Initial Interview": 1,
                 "Department Head Interview": 2
             };
         }
 
-        const flattened = criteriaTable
-            .sort((a, b) =>
-                nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
-            )
-            .flatMap(master =>
-                master.CriteriaChildTableDtos.map(child => ({
-                    ...child,
-                    CriteriaId: master.CriteriaId,
-                    CriteriaTempName: master.CriteriaTempName
-                }))
-            );
+        const hasRatings = criteriaTable.some(master =>
+            master.CriteriaChildTableDtos.some(child => child.Rating != null)
+        );
+
+        console.log(hasRatings);
+        let flattened = [];
+
+        if (!hasRatings) {
+
+            flattened = criteriaTable
+                .sort((a, b) =>
+                    nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
+                )
+                .flatMap(master =>
+                    master.CriteriaChildTableDtos.map(child => ({
+                        ...child,
+                        CriteriaId: master.CriteriaId,
+                        CriteriaTempName: master.CriteriaTempName
+                    }))
+                );
+            setIsRatingExist(false);
+        } else {
+            flattened = criteriaTable
+                .sort((a, b) =>
+                    nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
+                )
+                .flatMap(master =>
+                    master.CriteriaChildTableDtos.map(child => ({
+                        ...child,
+                        CriteriaId: master.CriteriaId,
+                        CriteriaTempName: master.CriteriaTempName,
+                        Rating: child.Rating // 👈 important
+                    }))
+                );
+            setIsRatingExist(true);
+        }
 
         setCriteriaList(flattened);
-        console.log(flattened);
-        console.log(criteriaTable);
 
+    }, [criteriaTable, employeeData]);
+    useEffect(() => {
+        if (!criteriaTable.length) return;
+
+        const initialRatings = {};
+
+        criteriaTable.forEach(master => {
+            master.CriteriaChildTableDtos.forEach(child => {
+                if (child.Rating != null) {
+                    initialRatings[child.CriteriaChildId] = Number(child.Rating);
+                }
+            });
+        });
+
+        setRatings(initialRatings);
     }, [criteriaTable]);
+
+    useEffect(() => {
+        if (!criteriaTable.length) return;
+
+        criteriaTable.forEach(criteria => {
+            setValue(`Recommendation_${criteria.CriteriaId}`, criteria.Recommendation || "");
+            setValue(`Remarks_${criteria.CriteriaId}`, criteria.Remarks || "");
+            setValue(`UserFullname_${criteria.CriteriaId}`, criteria.UserFullname || "");
+            setValue(`DateCreated_${criteria.CriteriaId}`, criteria.DateCreated || "");
+        });
+
+    }, [criteriaTable, setValue]);
+
 
     console.log(criteriaTable);
 
@@ -315,52 +367,10 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         return "PrincipalUser";
     };
 
-    const [screeningCriteriaList, setScreeningCriteriaList] = useState([]);
-    const employeeFullScreeningState = useSelector((state) => state.hr.employeeFullScreeningState || {});
-    const screeningCriteriaTable = employeeFullScreeningState.data.data || [];
-    const screeningCriteriaTableTotalRows = employeeFullScreeningState.data.totalRecords || 0;
-    const screeningCriteriaTableLoading = employeeFullScreeningState.loading || false;
-    const [screeningCriteriaTableCurrentPage, setScreeningCriteriaTableCurrentPage] = useState(1);
-    const [screeningCriteriaTableRowsPerPage, setScreeningCriteriaTableRowsPerPage] = useState(10);
-
-    useEffect(() => {
-        if (!employeeAppId) return;
-
-        dispatch(
-            fetchEmployeeFullScreeningData(
-                employeeAppId,
-                screeningCriteriaTableCurrentPage,
-                screeningCriteriaTableRowsPerPage
-            )
-        );
-    }, [
-        dispatch,
-        employeeAppId,
-        screeningCriteriaTableCurrentPage,
-        screeningCriteriaTableRowsPerPage
-    ]);
-
-
-    // PRELOAD EXISTING RATINGS
-    useEffect(() => {
-        if (!screeningCriteriaTable.length) return;
-
-        const existingRatings = {};
-
-        screeningCriteriaTable.forEach(item => {
-            existingRatings[item.CriteriaChildId] = Number(item.Rating);
-        });
-
-        setRatings(existingRatings);
-
-        console.log("PRELOADED RATINGS:", existingRatings);
-
-    }, [screeningCriteriaTable]);
-
-
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [formData, setFormData] = useState(null);
+    const [isHiringModalOpen, setIsHiringModalOpen] = useState(false);
 
     const onSubmit = (data) => {
         setFormData(data);
@@ -384,7 +394,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         const CriteriaRatingDtos = [];
 
         criteriaTable.forEach(criteria => {
-            if (criteria.CriteriaTempName !== "Initial Interview") return; 
+            if (criteria.CriteriaTempName !== "Initial Interview") return;
 
             criteria.CriteriaChildTableDtos.forEach(child => {
                 if (ratings[child.CriteriaChildId]) {
@@ -408,7 +418,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     break;
 
                 case "Teaching Demonstration":
-                    userId = formData.ApUser?.UserId;
+                    userId = formData.SacUser?.UserId;
                     break;
 
                 case "Assistant Principal Interview":
@@ -440,9 +450,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             CampusId: formData.Campus?.CampusId,
             SetPositionName: formData.SetPosition?.SetPositionName,
             Recommendation: formData.Recommendation?.RecommendationName,
-            // SacUserId: formData.SacUser?.UserId,
-            // ApUserId: formData.ApUser?.UserId,
-            // PrincipalUserId: formData.PrincipalUser?.UserId,
             CreatedByUserId: currUserId,
             CriteriaRatingDtos: CriteriaRatingDtos,
             AssignRoleDtos: assignUsers
@@ -460,7 +467,84 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         }
     };
 
-    // console.log(employeeAppId);
+    useEffect(() => {
+        dispatch(fetchDepartmentTemplateData());
+        dispatch(fetchPositionTemplateData());
+        dispatch(fetchGoldenRankTemplateData());
+        dispatch(fetchDivisionData());
+    }, [dispatch])
+
+    const departmentList = useSelector((state) => state.hr.departmentState.data || []);
+    const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
+    const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
+    const divisionList = useSelector((state) => state.online.divisionState.data || []);
+    const [depList, setDepList] = useState([]);
+    const [posList, setPosList] = useState([]);
+    const [golList, setGolList] = useState([]);
+    const [divList, setDivList] = useState([]);
+
+    console.log(divisionList);
+
+    useEffect(() => {
+
+        const depMappedOptions = departmentList.map((i) => ({
+            value: i.DepChildId,
+            label: `${i.DepartmentCode} - ${i.DepartmentName}`,
+        }));
+        setDepList(depMappedOptions);
+
+        const posMappedOptions = positionStatusList.map((i) => ({
+            value: i.PosChildId,
+            label: `${i.PositionCode} - ${i.PositionName}`,
+        }));
+        setPosList(posMappedOptions);
+
+        const golMappedOptions = goldenRankList.map((i) => ({
+            value: i.GoldenRankChildId,
+            label: `${i.GoldenRankCode} - ${i.GoldenRankName}`,
+        }));
+        setGolList(golMappedOptions);
+
+        const divMappedOptions = divisionList.map((i) => ({
+            value: i.DivId,
+            label: i.DivName,
+        }));
+        setDivList(divMappedOptions);
+
+    }, [departmentList, positionStatusList, goldenRankList, divisionList]);
+
+    const advList = [
+        { value: "Yes", label: "Yes" },
+        { value: "No", label: "No" },
+    ];
+
+    const [hiringData, setHiringData] = useState({
+        DepartmentId: null,
+        DivId: null,
+        PositionId: null,
+        GoldenRankId: null,
+        IsAdviser: null,
+    });
+    const handleSubmitHiring = async () => {
+
+        const payload = {
+            EmployeeAppId: employeeAppId,
+            DepChildId: hiringData.DepartmentId,
+            DivId: hiringData.DivId,
+            PosChildId: hiringData.PositionId,
+            GoldenRankChildId: hiringData.GoldenRankId,
+        };
+
+        console.log(payload);
+
+        const res = await dispatch(fetchInsertHiredEmployeeData(payload));
+        if (res.ok) {
+            setIsSuccessModalOpen(true);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
+    };
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex items-center pt-4">
@@ -511,6 +595,12 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                         isEditing={!isEditing}
                         displayValue={employeeData.SetPositionName}
                     />
+                    {employeScreeningData?.DateHired != null && (
+                        <>
+                            <InputField name="DateHired" label="Date Hired" register={register} isEditing={false} displayValue={employeScreeningData?.DateHired} />
+                        </>
+                    )}
+
                 </div>
 
             </div>
@@ -578,7 +668,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                         label="Employee Number"
                         register={register}
                         isEditing={isEditing}
-                        displayValue={employeeData.EmployeeNumber}
+                        displayValue={employeeData?.EmployeeNumber ?? ""}
                     />
                 )}
 
@@ -631,7 +721,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                             <hr className="border-t border-gray-400" />
                         </div>
                     </div>
-                    {criteria.UserRoleId != 10 && (
+                    {/* {criteria.UserRoleId != 10 && (
                         <div className="flex justify-end items-end">
                             <div className="w-80">
                                 <RHFListbox
@@ -645,6 +735,27 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                                 />
                             </div>
                         </div>
+                    )} */}
+                    {!isRatingExist && (
+                        <>
+                            {criteria.UserRoleId != 10 && (
+                                <div className="flex justify-end items-end">
+                                    <div className="w-80">
+                                        <RHFListbox
+                                            name={getDropdownUser(criteria)}
+                                            control={control}
+                                            list={userLists[criteria.UserRoleId] || []}
+                                            label="Assign to"
+                                            labelKey={"Fullname"}
+                                            isEditing={false}
+                                            divClassName="w-full"
+                                        />
+                                    </div>
+                                </div>
+                            )
+                            }
+                        </>
+
                     )}
                     <div className="pt-4">
                         <DataTable
@@ -665,7 +776,58 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                             customStyles={customStyles}
                         />
                     </div>
-                    {criteria.UserRoleId == 10 && (
+                    {isRatingExist ? (
+                        <div className="grid grid-cols-4 gap-4 pt-4 items-end w-full">
+                            <InputField
+                                name={`Recommendation_${criteria.CriteriaId}`}
+                                label="Recommendation"
+                                register={register}
+                                isEditing={isEditing}
+                                displayValue={criteria.Recommendation}
+                            />
+                            <InputField
+                                name={`Remarks_${criteria.CriteriaId}`}
+                                label="Remarks"
+                                register={register}
+                                isEditing={isEditing}
+                                displayValue={criteria.Remarks}
+                            />
+                            <InputField
+                                name={`UserFullname_${criteria.CriteriaId}`}
+                                label="Submitted By"
+                                register={register}
+                                isEditing={isEditing}
+                                displayValue={criteria.UserFullname}
+                            />
+                            <InputField
+                                name={`DateCreated_${criteria.CriteriaId}`}
+                                label="Date Created"
+                                register={register}
+                                isEditing={isEditing}
+                                displayValue={criteria.UserFullname}
+                            />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
+                            <RHFListbox
+                                name="Recommendation"
+                                control={control}
+                                list={recommendationList}
+                                label="Recommendation"
+                                labelKey="RecommendationName"
+                                required
+                                isEditing={false}
+                            />
+                            <InputField
+                                name="Remarks"
+                                label="Remarks"
+                                register={register}
+                                isEditing={isEditing}
+                                displayValue={employeScreeningData.Remarks}
+                            />
+                        </div>
+                    )}
+                    {/* {criteria.UserRoleId == 10 && (
                         <>
                             <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
                                 <RHFListbox
@@ -686,17 +848,29 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                                 />
                             </div>
                         </>
-                    )}
+                    )} */}
                 </div>
             ))}
             <div className="flex justify-end items-end p-4">
                 {isEditing && (
-                    <button
-                        type="submit"
-                        className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition"
-                    >
-                        Submit
-                    </button>
+                    <>
+                        {isRatingExist && (
+                            <button
+                                type="button"
+                                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition m-1"
+                                onClick={() => setIsHiringModalOpen(true)}
+                            >
+                                Proceed to hiring
+                            </button>
+                        )}
+                        <button
+                            type="submit"
+                            className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition m-1"
+                        >
+                            Submit
+                        </button>
+                    </>
+
                 )}
 
             </div>
@@ -727,6 +901,91 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                         onClick: () => setIsSuccessModalOpen(false)
                     },
                 ]}
+            />
+            <ModalComponent
+                isOpen={isHiringModalOpen}
+                onClose={() => setIsHiringModalOpen(false)}
+                title={<span className="font-bold text-lg text-blue-700">For hiring process</span>}
+                body={
+                    <div>
+                        <div className="w-full flex justify-center pt-4">
+                            <div className="w-full max-w-[380px]">
+                                <SearchableSelect
+                                    options={advList}
+                                    value={advList.find(x => x.value === hiringData.IsAdviser)}
+                                    onChange={(selected) =>
+                                        setHiringData(prev => ({
+                                            ...prev,
+                                            IsAdviser: selected?.value || null
+                                        }))
+                                    }
+                                    placeholder="-- Select if Adviser or Non-Adviser --"
+                                    label="Select if Adviser or Non-Adviser"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-4 w-full">
+                            <SearchableSelect
+                                options={depList}
+                                value={depList.find(x => x.value === hiringData.DepartmentId)}
+                                onChange={(selected) =>
+                                    setHiringData(prev => ({
+                                        ...prev,
+                                        DepartmentId: selected?.value || null
+                                    }))
+                                }
+                                placeholder="-- Select Department --"
+                                label="Assign Department"
+                            />
+
+                            <SearchableSelect
+                                options={divList}
+                                value={divList.find(x => x.value === hiringData.DivId)}
+                                onChange={(selected) =>
+                                    setHiringData(prev => ({
+                                        ...prev,
+                                        DivId: selected?.value || null
+                                    }))
+                                }
+                                placeholder="-- Select Division --"
+                                label="Assign Division"
+                            />
+
+                            <SearchableSelect
+                                options={posList}
+                                value={posList.find(x => x.value === hiringData.PositionId)}
+                                onChange={(selected) =>
+                                    setHiringData(prev => ({
+                                        ...prev,
+                                        PositionId: selected?.value || null
+                                    }))
+                                }
+                                placeholder="-- Select Position --"
+                                label="Assign Position"
+                            />
+
+                            <SearchableSelect
+                                options={golList}
+                                value={golList.find(x => x.value === hiringData.GoldenRankId)}
+                                onChange={(selected) =>
+                                    setHiringData(prev => ({
+                                        ...prev,
+                                        GoldenRankId: selected?.value || null
+                                    }))
+                                }
+                                placeholder="-- Select Golden Ranking --"
+                                label="Assign Golden Ranking"
+                            />
+
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    { label: "Submit", type: "green", onClick: handleSubmitHiring, },
+                    { label: "Cancel", type: "red", onClick: () => setIsHiringModalOpen(false) },
+                ]}
+                size="w-[800px]"
+                maxHeight="100vh"
             />
         </form>
     );
