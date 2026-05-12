@@ -11,7 +11,12 @@ import {
     FETCH_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SUBJECT_SCHEDULE_TABLE_FAILURE,
     FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_FAILURE,
     FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE,
-    
+    FETCH_TEACHER_LIST_REQUEST, FETCH_TEACHER_LIST_SUCCESS, FETCH_TEACHER_LIST_FAILURE,
+    FETCH_TEACHER_TABLE_REQUEST, FETCH_TEACHER_TABLE_SUCCESS, FETCH_TEACHER_TABLE_FAILURE,
+    FETCH_ADVISER_NON_ADVISER_REQUEST, FETCH_ADVISER_NON_ADVISER_SUCCESS, FETCH_ADVISER_NON_ADVISER_FAILURE,
+    FETCH_TEACHER_ALREADY_ASSIGN_REQUEST, FETCH_TEACHER_ALREADY_ASSIGN_SUCCESS, FETCH_TEACHER_ALREADY_ASSIGN_FAILURE,
+    FETCH_INSERT_FACULTY_LOAD_REQUEST, FETCH_INSERT_FACULTY_LOAD_SUCCESS, FETCH_INSERT_FACULTY_LOAD_FAILURE,
+    FETCH_FACULTY_LOAD_TABLE_REQUEST, FETCH_FACULTY_LOAD_TABLE_SUCCESS, FETCH_FACULTY_LOAD_TABLE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -41,7 +46,7 @@ export const fetchInsertGeneralOfferedSubjectsData = (formData) => async (dispat
         dispatch(fetchInsertGeneralOfferedSubjectsSuccess(res));
         return { ok: true, data: res.data };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchInsertGeneralOfferedSubjectsFailure(error.message));
         return { ok: false, error };
     }
@@ -71,7 +76,7 @@ export const fetchGeneralOfferedSubjectData = (page, pageSize, search) => async 
         dispatch(fetchGeneralOfferedSubjectSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchGeneralOfferedSubjectFailure(error.message));
         return { ok: false, error };
     }
@@ -101,7 +106,7 @@ export const fetchInsertNonCurriculumSubjectData = (formData) => async (dispatch
         dispatch(fetchInsertNonCurriculumSubjectSuccess(res));
         return { ok: true, data: res.data };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchInsertNonCurriculumSubjectFailure(error.message));
         return { ok: false, error };
     }
@@ -131,7 +136,7 @@ export const fetchNonCurriculumSubjectData = (page, pageSize, search) => async (
         dispatch(fetchNonCurriculumSubjectSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchNonCurriculumSubjectFailure(error.message));
         return { ok: false, error };
     }
@@ -161,7 +166,7 @@ export const fetchSubjectScheduleLoadData = (page, pageSize, search) => async (d
         dispatch(fetchSubjectScheduleLoadSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchSubjectScheduleLoadFailure(error.message));
         return { ok: false, error };
     }
@@ -190,7 +195,7 @@ export const fetchSectionListData = () => async (dispatch) => {
         dispatch(fetchSectionListSuccess(res));
         return { ok: true, data: res };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchSectionListFailure(error.message));
         return { ok: false, error };
     }
@@ -219,7 +224,7 @@ export const fetchNonCurriculumData = (page, pageSize, search) => async (dispatc
         dispatch(fetchNonCurriculumSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchNonCurriculumFailure(error.message));
         return { ok: false, error };
     }
@@ -248,7 +253,7 @@ export const fetchCurriculumAndNonCurriculumSubjectData = (page, pageSize, searc
         dispatch(fetchCurriculumAndNonCurriculumSubjectSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchCurriculumAndNonCurriculumSubjectFailure(error.message));
         return { ok: false, error };
     }
@@ -278,7 +283,7 @@ export const fetchInsertSubjectScheduleData = (payload) => async (dispatch) => {
         dispatch(fetchInsertSubjectScheduleSuccess(res));
         return { ok: true, data: res.data };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchInsertSubjectScheduleFailure(error.message));
         return { ok: false, error };
     }
@@ -307,7 +312,7 @@ export const fetchSubjectScheduleTableData = (page, pageSize, search) => async (
         dispatch(fetchSubjectScheduleTableSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchSubjectScheduleTableFailure(error.message));
         return { ok: false, error };
     }
@@ -336,7 +341,7 @@ export const fetchMasterSubjectScheduleTableData = (mainSecId, page, pageSize, s
         dispatch(fetchMasterSubjectScheduleTableSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchMasterSubjectScheduleTableFailure(error.message));
         return { ok: false, error };
     }
@@ -365,8 +370,184 @@ export const fetchSectionSubjectScheduleTableData = (secId, page, pageSize, sear
         dispatch(fetchSectionSubjectScheduleTableSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
-    catch(error){
+    catch (error) {
         dispatch(fetchSectionSubjectScheduleTableFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchTeacherListRequest = () => ({ type: FETCH_TEACHER_LIST_REQUEST });
+export const fetchTeacherListSuccess = (data) => ({ type: FETCH_TEACHER_LIST_SUCCESS, payload: data });
+export const fetchTeacherListFailure = (error) => ({ type: FETCH_TEACHER_LIST_FAILURE, payload: error });
+
+export const fetchTeacherListData = (status) => async (dispatch) => {
+    dispatch(fetchTeacherListRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-teacher-list?status=${status}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchTeacherListSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchTeacherListFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchTeacherTableRequest = () => ({ type: FETCH_TEACHER_TABLE_REQUEST });
+export const fetchTeacherTableSuccess = (data) => ({ type: FETCH_TEACHER_TABLE_SUCCESS, payload: data });
+export const fetchTeacherTableFailure = (error) => ({ type: FETCH_TEACHER_TABLE_FAILURE, payload: error });
+
+export const fetchTeacherTableData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchTeacherTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-teacher-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchTeacherTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchTeacherTableFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+export const fetchInsertAdviserNonAdviserRequest = () => ({ type: FETCH_ADVISER_NON_ADVISER_REQUEST });
+export const fetchInsertAdviserNonAdviserSuccess = (data) => ({ type: FETCH_ADVISER_NON_ADVISER_SUCCESS, payload: data });
+export const fetchInsertAdviserNonAdviserFailure = (error) => ({ type: FETCH_ADVISER_NON_ADVISER_FAILURE, payload: error });
+
+export const fetchInsertAdviserNonAdviserData = (employeeId, assign) => async (dispatch) => {
+    dispatch(fetchInsertAdviserNonAdviserRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/insert-adviser-non-adviser?employeeId=${employeeId}&assign=${assign}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertAdviserNonAdviserSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertAdviserNonAdviserFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchTeacherAlreadyAssignRequest = () => ({ type: FETCH_TEACHER_ALREADY_ASSIGN_REQUEST });
+export const fetchTeacherAlreadyAssignSuccess = (data) => ({ type: FETCH_TEACHER_ALREADY_ASSIGN_SUCCESS, payload: data });
+export const fetchTeacherAlreadyAssignFailure = (error) => ({ type: FETCH_TEACHER_ALREADY_ASSIGN_FAILURE, payload: error });
+
+export const fetchTeacherAlreadyAssignData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchTeacherAlreadyAssignRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-teacher-already-assign?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchTeacherAlreadyAssignSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchTeacherAlreadyAssignFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchInsertFacultyLoadRequest = () => ({ type: FETCH_INSERT_FACULTY_LOAD_REQUEST });
+export const fetchInsertFacultyLoadSuccess = (data) => ({ type: FETCH_INSERT_FACULTY_LOAD_SUCCESS, payload: data });
+export const fetchInsertFacultyLoadFailure = (error) => ({ type: FETCH_INSERT_FACULTY_LOAD_FAILURE, payload: error });
+
+export const fetchInsertFacultyLoadData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertFacultyLoadRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/insert-faculty-load`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertFacultyLoadSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchInsertFacultyLoadFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchFacultyLoadTableRequest = () => ({ type: FETCH_FACULTY_LOAD_TABLE_REQUEST });
+export const fetchFacultyLoadTableSuccess = (data) => ({ type: FETCH_FACULTY_LOAD_TABLE_SUCCESS, payload: data });
+export const fetchFacultyLoadTableFailure = (error) => ({ type: FETCH_FACULTY_LOAD_TABLE_FAILURE, payload: error });
+
+export const fetchFacultyLoadTableData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchFacultyLoadTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-faculty-load-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchFacultyLoadTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchFacultyLoadTableFailure(error.message));
         return { ok: false, error };
     }
 };

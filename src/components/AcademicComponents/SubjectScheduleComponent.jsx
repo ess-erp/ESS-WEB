@@ -324,6 +324,14 @@ const SubjectScheduleLoadEntryComponent = () => {
                 setTimeout(() => window.location.reload(), 3000);
             }
         }
+        else if(res.Ok){
+            setIsSuccessModalOpen(true);
+            setSuccessModalBody("Done Creating Subject Schedule.");
+            setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 3000);
+            }
+        }
         else {
             setIsSuccessModalOpen(true);
             setSuccessModalTitle(<span className="font-bold text-lg text-red-700">Error</span>);

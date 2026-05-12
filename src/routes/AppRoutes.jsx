@@ -31,6 +31,7 @@ import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
 import AcadSubjectScheduleLoadEntry from "../pages/AcademicStaff/SubjectScheduleLoadEntry";
+import AcademicAdviserNonAdviser from "../pages/AcademicStaff/AssignAdviserNonAdviser";
 import HrDashboard from "../pages/HumanResources/Dashboard";
 import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
 import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
@@ -257,6 +258,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[6]}>
             <AcadSubjectScheduleLoadEntry />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/academic/assignadvisernonadviser"
+        element={
+          <ProtectedRoutes allowedRoles={[6]}>
+            <AcademicAdviserNonAdviser />
           </ProtectedRoutes>
         }
       />

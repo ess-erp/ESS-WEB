@@ -69,11 +69,11 @@ export const fetchCriteriaTableRequest = () => ({ type: FETCH_CRITERIA_TABLE_REQ
 export const fetchCriteriaTableSuccess = (data) => ({ type: FETCH_CRITERIA_TABLE_SUCCESS, payload: data });
 export const fetchCriteriaTableFailure = (error) => ({ type: FETCH_CRITERIA_TABLE_FAILURE, payload: error });
 
-export const fetchCriteriaTableData = (userId, page, pageSize) => async (dispatch) => {
+export const fetchCriteriaTableData = (employeeAppId,userId, page, pageSize) => async (dispatch) => {
     dispatch(fetchCriteriaTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/principal/get-criteria-table?userId=${userId}&page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/principal/get-criteria-table?employeeAppId${employeeAppId}&userId=${userId}&page=${page}&pageSize=${pageSize}`;
 
         const response = await fetch(url, {
             method: 'POST',

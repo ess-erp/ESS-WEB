@@ -16,7 +16,11 @@ const FacultyLoadEntry = () => {
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
-   
+    const slideVariants = {
+        initial: { opacity: 0, x: 40 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -40 }
+    };
     return (
         <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
             <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
@@ -49,6 +53,8 @@ const FacultyLoadEntry = () => {
                     <div className="mt-6 relative overflow-hidden">
                         <AnimatePresence mode="wait">
                             <motion.div
+                                // key={entryType}
+                                variants={slideVariants}
                                 initial="initial"
                                 animate="animate"
                                 exit="exit"

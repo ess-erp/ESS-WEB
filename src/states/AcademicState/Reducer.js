@@ -11,6 +11,12 @@ import {
     FETCH_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SUBJECT_SCHEDULE_TABLE_FAILURE,
     FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_MASTER_SUBJECT_SCHEDULE_TABLE_FAILURE,
     FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_REQUEST, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_SUCCESS, FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE,
+    FETCH_TEACHER_LIST_REQUEST, FETCH_TEACHER_LIST_SUCCESS, FETCH_TEACHER_LIST_FAILURE,
+    FETCH_TEACHER_TABLE_REQUEST, FETCH_TEACHER_TABLE_SUCCESS, FETCH_TEACHER_TABLE_FAILURE,
+    FETCH_ADVISER_NON_ADVISER_REQUEST, FETCH_ADVISER_NON_ADVISER_SUCCESS, FETCH_ADVISER_NON_ADVISER_FAILURE,
+    FETCH_TEACHER_ALREADY_ASSIGN_REQUEST, FETCH_TEACHER_ALREADY_ASSIGN_SUCCESS, FETCH_TEACHER_ALREADY_ASSIGN_FAILURE,
+    FETCH_INSERT_FACULTY_LOAD_REQUEST, FETCH_INSERT_FACULTY_LOAD_SUCCESS, FETCH_INSERT_FACULTY_LOAD_FAILURE,
+    FETCH_FACULTY_LOAD_TABLE_REQUEST, FETCH_FACULTY_LOAD_TABLE_SUCCESS, FETCH_FACULTY_LOAD_TABLE_FAILURE,
 } from "./ActionType";
 
 const initialDataState = {
@@ -33,6 +39,12 @@ const initialState = {
     subjectScheduleState: { ...initialDataState },
     masterSubjectScheduleState: { ...initialDataState },
     sectionSubjectScheduleState: { ...initialDataState },
+    teacherListState: { ...initialDataState },
+    teacherTableState: { ...initialDataState },
+    adviserNonAdviserState: { ...initialDataState },
+    teacherAlreadyAssignState: { ...initialDataState },
+    facultyLoadState: { ...initialDataState },
+    facultyLoadTableState: { ...initialDataState },
 };
 
 const academicReducer = (state = initialState, action) => {
@@ -123,6 +135,48 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, sectionSubjectScheduleState: { loading: false, data: action.payload, error: '' } };
         case FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE:
             return { ...state, sectionSubjectScheduleState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_TEACHER_LIST_REQUEST:
+            return { ...state, teacherListState: { loading: true, data: [], error: '' } };
+        case FETCH_TEACHER_LIST_SUCCESS:
+            return { ...state, teacherListState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_TEACHER_LIST_FAILURE:
+            return { ...state, teacherListState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_TEACHER_TABLE_REQUEST:
+            return { ...state, teacherTableState: { loading: true, data: [], error: '' } };
+        case FETCH_TEACHER_TABLE_SUCCESS:
+            return { ...state, teacherTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_TEACHER_TABLE_FAILURE:
+            return { ...state, teacherTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_ADVISER_NON_ADVISER_REQUEST:
+            return { ...state, adviserNonAdviserState: { loading: true, data: [], error: '' } };
+        case FETCH_ADVISER_NON_ADVISER_SUCCESS:
+            return { ...state, adviserNonAdviserState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ADVISER_NON_ADVISER_FAILURE:
+            return { ...state, adviserNonAdviserState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_TEACHER_ALREADY_ASSIGN_REQUEST:
+            return { ...state, teacherAlreadyAssignState: { loading: true, data: [], error: '' } };
+        case FETCH_TEACHER_ALREADY_ASSIGN_SUCCESS:
+            return { ...state, teacherAlreadyAssignState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_TEACHER_ALREADY_ASSIGN_FAILURE:
+            return { ...state, teacherAlreadyAssignState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_FACULTY_LOAD_REQUEST:
+            return { ...state, teacherAlreadyAssignState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_FACULTY_LOAD_SUCCESS:
+            return { ...state, teacherAlreadyAssignState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_FACULTY_LOAD_FAILURE:
+            return { ...state, teacherAlreadyAssignState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_FACULTY_LOAD_TABLE_REQUEST:
+            return { ...state, facultyLoadTableState: { loading: true, data: [], error: '' } };
+        case FETCH_FACULTY_LOAD_TABLE_SUCCESS:
+            return { ...state, facultyLoadTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_FACULTY_LOAD_TABLE_FAILURE:
+            return { ...state, facultyLoadTableState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

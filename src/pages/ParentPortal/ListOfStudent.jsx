@@ -13,12 +13,12 @@ const ListOfStudent = () => {
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
-    document.title = "List Of Student";
+    document.title = "List of Pending Student";
   }, []);
 
-  const breadcrumbItems = [ 
+  const breadcrumbItems = [
     { label: "Dashboard", href: "/parent/dashboard" },
-    { label: "List Of Student", href: "/parent/List-of-student" },
+    { label: "List of Pending Student", href: "/parent/List-of-student" },
   ];
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -45,18 +45,26 @@ const ListOfStudent = () => {
     <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
       <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
 
-      <div className="flex-1 bg-gray-50 px-6 py-4">
+      <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
-          <h2 className="text-2xl font-bold text-black mt-2">Enroll Student</h2>
+          <h2 className="text-sm font-bold text-black mt-2">
+            List of Pending Student
+          </h2>
         </div>
+        <hr className="border-t-1 border-solid border-gray-400 my-6" />
+        <section className="flex items-center justify-center h-[calc(100%-5rem)]">
+          <div className="flex flex-col space-y-4 h-full w-full">
 
-        <section className="flex flex-col items-center">
-          <div className="flex flex-col items-center space-y-6 w-full">
-            <h2 className="text-2xl font-bold text-green-700 text-[30px]">
-              List Of Student
-            </h2>
-
+            <div className="flex justify-center">
+              <h2 className="text-2xl font-bold text-green-500 mt-2">
+                List of Pending Student
+              </h2>
+            </div>
+            <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+              <strong className="font-bold">Note: </strong>
+              <span className="block sm:inline">This is the table of Online Application. Please click the button below to view the table.</span>
+            </div>
             {/* Status Buttons */}
             <div className="flex flex-wrap justify-center gap-4 mb-4">
               {statuses.map((status) => (

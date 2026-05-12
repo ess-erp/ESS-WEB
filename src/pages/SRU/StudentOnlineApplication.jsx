@@ -44,7 +44,7 @@ const StudentOnlineApplication = () => {
                             <strong className="font-bold">Note: </strong>
                             <span className="block sm:inline">Please click the button below to view the table.</span>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div>
                             <StudentDataTable />
                         </div>
                     </div>

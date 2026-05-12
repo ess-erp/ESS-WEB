@@ -4,12 +4,14 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
+import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
     fetchSectionListData,
     fetchSectionSubjectScheduleTableData,
-    fetchSubjectScheduleTableData,
-    fetchMasterSubjectScheduleTableData,
+    fetchTeacherListData,
+    fetchInsertFacultyLoadData,
+    fetchFacultyLoadTableData,
 } from "../../states/AcademicState/Action";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
@@ -22,55 +24,8 @@ const FacultyEntryComponent = () => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
     const userId = user?.UserId;
-
-    const [subjectScheduleList, setSubjectScheduleList] = useState([]);
-    const subjectScheduleState = useSelector((state) => state.academic.subjectScheduleState || {});
-    const subjectScheduleTable = subjectScheduleState.data.data || [];
-    const subjectScheduleTotalRows = subjectScheduleState.data.totalRecords || 0;
-    const subjectScheduleLoading = subjectScheduleState.loading || false;
-    const [subjectScheduleFilterText, setSubjectSchedulelFilterText] = useState('');
-    const [subjectScheduleCurrentPage, setSubjectScheduleCurrentPage] = useState(1);
-    const [subjectScheduleRowsPerPage, setSubjectScheduleRowsPerPage] = useState(10);
-
-    useEffect(() => {
-        dispatch(fetchSubjectScheduleTableData(subjectScheduleCurrentPage, subjectScheduleRowsPerPage, subjectScheduleFilterText));
-    }, [subjectScheduleCurrentPage, subjectScheduleRowsPerPage, subjectScheduleFilterText, dispatch]);
-
-    useEffect(() => {
-        if (subjectScheduleTable.length === 0) return;
-        setSubjectScheduleList(subjectScheduleTable);
-    }, [subjectScheduleTable]);
-
-    const subjectScheduleColumn = [
-        { name: 'Section', selector: row => row.SectionName, sortable: true },
-        { name: 'Year Level', selector: row => row.LevelName, sortable: true },
-        { name: 'Number of Subjects', selector: row => row.NumberOfSubjects, sortable: true },
-        { name: 'Date Created', selector: row => row.DateCreated, sortable: true },
-        {
-            name: "Action",
-            cell: row => (
-                <div className="flex gap-4 items-center">
-                    <button
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        onClick={() => openRowModal(row, "view")}
-                    >
-                        <Eye size={18} />
-                    </button>
-
-                    <button
-                        className="p-1 text-yellow-600 hover:text-yellow-800"
-                        onClick={() => openRowModal(row, "edit")}
-                    >
-                        <Pencil size={18} />
-                    </button>
-
-                    {/* <RowToggleComponent row={row} onToggle={handleToggleActive} /> */}
-                </div>
-
-            )
-        }
-    ];
-
+    const formatDate = getFormatDate;
+    const formatToAMPM = getFormatToAMPM;
 
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
@@ -84,7 +39,11 @@ const FacultyEntryComponent = () => {
     const [subjectRowsPerPage, setSubjectRowsPerPage] = useState(10);
     const [sectionList, setSectionList] = useState([]);
     const [selectedSection, setSelectedSection] = useState(null);
-    // const [selectedSection, setSelectedSection] = useState(null);
+    const teacherListData = useSelector((state) => state.academic.teacherListState.data || []);
+    const [adviserList, setAdviserList] = useState([]);
+    const [nonAdviserList, setNonAdviserList] = useState([]);
+    const [selectedAdviser, setSelectedAdviser] = useState("");
+    // const [select]
     const openAddNewModal = async () => {
         const res = await dispatch(fetchSectionListData());
         console.log(res);
@@ -97,6 +56,28 @@ const FacultyEntryComponent = () => {
 
             setSectionList(formatted);
             setAddNewModal(true);
+
+            const adviserRes = await dispatch(fetchTeacherListData("Adviser"));
+            const nonAdviserRes = await dispatch(fetchTeacherListData("Non-Adviser"));
+            console.log(adviserRes);
+            console.log(nonAdviserRes);
+            if (adviserRes?.ok) {
+                const adviserMapped = adviserRes.data.map(item => ({
+                    value: item.EmployeeId,
+                    label: `${item.Fname} ${item.Lname}`,
+                }));
+
+                setAdviserList(adviserMapped);
+            }
+
+            if (nonAdviserRes?.ok) {
+                const nonAdviserMapped = nonAdviserRes.data.map(item => ({
+                    value: item.EmployeeId,
+                    label: `${item.Fname} ${item.Lname}`,
+                }));
+
+                setNonAdviserList(nonAdviserMapped);
+            }
         }
     };
 
@@ -122,10 +103,18 @@ const FacultyEntryComponent = () => {
             name: 'Assign Teacher',
             cell: (row) => (
                 <SearchableSelect
-                    options={sectionList}
-                    value={selectedSection}
-                    onChange={(selected) => handleSelectedSection(selected)}
-                    placeholder="-- Select Section Type --"
+                    options={nonAdviserList}
+                    value={nonAdviserList.find(
+                        option =>
+                            option.value ===
+                            teacherAssignments.find(
+                                x => x.SubjectId === row.SubjectId
+                            )?.EmployeeId
+                    )}
+                    onChange={(selected) =>
+                        handleTeacherChange(row.SubjectId, selected)
+                    }
+                    placeholder="-- Select Teacher --"
                 />
             ),
             sortable: true,
@@ -157,161 +146,31 @@ const FacultyEntryComponent = () => {
         },
     ];
 
-    const [addedSubjects, setAddedSubjects] = useState([]);
+    const [teacherAssignments, setTeacherAssignments] = useState([]);
+    const handleTeacherChange = (subjectId, selected) => {
+        setTeacherAssignments(prev => {
+            const existing = prev.find(x => x.SubjectId === subjectId);
 
-    const handleAddSubject = (row) => {
-        const exists = addedSubjects.some(
-            s => s.RowId === row.RowId
-        );
-        if (exists) return;
-
-        setAddedSubjects(prev => [
-            ...prev,
-            {
-                RowId: row.RowId,
-                SubjectId: row.SubjectId,
-                SubjectCode: row.SubjectCode,
-                SubjectName: row.SubjectName,
-                SubjectType: row.SubjectType,
-                SubjectUnit: row.SubjectUnit,
-                term1: true,
-                term2: true,
-                term3: true,
-                Room: "",
-                StartTime: "",
-                EndTime: ""
+            if (existing) {
+                return prev.map(item =>
+                    item.SubjectId === subjectId
+                        ? {
+                            ...item,
+                            EmployeeId: selected?.value
+                        }
+                        : item
+                );
             }
-        ]);
 
-        setInactiveGeneralOfferedSubject(prev =>
-            prev.filter(s => s.RowId !== row.RowId)
-        );
+            return [
+                ...prev,
+                {
+                    SubjectId: subjectId,
+                    EmployeeId: selected?.value
+                }
+            ];
+        });
     };
-
-    const handleRemoveSubject = (row, index) => {
-        setAddedSubjects(prev =>
-            prev.filter((_, i) => i !== index)
-        );
-
-        setInactiveGeneralOfferedSubject(prev => [
-            ...prev,
-            {
-                SubjectCode: row.SubjectCode,
-                SubjectName: row.SubjectName,
-                SubjectType: row.SubjectType,
-                SubjectUnit: row.SubjectUnit,
-            }
-        ]);
-    };
-
-    const handleCheckboxChange = (index, field) => {
-        setAddedSubjects(prev =>
-            prev.map((item, i) =>
-                i === index
-                    ? { ...item, [field]: !item[field] }
-                    : item
-            )
-        );
-    };
-    const handleInputChange = (index, field, value) => {
-        setAddedSubjects(prev =>
-            prev.map((item, i) =>
-                i === index
-                    ? { ...item, [field]: value }
-                    : item
-            )
-        );
-    };
-    const addedColumns = [
-        {
-            name: "Subject Code",
-            selector: row => row.SubjectCode
-        },
-        {
-            name: "Subject Name",
-            selector: row => row.SubjectName
-        },
-        {
-            name: "Subject Type",
-            selector: row => row.SubjectType
-        },
-        {
-            name: "Room",
-            cell: (row, index) => (
-                <div>
-                    <input
-                        type="text"
-                        value={row.Room || ""}
-                        placeholder="Room"
-                        onChange={(e) =>
-                            handleInputChange(index, "Room", e.target.value)
-                        }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-                    />
-                </div>
-            )
-        },
-        {
-            name: "Start Time",
-            cell: (row, index) => (
-                <div className="m-1">
-                    <input
-                        type="time"
-                        value={row.StartTime || ""}
-                        onChange={(e) =>
-                            handleInputChange(index, "StartTime", e.target.value)
-                        }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-                    />
-                </div>
-            )
-        },
-        {
-            name: "End Time",
-            cell: (row, index) => (
-                <div className="m-1">
-                    <input
-                        type="time"
-                        value={row.EndTime || ""}
-                        onChange={(e) =>
-                            handleInputChange(index, "EndTime", e.target.value)
-                        }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-                    />
-                </div>
-            )
-        },
-        {
-            name: "Term Availability",
-            cell: (row, index) => (
-                <div className="flex gap-3 m-1">
-                    {["term1", "term2", "term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t]}
-                                onChange={() => handleCheckboxChange(index, t)}
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            wrap: true
-        },
-
-        {
-            name: "Action",
-            cell: (row, index) => (
-                <button
-                    onClick={() => handleRemoveSubject(row, index)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-sm"
-                >
-                    <Trash2 size={16} />
-                </button>
-            )
-        }
-    ];
 
     const [successModalBody, setSuccessModalBody] = useState("");
     const [successModalTitle, setSuccessModalTitle] = useState("");
@@ -321,105 +180,117 @@ const FacultyEntryComponent = () => {
     };
 
     const handleSubmitModal = async () => {
-        // const payload = {
-        //     SecId: selectedSection?.value,
-        //     CreatedByUserId: userId,
-        //     SubjectsDtos: addedSubjects.map(s => ({
-        //         RowId: s.RowId,
-        //         SubjectId: s.SubjectId,
-        //         SubjectType: s.SubjectType,
-        //         Room: s.Room,
-        //         StartTime: s.StartTime,
-        //         EndTime: s.EndTime,
-        //         Term1: s.term1 ? "true" : "false",
-        //         Term2: s.term2 ? "true" : "false",
-        //         Term3: s.term3 ? "true" : "false",
-        //     }))
-        // };
+        console.log(selectedSection);
+        console.log(selectedAdviser);
+        console.log(teacherAssignments);
+        console.log(subjectList)
 
-        // console.log(payload);
-        // const res = await dispatch(fetchInsertSubjectScheduleData(payload));
-        // console.log(res);
+        const payload = {
+            MainSecId: selectedSection?.value,
+            AdviserId: selectedAdviser?.value,
+            CreatedByUserId: userId,
+            NonAdviserDtos: teacherAssignments
+        };
 
-        // if (res.data.Message == "Success") {
-        //     setIsSuccessModalOpen(true);
-        //     setSuccessModalBody("Done Creating Subject Schedule.");
-        //     setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
-        //     if (isSuccessModalOpen == false) {
-        //         setTimeout(() => window.location.reload(), 3000);
-        //     }
-        // }
-        // else {
-        //     setIsSuccessModalOpen(true);
-        //     setSuccessModalTitle(<span className="font-bold text-lg text-red-700">Error</span>);
-        //     setSuccessModalBody("This section has been already created.");
-        // }
-    };
-
-    const formatDate = getFormatDate;
-    const formatToAMPM = getFormatToAMPM;
-    const [viewEditTitleModal, setViewEditTitleModal] = useState("");
-    const [viewEditOpenModal, setViewEditOpenModal] = useState(false);
-    const [mainSubjectScheduleList, setMainSubjectScheduleList] = useState([]);
-    const masterSubjectScheduleState = useSelector((state) => state.academic.masterSubjectScheduleState || {});
-    const mainSubjectScheduleTotalRows = masterSubjectScheduleState.data.totalRecords || 0;
-    const mainSubjectScheduleLoading = masterSubjectScheduleState.loading || false;
-    const [mainSubjectScheduleFilterText, setMainSubjectScheduleFilterText] = useState('');
-    const [mainSubjectScheduleCurrentPage, setMainSubjectScheduleCurrentPage] = useState(1);
-    const [mainSubjectScheduleRowsPerPage, setMainSubjectScheduleRowsPerPage] = useState(10);
-    const openRowModal = async (status) => {
-        console.log(status);
-
-        const res = await dispatch(fetchMasterSubjectScheduleTableData(status.MainSecId, mainSubjectScheduleCurrentPage, mainSubjectScheduleRowsPerPage, mainSubjectScheduleFilterText));
+        console.log(payload);
+        const res = await dispatch(fetchInsertFacultyLoadData(payload));
         if (res.ok) {
-            console.log(res.data);
-            setMainSubjectScheduleList(res.data);
-        }
-        setViewEditOpenModal(true);
-        if (status === "edit") {
-            setViewEditTitleModal("Edit Section");
-        }
-        else {
-            setViewEditTitleModal("View Section");
-        }
-    };
-    const mainSubjectScheduleColumn = [
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true, wrap: true, grow: 3 },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true, wrap: true, grow: 3 },
-        { name: 'Subject Type', selector: row => row.SubjectType, sortable: true, wrap: true, grow: 3 },
-        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true, wrap: true, grow: 3 },
-        { name: 'Room', selector: row => row.Room, sortable: true, wrap: true, grow: 3 },
-        { name: 'Start Time', selector: row => formatToAMPM(row.StartTime), sortable: true, wrap: true, grow: 3 },
-        { name: 'End Time', selector: row => formatToAMPM(row.EndTime), sortable: true, wrap: true, grow: 3 },
-        {
-            name: 'Term Available',
-            cell: (row) => (
-                <div className="flex gap-3 m-1">
-                    {["Term1", "Term2", "Term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t] === "true" || row[t] === true}
-                                readOnly
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            sortable: true,
-            wrap: true,
-            grow: 3,
-            style: {
-                whiteSpace: 'normal'
+            setIsSuccessModalOpen(true);
+            setSuccessModalTitle("Success");
+            setSuccessModalBody("Done creating faculty load.");
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 2000);
             }
         }
+    };
+
+
+
+    const [facultyLoadList, setFacultyLoadList] = useState([]);
+    const facultyLoadTableState = useSelector((state) => state.academic.facultyLoadTableState || {});
+    const facultyLoadTable = facultyLoadTableState.data.data || [];
+    const facultyLoadTotalRows = facultyLoadTableState.data.totalRecords || 0;
+    const facultyLoadLoading = facultyLoadTableState.loading || false;
+    const [facultyLoadCurrentPage, setFacultyLoadTableCurrentPage] = useState(1);
+    const [facultyLoadRowsPerPage, setFacultyLoadTableRowsPerPage] = useState(10);
+    const [facultyLoadTableSearchFilter, setFacultyLoadTableFilterText] = useState("");
+
+    useEffect(() => {
+        dispatch(fetchFacultyLoadTableData(facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter));
+    }, [facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, dispatch]);
+
+    useEffect(() => {
+        if (facultyLoadTable.length === 0) return;
+        setFacultyLoadList(facultyLoadTable);
+    }, [facultyLoadTable]);
+
+    const facultyLoadColumn = [
+        { name: 'Adviser Fullname', selector: row => row.AdviserFullname, sortable: true },
+        { name: 'Created By', selector: row => row.CreatedByUserFullname, sortable: true },
+        { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
+        {
+            name: "Actions",
+            cell: (row) => (
+                <div className="flex gap-4 items-center">
+                    <button
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        onClick={() => openRowModal(row, "view")}
+                    >
+                        <Eye size={18} />
+                    </button>
+
+                    <button
+                        className="p-1 text-yellow-600 hover:text-yellow-800"
+                        onClick={() => openRowModal(row, "edit")}
+                    >
+                        <Pencil size={18} />
+                    </button>
+
+                    <RowToggleComponent row={row} onToggle={handleToggleActive} />
+                </div>
+            ),
+            ignoreRowClick: true,
+            width: "180px",
+        }
     ];
+
+    const openRowModal = (row) => {
+        console.log(row);
+    };
+    const handleToggleActive = (selectedRow, newStatus) => {
+        console.log(selectedRow);
+        console.log(newStatus);
+        // const CreatedByUserId = user.UserId;
+        // const activeStatus = newStatus ? "Y" : "DR";
+        // console.log(selectedRow);
+        // try {
+        //     const result = await dispatch(
+        //         fetchUpdateRowTemplateData(
+        //             selectedRow.TempId,
+        //             selectedRow.TempType,
+        //             CreatedByUserId,
+        //             activeStatus
+        //         )
+        //     );
+
+        //     if (result.ok) {
+        //         setTable((prev) =>
+        //             prev.map((row) =>
+        //                 row.TempId === selectedRow.TempId
+        //                     ? { ...row, isActive: newStatus }
+        //                     : row
+        //             )
+        //         );
+
+        //         fetchTemplates(selectedStatus, page, pageSize, search);
+        //     }
+        // } catch (error) {
+        //     console.error("Error updating template:", error);
+        // }
+    };
     return (
         // <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-
-            {/* LEFT — Inactive */}
             <div className="bg-white rounded-lg shadow border border-gray-200">
 
                 <div className="px-4 py-3 border-b bg-gray-50 rounded-t-lg flex items-center justify-between">
@@ -439,28 +310,28 @@ const FacultyEntryComponent = () => {
                             type="text"
                             placeholder="Search..."
                             className="px-3 py-2 border border-gray-300 rounded w-64"
-                            value={subjectScheduleFilterText}
+                            value={facultyLoadTableSearchFilter}
                             onChange={(e) => {
-                                setSubjectSchedulelFilterText(e.target.value);
-                                setSubjectScheduleCurrentPage(1);
+                                setFacultyLoadTableFilterText(e.target.value);
+                                setFacultyCurrentPage(1);
                             }}
                         />
                     </div>
 
                 </div>
-                <div className="w-full overflow-x-auto">
+                <div className="w-full">
                     <DataTable
-                        columns={subjectScheduleColumn}
-                        data={subjectScheduleList}
-                        progressPending={subjectScheduleLoading}
+                        columns={facultyLoadColumn}
+                        data={facultyLoadList}
+                        progressPending={facultyLoadLoading}
                         pagination
                         paginationServer
-                        paginationTotalRows={subjectScheduleTotalRows}
-                        paginationDefaultPage={subjectScheduleCurrentPage}
-                        onChangePage={(page) => setSubjectScheduleCurrentPage(page)}
+                        paginationTotalRows={facultyLoadTotalRows}
+                        paginationDefaultPage={facultyLoadCurrentPage}
+                        onChangePage={(page) => setFacultyLoadTableCurrentPage(page)}
                         onChangeRowsPerPage={(newPerPage, page) => {
-                            setSubjectScheduleRowsPerPage(newPerPage);
-                            setSubjectScheduleCurrentPage(page);
+                            setFacultyLoadTableCurrentPage(newPerPage);
+                            setFacultyLoadTableRowsPerPage(page);
                         }}
                         highlightOnHover
                         responsive
@@ -497,14 +368,14 @@ const FacultyEntryComponent = () => {
                                         value={selectedSection?.levelName || ""}
                                         placeholder="Level"
                                         disabled
-                                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        className="mt-2 shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-gray-100 text-gray-500 cursor-not-allowed"
                                     />
                                 </div>
                                 <SearchableSelect
-                                    options={sectionList}
-                                    value={selectedSection}
-                                    onChange={(selected) => handleSelectedSection(selected)}
-                                    placeholder="-- Select Section Type --"
+                                    options={adviserList}
+                                    value={selectedAdviser}
+                                    onChange={(selected) => setSelectedAdviser(selected)}
+                                    placeholder="-- Select Adviser --"
                                     label="Assign Teacher Adviser"
                                 />
                             </div>
@@ -557,124 +428,6 @@ const FacultyEntryComponent = () => {
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={successModalTitle}
                 body={<p>{successModalBody}</p>}
-            />
-            <ModalComponent
-                isOpen={viewEditOpenModal}
-                onClose={() => setViewEditOpenModal(false)}
-                title={viewEditTitleModal}
-                body={
-                    <div>
-                        <div>
-                            <h2 className="my-4 text-xl font-bold text-green-500">
-                                Subject Schedule Template
-                            </h2>
-                            <div className="flex justify-center gap-6 mb-4">
-                                <div>
-                                    <label className="block text-sm font-large font-bold">
-                                        Section Name
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        value={mainSubjectScheduleList[0]?.SectionName || ""}
-                                        disabled
-                                        className="w-full border-0 border-b border-gray-500 
-                                        bg-transparent text-gray-900 
-                                        text-center
-                                        focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-large font-bold">
-                                        Level Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={mainSubjectScheduleList[0]?.LevelName || ""}
-                                        disabled
-                                        className="w-full border-0 border-b border-gray-500 
-                                        bg-transparent text-gray-900 
-                                        text-center
-                                        focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-large font-bold">
-                                        Created By
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={mainSubjectScheduleList[0]?.CreatedByFullname || ""}
-                                        disabled
-                                        className="w-full border-0 border-b border-gray-500 
-                                        bg-transparent text-gray-900 
-                                        text-center
-                                        focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-large font-bold">
-                                        Date Created
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formatDate(mainSubjectScheduleList[0]?.DateCreated) || ""}
-                                        disabled
-                                        className="w-full border-0 border-b border-gray-500 
-                                        bg-transparent text-gray-900 
-                                        text-center
-                                        focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <hr className="my-4 border-t border-gray-300" />
-                        <div className="mt-6 relative overflow-hidden">
-                            <div className="px-4 py-3 rounded-t-lg flex justify-between">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-green-600">
-                                        Subject Schedule of Section
-                                    </h3>
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    className="px-3 py-2 border border-gray-300 rounded w-64"
-                                    value={mainSubjectScheduleFilterText}
-                                    onChange={(e) => {
-                                        setMainSubjectScheduleFilterText(e.target.value);
-                                        setMainSubjectScheduleCurrentPage(1);
-                                    }}
-                                />
-                            </div>
-                            <div className="w-full overflow-x-auto">
-                                <DataTable
-                                    columns={mainSubjectScheduleColumn}
-                                    data={mainSubjectScheduleList}
-                                    progressPending={mainSubjectScheduleLoading}
-                                    pagination
-                                    paginationServer
-                                    paginationTotalRows={mainSubjectScheduleTotalRows}
-                                    paginationDefaultPage={mainSubjectScheduleCurrentPage}
-                                    onChangePage={(page) => setMainSubjectScheduleCurrentPage(page)}
-                                    onChangeRowsPerPage={(newPerPage, page) => {
-                                        setMainSubjectScheduleRowsPerPage(newPerPage);
-                                        setMainSubjectScheduleCurrentPage(page);
-                                    }}
-                                    highlightOnHover
-                                    responsive
-                                    overflowY={false}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                }
-                size="w-[1000px]"
-                maxHeight="100vh"
-                buttons={[
-                    // { label: "Submit", type: "green", onClick: handleSubmit, closeOnClick: false },
-                    { label: "Close", type: "red", onClick: () => setViewEditOpenModal(false) },
-                ]}
             />
         </div>
     );

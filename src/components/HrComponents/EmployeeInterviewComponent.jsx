@@ -204,8 +204,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             };
         }
 
-        const hasRatings = criteriaTable.some(master =>
-            master.CriteriaChildTableDtos.some(child => child.Rating != null)
+        const hasRatings = criteriaTable?.some(master =>
+            master.CriteriaChildTableDtos?.some(child => child.Rating != null)
         );
 
         console.log(hasRatings);
@@ -513,17 +513,17 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
     }, [departmentList, positionStatusList, goldenRankList, divisionList]);
 
-    const advList = [
-        { value: "Yes", label: "Yes" },
-        { value: "No", label: "No" },
-    ];
+    // const advList = [
+    //     { value: "Yes", label: "Yes" },
+    //     { value: "No", label: "No" },
+    // ];
 
     const [hiringData, setHiringData] = useState({
         DepartmentId: null,
         DivId: null,
         PositionId: null,
         GoldenRankId: null,
-        IsAdviser: null,
+        // IsAdviser: null,
     });
     const handleSubmitHiring = async () => {
 
@@ -804,28 +804,32 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                                 label="Date Created"
                                 register={register}
                                 isEditing={isEditing}
-                                displayValue={criteria.UserFullname}
+                                displayValue={criteria.DateCreated}
                             />
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
-                            <RHFListbox
-                                name="Recommendation"
-                                control={control}
-                                list={recommendationList}
-                                label="Recommendation"
-                                labelKey="RecommendationName"
-                                required
-                                isEditing={false}
-                            />
-                            <InputField
-                                name="Remarks"
-                                label="Remarks"
-                                register={register}
-                                isEditing={isEditing}
-                                displayValue={employeScreeningData.Remarks}
-                            />
-                        </div>
+                        <>
+                            {criteria.UserRoleId == 10 && (
+                                <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
+                                    <RHFListbox
+                                        name="Recommendation"
+                                        control={control}
+                                        list={recommendationList}
+                                        label="Recommendation"
+                                        labelKey="RecommendationName"
+                                        required
+                                        isEditing={false}
+                                    />
+                                    <InputField
+                                        name="Remarks"
+                                        label="Remarks"
+                                        register={register}
+                                        isEditing={isEditing}
+                                        displayValue={employeScreeningData.Remarks}
+                                    />
+                                </div>
+                            )}
+                        </>
                     )}
                     {/* {criteria.UserRoleId == 10 && (
                         <>
@@ -908,7 +912,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                 title={<span className="font-bold text-lg text-blue-700">For hiring process</span>}
                 body={
                     <div>
-                        <div className="w-full flex justify-center pt-4">
+                        {/* <div className="w-full flex justify-center pt-4">
                             <div className="w-full max-w-[380px]">
                                 <SearchableSelect
                                     options={advList}
@@ -923,7 +927,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                                     label="Select if Adviser or Non-Adviser"
                                 />
                             </div>
-                        </div>
+                        </div> */}
                         <div className="grid grid-cols-2 gap-2 pt-4 w-full">
                             <SearchableSelect
                                 options={depList}

@@ -9,9 +9,10 @@ import {
     fetchOrNumberData,
     fetchGetRealtimeDailyBalanceData,
     fetchGetDailyBalanceData,
-    fetchPrintTestPermitData,
+    fetchPrintReceiptData,
     fetchInsertSubmitPaymentData,
-    fetchGetTuitionFeeData,
+    // fetchGetTuitionFeeData,
+    fetchStudentAppAssessmentData,
 } from "../../states/CashierState/Action";
 import SearchBoxAppNo from "../ButtonsComponents/SearchBoxAppNo";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
@@ -31,6 +32,7 @@ const PaymentComponent = () => {
     const transData = transactionTypeState.data || [];
     const studentAppState = useSelector((state) => state.cashier.studentAppState || {});
     const studentApp = studentAppState.data || [];
+    const assessmentData = useSelector((state) => state.cashier.studentAppAssessmentState.data || []);
     const orNumberState = useSelector((state) => state.cashier.orNumberState || {});
     const orNumberData = orNumberState.data || [];
     const dailyBalanceState = useSelector((state) => state.cashier.dailyBalanceState || {});
@@ -39,9 +41,9 @@ const PaymentComponent = () => {
     const realtimeBalance = realtimeBalanceState.data || [];
     const tuitionFeeState = useSelector((state) => state.cashier.tuitionFeeState || {});
     const tuitionFee = tuitionFeeState.data || [];
-    const printTestPermitState = useSelector((state) => state.cashier.printTestPermitState || {});
-    const permitData = printTestPermitState.data || [];
-    const permitLoading = printTestPermitState.loading;
+    const printReceiptState = useSelector((state) => state.cashier.printReceiptState || {});
+    const receiptData = printReceiptState.data || [];
+    const receiptLoading = printReceiptState.loading;
     const [transList, setTransList] = useState([]);
     const [transType, setIsTransType] = useState("");
     const [transDropdown, setTransDropdown] = useState(null);
@@ -54,8 +56,8 @@ const PaymentComponent = () => {
     const [planAmount, setPlanAmount] = useState(0);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [paymentMode, setPaymentMode] = useState(null);
-    const [tuitionId, setTuitionId] = useState(0);
     const [tuitionChildId, setTuitionChildId] = useState(0);
+    const [planId, setPlanId] = useState(0);
     const paymentOptions = [
         { value: "Cash", label: "Cash" },
         { value: "Check", label: "Check" },
@@ -94,10 +96,9 @@ const PaymentComponent = () => {
                 status = "O-RESERVATION";
                 dispatch(fetchStudentAppData(status));
                 break;
-            case "Enrollment Fee":
-                status = "O-RESERVED";
+            case "Assessment Plan":
+                status = "O-ASSESSMENT-PLAN";
                 dispatch(fetchStudentAppData(status));
-
                 break
             case "Tuition Fee":
                 status = "Y";
@@ -105,7 +106,7 @@ const PaymentComponent = () => {
         }
 
     };
-
+    console.log(assessmentData);
     const handleStudentSelect = (student) => {
         console.log(student);
         console.log(transType);
@@ -118,52 +119,61 @@ const PaymentComponent = () => {
         setStudentId(student.StudentId);
         setFullname(student.Fname + " " + student?.Mname + " " + student.Lname);
         console.log(student.LevelId);
-        dispatch(fetchGetTuitionFeeData(student.StudentId, student.LevelId));
-    };
-    const getPlanGroup = (planName) => {
-        return planName.replace(/[0-9]/g, "");
+        // dispatch(fetchGetTuitionFeeData(student.StudentId, student.LevelId));
+        dispatch(fetchStudentAppAssessmentData(student.AppId));
     };
 
     useEffect(() => {
-        if (!tuitionFee || tuitionFee.length === 0) {
-            setPlanList([]);
-            return;
-        }
+        if (!assessmentData) return;
+        setPlanAmount(assessmentData[0]?.Amount);
+        setTuitionChildId(assessmentData[0]?.TuitionChildId);
+        setPlanId(assessmentData[0]?.PlanId);
+    }, [assessmentData]);
 
-        const grouped = {};
+    // const getPlanGroup = (planName) => {
+    //     return planName.replace(/[0-9]/g, "");
+    // };
 
-        tuitionFee.forEach(item => {
-            const groupKey = getPlanGroup(item.PlanName);
+    // useEffect(() => {
+    //     if (!tuitionFee || tuitionFee.length === 0) {
+    //         setPlanList([]);
+    //         return;
+    //     }
 
-            if (!grouped[groupKey]) {
-                grouped[groupKey] = {
-                    id: item.TuitionId,
-                    tuitionChildId: item.TuitionChildId,
-                    value: item.Amount,      // ✅ AMOUNT AS VALUE
-                    label: groupKey,         // Plan A / B / C / D
-                    planKey: groupKey
-                };
-            }
-        });
+    //     const grouped = {};
 
-        setPlanList(Object.values(grouped));
-    }, [tuitionFee]);
+    //     tuitionFee.forEach(item => {
+    //         const groupKey = getPlanGroup(item.PlanName);
+
+    //         if (!grouped[groupKey]) {
+    //             grouped[groupKey] = {
+    //                 id: item.TuitionId,
+    //                 tuitionChildId: item.TuitionChildId,
+    //                 value: item.Amount,      // ✅ AMOUNT AS VALUE
+    //                 label: groupKey,         // Plan A / B / C / D
+    //                 planKey: groupKey
+    //             };
+    //         }
+    //     });
+
+    //     setPlanList(Object.values(grouped));
+    // }, [tuitionFee]);
 
 
-    const [selectedPlanGroup, setSelectedPlanGroup] = useState(null);
+    // const [selectedPlanGroup, setSelectedPlanGroup] = useState(null);
 
-    const setEnrollmentPlan = (data) => {
-        console.log(data);
-        setPlanDropdown(data);            // REQUIRED
-        setSelectedPlanGroup(data?.planKey);
-        setPlanAmount(data?.value);
-        setTuitionId(data?.id);
-        setTuitionChildId(data?.tuitionChildId);
-    };
+    // const setEnrollmentPlan = (data) => {
+    //     console.log(data);
+    //     setPlanDropdown(data);            // REQUIRED
+    //     setSelectedPlanGroup(data?.planKey);
+    //     setPlanAmount(data?.value);
+    //     setTuitionId(data?.id);
+    //     setTuitionChildId(data?.tuitionChildId);
+    // };
 
-    const filteredPlans = tuitionFee.filter(item =>
-        getPlanGroup(item.PlanName) === selectedPlanGroup
-    );
+    // const filteredPlans = tuitionFee.filter(item =>
+    //     getPlanGroup(item.PlanName) === selectedPlanGroup
+    // );
 
     useEffect(() => {
         dispatch(fetchOrNumberData(userId));
@@ -180,8 +190,11 @@ const PaymentComponent = () => {
     const [isAmount, setIsAmount] = useState(false);
     const [change, setChange] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
+    const [checkNumber, setCheckNumber] = useState("");
+    const [checkNumberError, setCheckNumberError] = useState("");
+    const [isCheckNumberError, setIsCheckNumberError] = useState(false);
     const priceToUse =
-        transType === "Enrollment Fee"
+        transType === "Assessment Plan"
             ? Number(planAmount || 0)
             : Number(amountValue || 0);
 
@@ -250,7 +263,7 @@ const PaymentComponent = () => {
         setFullname("");
         setReferenceNumber("");
         setPlanDropdown(null);
-        setSelectedPlanGroup(null);
+        // setSelectedPlanGroup(null);
         setPlanAmount(0);
         setAmountValue(0);
         setAmountToPay(0);
@@ -261,9 +274,11 @@ const PaymentComponent = () => {
         setErrors(false);
         setErrorMessage("");
         setSelectedStudent(null);
+        setCheckNumber("");
     };
 
     const handlePrint = async () => {
+        console.log("test");
         if (!referenceNumber) {
             setErrors(true);
             setErrorMessage(
@@ -279,6 +294,14 @@ const PaymentComponent = () => {
             setAmountError("Please enter amount before you proceed.");
             return;
         }
+        if (paymentMode?.value == "Check") {
+            if (!checkNumber || checkNumber === "") {
+                setIsCheckNumberError(true);
+                setCheckNumberError("Please enter the check number.");
+                return;
+            }
+        }
+
 
         const payload = {
             UserId: studentId,
@@ -286,21 +309,24 @@ const PaymentComponent = () => {
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
+            TuitionChildId: 0,
+            TypeOfTransaction: transType,
             OrChildDtos: [
                 {
                     OrChildId: orNumberData.OrChildId,
                     OrNumberUsed: orNumberData.LastOrNoUsed,
-                    Amount: priceToUse.toString(), 
+                    Amount: priceToUse.toString(),
                 },
             ],
         };
 
         console.log(payload);
-        await dispatch(fetchPrintTestPermitData(payload));
+        await dispatch(fetchPrintReceiptData(payload));
         setIsOpenModal(true);
     };
 
     const handleSubmitOrNumber = () => {
+        console.log("test");
 
         const payload = {
             UserId: studentId,
@@ -308,20 +334,21 @@ const PaymentComponent = () => {
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
-            TuitionId: tuitionId,
+            TuitionChildId: tuitionChildId,
+            TypeOfTransaction: transType,
             OrChildDtos: [{
                 BalId: dailyBalance.BalId,
                 OrChildId: orNumberData.OrChildId,
-                TuitionChildId: tuitionChildId,
+                PlanId: planId,
                 OrNumberUsed: orNumberData.LatestOrAvailable,
                 Amount: priceToUse.toString(),
                 AmountPaid: amountToPay.toString(),
                 ModeOfPayment: paymentMode?.value,
                 FromTransaction: transType,
-                
+
             }]
         };
-        console.log(payload);
+        console.log("Payload to be submitted: " + payload);
         dispatch(fetchInsertSubmitPaymentData(payload));
         setIsOpenModal(true);
         setIsWarningModal(false);
@@ -388,7 +415,7 @@ const PaymentComponent = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            {transType == "Enrollment Fee" && (
+                                            {/* {transType == "Enrollment Fee" && (
                                                 <>
                                                     <div className="flex flex-col gap-2 w-full">
                                                         <SearchableSelect
@@ -424,7 +451,7 @@ const PaymentComponent = () => {
                                                         </table>
                                                     )}
                                                 </>
-                                            )}
+                                            )} */}
 
                                             <div className="flex flex-col gap-2 w-full">
                                                 <label
@@ -471,7 +498,7 @@ const PaymentComponent = () => {
                                                     type="number"
                                                     placeholder="Enter Amount."
                                                     className={`px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg`}
-                                                    value={transType === "Enrollment Fee" ? planAmount : amountValue}
+                                                    value={transType === "Assessment Plan" ? planAmount : amountValue}
                                                     readOnly
                                                 />
 
@@ -508,6 +535,29 @@ const PaymentComponent = () => {
                                                         <p className="text-red-500 text-sm mt-1">{amountError}</p>
                                                     )}
                                                 </div>
+                                                {paymentMode?.value == "Check" && (
+                                                    <div className="flex flex-col gap-2 w-full">
+                                                        <label
+                                                            htmlFor="checkNumber"
+                                                            className="text-sm font-medium text-gray-700"
+                                                        >
+
+                                                            Check Number
+                                                        </label>
+                                                        <input
+                                                            id="checkNumber"
+                                                            type="text"
+                                                            placeholder="Enter Check Number."
+                                                            className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
+                                                            ${isCheckNumberError ? "border-red-500" : "border-gray-300"}`}
+                                                            value={checkNumber}
+                                                            onChange={(e) => setCheckNumber(e.target.value)}
+                                                        />
+                                                        {isCheckNumberError && (
+                                                            <p className="text-red-500 text-sm mt-1">{checkNumberError}</p>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="mt-8 flex gap-4">
@@ -550,11 +600,41 @@ const PaymentComponent = () => {
                         </h2>
                         <ul className="text-slate-500 font-medium mt-8 space-y-4">
                             <li className="flex flex-wrap gap-4 text-sm">
-                                {transType}{" "}
+                                <strong>
+                                    {
+                                        transType === "Assessment Plan"
+                                            ? `${transType} - ${assessmentData[0]?.PlanName ?? ""}`
+                                            : transType
+                                    }
+                                </strong>
+
+                                {/* <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{priceToUse.toFixed(2)}
+                                </span> */}
+                            </li>
+                            {assessmentData.map((item, index) => (
+                                <li key={index} className="flex flex-wrap gap-4 text-sm">
+                                    {
+                                        transType === "Assessment Plan"
+                                            ? item.NumberOfPayment
+                                            : item.transType
+                                    }
+
+                                    <span className="ml-auto font-semibold text-slate-900">
+                                        ₱{Number(item.Amount).toFixed(2)}
+                                    </span>
+                                    <span className="ml-auto font-semibold text-slate-900">
+                                        {new Date(item.DateOfPayment).toLocaleDateString()}
+                                    </span>
+                                </li>
+                            ))}
+                            {/* <li className="flex flex-wrap gap-4 text-sm">
+                                First Payment
                                 <span className="ml-auto font-semibold text-slate-900">
                                     ₱{priceToUse.toFixed(2)}
                                 </span>
-                            </li>
+
+                            </li> */}
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Amount{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
@@ -570,9 +650,17 @@ const PaymentComponent = () => {
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Mode of payment{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    {paymentMode ? paymentMode.label : "-"} 
+                                    {paymentMode ? paymentMode.label : "-"}
                                 </span>
                             </li>
+                            {paymentMode?.value === "Check" && (
+                                <li className="flex flex-wrap gap-4 text-sm">
+                                    Check Number{" "}
+                                    <span className="ml-auto font-semibold text-slate-900">
+                                        {checkNumber}
+                                    </span>
+                                </li>
+                            )}
                             <li className="flex flex-wrap gap-4 text-[15px] font-semibold text-slate-900 border-t border-gray-300 pt-4">
 
                                 Total{" "}
@@ -585,7 +673,7 @@ const PaymentComponent = () => {
             <ModalComponent
                 isOpen={isOpenModal}
                 onClose={() => setIsOpenModal(false)}
-                title="Official Receipt Preview"
+                title="Sale Invoice Preview"
                 body={
                     <div className="max-h-[80vh] w-full p-6 flex justify-center items-center">
                         <div className="w-3/4 flex flex-col gap-2">
@@ -593,15 +681,15 @@ const PaymentComponent = () => {
                                 Preview
                             </label>
                             <div className="border rounded-lg shadow overflow-hidden flex justify-center items-center">
-                                {permitLoading ? (
+                                {receiptLoading ? (
                                     <div className="flex items-center justify-center h-[60vh] text-gray-400">
                                         Loading preview...
                                     </div>
-                                ) : permitData?.PdfBase64 ? (
+                                ) : receiptData?.PdfBase64 ? (
                                     <iframe
-                                        src={`data:application/pdf;base64,${permitData.PdfBase64}`}
+                                        src={`data:application/pdf;base64,${receiptData.PdfBase64}`}
                                         className="w-full h-[60vh]"
-                                        title="Test Permit Preview"
+                                        title="Receipt Preview"
                                     />
                                 ) : (
                                     <div className="flex items-center justify-center h-[60vh] text-gray-400">
@@ -638,12 +726,12 @@ const PaymentComponent = () => {
                         type: "green",
                         onClick: async () => {
 
-                            if (permitData?.PdfBase64) {
+                            if (receiptData?.PdfBase64) {
                                 handleSubmitOrNumber();
                                 const pdfWindow = window.open("", "_blank");
                                 if (pdfWindow) {
                                     pdfWindow.document.write(
-                                        `<iframe width='100%' height='100%' src='data:application/pdf;base64,${permitData.PdfBase64}'></iframe>`
+                                        `<iframe width='100%' height='100%' src='data:application/pdf;base64,${receiptData.PdfBase64}'></iframe>`
                                     );
 
                                     // Wait a bit before calling print (ensure iframe is loaded)

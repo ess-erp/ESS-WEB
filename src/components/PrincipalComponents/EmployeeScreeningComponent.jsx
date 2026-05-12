@@ -126,8 +126,8 @@ const EmployeeScreeningComponent = ({ isEditing, employeeAppId, userId }) => {
     const [criteriaTableRowsPerPage, setCriteriaTableRowsPerPage] = useState(10);
 
     useEffect(() => {
-        dispatch(fetchCriteriaTableData(userId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
-    }, [userId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
+        dispatch(fetchCriteriaTableData(employeeAppId,userId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
+    }, [employeeAppId,userId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
   
     console.log(criteriaTable);

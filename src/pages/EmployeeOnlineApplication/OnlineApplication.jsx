@@ -202,7 +202,7 @@ const OnlineApplication = () => {
         payload.append("Mname", formData.Mname || "");
         payload.append("Lname", formData.Lname || "");
         payload.append("Nickname", formData.Nickname || "");
-        payload.append("TempEmail", formData.Email || "");
+        payload.append("Email", formData.Email || "");
         payload.append("Position", formData.Position || "");
         // payload.append("OthersPosition", formData.Email || "");
         payload.append("Gender", formData.Gender || "");
@@ -306,7 +306,7 @@ const OnlineApplication = () => {
                                                 <InputField name="Lname" label="Last Name" register={register} isEditing={true} placeholder="Please input last name...." divClassName="" required errors={errors.Lname} errorMessage={errors.Lname?.message} />
                                                 <InputField name="Nickname" label="Nickname" register={register} isEditing={true} placeholder="Please input nickname...." divClassName="" required errors={errors.Nickname} errorMessage={errors.Nickname?.message} />
                                                 <InputField name="Email" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.Email} errorMessage={errors.Email?.message} type="email" isValidEmail={isValidEmail} />
-                                                <InputField name="Desired Position" label="Position" register={register} isEditing={true} placeholder="Please input desired position...." divClassName="" required errors={errors.Position} errorMessage={errors.Position?.message} />
+                                                <InputField name="Position" label="Position" register={register} isEditing={true} placeholder="Please input desired position...." divClassName="" required errors={errors.Position} errorMessage={errors.Position?.message} />
                                                 {/* <RHFListbox name="Position" control={control} list={position} label="Desired Position" labelKey="value" isEditing={false} divClassName="" required error={errors.Position} />
                                                 {selectedPosition?.id === "others" && (
                                                     <InputField name="OtherPosition" label="Other Position" register={register} isEditing={true} placeholder="Please input other position...." divClassName="" required errors={errors.OtherPosition} errorMessage={errors.OtherPosition?.message} />

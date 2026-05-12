@@ -5,8 +5,11 @@ import DataTable from "react-data-table-component";
 import { motion, AnimatePresence } from "framer-motion";
 import BlueBtn from "../ButtonsComponents/BlueBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import { fetchListOfStudentTableData } from "../../states/ParentState/Action";
-import { fetchListOfTuitionFeeData } from "../../states/ParentState/Action";
+import {
+  fetchListOfStudentTableData,
+  fetchListOfTuitionFeeData,
+  fetchInsertOverTheCounterPaymentData,
+} from "../../states/ParentState/Action";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 
@@ -37,7 +40,7 @@ const PendingListOfStudent = ({ type, userId, levelId }) => {
 
   // table columns
   const columns = [
-    // { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
+    { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
     {
       name: "Fullname",
       selector: (row) => `${row.Lname}, ${row.Fname} ${row.Mname || ""}`,
@@ -92,10 +95,12 @@ const PendingListOfStudent = ({ type, userId, levelId }) => {
 
   const [tuitionTable, setTuitionTable] = useState([]);
   const [tuitionLoading, setTuitionLoading] = useState(false);
+  const [pendingRow, setPendingRow] = useState({});
 
   const handlePaymentClick = (row) => {
     setIsPaymentOpen(true);
     fetchTuitionFee(row.LevelId);
+    setPendingRow(row);
   };
 
   const tuitionColumns = [
@@ -147,6 +152,33 @@ const PendingListOfStudent = ({ type, userId, levelId }) => {
 
     return Array.from(map.values());
   }, [tuitionTable]);
+
+  const [isWarningModal, setIsWarningModal] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const handleOverTheCounterSubmit = () => {
+    setIsWarningModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    const payload = {
+      PaymentType: "OverTheCounter",
+      AppId: pendingRow.AppId,
+      TuitionChildId: selectedTuitionPlan.value
+    };
+    console.log(payload);
+
+    const res = await dispatch(fetchInsertOverTheCounterPaymentData(payload));
+    if (res.ok) {
+      setIsSuccessModalOpen(true);
+      if (isSuccessModalOpen == false) {
+        setTimeout(() => window.location.reload(), 3000);
+      }
+    }
+  };
+
+  const handleOnlineSubmit = () => {
+    console.log(pendingRow);
+  };
 
   return (
     <div>
@@ -288,11 +320,42 @@ const PendingListOfStudent = ({ type, userId, levelId }) => {
           {
             label: "Over The Counter",
             type: "blue",
+            onClick: handleOverTheCounterSubmit,
+            closeOnClick: false,
           },
           {
             label: "Online Payment",
             type: "green",
+            onClick: handleOnlineSubmit,
+            closeOnClick: false,
           },
+        ]}
+      />
+      <ModalComponent
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        title={
+          <span className="font-bold text-lg text-green-700">
+            Success
+          </span>
+        }
+        body="Done saving the details. The next process will be in Iintial Interview"
+        buttons={[
+          {
+            label: "OK",
+            type: "green",
+            onClick: () => setIsSuccessModalOpen(false)
+          },
+        ]}
+      />
+      <ModalComponent
+        isOpen={isWarningModal}
+        onClose={() => setIsWarningModal(false)}
+        title={<span className="font-bold text-lg text-red-700">Warning</span>}
+        body="Are you sure you want to submit?"
+        buttons={[
+          { label: "Yes", type: "green", onClick: handleConfirmSubmit, },
+          { label: "No", type: "red", onClick: () => setIsWarningModal(false) },
         ]}
       />
     </div>

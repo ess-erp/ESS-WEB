@@ -17,6 +17,9 @@ import {
   FETCH_LIST_OF_TUITION_FEE_REQUEST,
   FETCH_LIST_OF_TUITION_FEE_SUCCESS,
   FETCH_LIST_OF_TUITION_FEE_FAILURE,
+  FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST,
+  FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS,
+  FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -225,7 +228,7 @@ export const fetchListOfTuitionFeeFailure = (error) => ({
   payload: error,
 });
 
-export const fetchListOfTuitionFeeData = (levelId,page,pageSize) => async (dispatch) => {
+export const fetchListOfTuitionFeeData = (levelId, page, pageSize) => async (dispatch) => {
   dispatch(fetchListOfTuitionFeeRequest());
   try {
     const token = getToken();
@@ -246,6 +249,46 @@ export const fetchListOfTuitionFeeData = (levelId,page,pageSize) => async (dispa
     return { ok: true, data: res.data, totalRecords: res.totalRecords };
   } catch (error) {
     dispatch(fetchListOfTuitionFeeFailure(error));
+    return { ok: false, error };
+  }
+};
+
+
+//INSERT OVER THE COUNTER FROM PENDING LIST OF STUDENT
+export const fetchInsertOverTheCounterPaymentRequest = () => ({
+  type: FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST,
+});
+export const fetchInsertOverTheCounterPaymentSuccess = (data) => ({
+  type: FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS,
+  payload: data,
+});
+export const fetchInsertOverTheCounterPaymentFailure = (error) => ({
+  type: FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
+  payload: error,
+});
+
+export const fetchInsertOverTheCounterPaymentData = (payload) => async (dispatch) => {
+  dispatch(fetchInsertOverTheCounterPaymentRequest());
+  try {
+    const token = getToken();
+    const url = `${baseUrl}/parent/insert-over-the-counter-payment`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await response.json();
+    console.log(res);
+
+    dispatch(fetchInsertOverTheCounterPaymentSuccess(res));
+    return { ok: true, data: res.data, totalRecords: res.totalRecords };
+  } catch (error) {
+    dispatch(fetchInsertOverTheCounterPaymentFailure(error));
     return { ok: false, error };
   }
 };

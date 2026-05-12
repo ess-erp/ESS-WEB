@@ -216,6 +216,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const academicMenu = [
     { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
     {
+      name: "Assign Adviser or Non-Adviser",
+      icon: UserIconSolid,
+      path: "/academic/assignadvisernonadviser",
+    },
+    {
       name: "Faculty Load Entry",
       icon: FilePlus,
       path: "/academic/facultyloadentry",

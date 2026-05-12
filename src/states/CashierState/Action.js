@@ -2,13 +2,14 @@ import {
     FETCH_TRANSACTION_TYPE_REQUEST, FETCH_TRANSACTION_TYPE_SUCCESS, FETCH_TRANSACTION_TYPE_FAILURE,
     FETCH_STUDENT_APPLICATION_REQUEST, FETCH_STUDENT_APPLICATION_SUCCESS, FETCH_STUDENT_APPLICATION_FAILURE,
     FETCH_ORNUMBER_REQUEST, FETCH_ORNUMBER_SUCCESS, FETCH_ORNUMBER_FAILURE,
-    FETCH_PRINTTESTPERMIT_REQUEST, FETCH_PRINTTESTPERMIT_SUCCESS, FETCH_PRINTTESTPERMIT_FAILURE,
+    FETCH_PRINT_RECEIPT_REQUEST, FETCH_PRINT_RECEIPT_SUCCESS, FETCH_PRINT_RECEIPT_FAILURE,
     FETCH_INSERT_SUBMIT_PAYMENT_REQUEST, FETCH_INSERT_SUBMIT_PAYMENT_SUCCESS, FETCH_INSERT_SUBMIT_PAYMENT_FAILURE,
     FETCH_GET_DAILY_BALANCE_REQUEST, FETCH_GET_DAILY_BALANCE_SUCCESS, FETCH_GET_DAILY_BALANCE_FAILURE,
     FETCH_INSERT_DAILY_BALANCE_REQUEST, FETCH_INSERT_DAILY_BALANCE_SUCCESS, FETCH_INSERT_DAILY_BALANCE_FAILURE,
     FETCH_GET_REALTIME_DAILY_BALANCE_REQUEST, FETCH_GET_REALTIME_DAILY_BALANCE_SUCCESS, FETCH_GET_REALTIME_DAILY_BALANCE_FAILURE,
     FETCH_GET_TUITION_FEE_REQUEST, FETCH_GET_TUITION_FEE_SUCCESS, FETCH_GET_TUITION_FEE_FAILURE,
     FETCH_TRANSACTION_HISTORY_REQUEST, FETCH_TRANSACTION_HISTORY_SUCCESS, FETCH_TRANSACTION_HISTORY_FAILURE,
+    FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -101,15 +102,15 @@ export const fetchOrNumberData = (userId) => async (dispatch) => {
     }
 };
 
-export const fetchPrintTestPermitRequest = () => ({ type: FETCH_PRINTTESTPERMIT_REQUEST });
-export const fetchPrintTestPermitSuccess = (data) => ({ type: FETCH_PRINTTESTPERMIT_SUCCESS, payload: data });
-export const fetchPrintTestPermitFailure = (error) => ({ type: FETCH_PRINTTESTPERMIT_FAILURE, payload: error });
+export const fetchPrintReceiptRequest = () => ({ type: FETCH_PRINT_RECEIPT_REQUEST });
+export const fetchPrintReceiptSuccess = (data) => ({ type: FETCH_PRINT_RECEIPT_SUCCESS, payload: data });
+export const fetchPrintReceiptFailure = (error) => ({ type: FETCH_PRINT_RECEIPT_FAILURE, payload: error });
 
-export const fetchPrintTestPermitData = (formData) => async (dispatch) => {
-    dispatch(fetchPrintTestPermitRequest());
+export const fetchPrintReceiptData = (formData) => async (dispatch) => {
+    dispatch(fetchPrintReceiptRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cashier/print-test-permit`;
+        const url = `${baseUrl}/cashier/print-receipt`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -121,11 +122,11 @@ export const fetchPrintTestPermitData = (formData) => async (dispatch) => {
         });
 
         const res = await response.json();
-        dispatch(fetchPrintTestPermitSuccess(res));
+        dispatch(fetchPrintReceiptSuccess(res));
         return { ok: true, data: res.data };
     }
     catch(error){
-        dispatch(fetchPrintTestPermitFailure(error.message));
+        dispatch(fetchPrintReceiptFailure(error.message));
         return { ok: false, error };
     }
 };
@@ -310,4 +311,32 @@ export const fetchTransactionHistoryData = (StartDate, EndDate, page, pageSize, 
         dispatch(fetchTransactionHistoryFailure(error));
         return { ok: false, error };
     };
+};
+
+export const fetchStudentAppAssessmentRequest = () => ({ type: FETCH_STUDENT_APP_ASSESSMENT_REQUEST });
+export const fetchStudentAppAssessmentSuccess = (data) => ({ type: FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, payload: data });
+export const fetchStudentAppAssessmentFailure = (error) => ({ type: FETCH_STUDENT_APP_ASSESSMENT_FAILURE, payload: error });
+
+export const fetchStudentAppAssessmentData = (appId) => async (dispatch) => {
+    dispatch(fetchStudentAppAssessmentRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cashier/get-assessment-plan?appId=${appId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchStudentAppAssessmentSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchStudentAppAssessmentFailure(error.message));
+        return { ok: false, error };
+    }
 };

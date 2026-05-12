@@ -4,13 +4,16 @@ import {
     FETCH_UPDATE_STUDENT_FORM_REQUEST,
     FETCH_UPDATE_STUDENT_FORM_SUCCESS,
     FETCH_UPDATE_STUDENT_FORM_FAILURE,
-    FETCH_LISTOFSTUDENTTABLE_REQUEST , FETCH_LISTOFSTUDENTTABLE_SUCCESS, FETCH_LISTOFSTUDENTTABLE_FAILURE,
+    FETCH_LISTOFSTUDENTTABLE_REQUEST, FETCH_LISTOFSTUDENTTABLE_SUCCESS, FETCH_LISTOFSTUDENTTABLE_FAILURE,
     FETCH_INSERT_STUDENT_ENROLLMENT_REQUEST,
     FETCH_INSERT_STUDENT_ENROLLMENT_SUCCESS,
     FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE,
     FETCH_LIST_OF_TUITION_FEE_REQUEST,
     FETCH_LIST_OF_TUITION_FEE_SUCCESS,
-    FETCH_LIST_OF_TUITION_FEE_FAILURE, 
+    FETCH_LIST_OF_TUITION_FEE_FAILURE,
+    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST,
+    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS,
+    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -27,6 +30,7 @@ const initialGeneralState = {
     insertEnrollmentState: { ...initialState },
     updateStudentDataState: { ...initialState },
     tuitionFeeState: { ...initialState },
+    insertOverCounterState: { ...initialState },
 };
 
 const parentReducer = (state = initialGeneralState, action) => {
@@ -62,7 +66,7 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, tableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_LISTOFSTUDENTTABLE_FAILURE:
             return { ...state, tableState: { loading: false, data: [], error: action.payload } };
-        
+
         //Insert Student Enrollment
         case FETCH_INSERT_STUDENT_ENROLLMENT_REQUEST:
             return { ...state, insertEnrollmentState: { loading: true, data: [], error: '' } };
@@ -78,6 +82,13 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, tuitionFeeState: { loading: false, data: action.payload, error: '' } };
         case FETCH_LIST_OF_TUITION_FEE_FAILURE:
             return { ...state, tuitionFeeState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST:
+            return { ...state, insertOverCounterState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS:
+            return { ...state, insertOverCounterState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE:
+            return { ...state, insertOverCounterState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;
