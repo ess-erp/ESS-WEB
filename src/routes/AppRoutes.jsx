@@ -51,6 +51,7 @@ import PrincipalOnlineApplication from "../pages/Principal/EmployeeOnlineApp";
 import PrincipalEmployeeInitialInterview from "../pages/Principal/EmployeeInitialInterview";
 import ListOfStudent from "../pages/ParentPortal/ListOfStudent";
 import PendingListStudentForm from "../components/ParentPortalComponents/PendingListStudentForm";
+import TeacherDashboard from "../pages/Teacher/Dashboard";
 
 
 const AppRoutes = () => (
@@ -445,6 +446,19 @@ const AppRoutes = () => (
       />
 
       {/* End of Parent portal  */}
+      <Route
+        path="/teacher/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[14]}>
+            <TeacherDashboard />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/* start of teacher modules */}
+
+
+      {/* end of teacher modules */}
 
       {/* Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

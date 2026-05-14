@@ -101,9 +101,15 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
         {
             name: "Action",
             cell: row => (
+                // <button
+                //     onClick={() => handleActivate(row)}
+                //     className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                // >
+                //     Activate
+                // </button>
                 <button
                     onClick={() => handleActivate(row)}
-                    className="bg-green-500 text-white px-3 py-1 rounded text-sm"
+                    className="bg-green-500 text-white px-2 py-0.5 rounded text-xs"
                 >
                     Activate
                 </button>

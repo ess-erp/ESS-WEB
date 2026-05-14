@@ -352,16 +352,16 @@ const NewStudentForm = () => {
 
     console.log("SUBMIT PAYLOAD:", payload);
 
-    // const res = await dispatch(fetchInsertStudentData(payload));
-    // if (res.ok) {
-    //     setIsSuccessModalOpen(true);
-    //     if (isSuccessModalOpen == false) {
-    //         navigate('/congratulationletter');
-    //     }
-    // }
-    // else {
-    //     return;
-    // }
+    const res = await dispatch(fetchInsertStudentData(payload));
+    if (res.ok) {
+        setIsSuccessModalOpen(true);
+        if (isSuccessModalOpen == false) {
+            navigate('/congratulationletter');
+        }
+    }
+    else {
+        return;
+    }
   };
 
   return (
