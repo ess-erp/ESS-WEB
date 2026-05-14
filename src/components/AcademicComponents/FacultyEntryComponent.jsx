@@ -12,6 +12,7 @@ import {
     fetchTeacherListData,
     fetchInsertFacultyLoadData,
     fetchFacultyLoadTableData,
+    fetchFacultyLoadRowTableData,
 } from "../../states/AcademicState/Action";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
@@ -226,7 +227,9 @@ const FacultyEntryComponent = () => {
 
     const facultyLoadColumn = [
         { name: 'Adviser Fullname', selector: row => row.AdviserFullname, sortable: true },
-        { name: 'Created By', selector: row => row.CreatedByUserFullname, sortable: true },
+        { name: 'Section Name', selector: row => row.SectionName, sortable: true },
+        { name: 'Number of Teacher Assigned', selector: row => row.NumberOfTeacher, sortable: true },
+        { name: 'Created By', selector: row => row.CreatedByFullname, sortable: true },
         { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
         {
             name: "Actions",
@@ -254,12 +257,25 @@ const FacultyEntryComponent = () => {
         }
     ];
 
-    const openRowModal = (row) => {
+
+    const [rowModalOpen, setRowModalOpen] = useState(false);
+    const [loadId, setLoadId] = useState(0);
+    const [adviserName, setAdviserName] = useState("");
+    const [sectionName, setSectionName] = useState("");
+    const [levelName, setLevelName] = useState("");
+    const [createdBy, setCreatedBy] = useState("");
+    const openRowModal = (row, mode) => {
         console.log(row);
+        setLoadId(row.LoadId);
+        setRowModalOpen(true);
+        console.log(loadId)
     };
+
+
     const handleToggleActive = (selectedRow, newStatus) => {
         console.log(selectedRow);
         console.log(newStatus);
+        console.log(loadId);
         // const CreatedByUserId = user.UserId;
         // const activeStatus = newStatus ? "Y" : "DR";
         // console.log(selectedRow);
@@ -288,6 +304,66 @@ const FacultyEntryComponent = () => {
         //     console.error("Error updating template:", error);
         // }
     };
+
+    const [loadList, setLoadList] = useState([]);
+    const loadTableState = useSelector((state) => state.academic.loadTableState || {});
+    const loadTable = loadTableState.data.data || [];
+    const loadTotalRows = loadTableState.data.totalRecords || 0;
+    const loadLoading = loadTableState.loading || false;
+    const [loadCurrentPage, setLoadTableCurrentPage] = useState(1);
+    const [loadRowsPerPage, setLoadTableRowsPerPage] = useState(10);
+    const [loadTableSearchFilter, setLoadTableFilterText] = useState("");
+
+
+    useEffect(() => {
+        dispatch(fetchFacultyLoadRowTableData(loadId, loadCurrentPage, loadRowsPerPage, loadTableSearchFilter));
+    }, [loadId, facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, dispatch]);
+
+    useEffect(() => {
+        if (loadTable.length === 0) return;
+        setLoadList(loadTable);
+        setAdviserName(loadTable[0]?.AssignedTeacher);
+        setSectionName(loadTable[0].SectionName);
+        setLevelName(loadTable[0]?.LevelName);
+        setCreatedBy(loadTable[0]?.CreatedByFullname);
+    }, [loadTable]);
+    console.log(loadTable);
+    const loadColumn = [
+        { name: 'Assigned Teacher', selector: row => row.TeacherFullname, sortable: true, wrap: true },
+        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
+        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
+        { name: 'Subject Type', selector: row => row.SubjectType, sortable: true },
+        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true },
+        { name: 'Room', selector: row => row.Room, sortable: true },
+        { name: 'Start Time', selector: row => formatToAMPM(row.StartTime), sortable: true, wrap: true, grow: 3 },
+        { name: 'End Time', selector: row => formatToAMPM(row.EndTime), sortable: true, wrap: true, grow: 3 },
+        {
+            name: 'Term Available',
+            cell: (row) => (
+                <div className="flex gap-3 m-1">
+                    {["Term1", "Term2", "Term3"].map((t, i) => (
+                        <label key={t} className="flex items-center gap-1">
+                            <input
+                                type="checkbox"
+                                checked={row[t] === "true" || row[t] === true}
+                                readOnly
+                            />
+                            T{i + 1}
+                        </label>
+                    ))}
+                </div>
+            ),
+            sortable: true,
+            wrap: true,
+            grow: 3,
+            style: {
+                whiteSpace: 'normal'
+            }
+        },
+        { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true , wrap: true},
+    ];
+
+
     return (
         // <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -428,6 +504,103 @@ const FacultyEntryComponent = () => {
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={successModalTitle}
                 body={<p>{successModalBody}</p>}
+            />
+            <ModalComponent
+                isOpen={rowModalOpen}
+                onClose={() => setRowModalOpen(false)}
+                title="Faculty Load"
+                body={
+                    <div>
+                        <div className="mt-6 relative overflow-hidden">
+                            <div className="flex justify-center gap-6 mb-4">
+                                <div>
+                                    <label className="block text-sm font-large font-bold">
+                                        Adviser Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={adviserName || ""}
+                                        disabled
+                                        className="mt-2 w-full border-0 border-b border-gray-500 
+                                        bg-transparent text-gray-900 
+                                        text-center
+                                        focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-large font-bold">
+                                        Section Name
+                                    </label>
+
+                                    <input
+                                        type="text"
+                                        value={sectionName || ""}
+                                        disabled
+                                        className="mt-2 w-full border-0 border-b border-gray-500 
+                                        bg-transparent text-gray-900 
+                                        text-center
+                                        focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-large font-bold">
+                                        Level Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={levelName || ""}
+                                        disabled
+                                        className="mt-2 w-full border-0 border-b border-gray-500 
+                                        bg-transparent text-gray-900 
+                                        text-center
+                                        focus:outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-large font-bold">
+                                        Created By
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={createdBy || ""}
+                                        disabled
+                                        className="mt-2 w-full border-0 border-b border-gray-500 
+                                        bg-transparent text-gray-900 
+                                        text-center
+                                        focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+                            <hr className="my-4 border-t border-gray-300" />
+                            <div className="w-full overflow-y-auto max-h-[300px]">
+                                <DataTable
+                                    columns={loadColumn}
+                                    data={loadList}
+                                    progressPending={loadLoading}
+                                    pagination
+                                    paginationServer
+                                    paginationTotalRows={loadTotalRows}
+                                    paginationDefaultPage={loadCurrentPage}
+                                    onChangePage={(page) => setLoadTableCurrentPage(page)}
+                                    onChangeRowsPerPage={(newPerPage, page) => {
+                                        setLoadTableRowsPerPage(newPerPage);
+                                        setLoadTableCurrentPage(page);
+                                    }}
+                                    highlightOnHover
+                                    striped
+                                    responsive
+                                    noDataComponent="No faculty load data."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                }
+                size="w-[1200px]"
+                maxHeight="100vh"
+                buttons={[
+                    { label: "Cancel", type: "red", onClick: () => setAddNewModal(false) },
+                ]}
             />
         </div>
     );

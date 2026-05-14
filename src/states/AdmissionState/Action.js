@@ -701,7 +701,7 @@ export const fetchGenerateLetterData = (appId,curUserId) => async (dispatch) => 
     dispatch(fetchGenerateLetterRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/generate-letter-student-id?appId=${appId}&userId=${curUserId}`;
+        const url = `${baseUrl}/admission/generate-letter-app-id?appId=${appId}&userId=${curUserId}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: {

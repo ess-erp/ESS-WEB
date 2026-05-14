@@ -316,7 +316,7 @@ const SubjectScheduleLoadEntryComponent = () => {
         const res = await dispatch(fetchInsertSubjectScheduleData(payload));
         console.log(res);
 
-        if (res.data.Message == "Success") {
+        if (res.data?.Message == "Success") {
             setIsSuccessModalOpen(true);
             setSuccessModalBody("Done Creating Subject Schedule.");
             setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
@@ -324,7 +324,7 @@ const SubjectScheduleLoadEntryComponent = () => {
                 setTimeout(() => window.location.reload(), 3000);
             }
         }
-        else if(res.Ok){
+        else if(res.ok){
             setIsSuccessModalOpen(true);
             setSuccessModalBody("Done Creating Subject Schedule.");
             setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);

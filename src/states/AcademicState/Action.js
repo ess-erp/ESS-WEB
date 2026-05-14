@@ -17,6 +17,7 @@ import {
     FETCH_TEACHER_ALREADY_ASSIGN_REQUEST, FETCH_TEACHER_ALREADY_ASSIGN_SUCCESS, FETCH_TEACHER_ALREADY_ASSIGN_FAILURE,
     FETCH_INSERT_FACULTY_LOAD_REQUEST, FETCH_INSERT_FACULTY_LOAD_SUCCESS, FETCH_INSERT_FACULTY_LOAD_FAILURE,
     FETCH_FACULTY_LOAD_TABLE_REQUEST, FETCH_FACULTY_LOAD_TABLE_SUCCESS, FETCH_FACULTY_LOAD_TABLE_FAILURE,
+    FETCH_FACULTY_LOAD_ROW_TABLE_REQUEST, FETCH_FACULTY_LOAD_ROW_TABLE_SUCCESS, FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -548,6 +549,35 @@ export const fetchFacultyLoadTableData = (page, pageSize, search) => async (disp
     }
     catch (error) {
         dispatch(fetchFacultyLoadTableFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchFacultyLoadRowTableRequest = () => ({ type: FETCH_FACULTY_LOAD_ROW_TABLE_REQUEST });
+export const fetchFacultyLoadRowTableSuccess = (data) => ({ type: FETCH_FACULTY_LOAD_ROW_TABLE_SUCCESS, payload: data });
+export const fetchFacultyLoadRowTableFailure = (error) => ({ type: FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE, payload: error });
+
+export const fetchFacultyLoadRowTableData = (loadId,page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchFacultyLoadRowTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-faculty-load-row-table?loadId=${loadId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchFacultyLoadRowTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchFacultyLoadRowTableFailure(error.message));
         return { ok: false, error };
     }
 };
