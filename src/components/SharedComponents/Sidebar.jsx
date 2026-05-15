@@ -293,7 +293,20 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     {
       name: "Enroll Student",
       icon: UserRoundPlus,
-      path: "/parent/enrollstudent",
+      path: "/teacher/enrollstudent",
+    },
+    {
+      name: "List of Student",
+      icon: User,
+      path: "/parent/listofstudent",
+    },
+  ];
+  const adviserMenu = [
+    { name: "Dashboard", icon: DashboardIcon, path: "/teacher/dashboard" },
+    {
+      name: "List of Section",
+      icon: DocumentIcon,
+      path: "/teacher/listofsection",
     },
     {
       name: "List of Student",
@@ -315,6 +328,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     11: sacMenu,
     12: apMenu,
     13: principalMenu,
+    14: adviserMenu,
     17: parentMenu,
   };
 

@@ -109,7 +109,6 @@ const academicReducer = (state = initialState, action) => {
         case FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE:
             return { ...state, curriculumAndNonCurriculumSubjectState: { loading: false, data: [], error: action.payload } };
 
-
         case FETCH_INSERT_SUBJECT_SCHEDULE_REQUEST:
             return { ...state, insertSubjectScheduleState: { loading: true, data: [], error: '' } };
         case FETCH_INSERT_SUBJECT_SCHEDULE_SUCCESS:

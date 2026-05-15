@@ -52,6 +52,7 @@ import PrincipalEmployeeInitialInterview from "../pages/Principal/EmployeeInitia
 import ListOfStudent from "../pages/ParentPortal/ListOfStudent";
 import PendingListStudentForm from "../components/ParentPortalComponents/PendingListStudentForm";
 import TeacherDashboard from "../pages/Teacher/Dashboard";
+import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 
 
 const AppRoutes = () => (
@@ -451,6 +452,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[14]}>
             <TeacherDashboard />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/teacher/listofsection"
+        element={
+          <ProtectedRoutes allowedRoles={[14]}>
+            <TeacherListOfSection />
           </ProtectedRoutes>
         }
       />
