@@ -27,6 +27,7 @@ import SruDashboard from "../pages/SRU/Dashboard";
 import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
 import StudentMasterFile from "../pages/SRU/StudentMasterFile";
 import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
+import SruSchoolCalendar from "../pages/SRU/SchoolCalendar";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
@@ -53,6 +54,7 @@ import ListOfStudent from "../pages/ParentPortal/ListOfStudent";
 import PendingListStudentForm from "../components/ParentPortalComponents/PendingListStudentForm";
 import TeacherDashboard from "../pages/Teacher/Dashboard";
 import TeacherListOfSection from "../pages/Teacher/ListOfSection";
+import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
 
 
 const AppRoutes = () => (
@@ -225,6 +227,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[5]}>
             <SectionAndHouseEntry />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sru/schoolcalendar"
+        element={
+          <ProtectedRoutes allowedRoles={[5]}>
+            <SruSchoolCalendar />
           </ProtectedRoutes>
         }
       />
@@ -447,10 +457,13 @@ const AppRoutes = () => (
       />
 
       {/* End of Parent portal  */}
+
+
+      {/* start of teacher modules */}
       <Route
         path="/teacher/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={[14]}>
+          <ProtectedRoutes allowedRoles={[14,15]}>
             <TeacherDashboard />
           </ProtectedRoutes>
         }
@@ -458,14 +471,19 @@ const AppRoutes = () => (
       <Route
         path="/teacher/listofsection"
         element={
-          <ProtectedRoutes allowedRoles={[14]}>
+          <ProtectedRoutes allowedRoles={[14,15]}>
             <TeacherListOfSection />
           </ProtectedRoutes>
         }
       />
-
-      {/* start of teacher modules */}
-
+      <Route
+        path="/teacher/encodingofgradeorclub"
+        element={
+          <ProtectedRoutes allowedRoles={[14]}>
+            <TeacherEncodingOfGradeClub />
+          </ProtectedRoutes>
+        }
+      />
 
       {/* end of teacher modules */}
 

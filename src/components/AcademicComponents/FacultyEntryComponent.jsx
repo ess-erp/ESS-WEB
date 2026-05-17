@@ -44,13 +44,14 @@ const FacultyEntryComponent = () => {
     const [adviserList, setAdviserList] = useState([]);
     const [nonAdviserList, setNonAdviserList] = useState([]);
     const [selectedAdviser, setSelectedAdviser] = useState("");
+
     // const [select]
     const openAddNewModal = async () => {
         const res = await dispatch(fetchSectionListData());
         console.log(res);
         if (res.ok) {
             const formatted = res.data.map(item => ({
-                value: item.SecId,
+                value: item.SectionId,
                 label: item.SectionName,
                 levelName: item.LevelName,
             }));
@@ -224,7 +225,7 @@ const FacultyEntryComponent = () => {
         if (facultyLoadTable.length === 0) return;
         setFacultyLoadList(facultyLoadTable);
     }, [facultyLoadTable]);
-
+    console.log(facultyLoadTable);
     const facultyLoadColumn = [
         { name: 'Adviser Fullname', selector: row => row.AdviserFullname, sortable: true },
         { name: 'Section Name', selector: row => row.SectionName, sortable: true },
@@ -316,14 +317,15 @@ const FacultyEntryComponent = () => {
 
 
     useEffect(() => {
+        if(!loadId) return;
         dispatch(fetchFacultyLoadRowTableData(loadId, loadCurrentPage, loadRowsPerPage, loadTableSearchFilter));
-    }, [loadId, facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, dispatch]);
+    }, [loadId, loadCurrentPage, loadRowsPerPage, loadTableSearchFilter, dispatch]);
 
     useEffect(() => {
         if (loadTable.length === 0) return;
         setLoadList(loadTable);
         setAdviserName(loadTable[0]?.AssignedTeacher);
-        setSectionName(loadTable[0].SectionName);
+        setSectionName(loadTable[0]?.SectionName);
         setLevelName(loadTable[0]?.LevelName);
         setCreatedBy(loadTable[0]?.CreatedByFullname);
     }, [loadTable]);
@@ -389,7 +391,7 @@ const FacultyEntryComponent = () => {
                             value={facultyLoadTableSearchFilter}
                             onChange={(e) => {
                                 setFacultyLoadTableFilterText(e.target.value);
-                                setFacultyCurrentPage(1);
+                                setFacultyLoadTableCurrentPage(1);
                             }}
                         />
                     </div>
@@ -406,8 +408,8 @@ const FacultyEntryComponent = () => {
                         paginationDefaultPage={facultyLoadCurrentPage}
                         onChangePage={(page) => setFacultyLoadTableCurrentPage(page)}
                         onChangeRowsPerPage={(newPerPage, page) => {
-                            setFacultyLoadTableCurrentPage(newPerPage);
-                            setFacultyLoadTableRowsPerPage(page);
+                            setFacultyLoadTableCurrentPage(page);
+                            setFacultyLoadTableRowsPerPage(newPerPage);
                         }}
                         highlightOnHover
                         responsive

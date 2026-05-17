@@ -44,119 +44,356 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   }, []);
 
   // const sharedMenu = [
-  //     { separator: true },
-  //     { name: "Notification", icon: Bell, path: "/tickets" },
-  //     { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //     { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //     { name: "Profile", icon: SettingsIcon, path: "/settings" },
+  //   { separator: true },
+
+  //   { name: "Notification", icon: Bell, path: "/tickets" },
+
+  //   // Hide Tickets if userRole is 14 or 15
+  //   ...(userRole !== 14 && userRole !== 15
+  //     ? [{ name: "Tickets", icon: TicketIcon, path: "/tickets" }]
+  //     : []),
+
+  //   { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+
+  //   { name: "Profile", icon: SettingsIcon, path: "/settings" },
   // ];
 
+  // // 🔹 Role-specific menus
+  // const admissionMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
+  //   {
+  //     name: "Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/admission/onlineapplication",
+  //   },
+  //   { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
+  //   ...sharedMenu,
+  // ];
+
+  // const cfwMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
+  //   {
+  //     name: "Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/cfw/onlineapplication",
+  //   },
+  //   { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
+  //   ...sharedMenu,
+  // ];
+
+  // const cashierMenu = [
+  //   {
+  //     name: "Cashier Dashboard",
+  //     icon: DashboardIcon,
+  //     path: "/cashier/dashboard",
+  //   },
+  //   {
+  //     name: "Cashier Payment Form",
+  //     icon: CreditCardIcon,
+  //     path: "/cashier/cashierpayment",
+  //   },
+  //   {
+  //     name: "Transaction History",
+  //     icon: ScrollText,
+  //     path: "/cashier/transactionhistory",
+  //   },
+  //   { separator: true },
+  //   { name: "Notification", icon: Bell, path: "/tickets" },
+  //   { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
+  //   { name: "Profile", icon: SettingsIcon, path: "/settings" },
+  // ];
+
+  // const financeMenu = [
+  //   {
+  //     name: "Finance Dashboard",
+  //     icon: DashboardIcon,
+  //     path: "/finance/dashboard",
+  //   },
+  //   { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
+  //   ...sharedMenu,
+  // ];
+
+  // const sruMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
+  //   {
+  //     name: "Student Master List",
+  //     icon: UserIconSolid,
+  //     path: "/sru/studentlist",
+  //   },
+  //   {
+  //     name: "Section and House Entry",
+  //     icon: FilePlus,
+  //     path: "/sru/sectionandhouseentry",
+  //   },
+  //   {
+  //     name: "No. Of School Days Entry",
+  //     icon: CalendarPlus,
+  //     path: "/sru/addhouse",
+  //   },
+  //   { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
+  //   ...sharedMenu,
+  // ];
+
+  // const academicMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
+  //   {
+  //     name: "Assign Adviser or Non-Adviser",
+  //     icon: UserIconSolid,
+  //     path: "/academic/assignadvisernonadviser",
+  //   },
+  //   {
+  //     name: "Faculty Load Entry",
+  //     icon: FilePlus,
+  //     path: "/academic/facultyloadentry",
+  //   },
+  //   {
+  //     name: "Subject Load Entry",
+  //     icon: BookPlus,
+  //     path: "/academic/subjectloadentry",
+  //   },
+  //   {
+  //     name: "Subject Schedule Entry",
+  //     icon: DocumentIcon,
+  //     path: "/academic/subjectscheduleloadentry",
+  //   },
+  //   ...sharedMenu,
+  // ];
+
+  // const hrMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+  //   {
+  //     name: "Employee Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/hrd/onlineapplication",
+  //   },
+  //   { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+  //   ...sharedMenu,
+  // ];
+  // const hrAdminMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+  //   {
+  //     name: "Employee Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/hrd/onlineapplication",
+  //   },
+  //   { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+  //   ...sharedMenu,
+  // ];
+  // const sacMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/sac/dashboard" },
+  //   {
+  //     name: "Employee Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/sac/onlineapplication",
+  //   },
+  //   // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+  //   // ...sharedMenu,
+  // ];
+  // const apMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/ap/dashboard" },
+  //   {
+  //     name: "Employee Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/ap/onlineapplication",
+  //   },
+  //   // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+  //   // ...sharedMenu,
+  // ];
+  // const principalMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/principal/dashboard" },
+  //   {
+  //     name: "Employee Online Application",
+  //     icon: UserIconSolid,
+  //     path: "/principal/onlineapplication",
+  //   },
+  //   // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
+  //   // ...sharedMenu,
+  // ];
+  // const parentMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/parent/dashboard" },
+  //   {
+  //     name: "Enroll Student",
+  //     icon: UserRoundPlus,
+  //     path: "/teacher/enrollstudent",
+  //   },
+  //   {
+  //     name: "List of Student",
+  //     icon: User,
+  //     path: "/parent/listofstudent",
+  //   },
+  // ];
+  // const adviserMenu = [
+  //   { name: "Dashboard", icon: DashboardIcon, path: "/teacher/dashboard" },
+  //   {
+  //     name: "List of Section",
+  //     icon: DocumentIcon,
+  //     path: "/teacher/listofsection",
+  //   },
+  //   {
+  //     name: "Encoding of Grades/Club",
+  //     icon: User,
+  //     path: "/teacher/encodingofgradeorclub",
+  //   },
+  //   ...sharedMenu,
+  // ];
+
+  // // 🔥 MULTIPLE ROLE SUPPORT HERE
   // const roleMenus = {
-  //     1: [
-  //         { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
-  //         { name: "Online Application", icon: UserIconSolid, path: "/admission/onlineapplication" },
-  //         { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     2: [
-  //         { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
-  //         { name: "Online Application", icon: UserIconSolid, path: "/cfw/onlineapplication" },
-  //         { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     3: [
-  //         { name: "Cashier Dashboard", icon: DashboardIcon, path: "/cashier/dashboard" },
-  //         // { name: "Online Application", icon: AccountIcon, path: "/cashier/onlineapplication" },
-  //         { name: "Cashier Payment Form", icon: CreditCardIcon, path: "/cashier/cashierpayment" },
-  //         { name: "Transaction History", icon: ScrollText, path: "/cashier/transactionhistory" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     4: [
-  //         { name: "Finance Dashboard", icon: DashboardIcon, path: "/finance/dashboard" },
-  //         //{ name: "Online Application", icon: AccountIcon, path: "/finance/onlineapplication" },
-  //         { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     5: [
-  //         { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
-  //         { name: "Student Master List", icon: UserIconSolid, path: "/sru/studentlist" },
-  //         { name: "Section and House Entry", icon: FilePlus, path: "/sru/sectionandhouseentry" },
-  //         { name: "No. Of School Days Entry", icon: CalendarPlus, path: "/sru/addhouse" },
-  //         { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     6: [
-  //         { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
-  //         { name: "Faculty Load Entry", icon: FilePlus, path: "/academic/facultyloadentry" },
-  //         { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
-  //         { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/subjectscheduleloadentry" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
-  //     7: [
-  //         { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
-  //         { name: "Employee Online Application", icon: UserIconSolid, path: "/hrd/onlineapplication" },
-  //         { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
-  //         // { name: "Subject Load Entry", icon: BookPlus, path: "/academic/subjectloadentry" },
-  //         // { name: "Subject Schedule Entry", icon: DocumentIcon, path: "/academic/templatesform" },
-  //         { separator: true },
-  //         { name: "Notification", icon: Bell, path: "/tickets" },
-  //         { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-  //         { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-  //         { name: "Profile", icon: SettingsIcon, path: "/settings" },
-  //     ],
+  //   1: admissionMenu,
+  //   2: cfwMenu,
+  //   3: cashierMenu,
+  //   4: financeMenu,
+  //   5: sruMenu,
+  //   6: academicMenu,
+  //   7: hrMenu,
+  //   10: hrAdminMenu,
+  //   11: sacMenu,
+  //   12: apMenu,
+  //   13: principalMenu,
+  //   14: adviserMenu,
+  //   17: parentMenu,
   // };
-  // 🔹 Shared bottom menu (used by most roles)
+
+  // // Pick menu by role
+  // // const menuItems = roleMenus[user?.UserRoleId] || [];
+
+  // const getMenuByRoles = (userRoles) => {
+  //   if (!userRoles) return [];
+
+  //   // Ensure roles is always an array
+  //   const rolesArray = Array.isArray(userRoles) ? userRoles : [userRoles];
+
+  //   // Merge menus from all roles
+  //   const mergedMenus = rolesArray.flatMap((role) => roleMenus[role] || []);
+
+  //   // Remove duplicates (by name)
+  //   const uniqueMenus = [];
+  //   const seen = new Set();
+
+  //   for (let item of mergedMenus) {
+  //     if (item.separator) {
+  //       uniqueMenus.push(item);
+  //       continue;
+  //     }
+
+  //     if (!seen.has(item.name)) {
+  //       seen.add(item.name);
+  //       uniqueMenus.push(item);
+  //     }
+  //   }
+
+  //   return uniqueMenus;
+  // };
+
+  // const menuItems = getMenuByRoles(user?.UserRoleId);
+
+  // const getActiveItem = () => {
+  //   if (location.pathname.includes("/dashboard")) return "Dashboard";
+  //   if (location.pathname.includes("/onlineapplication"))
+  //     return "Online Application";
+  //   if (location.pathname.includes("/accounts")) return "Accounts";
+  //   if (location.pathname.includes("/tickets")) return "Tickets";
+  //   if (location.pathname.includes("/settings")) return "Settings";
+  //   return "";
+  // };
+  // const activeItem = getActiveItem();
+
+  // const handleLogout = () => {
+  //   removeToken();
+  //   navigate("/");
+  // };
+  const hideTicketsRoles = [7, 8, 9, 14, 15];
+
+  const shouldHideTickets = (userRoles) => {
+    const rolesArray = Array.isArray(userRoles)
+      ? userRoles
+      : [userRoles];
+
+    return rolesArray.some((role) =>
+      hideTicketsRoles.includes(role)
+    );
+  };
+
+
+
+  /* =========================================================
+      SHARED MENU
+  ========================================================= */
+
   const sharedMenu = [
     { separator: true },
-    { name: "Notification", icon: Bell, path: "/tickets" },
-    { name: "Tickets", icon: TicketIcon, path: "/tickets" },
-    { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-    { name: "Profile", icon: SettingsIcon, path: "/settings" },
+
+    {
+      name: "Notification",
+      icon: Bell,
+      path: "/tickets",
+    },
+
+    // Dynamic Ticket Visibility
+    ...(!shouldHideTickets(user?.UserRoleId)
+      ? [
+        {
+          name: "Tickets",
+          icon: TicketIcon,
+          path: "/tickets",
+        },
+      ]
+      : []),
+
+    {
+      name: "Employee Portal",
+      icon: UserIconSolid,
+      path: "/tickets",
+    },
+
+    {
+      name: "Profile",
+      icon: SettingsIcon,
+      path: "/settings",
+    },
   ];
 
-  // 🔹 Role-specific menus
+
+
+  /* =========================================================
+      ROLE MENUS
+  ========================================================= */
+
   const admissionMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/admission/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/admission/dashboard",
+    },
     {
       name: "Online Application",
       icon: UserIconSolid,
       path: "/admission/onlineapplication",
     },
-    { name: "Templates", icon: DocumentIcon, path: "/admission/templatesform" },
+    {
+      name: "Templates",
+      icon: DocumentIcon,
+      path: "/admission/templatesform",
+    },
     ...sharedMenu,
   ];
 
   const cfwMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/cfw/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/cfw/dashboard",
+    },
     {
       name: "Online Application",
       icon: UserIconSolid,
       path: "/cfw/onlineapplication",
     },
-    { name: "CFW Templates", icon: DocumentIcon, path: "/cfw/templates" },
+    {
+      name: "CFW Templates",
+      icon: DocumentIcon,
+      path: "/cfw/templates",
+    },
     ...sharedMenu,
   ];
 
@@ -176,10 +413,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: ScrollText,
       path: "/cashier/transactionhistory",
     },
-    { separator: true },
-    { name: "Notification", icon: Bell, path: "/tickets" },
-    { name: "Employee Portal", icon: UserIconSolid, path: "/tickets" },
-    { name: "Profile", icon: SettingsIcon, path: "/settings" },
+    ...sharedMenu,
   ];
 
   const financeMenu = [
@@ -188,12 +422,20 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: DashboardIcon,
       path: "/finance/dashboard",
     },
-    { name: "Templates", icon: DocumentIcon, path: "/finance/templates" },
+    {
+      name: "Templates",
+      icon: DocumentIcon,
+      path: "/finance/templates",
+    },
     ...sharedMenu,
   ];
 
   const sruMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/sru/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/sru/dashboard",
+    },
     {
       name: "Student Master List",
       icon: UserIconSolid,
@@ -209,12 +451,20 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: CalendarPlus,
       path: "/sru/addhouse",
     },
-    { name: "School Calendar", icon: Calendar, path: "/sru/addhouse" },
+    {
+      name: "School Calendar",
+      icon: Calendar,
+      path: "/sru/schoolcalendar",
+    },
     ...sharedMenu,
   ];
 
   const academicMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/academic/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/academic/dashboard",
+    },
     {
       name: "Assign Adviser or Non-Adviser",
       icon: UserIconSolid,
@@ -239,57 +489,71 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   ];
 
   const hrMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/hrd/dashboard",
+    },
     {
       name: "Employee Online Application",
       icon: UserIconSolid,
       path: "/hrd/onlineapplication",
     },
-    { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
-    ...sharedMenu,
-  ];
-  const hrAdminMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/hrd/dashboard" },
     {
-      name: "Employee Online Application",
-      icon: UserIconSolid,
-      path: "/hrd/onlineapplication",
+      name: "Templates",
+      icon: DocumentIcon,
+      path: "/hrd/templates",
     },
-    { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
     ...sharedMenu,
   ];
+
+  const hrAdminMenu = [...hrMenu];
+
   const sacMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/sac/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/sac/dashboard",
+    },
     {
       name: "Employee Online Application",
       icon: UserIconSolid,
       path: "/sac/onlineapplication",
     },
-    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
-    // ...sharedMenu,
   ];
+
   const apMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/ap/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/ap/dashboard",
+    },
     {
       name: "Employee Online Application",
       icon: UserIconSolid,
       path: "/ap/onlineapplication",
     },
-    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
-    // ...sharedMenu,
   ];
+
   const principalMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/principal/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/principal/dashboard",
+    },
     {
       name: "Employee Online Application",
       icon: UserIconSolid,
       path: "/principal/onlineapplication",
     },
-    // { name: "Templates", icon: DocumentIcon, path: "/hrd/templates" },
-    // ...sharedMenu,
   ];
+
   const parentMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/parent/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/parent/dashboard",
+    },
     {
       name: "Enroll Student",
       icon: UserRoundPlus,
@@ -301,21 +565,32 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/parent/listofstudent",
     },
   ];
+
   const adviserMenu = [
-    { name: "Dashboard", icon: DashboardIcon, path: "/teacher/dashboard" },
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/teacher/dashboard",
+    },
     {
       name: "List of Section",
       icon: DocumentIcon,
       path: "/teacher/listofsection",
     },
     {
-      name: "List of Student",
+      name: "Encoding of Grades/Club",
       icon: User,
-      path: "/parent/listofstudent",
+      path: "/teacher/encodingofgradeorclub",
     },
+    ...sharedMenu,
   ];
 
-  // 🔥 MULTIPLE ROLE SUPPORT HERE
+
+
+  /* =========================================================
+      ROLE MAP
+  ========================================================= */
+
   const roleMenus = {
     1: admissionMenu,
     2: cfwMenu,
@@ -329,33 +604,50 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     12: apMenu,
     13: principalMenu,
     14: adviserMenu,
+    15: adviserMenu,
     17: parentMenu,
   };
 
-  // Pick menu by role
-  // const menuItems = roleMenus[user?.UserRoleId] || [];
+
+
+  /* =========================================================
+      MULTI ROLE MENU MERGE
+  ========================================================= */
 
   const getMenuByRoles = (userRoles) => {
+
     if (!userRoles) return [];
 
-    // Ensure roles is always an array
-    const rolesArray = Array.isArray(userRoles) ? userRoles : [userRoles];
+    const rolesArray = Array.isArray(userRoles)
+      ? userRoles
+      : [userRoles];
 
-    // Merge menus from all roles
-    const mergedMenus = rolesArray.flatMap((role) => roleMenus[role] || []);
+    const mergedMenus = rolesArray.flatMap(
+      (role) => roleMenus[role] || []
+    );
 
-    // Remove duplicates (by name)
     const uniqueMenus = [];
     const seen = new Set();
 
-    for (let item of mergedMenus) {
+    for (const item of mergedMenus) {
+
       if (item.separator) {
-        uniqueMenus.push(item);
+
+        // prevent duplicate separators
+        const lastItem =
+          uniqueMenus[uniqueMenus.length - 1];
+
+        if (!lastItem?.separator) {
+          uniqueMenus.push(item);
+        }
+
         continue;
       }
 
-      if (!seen.has(item.name)) {
-        seen.add(item.name);
+      const key = `${item.name}-${item.path}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
         uniqueMenus.push(item);
       }
     }
@@ -365,20 +657,44 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
   const menuItems = getMenuByRoles(user?.UserRoleId);
 
+
+
+  /* =========================================================
+      ACTIVE ITEM
+  ========================================================= */
+
   const getActiveItem = () => {
-    if (location.pathname.includes("/dashboard")) return "Dashboard";
-    if (location.pathname.includes("/onlineapplication"))
-      return "Online Application";
-    if (location.pathname.includes("/accounts")) return "Accounts";
-    if (location.pathname.includes("/tickets")) return "Tickets";
-    if (location.pathname.includes("/settings")) return "Settings";
-    return "";
+
+    const currentPath = location.pathname.toLowerCase();
+
+    const flatMenus = Object.values(roleMenus)
+      .flat();
+
+    const matchedMenu = flatMenus.find(
+      (item) =>
+        item.path &&
+        currentPath.startsWith(
+          item.path.toLowerCase()
+        )
+    );
+
+    return matchedMenu?.name || "";
   };
+
   const activeItem = getActiveItem();
 
+
+
+  /* =========================================================
+      LOGOUT
+  ========================================================= */
   const handleLogout = () => {
     removeToken();
-    navigate("/");
+
+    setTimeout(() => {
+      // navigate("/");
+      window.location.reload();
+    }, 500);
   };
   return (
     <div

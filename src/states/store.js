@@ -13,6 +13,7 @@ import sacReducer from './SacState/Reducer';
 import apReducer from './AssistantPrincipalState/Reducer';
 import principalReducer from './PrincipalState/Reducer';
 import parentReducer from './ParentState/Reducer';
+import teacherReducer from './TeacherState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -28,6 +29,7 @@ const rootReducer = combineReducers({
   ap: apReducer,
   principal: principalReducer,
   parent: parentReducer,
+  teacher: teacherReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
