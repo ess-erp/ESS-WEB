@@ -8,6 +8,8 @@ import {
   ScrollText,
   UserRoundPlus,
   User,
+  IdCard,
+  FileText,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -314,8 +316,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     );
   };
 
-
-
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const toggleDropdown = (name) => {
+    setOpenDropdown((prev) => (prev === name ? null : name));
+  };
   /* =========================================================
       SHARED MENU
   ========================================================= */
@@ -430,6 +434,49 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     ...sharedMenu,
   ];
 
+  // const sruMenu = [
+  //   {
+  //     name: "Dashboard",
+  //     icon: DashboardIcon,
+  //     path: "/sru/dashboard",
+  //   },
+  //   {
+  //     name: "Student Master List",
+  //     icon: UserIconSolid,
+  //     path: "/sru/studentlist",
+  //   },
+  //   {
+  //     name: "Section and House Entry",
+  //     icon: FilePlus,
+  //     path: "/sru/sectionandhouseentry",
+  //   },
+  //   {
+  //     name: "School Calendar",
+  //     icon: Calendar,
+  //     path: "/sru/schoolcalendar",
+  //   },
+  //   {
+  //     name: "ARC Master List",
+  //     icon: DocumentIcon,
+  //     path: "/sru/arcmasterlist",
+  //   },
+  //   {
+  //     name: "Generate Student Id",
+  //     icon: IdCard,
+  //     path: "/sru/arcmasterlist",
+  //   },
+  //     {
+  //     name: "Generate School Form",
+  //     icon: FileText,
+  //     path: "/sru/arcmasterlist",
+  //   },
+  //   {
+  //     name: "Template",
+  //     icon: Calendar,
+  //     path: "/sru/schoolcalendar",
+  //   },
+  //   ...sharedMenu,
+  // ];
   const sruMenu = [
     {
       name: "Dashboard",
@@ -447,15 +494,38 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/sru/sectionandhouseentry",
     },
     {
-      name: "No. Of School Days Entry",
-      icon: CalendarPlus,
-      path: "/sru/addhouse",
-    },
-    {
       name: "School Calendar",
       icon: Calendar,
       path: "/sru/schoolcalendar",
     },
+    {
+      name: "ARC Master List",
+      icon: DocumentIcon,
+      path: "/sru/arcmasterlist",
+    },
+
+    // 👇 Dropdown parent
+    {
+      name: "Generate",
+      icon: FilePlus,
+      children: [
+        {
+          name: "Student ID",
+          path: "/sru/generate-student-id",
+        },
+        {
+          name: "School Form",
+          path: "/sru/generate-school-form",
+        },
+      ],
+    },
+
+    {
+      name: "Template",
+      icon: Calendar,
+      path: "/sru/schoolcalendar",
+    },
+
     ...sharedMenu,
   ];
 
@@ -796,7 +866,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           </div>
         )}
 
-        <nav className="mt-4">
+        {/* <nav className="mt-4">
           {menuItems.map((item, index) =>
             item.separator ? (
               <hr key={`sep-${index}`} className="my-6 border-gray-200" />
@@ -816,8 +886,8 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 )}
               </Link>
             )
-          )}
-          {/* {menuItems.map((item, index) =>
+          )} */}
+        {/* {menuItems.map((item, index) =>
                         item.separator ? (
                             <hr key={`sep-${index}`} className="my-6 border-gray-200" />
                         ) : (
@@ -837,6 +907,82 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                             </a>
                         )
                     )} */}
+        {/* </nav> */}
+        <nav className="mt-4">
+          {menuItems.map((item, index) =>
+            item.separator ? (
+              <hr key={`sep-${index}`} className="my-6 border-gray-200" />
+            ) : item.children ? (
+              // =========================
+              // DROPDOWN PARENT ITEM
+              // =========================
+              <div key={item.name + index}>
+                <a
+                  onClick={() => toggleDropdown(item.name)}
+                  className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+                  focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
+                ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
+                >
+                  <item.icon className="h-5 w-5 text-gray-600" />
+
+                  {isSidebarOpen && (
+                    <>
+                      <span className="mx-4 font-medium">{item.name}</span>
+
+                      <svg
+                        className={`w-4 h-4 ml-auto transition-transform ${openDropdown === item.name ? "rotate-180" : ""
+                          }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </>
+                  )}
+                </a>
+
+                {/* =========================
+            CHILDREN
+        ========================= */}
+                {openDropdown === item.name && isSidebarOpen && (
+                  <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
+                    {item.children.map((child, i) => (
+                      <Link
+                        key={i}
+                        to={child.path}
+                        className={`block px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition
+                  ${location.pathname === child.path ? "bg-gray-100 font-semibold" : ""}`}
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // =========================
+              // NORMAL ITEM
+              // =========================
+              <Link
+                to={item.path}
+                key={item.name + index}
+                className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+          ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
+              >
+                <item.icon className="h-5 w-5 text-gray-600" />
+
+                {isSidebarOpen && (
+                  <span className="mx-4 font-medium">{item.name}</span>
+                )}
+              </Link>
+            )
+          )}
         </nav>
       </div>
 

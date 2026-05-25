@@ -28,6 +28,7 @@ import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
 import StudentMasterFile from "../pages/SRU/StudentMasterFile";
 import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
 import SruSchoolCalendar from "../pages/SRU/SchoolCalendar";
+import SruArcMasterList from "../pages/SRU/ArcMasterList";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
@@ -55,6 +56,7 @@ import PendingListStudentForm from "../components/ParentPortalComponents/Pending
 import TeacherDashboard from "../pages/Teacher/Dashboard";
 import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
+import StudentDashboard from "../pages/Student/Dashboard";
 
 
 const AppRoutes = () => (
@@ -235,6 +237,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[5]}>
             <SruSchoolCalendar />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/sru/arcmasterlist"
+        element={
+          <ProtectedRoutes allowedRoles={[5]}>
+            <SruArcMasterList />
           </ProtectedRoutes>
         }
       />
@@ -463,7 +473,7 @@ const AppRoutes = () => (
       <Route
         path="/teacher/dashboard"
         element={
-          <ProtectedRoutes allowedRoles={[14,15]}>
+          <ProtectedRoutes allowedRoles={[14, 15]}>
             <TeacherDashboard />
           </ProtectedRoutes>
         }
@@ -471,7 +481,7 @@ const AppRoutes = () => (
       <Route
         path="/teacher/listofsection"
         element={
-          <ProtectedRoutes allowedRoles={[14,15]}>
+          <ProtectedRoutes allowedRoles={[14, 15]}>
             <TeacherListOfSection />
           </ProtectedRoutes>
         }
@@ -486,6 +496,18 @@ const AppRoutes = () => (
       />
 
       {/* end of teacher modules */}
+
+      {/* student dashboard */}
+        <Route
+        path="/teacher/dashboard"
+        element={
+          <ProtectedRoutes allowedRoles={[16]}>
+            <StudentDashboard />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/*  */}
 
       {/* Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

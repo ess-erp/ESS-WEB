@@ -5,6 +5,8 @@ import {
     FETCH_LIST_OF_SECTION_USER_REQUEST, FETCH_LIST_OF_SECTION_USER_SUCCESS, FETCH_LIST_OF_SECTION_USER_FAILURE,
     FETCH_TEACHER_SUBJECT_LOAD_REQUEST, FETCH_TEACHER_SUBJECT_LOAD_SUCCESS, FETCH_TEACHER_SUBJECT_LOAD_FAILURE,
     FETCH_LIST_OF_STUDENT_PER_TERM_REQUEST, FETCH_LIST_OF_STUDENT_PER_TERM_SUCCESS, FETCH_LIST_OF_STUDENT_PER_TERM_FAILURE,
+    FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
+    FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -180,6 +182,66 @@ export const fetchListOfStudentPerTermData = (loadId, subjectId, subjectType, pa
     }
     catch (error) {
         dispatch(fetchListOfStudentPerTermFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchInsertEncodedGradesRequest = () => ({ type: FETCH_INSERT_ENCODED_GRADES_REQUEST });
+export const fetchInsertEncodedGradesSuccess = (data) => ({ type: FETCH_INSERT_ENCODED_GRADES_SUCCESS, payload: data });
+export const fetchInsertEncodedGradesFailure = (error) => ({ type: FETCH_INSERT_ENCODED_GRADES_FAILURE, payload: error });
+
+export const fetchInsertEncodedGradesData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertEncodedGradesRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/teacher/insert-encoded-grades`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertEncodedGradesSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchInsertEncodedGradesFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchFinalizeEncodedGradesRequest = () => ({ type: FETCH_FINALIZE_ENCODED_GRADES_REQUEST });
+export const fetchFinalizeEncodedGradesSuccess = (data) => ({ type: FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, payload: data });
+export const fetchFinalizeEncodedGradesFailure = (error) => ({ type: FETCH_FINALIZE_ENCODED_GRADES_FAILURE, payload: error });
+
+export const fetchFinalizeEncodedGradesData = (formData) => async (dispatch) => {
+    dispatch(fetchFinalizeEncodedGradesRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/teacher/finalize-encoded-grades`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchFinalizeEncodedGradesSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchFinalizeEncodedGradesFailure(error.message));
         return { ok: false, error };
     }
 };

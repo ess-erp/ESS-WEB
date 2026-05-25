@@ -11,6 +11,8 @@ import {
     fetchListOfSectionUserData,
     fetchTeacherSubjectLoadData,
     fetchListOfStudentPerTermData,
+    fetchInsertEncodedGradesData,
+    fetchFinalizeEncodedGradesData,
 } from "../../states/TeacherState/Action";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
@@ -47,22 +49,22 @@ const EncodingGradeClubComponent = () => {
         { name: 'Section Name', selector: row => row.SectionName, sortable: true },
         { name: 'Number of Subject', selector: row => row.NumberOfSubject, sortable: true },
         { name: 'Number of Student', selector: row => row.NumberOfStudent, sortable: true },
-        { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
-        {
-            name: "Actions",
-            cell: (row) => (
-                <div className="flex gap-4 items-center">
-                    <button
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        onClick={() => openRowModal(row, "view")}
-                    >
-                        <Eye size={18} />
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            width: "180px",
-        }
+        // { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
+        // {
+        //     name: "Actions",
+        //     cell: (row) => (
+        //         <div className="flex gap-4 items-center">
+        //             <button
+        //                 className="p-1 text-blue-600 hover:text-blue-800"
+        //                 onClick={() => openRowModal(row, "view")}
+        //             >
+        //                 <Eye size={18} />
+        //             </button>
+        //         </div>
+        //     ),
+        //     ignoreRowClick: true,
+        //     width: "180px",
+        // }
     ];
 
     const [rowModalOpen, setRowModalOpen] = useState(false);
@@ -107,21 +109,21 @@ const EncodingGradeClubComponent = () => {
         { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
         { name: 'Start of time', selector: row => formatToAMPM(row.StartTime), sortable: true },
         { name: 'End of time', selector: row => formatToAMPM(row.EndTime), sortable: true },
-        {
-            name: "Actions",
-            cell: (row) => (
-                <div className="flex gap-4 items-center">
-                    <button
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        onClick={() => openEncodeGradeModal(row, "view")}
-                    >
-                        <Eye size={18} />
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            width: "180px",
-        }
+        // {
+        //     name: "Actions",
+        //     cell: (row) => (
+        //         <div className="flex gap-4 items-center">
+        //             <button
+        //                 className="p-1 text-blue-600 hover:text-blue-800"
+        //                 onClick={() => openEncodeGradeModal(row, "view")}
+        //             >
+        //                 <Eye size={18} />
+        //             </button>
+        //         </div>
+        //     ),
+        //     ignoreRowClick: true,
+        //     width: "180px",
+        // }
     ];
     const [showEncodingTable, setShowEncodingTable] = useState(false);
     const [rowLoadId, setRowLoadId] = useState(0);
@@ -160,6 +162,7 @@ const EncodingGradeClubComponent = () => {
         setSectionName(studentTable[0]?.SectionName);
         setLevelName(studentTable[0]?.LevelName);
         setSubjectTitle(studentTable[0]?.SubjectCode + "-" + studentTable[0]?.SubjectName);
+        setNoOfSchoolDays(studentTable[0]?.NoOfSchoolDays);
     }, [studentTable]);
 
     console.log(studentTable);
@@ -171,29 +174,68 @@ const EncodingGradeClubComponent = () => {
     const femaleStudents = studentList.filter(
         (s) => s.Gender?.toLowerCase() === "female"
     );
-
+    const [gradeErrors, setGradeErrors] = useState({});
+    const [daysErrors, setDaysErrors] = useState({});
     const studentColumn = [
-        { name: 'Student Number', selector: row => row.StudentNumber, sortable: true },
-        { name: 'Last Name', selector: row => row.Lname, sortable: true },
-        { name: 'First Name', selector: row => row.Fname, sortable: true },
-        { name: 'Middle Name', selector: row => row.Mname, sortable: true },
+        {
+            name: 'Student Number',
+            selector: row => row.StudentNumber,
+            sortable: true
+        },
+        {
+            name: 'Last Name',
+            selector: row => row.Lname,
+            sortable: true
+        },
+        {
+            name: 'First Name',
+            selector: row => row.Fname,
+            sortable: true
+        },
+        {
+            name: 'Middle Name',
+            selector: row => row.Mname,
+            sortable: true
+        },
 
         // =======================
         // 1ST GRADING
         // =======================
         {
             name: '1st Grading',
-            cell: (row) => (
-                <input
-                    type="number"
-                    className={`border px-2 py-1 w-20 rounded ${activeGradingPeriod === 1 ? "border-blue-500" : "bg-gray-100"
-                        }`}
-                    disabled={activeGradingPeriod !== 1}
-                    value={row.FirstGrading || ""}
-                    onChange={(e) => handleGradeChange(row.StudentId, "FirstGrading", e.target.value)}
-                    required={activeGradingPeriod === 1}
-                />
-            ),
+            cell: (row) => {
+                const isActive = row.TermActivated === "Term1";
+
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded ${isActive
+                                ? "border-blue-500"
+                                : "bg-gray-100 cursor-not-allowed"
+                                }`}
+                            disabled={!isActive}
+                            value={row.FirstGrading || ""}
+                            onChange={(e) =>
+                                handleGradeChange(
+                                    row.StudentId,
+                                    "FirstGrading",
+                                    row.SubjectType,
+                                    e.target.value
+                                )
+                            }
+                            required={isActive}
+                        />
+                        {gradeErrors[`${row.StudentId}-FirstGrading`] && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {gradeErrors[`${row.StudentId}-FirstGrading`]}
+                            </p>
+                        )}
+                    </div>
+
+
+                );
+            },
         },
 
         // =======================
@@ -201,17 +243,38 @@ const EncodingGradeClubComponent = () => {
         // =======================
         {
             name: '2nd Grading',
-            cell: (row) => (
-                <input
-                    type="number"
-                    className={`border px-2 py-1 w-20 rounded ${activeGradingPeriod === 2 ? "border-blue-500" : "bg-gray-100"
-                        }`}
-                    disabled={activeGradingPeriod !== 2}
-                    value={row.SecondGrading || ""}
-                    onChange={(e) => handleGradeChange(row.StudentId, "SecondGrading", e.target.value)}
-                    required={activeGradingPeriod === 2}
-                />
-            ),
+            cell: (row) => {
+                const isActive = row.TermActivated === "Term2";
+
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded ${isActive
+                                ? "border-blue-500"
+                                : "bg-gray-100 cursor-not-allowed"
+                                }`}
+                            disabled={!isActive}
+                            value={row.SecondGrading || ""}
+                            onChange={(e) =>
+                                handleGradeChange(
+                                    row.StudentId,
+                                    "SecondGrading",
+                                    row.SubjectType,
+                                    e.target.value
+                                )
+                            }
+                            required={isActive}
+                        />
+                        {gradeErrors[`${row.StudentId}-SecondGrading`] && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {gradeErrors[`${row.StudentId}-SecondGrading`]}
+                            </p>
+                        )}
+                    </div>
+
+                );
+            },
         },
 
         // =======================
@@ -219,49 +282,314 @@ const EncodingGradeClubComponent = () => {
         // =======================
         {
             name: '3rd Grading',
-            cell: (row) => (
-                <input
-                    type="number"
-                    className={`border px-2 py-1 w-20 rounded ${activeGradingPeriod === 3 ? "border-blue-500" : "bg-gray-100"
-                        }`}
-                    disabled={activeGradingPeriod !== 3}
-                    value={row.ThirdGrading || ""}
-                    onChange={(e) => handleGradeChange(row.StudentId, "ThirdGrading", e.target.value)}
-                    required={activeGradingPeriod === 3}
-                />
-            ),
+            cell: (row) => {
+                const isActive = row.TermActivated === "Term3";
+
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded ${isActive
+                                ? "border-blue-500"
+                                : "bg-gray-100 cursor-not-allowed"
+                                }`}
+                            disabled={!isActive}
+                            value={row.ThirdGrading || ""}
+                            onChange={(e) =>
+                                handleGradeChange(
+                                    row.StudentId,
+                                    "ThirdGrading",
+                                    row.SubjectType,
+                                    e.target.value
+                                )
+                            }
+                            required={isActive}
+                        />
+                        {gradeErrors[`${row.StudentId}-ThirdGrading`] && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {gradeErrors[`${row.StudentId}-ThirdGrading`]}
+                            </p>
+                        )}
+                    </div>
+
+                );
+            },
         },
+        {
+            name: 'Days Present',
+            cell: (row) => {
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
+                            value={row.DaysPresent || ""}
+                            onChange={(e) =>
+                                handleDaysChange(
+                                    row.StudentId,
+                                    "DaysPresent",
+                                    e.target.value
+                                )
+                            }
+                            required
+                        />
+                        {daysErrors[`${row.StudentId}-DaysPresent`] && (
+                            <p className="text-red-500 text-xs mt-1">
+                                {gradeErrors[`${row.StudentId}-DaysPresent`]}
+                            </p>
+                        )}
+                    </div>
+
+                );
+            },
+        },
+        {
+            name: 'Days Absent',
+            cell: (row) => {
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
+                            value={row.DaysAbsent || ""}
+                            onChange={(e) =>
+                                handleDaysChange(
+                                    row.StudentId,
+                                    "DaysAbsent",
+                                    e.target.value
+                                )
+                            }
+                        />
+                    </div>
+
+                );
+            },
+        },
+        {
+            name: 'Days Tardy',
+            cell: (row) => {
+                return (
+                    <div className="flex flex-col items-start min-w-[90px]">
+                        <input
+                            type="number"
+                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
+                            value={row.DaysTardy || ""}
+                            onChange={(e) =>
+                                handleDaysChange(
+                                    row.DaysTardy,
+                                    "DaysOfPresent",
+                                    e.target.value
+                                )
+                            }
+                        />
+                    </div>
+
+                );
+            },
+        }
     ];
-    const handleGradeChange = (studentId, field, value) => {
+    const handleGradeChange = (studentId, field, subjectType, value) => {
+        const numericValue = Number(value);
+
+        // update grade
         setStudentList((prev) =>
-            prev.map((student) =>
-                student.StudentId === studentId
-                    ? { ...student, [field]: value }
-                    : student
+            prev.map((s) =>
+                s.StudentId === studentId
+                    ? { ...s, [field]: value }
+                    : s
             )
         );
-    };
-    const handleSaveGrades = () => {
-        const missing = studentList.filter((s) => {
-            if (activeGradingPeriod === 1) return !s.FirstGrading;
-            if (activeGradingPeriod === 2) return !s.SecondGrading;
-            if (activeGradingPeriod === 3) return !s.ThirdGrading;
-            return false;
-        });
 
-        if (missing.length > 0) {
-            alert("Please complete all grades for active grading period.");
-            return;
+        if (subjectType.toLowerCase() == "curriculum") {
+            let error = "";
+            if (value !== "") {
+                if (numericValue < 70) {
+                    error = "Grade must be at least 70.";
+                } else if (numericValue > 100) {
+                    error = "Grade must not exceed 100.";
+                }
+            }
+            setGradeErrors((prev) => ({
+                ...prev,
+                [`${studentId}-${field}`]: error,
+            }));
         }
 
-        // proceed to save API
-        console.log("Saving grades:", studentList);
+        // validate
+
     };
+    const handleDaysChange = (studentId, field, value) => {
+
+        setStudentList((prev) =>
+            prev.map((s) =>
+                s.StudentId === studentId
+                    ? { ...s, [field]: value }
+                    : s
+            )
+        );
+        let error = "";
+        if (value == "") {
+            error = " is required.";
+        }
+
+        setDaysErrors((prev) => ({
+            ...prev,
+            [`${studentId}-${field}`]: error,
+        }));
+    }
+
+    // };
+    const [noOfSchoolDays, setNoOfSchoolDays] = useState("");
+    const [schoolDaysError, setSchoolDaysError] = useState(false);
+    const [schoolDaysErrorMsg, setSchoolDaysErrorMsg] = useState("");
     const handleCloseEncodeGrades = () => {
         setRowModalOpen(false);
         // setStudentList([]);
         setShowEncodingTable(false);
-    }
+
+    };
+
+    const handleOpenWarningModal = () => {
+        console.log(noOfSchoolDays);
+        if (noOfSchoolDays == "" || noOfSchoolDays.length == 0) {
+            setSchoolDaysError(true);
+            setRowModalOpen(true);
+            setTimeout(() =>
+                setSchoolDaysErrorMsg("Number of school days is required.")
+                , 1000);
+            return;
+        }
+        else {
+            setRowModalOpen(false);
+            setShowEncodingTable(false);
+            setIsModalOpen(true);
+        }
+    };
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [errorBodyMessage, setErrorBodyMessage] = useState("");
+
+
+    const handleSubmitModal = async () => {
+        const missing = studentList.filter((s) => {
+
+            if (s.TermActivated === "Term1") {
+                return !s.FirstGrading;
+            }
+
+            if (s.TermActivated === "Term2") {
+                return !s.SecondGrading;
+            }
+
+            if (s.TermActivated === "Term3") {
+                return !s.ThirdGrading;
+            }
+
+            return false;
+        });
+
+        if (missing.length > 0) {
+            setIsErrorModalOpen(true);
+            setErrorBodyMessage("Please complete all grades for active grading period.");
+            setShowEncodingTable(false);
+            return;
+        }
+
+
+        // BUILD CLEAN PAYLOAD
+        const payload = {
+            LoadId: studentList[0]?.LoadId,
+            TermActivated: studentList[0]?.TermActivated,
+            CreatedByUserid: userId,
+            NoOfSchoolDays: noOfSchoolDays,
+
+            InsertEncodeGradeChildDtos: studentList.map((s) => {
+
+                let grade = null;
+
+                if (s.TermActivated === "Term1") {
+                    grade = s.FirstGrading;
+                }
+                else if (s.TermActivated === "Term2") {
+                    grade = s.SecondGrading;
+                }
+                else if (s.TermActivated === "Term3") {
+                    grade = s.ThirdGrading;
+                }
+
+                return {
+                    StudentId: s.StudentId,
+                    LoadChildId: s.LoadChildId,
+                    SubjectId: s.SubjectId,
+                    SubjectType: s.SubjectType,
+                    Grade: grade,
+                    DaysPresent: s.DaysPresent,
+                    DaysAbsent: s.DaysAbsent,
+                    DaysTardy: s.DaysTardy,
+                };
+            })
+        };
+
+        console.log("Saving grades:", payload);
+        const res = await dispatch(fetchInsertEncodedGradesData(payload));
+        if (res.ok) {
+            setIsSuccessModalOpen(true);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        }
+    };
+
+    const handleFinalizeGrade = async () => {
+        console.log(loadId);
+        setShowEncodingTable(false);
+        const payload = {
+            LoadId: studentList[0]?.LoadId,
+            TermActivated: studentList[0]?.TermActivated,
+            CreatedByUserid: userId,
+            NoOfSchoolDays: noOfSchoolDays,
+            IsValidated: "Y",
+
+            InsertEncodeGradeChildDtos: studentList.map((s) => {
+
+                let grade = null;
+
+                if (s.TermActivated === "Term1") {
+                    grade = s.FirstGrading;
+                }
+                else if (s.TermActivated === "Term2") {
+                    grade = s.SecondGrading;
+                }
+                else if (s.TermActivated === "Term3") {
+                    grade = s.ThirdGrading;
+                }
+
+                return {
+                    StudentId: s.StudentId,
+                    LoadChildId: s.LoadChildId,
+                    SubjectId: s.SubjectId,
+                    SubjectType: s.SubjectType,
+                    Grade: grade,
+                    GradeChildId: s.GradeChildId,
+                    DaysPresent: s.DaysPresent,
+                    DaysAbsent: s.DaysAbsent,
+                    DaysTardy: s.DaysTardy,
+                };
+            })
+        };
+
+        console.log("Saving grades:", payload);
+        const res = await dispatch(fetchFinalizeEncodedGradesData(payload));
+        if (res.ok) {
+            setIsSuccessModalOpen(true);
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 1000);
+            }
+        }
+    };
+
     return (
         <div>
             <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -304,6 +632,7 @@ const EncodingGradeClubComponent = () => {
                         }}
                         highlightOnHover
                         responsive
+                        onRowClicked={(row) => openRowModal(row)}
                     />
                 </div>
             </div>
@@ -352,7 +681,7 @@ const EncodingGradeClubComponent = () => {
                                     <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded">
                                         <strong className="font-bold">Note: </strong>
                                         <span>
-                                            List of all your handled sections. Please click the eye icon to encode grades.
+                                            List of all your handled sections. Please click the row to encode grades.
                                         </span>
                                     </div>
                                     <hr className="my-4 border-t border-gray-300" />
@@ -388,6 +717,7 @@ const EncodingGradeClubComponent = () => {
                                         striped
                                         responsive
                                         noDataComponent="No faculty load data."
+                                        onRowClicked={(row) => openEncodeGradeModal(row)}
                                     />
                                 </>
 
@@ -447,6 +777,7 @@ const EncodingGradeClubComponent = () => {
                                         </div>
 
                                     </div>
+
                                     <AnimatePresence mode="wait">
                                         <motion.div
                                             key={activeTab}
@@ -480,6 +811,23 @@ const EncodingGradeClubComponent = () => {
                                             />
                                         </motion.div>
                                     </AnimatePresence>
+                                    <div className="flex justify-end pt-2">
+                                        <label className="flex flex-col">
+                                            <span className="text-sm font-medium mb-1">Number of school days <span className="text-red-700">*</span></span>
+                                            <input
+                                                type="text"
+                                                placeholder="Enter number of school days"
+                                                value={noOfSchoolDays}
+                                                onChange={(e) => setNoOfSchoolDays(e.target.value)}
+                                                className={`mt-1 mx-auto rounded-lg border p-2 focus:ring-2 focus:ring-blue-500 
+                                                ${schoolDaysError ? "border-red-500" : "border-gray-300"}`}
+                                            />
+                                            {schoolDaysError && (
+                                                <p className="text-red-500 text-xs mt-1">{schoolDaysErrorMsg}</p>
+                                            )}
+                                        </label>
+
+                                    </div>
                                 </>
                             )}
                         </div>
@@ -487,11 +835,38 @@ const EncodingGradeClubComponent = () => {
                 }
                 size="w-[1200px]"
                 maxHeight="100vh"
-                buttons={
-                    [
-                        { label: "Submit", type: "green", onClick: handleSaveGrades },
-                        { label: "Cancel", type: "red", onClick: handleCloseEncodeGrades },
-                    ]}
+                buttons={[
+                    ...(!showEncodingTable
+                        ? []
+                        : [
+                            { label: "Finalize Grade", type: "blue", onClick: handleFinalizeGrade },
+                            { label: "Submit", type: "green", onClick: handleOpenWarningModal, closeOnClick: false }
+                        ]
+                    ),
+                    { label: "Cancel", type: "red", onClick: handleCloseEncodeGrades },
+                ]}
+            />
+            <ModalComponent
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Warning"
+                body="Are you sure you want to continue?"
+                buttons={[
+                    { label: "Yes", type: "green", onClick: handleSubmitModal },
+                    { label: "No", type: "red" },
+                ]}
+            />
+            <ModalComponent
+                isOpen={isErrorModalOpen}
+                onClose={() => setIsErrorModalOpen(false)}
+                title={<span className="font-bold text-lg text-red-700">Error</span>}
+                body={<p>{errorBodyMessage}</p>}
+            />
+            <ModalComponent
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                title={<span className="font-bold text-lg text-green-700">Success</span>}
+                body={<p>Done encoding of grades.</p>}
             />
         </div >
     );

@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import OutlineGreenBtn from "../ButtonsComponents/OutlineGreenBtn";
 import { motion, AnimatePresence } from "framer-motion";
 import StudentInfoComponent from "./StudentInfoComponent";
+import EnrollmentHistoryComponent from "./EnrollmentHistoryComponent";
 
 const StudentMasterFileComponent = () => {
 
@@ -55,10 +56,9 @@ const StudentMasterFileComponent = () => {
                     <hr className="border-t border-gray-400" />
                 </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 mb-6 pt-4">
+            <div className="grid grid-cols-2 gap-2 mb-6 pt-4">
                 <OutlineGreenBtn label="Enrollment History" onClick={() => setActive("one")} />
-                <OutlineGreenBtn label="House" onClick={() => setActive("two")} />
-                <OutlineGreenBtn label="Others" onClick={() => setActive("four")} />
+                <OutlineGreenBtn label="Others" onClick={() => setActive("two")} />
             </div>
             <div className="relative min-h-[150px]"> {/* min-h ensures smooth height */}
                 <AnimatePresence mode="wait">
@@ -72,6 +72,7 @@ const StudentMasterFileComponent = () => {
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
                             {/* <ListOfDocsTableComponent studentId={formData.StudentId} /> */}
+                            <EnrollmentHistoryComponent studentId={studentId} />
 
                         </motion.div>
                     )}

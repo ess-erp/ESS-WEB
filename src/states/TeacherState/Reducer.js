@@ -5,6 +5,8 @@ import {
     FETCH_LIST_OF_SECTION_USER_REQUEST, FETCH_LIST_OF_SECTION_USER_SUCCESS, FETCH_LIST_OF_SECTION_USER_FAILURE,
     FETCH_TEACHER_SUBJECT_LOAD_REQUEST, FETCH_TEACHER_SUBJECT_LOAD_SUCCESS, FETCH_TEACHER_SUBJECT_LOAD_FAILURE,
     FETCH_LIST_OF_STUDENT_PER_TERM_REQUEST, FETCH_LIST_OF_STUDENT_PER_TERM_SUCCESS, FETCH_LIST_OF_STUDENT_PER_TERM_FAILURE,
+    FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
+    FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -21,6 +23,7 @@ const initialDataState = {
     sectionTableList: { ...initialState },
     teacherSubjectLoadState: { ...initialState },
     linkOfStudentPerTermState: { ...initialState },
+    insertEncodedGradesState: { ...initialState },
 };
 
 const teacherReducer = (state = initialDataState, action) => {
@@ -67,6 +70,13 @@ const teacherReducer = (state = initialDataState, action) => {
             return { ...state, linkOfStudentPerTermState: { loading: false, data: action.payload, error: '' } };
         case FETCH_LIST_OF_STUDENT_PER_TERM_FAILURE:
             return { ...state, linkOfStudentPerTermState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_ENCODED_GRADES_REQUEST:
+            return { ...state, insertEncodedGradesState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_ENCODED_GRADES_SUCCESS:
+            return { ...state, insertEncodedGradesState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_ENCODED_GRADES_FAILURE:
+            return { ...state, insertEncodedGradesState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

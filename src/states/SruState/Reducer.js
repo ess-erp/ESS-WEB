@@ -12,6 +12,10 @@ import {
     FETCH_GET_HOUSE_STUDENT_REQUEST, FETCH_GET_HOUSE_STUDENT_SUCCESS, FETCH_GET_HOUSE_STUDENT_FAILURE,
     FETCH_INSERT_STUDENT_HOUSE_REQUEST, FETCH_INSERT_STUDENT_HOUSE_SUCCESS, FETCH_INSERT_STUDENT_HOUSE_FAILURE,
     FETCH_GET_STUDENT_HOUSE_LIST_REQUEST, FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS, FETCH_GET_STUDENT_HOUSE_LIST_FAILURE,
+    FETCH_SCHOOL_CALENDAR_TABLE_REQUEST, FETCH_SCHOOL_CALENDAR_TABLE_SUCCESS, FETCH_SCHOOL_CALENDAR_TABLE_FAILURE,
+    FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
+    FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -35,6 +39,10 @@ const initialGeneralState = {
     houseStudentState: { ...initialState },
     insertStudentHouse: { ...initialState },
     studentHouseListState: { ...initialState },
+    schoolCalendarTableState: { ...initialState },
+    schoolCalendarActivityState: { ...initialState },
+    insertActivityState: { ...initialState },
+    enrollmentHistoryTableState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -130,6 +138,34 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, studentHouseListState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GET_STUDENT_HOUSE_LIST_FAILURE:
             return { ...state, studentHouseListState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SCHOOL_CALENDAR_TABLE_REQUEST:
+            return { ...state, schoolCalendarTableState: { loading: true, data: [], error: '' } };
+        case FETCH_SCHOOL_CALENDAR_TABLE_SUCCESS:
+            return { ...state, schoolCalendarTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SCHOOL_CALENDAR_TABLE_FAILURE:
+            return { ...state, schoolCalendarTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST:
+            return { ...state, schoolCalendarActivityState: { loading: true, data: [], error: '' } };
+        case FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS:
+            return { ...state, schoolCalendarActivityState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE:
+            return { ...state, schoolCalendarActivityState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST:
+            return { ...state, insertActivityState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS:
+            return { ...state, insertActivityState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE:
+            return { ...state, insertActivityState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST:
+            return { ...state, enrollmentHistoryTableState: { loading: true, data: [], error: '' } };
+        case FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS:
+            return { ...state, enrollmentHistoryTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE:
+            return { ...state, enrollmentHistoryTableState: { loading: false, data: [], error: action.payload } };
 
 
         default:

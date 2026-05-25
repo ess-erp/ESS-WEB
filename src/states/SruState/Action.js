@@ -12,6 +12,10 @@ import {
     FETCH_GET_HOUSE_STUDENT_REQUEST, FETCH_GET_HOUSE_STUDENT_SUCCESS, FETCH_GET_HOUSE_STUDENT_FAILURE,
     FETCH_INSERT_STUDENT_HOUSE_REQUEST, FETCH_INSERT_STUDENT_HOUSE_SUCCESS, FETCH_INSERT_STUDENT_HOUSE_FAILURE,
     FETCH_GET_STUDENT_HOUSE_LIST_REQUEST, FETCH_GET_STUDENT_HOUSE_LIST_SUCCESS, FETCH_GET_STUDENT_HOUSE_LIST_FAILURE,
+    FETCH_SCHOOL_CALENDAR_TABLE_REQUEST, FETCH_SCHOOL_CALENDAR_TABLE_SUCCESS, FETCH_SCHOOL_CALENDAR_TABLE_FAILURE,
+    FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
+    FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -399,6 +403,127 @@ export const fetchGetStudentHouseListData = (page, pageSize, search) => async (d
     }
     catch (error) {
         dispatch(fetchGetStudentHouseListFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchSchoolCalendarTableRequest = () => ({ type: FETCH_SCHOOL_CALENDAR_TABLE_REQUEST });
+export const fetchSchoolCalendarTableSuccess = (data) => ({ type: FETCH_SCHOOL_CALENDAR_TABLE_SUCCESS, payload: data });
+export const fetchSchoolCalendarTableFailure = (error) => ({ type: FETCH_SCHOOL_CALENDAR_TABLE_FAILURE, payload: error });
+
+
+export const fetchSchoolCalendarTableData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchSchoolCalendarTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-school-calendar-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSchoolCalendarTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchSchoolCalendarTableFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchSchoolCalendarActivityRequest = () => ({ type: FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST });
+export const fetchSchoolCalendarActivitySuccess = (data) => ({ type: FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, payload: data });
+export const fetchSchoolCalendarActivityFailure = (error) => ({ type: FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE, payload: error });
+
+
+export const fetchSchoolCalendarActivityData = () => async (dispatch) => {
+    dispatch(fetchSchoolCalendarActivityRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-school-calendary-activity`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSchoolCalendarActivitySuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchSchoolCalendarActivityFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchInsertSchoolCalendarActivityRequest = () => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST });
+export const fetchInsertSchoolCalendarActivitySuccess = (data) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, payload: data });
+export const fetchInsertSchoolCalendarActivityFailure = (error) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE, payload: error });
+
+
+export const fetchInsertSchoolCalendarActivityData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertSchoolCalendarActivityRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-school-calendary-activity`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertSchoolCalendarActivitySuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchInsertSchoolCalendarActivityFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchEnrollmentHistoryTableRequest = () => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST });
+export const fetchEnrollmentHistoryTableSuccess = (data) => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, payload: data });
+export const fetchEnrollmentHistoryTableFailure = (error) => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE, payload: error });
+
+
+export const fetchEnrollmentHistoryTableData = (studentId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchEnrollmentHistoryTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-enrollment-history-table?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchEnrollmentHistoryTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchEnrollmentHistoryTableFailure(error.message));
         return { ok: false, error };
     };
 };
