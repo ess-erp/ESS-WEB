@@ -58,7 +58,6 @@ import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
 import StudentDashboard from "../pages/Student/Dashboard";
 
-
 const AppRoutes = () => (
   <Router>
     <Routes>
@@ -498,7 +497,7 @@ const AppRoutes = () => (
       {/* end of teacher modules */}
 
       {/* student dashboard */}
-        <Route
+      <Route
         path="/teacher/dashboard"
         element={
           <ProtectedRoutes allowedRoles={[16]}>

@@ -14,6 +14,7 @@ import apReducer from './AssistantPrincipalState/Reducer';
 import principalReducer from './PrincipalState/Reducer';
 import parentReducer from './ParentState/Reducer';
 import teacherReducer from './TeacherState/Reducer';
+import notificationReducer from './NotificationState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -30,6 +31,7 @@ const rootReducer = combineReducers({
   principal: principalReducer,
   parent: parentReducer,
   teacher: teacherReducer,
+  notification: notificationReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));

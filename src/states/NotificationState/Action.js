@@ -1,12 +1,22 @@
 import {
-    FETCH_GET_NOTIFICATION_REQUEST, FETCH_GET_NOTIFICATION_SUCCESS, FETCH_GET_NOTIFICATION_FAILURE,
+    FETCH_SIGNALR_NOTIFICATION_RECEIVED,
+    SET_TOAST_MESSAGE,
+    CLEAR_TOAST_MESSAGE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-export const fetchGetNotificationRequest = () => ({ type: FETCH_GET_NOTIFICATION_REQUEST });
-export const fetchGetNotificationSuccess = (data) => ({ type: FETCH_GET_NOTIFICATION_SUCCESS, payload: data });
-export const fetchGetNotificationFailure = (error) => ({ type: FETCH_GET_NOTIFICATION_FAILURE, payload: error });
+export const receiveSignalRNotification = (data) => ({
+    type: FETCH_SIGNALR_NOTIFICATION_RECEIVED,
+    payload: data,
+});
 
-// export const fetchGetNotificationData = ()
+export const showToast = (message) => ({
+    type: "SHOW_TOAST",
+    payload: message,
+});
+
+export const hideToast = () => ({
+    type: "HIDE_TOAST",
+});
