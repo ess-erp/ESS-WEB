@@ -57,6 +57,7 @@ import TeacherDashboard from "../pages/Teacher/Dashboard";
 import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
 import StudentDashboard from "../pages/Student/Dashboard";
+import Notification from "../pages/SharedPages/Notification";
 
 const AppRoutes = () => (
   <Router>
@@ -507,6 +508,20 @@ const AppRoutes = () => (
       />
 
       {/*  */}
+
+      {/* shared components */}
+
+
+      <Route
+        path="/notification"
+        element={
+          <ProtectedRoutes allowedRoles={[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]}>
+            <Notification />
+          </ProtectedRoutes>
+        }
+      />
+
+      {/* end of shared components */}
 
       {/* Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

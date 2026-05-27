@@ -71,7 +71,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     {
       name: "Notification",
       icon: NotificationBell,
-      path: "/notifications",
+      path: "/notification",
     },
 
     // Dynamic Ticket Visibility
