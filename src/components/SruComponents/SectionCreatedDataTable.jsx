@@ -20,11 +20,14 @@ const SectionCreatedDataTable = () => {
     }, [studentTableCurrentPage, studentTableRowsPerPage, filterStudentTableText, dispatch]);
 
     const studentColumn = [
-        { name: 'Student Number', selector: row => row.StudentNumber, sortable: true },
-        { name: 'Fullname', selector: row => `${row.Fname} ${row.Mname ?? ""} ${row.Lname}`, sortable: true },
+        // { name: 'Student Number', selector: row => row.StudentNumber, sortable: true },
+        // { name: 'Fullname', selector: row => `${row.Fname} ${row.Mname ?? ""} ${row.Lname}`, sortable: true },
         { name: 'Section', selector: row => row.SectionName, sortable: true },
         { name: 'Level', selector: row => row.LevelName, sortable: true },
+        { name: 'Campus', selector: row => row.CampusName, sortable: true },
+        { name: 'No. of Students', selector: row => row.StudentCount, sortable: true },
         { name: 'Date Created', selector: row => new Date(row.DateCreated).toLocaleDateString(), sortable: true },
+        { name: 'Date Modified', selector: row => new Date(row.DateModified).toLocaleDateString(), sortable: true },
     ];
     return (
         <>

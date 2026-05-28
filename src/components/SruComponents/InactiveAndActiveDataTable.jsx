@@ -108,7 +108,7 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
                 //     Activate
                 // </button>
                 <button
-                    onClick={() => handleActivate(row)}
+                    onClick={() => handleSelectSection(row)}
                     className="bg-green-500 text-white px-2 py-0.5 rounded text-xs"
                 >
                     Activate
@@ -136,34 +136,34 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
         setInactiveSections(prev => [...prev, row]);
         setSelection(false);
     };
-    const activeColumns = [
-        { name: "Section", selector: row => row.SectionName, sortable: true },
-        { name: "Level", selector: row => row.LevelName, sortable: true },
-        {
-            name: "Actions",
-            cell: row => (
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => handleSelectSection(row)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                    >
-                        Add Student
-                    </button>
-                    <button
-                        onClick={() => handleDeactivate(row)}
-                        className="bg-red-500 text-white px-2 py-1 rounded text-xs"
-                    >
-                        Deactivate
-                    </button>
-                </div>
-            )
-        }
+    // const activeColumns = [
+    //     { name: "Section", selector: row => row.SectionName, sortable: true },
+    //     { name: "Level", selector: row => row.LevelName, sortable: true },
+    //     {
+    //         name: "Actions",
+    //         cell: row => (
+    //             <div className="flex gap-2">
+    //                 <button
+    //                     onClick={() => handleSelectSection(row)}
+    //                     className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+    //                 >
+    //                     Add Student
+    //                 </button>
+    //                 <button
+    //                     onClick={() => handleDeactivate(row)}
+    //                     className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+    //                 >
+    //                     Deactivate
+    //                 </button>
+    //             </div>
+    //         )
+    //     }
 
-    ];
+    // ];
 
     return (
         <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
 
                 {/* LEFT — Inactive */}
                 <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -220,7 +220,7 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
                 </div>
 
                 {/* RIGHT — Active */}
-                <div className="bg-white rounded-lg shadow border border-gray-200">
+                {/* <div className="bg-white rounded-lg shadow border border-gray-200">
                     <div className="px-4 py-3 border-b bg-green-50 rounded-t-lg">
                         <h3 className="text-lg font-semibold text-green-600">
                             Active Sections
@@ -240,7 +240,7 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
                             responsive
                         />
                     </div>
-                </div>
+                </div> */}
                 <ModalComponent
                     isOpen={addNewModal}
                     onClose={() => setAddNewModal(false)}

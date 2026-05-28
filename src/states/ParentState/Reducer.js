@@ -1,19 +1,17 @@
 import {
     FETCH_RETURNEE_OLD_STUDENT_REQUEST, FETCH_RETURNEE_OLD_STUDENT_SUCCESS, FETCH_RETURNEE_OLD_STUDENT_FAILURE,
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
-    FETCH_UPDATE_STUDENT_FORM_REQUEST,
-    FETCH_UPDATE_STUDENT_FORM_SUCCESS,
-    FETCH_UPDATE_STUDENT_FORM_FAILURE,
+    FETCH_UPDATE_STUDENT_FORM_REQUEST, FETCH_UPDATE_STUDENT_FORM_SUCCESS, FETCH_UPDATE_STUDENT_FORM_FAILURE,
     FETCH_LISTOFSTUDENTTABLE_REQUEST, FETCH_LISTOFSTUDENTTABLE_SUCCESS, FETCH_LISTOFSTUDENTTABLE_FAILURE,
-    FETCH_INSERT_STUDENT_ENROLLMENT_REQUEST,
-    FETCH_INSERT_STUDENT_ENROLLMENT_SUCCESS,
-    FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE,
-    FETCH_LIST_OF_TUITION_FEE_REQUEST,
-    FETCH_LIST_OF_TUITION_FEE_SUCCESS,
-    FETCH_LIST_OF_TUITION_FEE_FAILURE,
-    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST,
-    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS,
-    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
+    FETCH_INSERT_STUDENT_ENROLLMENT_REQUEST, FETCH_INSERT_STUDENT_ENROLLMENT_SUCCESS, FETCH_INSERT_STUDENT_ENROLLMENT_FAILURE,
+    FETCH_LIST_OF_TUITION_FEE_REQUEST, FETCH_LIST_OF_TUITION_FEE_SUCCESS, FETCH_LIST_OF_TUITION_FEE_FAILURE,
+    FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
+    FETCH_STUDENT_STATUS_REQUEST, FETCH_STUDENT_STATUS_SUCCESS, FETCH_STUDENT_STATUS_FAILURE,
+    FETCH_PAYMENT_TRANSACTION_TYPE_REQUEST, FETCH_PAYMENT_TRANSACTION_TYPE_SUCCESS, FETCH_PAYMENT_TRANSACTION_TYPE_FAILURE,
+    FETCH_STUDENT_OR_NUMBER_REQUEST, FETCH_STUDENT_OR_NUMBER_SUCCESS, FETCH_STUDENT_OR_NUMBER_FAILURE,
+    FETCH_INSERT_PAYMENT_REQUEST, FETCH_INSERT_PAYMENT_SUCCESS, FETCH_INSERT_PAYMENT_FAILURE,
+    FETCH_PARENT_TRANSACTION_HISTORY_REQUEST, FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS,FETCH_PARENT_TRANSACTION_HISTORY_FAILURE,
+    FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -31,6 +29,12 @@ const initialGeneralState = {
     updateStudentDataState: { ...initialState },
     tuitionFeeState: { ...initialState },
     insertOverCounterState: { ...initialState },
+    studentStatusState: { ...initialState },
+    transactionTypeState: { ...initialState },
+    studentOrNumber: { ...initialState },
+    insertPaymentState: { ...initialState },
+    parentTransactionHistoryState: { ...initialState },
+    studentAssementState: { ...initialState },
 };
 
 const parentReducer = (state = initialGeneralState, action) => {
@@ -89,6 +93,56 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, insertOverCounterState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE:
             return { ...state, insertOverCounterState: { loading: false, data: [], error: action.payload } };
+
+        //Student Status
+        case FETCH_STUDENT_STATUS_REQUEST:
+            return { ...state, studentStatusState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_STATUS_SUCCESS:
+            return { ...state, studentStatusState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_STATUS_FAILURE:
+            return { ...state, studentStatusState: { loading: false, data: [], error: action.payload } };
+        
+        //Transaction Type
+        case FETCH_PAYMENT_TRANSACTION_TYPE_REQUEST:
+            return { ...state, transactionTypeState: { loading: true, data: [], error: '' } };
+        case FETCH_PAYMENT_TRANSACTION_TYPE_SUCCESS:
+            return { ...state, transactionTypeState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_PAYMENT_TRANSACTION_TYPE_FAILURE:
+            return { ...state, transactionTypeState: { loading: false, data: [], error: action.payload } };
+
+        //Or Number
+        case FETCH_STUDENT_OR_NUMBER_REQUEST:
+            return { ...state, studentOrNumber: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_OR_NUMBER_SUCCESS:
+            return { ...state, studentOrNumber: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_OR_NUMBER_FAILURE:
+            return { ...state, studentOrNumber: { loading: false, data: [], error: action.payload } };   
+
+        //Insert Payment 
+        case FETCH_INSERT_PAYMENT_REQUEST:
+            return { ...state, insertPaymentState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_PAYMENT_SUCCESS:
+            return { ...state, insertPaymentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_PAYMENT_FAILURE:
+            return { ...state, insertPaymentState: { loading: false, data: [], error: action.payload } }; 
+        
+        //Transaction History 
+        case FETCH_PARENT_TRANSACTION_HISTORY_REQUEST:
+            return { ...state, parentTransactionHistoryState: { loading: true, data: [], error: '' } };
+        case FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS:
+            return { ...state, parentTransactionHistoryState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_PARENT_TRANSACTION_HISTORY_FAILURE:
+            return { ...state, parentTransactionHistoryState: { loading: false, data: [], error: action.payload } };  
+
+        //Student Assesment
+        case FETCH_STUDENT_APP_ASSESSMENT_REQUEST:
+            return { ...state, studentAssementState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_APP_ASSESSMENT_SUCCESS:
+            return { ...state, studentAssementState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_APP_ASSESSMENT_FAILURE:
+            return { ...state, studentAssementState: { loading: false, data: [], error: action.payload } };  
+
+
 
         default:
             return state;
