@@ -1,11 +1,24 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-const NotificationPanel = () => {
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(false);
+import { fetchNotificationListData } from "../../states/NotificationState/Action";
 
+const NotificationPanel = ({ userId }) => {
+    const dispatch = useDispatch();
+
+    // Redux state (loading only if you want to show global loading)
+    const notificationState = useSelector(
+        (state) => state.notification.notificationState || {}
+    );
+
+    const { loading } = notificationState;
+
+    // Local pagination state
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize] = useState(10);
+
+    // Local data state (from API response)
+    const [notifications, setNotifications] = useState([]);
     const [totalPages, setTotalPages] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
 
@@ -14,25 +27,19 @@ const NotificationPanel = () => {
     }, [pageNumber]);
 
     const fetchNotifications = async () => {
-        try {
-            setLoading(true);
+        const response = await dispatch(
+            fetchNotificationListData(userId, pageNumber, pageSize)
+        );
 
-            const response = await fetch(
-                `https://localhost:44301/api/notification/get-notifications?pageNumber=${pageNumber}&pageSize=${pageSize}`
-            );
+        if (response.ok) {
+            const data = response.data || [];
 
-            const data = await response.json();
-
-            setNotifications(data.data);
-            setTotalPages(data.totalPages);
-            setTotalCount(data.totalCount);
-        } catch (error) {
-            console.error("Error fetching notifications:", error);
-        } finally {
-            setLoading(false);
+            setNotifications(data);
+            setTotalCount(response.totalRecords || 0);
+            setTotalPages(Math.ceil((response.totalRecords || 0) / pageSize));
         }
     };
-
+    console.log(notifications);
     const handleNext = () => {
         if (pageNumber < totalPages) {
             setPageNumber((prev) => prev + 1);
@@ -45,63 +52,71 @@ const NotificationPanel = () => {
         }
     };
 
-    return (
-        <div className="w-[400px] rounded-xl border border-gray-200 bg-white shadow-lg">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-100 p-4">
-                <h2 className="text-lg font-semibold text-gray-800">
-                    Notifications
-                </h2>
+    const handleNotificationClick = (data) => {
+        console.log(data);
+    };
 
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
-                    {totalCount}
+    return (
+        <div className="w-full bg-white rounded shadow">
+
+            {/* HEADER */}
+            <div className="p-3 border-b flex justify-between items-center">
+                <h2 className="font-semibold text-green-600">Notifications</h2>
+
+                <span className="text-xs text-gray-500">
+                    Total: {totalCount}
                 </span>
             </div>
 
-            {/* Body */}
-            <div className="max-h-[450px] overflow-y-auto">
+            {/* LIST */}
+            <div>
                 {loading ? (
-                    <div className="flex items-center justify-center p-6 text-sm text-gray-500">
-                        Loading notifications...
-                    </div>
+                    <div className="p-4 text-gray-500">Loading...</div>
                 ) : notifications.length === 0 ? (
-                    <div className="flex items-center justify-center p-6 text-sm text-gray-500">
-                        No notifications found.
-                    </div>
+                    <div className="p-4 text-gray-500">No notifications</div>
                 ) : (
-                    notifications.map((notification) => (
-                        <div
-                            key={notification.notificationId}
-                            className="border-b border-gray-100 p-4 transition hover:bg-gray-50"
-                        >
-                            <div className="mb-1 flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-gray-800">
-                                    {notification.title}
-                                </h3>
+                    notifications.map((notification) => {
+                        const isUnread = notification.ActiveStatus === "P";
 
-                                {!notification.isRead && (
-                                    <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                                )}
+                        return (
+                            <div
+                                key={notification.NotificationId}
+                                onClick={() => handleNotificationClick(notification)}
+                                className={`border-b p-4 cursor-pointer hover:bg-gray-50 
+                                ${isUnread ? "bg-blue-50" : "bg-white"}`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h3
+                                        className={`text-sm font-semibold 
+                                        ${isUnread ? "text-blue-800" : "text-gray-800"}`}
+                                    >
+                                        {notification.NotificationTitle}
+                                    </h3>
+
+                                    {isUnread && (
+                                        <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                                    )}
+                                </div>
+
+                                <p className="text-sm text-gray-600 mt-1">
+                                    {notification.NotificationMessage}
+                                </p>
+
+                                <span className="text-xs text-gray-400">
+                                    {new Date(notification.DateCreated).toLocaleString()}
+                                </span>
                             </div>
-
-                            <p className="mb-2 text-sm text-gray-600">
-                                {notification.message}
-                            </p>
-
-                            <span className="text-xs text-gray-400">
-                                {notification.dateCreated}
-                            </span>
-                        </div>
-                    ))
+                        );
+                    })
                 )}
             </div>
 
-            {/* Footer / Pagination */}
-            <div className="flex items-center justify-between border-t border-gray-100 p-4">
+            {/* PAGINATION */}
+            <div className="flex items-center justify-between p-3 border-t">
                 <button
                     onClick={handlePrevious}
                     disabled={pageNumber === 1}
-                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
                 >
                     Previous
                 </button>
@@ -112,8 +127,8 @@ const NotificationPanel = () => {
 
                 <button
                     onClick={handleNext}
-                    disabled={pageNumber === totalPages}
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={pageNumber === totalPages || totalPages === 0}
+                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
                 >
                     Next
                 </button>

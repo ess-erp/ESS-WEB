@@ -58,6 +58,8 @@ import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
 import StudentDashboard from "../pages/Student/Dashboard";
 import Notification from "../pages/SharedPages/Notification";
+import Profile from "../pages/SharedPages/Profile";
+import Ticketing from "../pages/SharedPages/Ticketing";
 
 const AppRoutes = () => (
   <Router>
@@ -515,8 +517,24 @@ const AppRoutes = () => (
       <Route
         path="/notification"
         element={
-          <ProtectedRoutes allowedRoles={[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]}>
+          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
             <Notification />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/ticketing"
+        element={
+          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+            <Ticketing />
+          </ProtectedRoutes>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+            <Profile />
           </ProtectedRoutes>
         }
       />

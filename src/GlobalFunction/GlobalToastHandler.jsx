@@ -1,28 +1,37 @@
 import { useSelector, useDispatch } from "react-redux";
+import { useEffect, useRef } from "react";
 import NotificationToast from "../components/SharedComponents/NotificationToast";
-import { useEffect } from "react";
 import { hideToast } from "../states/NotificationState/Action";
+import notificationSound from "../../public/assets/soundEffects/notification-sounds.wav";
 
 const GlobalToastHandler = () => {
     const dispatch = useDispatch();
 
-    const toastMessage = useSelector(
-        (state) => state.notification.toastMessage
+    const toastData = useSelector(
+        (state) => state.notification.toastData
     );
+    const audioRef = useRef(new Audio(notificationSound));
 
     useEffect(() => {
-        if (!toastMessage) return;
+        if (toastData.length == 0) return;
 
-        const timer = setTimeout(() => {
-            dispatch(hideToast());
-        }, 4000);
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch((err) => {
+            console.log("Audio play blocked until user clicks somewhere first:", err);
+        });
+
+        // const timer = setTimeout(() => {
+        //     dispatch(hideToast());
+        // }, 7000);
 
         return () => clearTimeout(timer);
-    }, [toastMessage, dispatch]);
+    }, [toastData, dispatch]);
 
-    if (!toastMessage) return null;
+    if (toastData.length == 0) return null;
+    console.log(toastData);
+    // console.log(toastMessage);
 
-    return <NotificationToast message={toastMessage} />;
+    return <NotificationToast toastData={toastData} />;
 };
 
 export default GlobalToastHandler;

@@ -9,6 +9,7 @@ export default {
     extend: {
       animation: {
         "slide-in": "slideIn 0.3s ease-out",
+        'slide-down': 'slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       keyframes: {
         slideIn: {

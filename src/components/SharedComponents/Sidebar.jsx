@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import {
   Bell,
   BookPlus,
@@ -29,6 +30,15 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const navigate = useNavigate();
+  // const dispatch = useDispatch();
+
+  // useEffect(() => {
+  //   if (user && user.UserId) { 
+  //     console.log("User logged in, fetching notifications for user ID:", user.UserId);
+
+  //     dispatch(fetchNotificationCountData(user.UserId));
+  //   }
+  // }, [user, dispatch]);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -61,16 +71,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
   };
-  /* =========================================================
-      SHARED MENU
-  ========================================================= */
 
   const sharedMenu = [
     { separator: true },
 
     {
       name: "Notification",
-      icon: NotificationBell,
+      icon: Bell,
       path: "/notification",
     },
 
@@ -80,29 +87,37 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         {
           name: "Tickets",
           icon: TicketIcon,
-          path: "/tickets",
+          path: "/ticketing",
         },
       ]
       : []),
 
+    // {
+    //   name: "Employee Portal",
+    //   icon: UserIconSolid,
+    //   path: "/tickets",
+    // },
     {
       name: "Employee Portal",
       icon: UserIconSolid,
-      path: "/tickets",
+      children: [
+        {
+          name: "Time & Attendance (Leave Management)",
+          path: "/sru/generate-student-id",
+        },
+        {
+          name: "Payroll & Compensation",
+          path: "/sru/generate-school-form",
+        },
+      ],
     },
-
     {
       name: "Profile",
       icon: SettingsIcon,
-      path: "/settings",
+      path: "/profile",
     },
   ];
 
-
-
-  /* =========================================================
-      ROLE MENUS
-  ========================================================= */
 
   const admissionMenu = [
     {
@@ -174,50 +189,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     },
     ...sharedMenu,
   ];
-
-  // const sruMenu = [
-  //   {
-  //     name: "Dashboard",
-  //     icon: DashboardIcon,
-  //     path: "/sru/dashboard",
-  //   },
-  //   {
-  //     name: "Student Master List",
-  //     icon: UserIconSolid,
-  //     path: "/sru/studentlist",
-  //   },
-  //   {
-  //     name: "Section and House Entry",
-  //     icon: FilePlus,
-  //     path: "/sru/sectionandhouseentry",
-  //   },
-  //   {
-  //     name: "School Calendar",
-  //     icon: Calendar,
-  //     path: "/sru/schoolcalendar",
-  //   },
-  //   {
-  //     name: "ARC Master List",
-  //     icon: DocumentIcon,
-  //     path: "/sru/arcmasterlist",
-  //   },
-  //   {
-  //     name: "Generate Student Id",
-  //     icon: IdCard,
-  //     path: "/sru/arcmasterlist",
-  //   },
-  //     {
-  //     name: "Generate School Form",
-  //     icon: FileText,
-  //     path: "/sru/arcmasterlist",
-  //   },
-  //   {
-  //     name: "Template",
-  //     icon: Calendar,
-  //     path: "/sru/schoolcalendar",
-  //   },
-  //   ...sharedMenu,
-  // ];
   const sruMenu = [
     {
       name: "Dashboard",
@@ -549,27 +520,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             </span>
           </div>
         )}
-
-        {/* Toggle button */}
-        {/* {menuItems.map((item, index) =>
-                    item.separator ? (
-                        <hr key={`sep-${index}`} className="my-6 border-gray-200" />
-                    ) : (
-                        <Link
-                            to={item.path}
-                            key={item.name + index}
-                            className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-                            ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
-                        >
-                            <item.icon />
-                            {isSidebarOpen && (
-                                <span className="mx-4 font-medium">{item.name}</span>
-                            )}
-                        </Link>
-                    )
-                )} */}
         <Link
-          // href="#"
           className="p-1 rounded-sm transition-all duration-300 hover:bg-gray-100"
           onClick={(e) => {
             e.preventDefault();
@@ -626,49 +577,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             />
           </div>
         )}
-
-        {/* <nav className="mt-4">
-          {menuItems.map((item, index) =>
-            item.separator ? (
-              <hr key={`sep-${index}`} className="my-6 border-gray-200" />
-            ) : (
-              <Link
-                to={item.path}
-                key={item.name + index}
-                className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-                                ${activeItem === item.name
-                    ? "bg-gray-100 font-semibold"
-                    : ""
-                  }`}
-              >
-                <item.icon className="h-5 w-5 text-gray-600" />
-                {isSidebarOpen && (
-                  <span className="mx-4 font-medium">{item.name}</span>
-                )}
-              </Link>
-            )
-          )} */}
-        {/* {menuItems.map((item, index) =>
-                        item.separator ? (
-                            <hr key={`sep-${index}`} className="my-6 border-gray-200" />
-                        ) : (
-                            <a
-                                href='#'
-                                key={item.name + index}
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => handleClick(item.name)}
-                                className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-                                ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
-                            >
-                                <item.icon />
-                                {isSidebarOpen && (
-                                    <span className="mx-4 font-medium">{item.name}</span>
-                                )}
-                            </a>
-                        )
-                    )} */}
-        {/* </nav> */}
         <nav className="mt-4">
           {menuItems.map((item, index) =>
             item.separator ? (
@@ -681,10 +589,87 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 <a
                   onClick={() => toggleDropdown(item.name)}
                   className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+          focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
+        ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
+                >
+                  {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
+                    <NotificationBell />
+                  ) : (
+                    <item.icon className="h-5 w-5 text-gray-600" />
+                  )}
+
+                  {isSidebarOpen && (
+                    <>
+                      <span className="mx-4 font-medium">{item.name}</span>
+
+                      <svg
+                        className={`w-4 h-4 ml-auto transition-transform ${openDropdown === item.name ? "rotate-180" : ""
+                          }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </>
+                  )}
+                </a>
+
+                {openDropdown === item.name && isSidebarOpen && (
+                  <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
+                    {item.children.map((child, i) => (
+                      <Link
+                        key={i}
+                        to={child.path}
+                        className={`block px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition
+                      ${location.pathname === child.path ? "bg-gray-100 font-semibold" : ""}`}
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              // =========================
+              // NORMAL ITEM (Fixed Component Matching here!)
+              // =========================
+              <Link
+                to={item.path}
+                key={item.name + index}
+                className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+               ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
+              >
+                {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
+                  <NotificationBell />
+                ) : (
+                  <item.icon className="h-5 w-5 text-gray-600" />
+                )}
+
+                {isSidebarOpen && (
+                  <span className="mx-4 font-medium">{item.name}</span>
+                )}
+              </Link>
+            )
+          )}
+        </nav>
+        {/* <nav className="mt-4">
+          {menuItems.map((item, index) =>
+            item.separator ? (
+              <hr key={`sep-${index}`} className="my-6 border-gray-200" />
+            ) : item.children ? (
+              <div key={item.name + index}>
+                <a
+                  onClick={() => toggleDropdown(item.name)}
+                  className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
                   focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
                 ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
                 >
-                  {/* <item.icon className="h-5 w-5 text-gray-600" /> */}
                   {item.name === "Notification" ? (
                     <NotificationBell />
                   ) : (
@@ -713,9 +698,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   )}
                 </a>
 
-                {/* =========================
-            CHILDREN
-        ========================= */}
                 {openDropdown === item.name && isSidebarOpen && (
                   <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
                     {item.children.map((child, i) => (
@@ -732,9 +714,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 )}
               </div>
             ) : (
-              // =========================
-              // NORMAL ITEM
-              // =========================
               <Link
                 to={item.path}
                 key={item.name + index}
@@ -749,7 +728,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               </Link>
             )
           )}
-        </nav>
+        </nav> */}
       </div>
 
       <div className="mt-auto relative" ref={dropdownRef}>
