@@ -1,22 +1,38 @@
 import React from 'react';
 import { BellRing } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import {
+  fetchUpdateNotificationStatusData,
+} from "../../states/NotificationState/Action";
+
 
 const NotificationToast = ({ toastData }) => {
   console.log(toastData);
-  // 🔍 1. Extract the text message safely
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const plainText = typeof toastData === 'string'
     ? toastData
     : toastData?.Message || toastData?.message || "New notification received";
 
-  // 🔑 2. Safely extract the AppId from your SignalR payload (checking casing variants)
   const appId = toastData?.AppId || toastData?.appId;
 
-  // 🚀 3. Click Handler to open the application form in a new tab
-  const handleToastClick = () => {
-    if (!appId) return; // Ignore clicks if there's no dynamic AppId attached
+  const typeOfNotification = toastData?.TypeOfNotification || toastData?.typeOfNotification;
 
-    const url = `/admission/studentappform?AppId=${appId}`;
-    window.open(url, '_blank');
+  const handleToastClick = () => {
+    if (!appId) return;
+
+    switch (typeOfNotification) {
+      case "StudentOnlineApp":
+        dispatch(fetchUpdateNotificationStatusData(toastData?.notificationId));
+        navigate(`/admission/studentappform?AppId=${appId}`);
+        break;
+
+      default:
+        return;
+    };
+
   };
 
   return (

@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
-import { fetchNotificationListData } from "../../states/NotificationState/Action";
+import { useNavigate } from 'react-router-dom';
+import {
+    fetchNotificationListData,
+    fetchUpdateNotificationStatusData,
+} from "../../states/NotificationState/Action";
 
 const NotificationPanel = ({ userId }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    // Redux state (loading only if you want to show global loading)
     const notificationState = useSelector(
         (state) => state.notification.notificationState || {}
     );
@@ -53,7 +56,17 @@ const NotificationPanel = ({ userId }) => {
     };
 
     const handleNotificationClick = (data) => {
-        console.log(data);
+        const typeOfNotification = data?.TypeOfNotification;
+        
+        switch (typeOfNotification) {
+            case "StudentOnlineApp":
+                dispatch(fetchUpdateNotificationStatusData(data?.NotificationId));
+                navigate(`/admission/studentappform?AppId=${data?.SenderId}`);
+                break;
+
+            default:
+                return;
+        };
     };
 
     return (

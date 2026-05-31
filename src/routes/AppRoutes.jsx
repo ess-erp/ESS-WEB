@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import ProtectedRoutes from "./ProtectedRoutes";
 import Login from "../pages/Auth/Login";
 import AccessDenied from "../components/SharedComponents/AccessDenied";
@@ -29,6 +29,7 @@ import StudentMasterFile from "../pages/SRU/StudentMasterFile";
 import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
 import SruSchoolCalendar from "../pages/SRU/SchoolCalendar";
 import SruArcMasterList from "../pages/SRU/ArcMasterList";
+import SruGradeReportTemplate from "../pages/SRU/GradeReportTemplate";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
@@ -60,6 +61,17 @@ import StudentDashboard from "../pages/Student/Dashboard";
 import Notification from "../pages/SharedPages/Notification";
 import Profile from "../pages/SharedPages/Profile";
 import Ticketing from "../pages/SharedPages/Ticketing";
+import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
+
+const AuthenticatedLayout = () => {
+  return (
+    <>
+      <GlobalToastHandler /> {/* Live toasts will only activate for children inside this group */}
+      <Outlet />             {/* This renders the actual matched page component */}
+    </>
+  );
+};
+
 
 const AppRoutes = () => (
   <Router>
@@ -72,6 +84,8 @@ const AppRoutes = () => (
       <Route path="/accessdenied" element={<AccessDenied />} />
       <Route path="/employeeonlineapplication" element={<EmployeeOnlineApplication />} />
       <Route path="/employeecongratulationletter" element={<EmployeeCongratsLetter />} />
+
+      <Route element={<AuthenticatedLayout />}>
       {/* ✅ Admissions modules */}
       <Route
         path="/admission/dashboard"
@@ -247,6 +261,14 @@ const AppRoutes = () => (
         element={
           <ProtectedRoutes allowedRoles={[5]}>
             <SruArcMasterList />
+          </ProtectedRoutes>
+        }
+      />
+       <Route
+        path="/sru/gradereporttemplate"
+        element={
+          <ProtectedRoutes allowedRoles={[5]}>
+            <SruGradeReportTemplate />
           </ProtectedRoutes>
         }
       />
@@ -538,6 +560,7 @@ const AppRoutes = () => (
           </ProtectedRoutes>
         }
       />
+      </Route>
 
       {/* end of shared components */}
 

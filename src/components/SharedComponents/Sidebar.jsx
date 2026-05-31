@@ -233,9 +233,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     },
 
     {
-      name: "Template",
+      name: "Grade Report Sequence Template",
       icon: Calendar,
-      path: "/sru/schoolcalendar",
+      path: "/sru/gradereporttemplate",
     },
 
     ...sharedMenu,

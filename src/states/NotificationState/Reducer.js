@@ -8,6 +8,9 @@ import {
     FETCH_NOTIFICATION_COUNT_REQUEST,
     FETCH_NOTIFICATION_COUNT_SUCCESS,
     FETCH_NOTIFICATION_COUNT_FAILURE,
+    FETCH_UPDATE_NOTIFICATION_STATUS_REQUEST,
+    FETCH_UPDATE_NOTIFICATION_STATUS_SUCCESS,
+    FETCH_UPDATE_NOTIFICATION_STATUS_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -24,7 +27,12 @@ const initialState = {
         data: [],
         loading: false,
         error: '',
-    }
+    },
+    updateNotificationState: {
+        data: [],
+        loading: false,
+        error: '',
+    },
 };
 
 const notificationReducer = (state = initialState, action) => {
@@ -42,7 +50,8 @@ const notificationReducer = (state = initialState, action) => {
             return {
                 ...state,
                 notifications: newNotifications,
-                unreadCount: newNotifications.filter(n => n.ActiveStatus === "P").length,
+                // 👇 Increment your live numeric indicator by 1 when a new alert pushes down
+                unreadCount: state.unreadCount + 1,
             };
         }
 
@@ -119,19 +128,16 @@ const notificationReducer = (state = initialState, action) => {
                 },
             };
 
-        case FETCH_NOTIFICATION_COUNT_REQUEST:
-            return {
-                ...state,
-                notificationCountState: {
-                    data: [],
-                    loading: true,
-                    error: '',
-                },
-            };
-
         case FETCH_NOTIFICATION_COUNT_SUCCESS: {
+            // Safely look inside your backend payload structure for the number
+            const initialCount = action.payload?.data?.NotificationCount
+                ?? action.payload?.NotificationCount
+                ?? 0;
+
             return {
                 ...state,
+                // 👇 Sync our main unreadCount with your initial DB call
+                unreadCount: initialCount,
                 notificationCountState: {
                     data: action.payload,
                     loading: false,
@@ -139,15 +145,68 @@ const notificationReducer = (state = initialState, action) => {
                 },
             };
         }
-        case FETCH_NOTIFICATION_COUNT_FAILURE:
+
+        // =========================
+        // MARK ALL READ (OR SINGLE READ)
+        // =========================
+        case "MARK_ALL_READ": {
+            const updated = state.notifications.map(n => ({
+                ...n,
+                ActiveStatus: "R"
+            }));
+
             return {
                 ...state,
-                notificationCountState: {
+                notifications: updated,
+                // 👇 Reset count cleanly when cleared
+                unreadCount: 0,
+            };
+        }
+
+        // When user clicks a specific notification to open it
+        case FETCH_UPDATE_NOTIFICATION_STATUS_SUCCESS: {
+            return {
+                ...state,
+                // 👇 Decrement safely, never letting it drop below 0
+                unreadCount: Math.max(0, state.unreadCount - 1),
+                updateNotificationState: {
+                    data: action.payload,
+                    loading: false,
+                    error: '',
+                },
+            };
+        }
+
+        case FETCH_UPDATE_NOTIFICATION_STATUS_REQUEST:
+            return {
+                ...state,
+                updateNotificationState: {
+                    data: [],
+                    loading: true,
+                    error: '',
+                },
+            };
+
+        case FETCH_UPDATE_NOTIFICATION_STATUS_SUCCESS: {
+            return {
+                ...state,
+                updateNotificationState: {
+                    data: action.payload,
+                    loading: false,
+                    error: '',
+                },
+            };
+        }
+        case FETCH_UPDATE_NOTIFICATION_STATUS_FAILURE:
+            return {
+                ...state,
+                updateNotificationState: {
                     data: [],
                     loading: false,
                     error: action.payload,
                 },
             };
+
 
         default:
             return state;

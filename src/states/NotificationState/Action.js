@@ -4,6 +4,7 @@ import {
     CLEAR_TOAST_MESSAGE,
     FETCH_NOTIFICATION_LIST_REQUEST, FETCH_NOTIFICATION_LIST_SUCCESS, FETCH_NOTIFICATION_LIST_FAILURE,
     FETCH_NOTIFICATION_COUNT_REQUEST, FETCH_NOTIFICATION_COUNT_SUCCESS, FETCH_NOTIFICATION_COUNT_FAILURE,
+    FETCH_UPDATE_NOTIFICATION_STATUS_REQUEST, FETCH_UPDATE_NOTIFICATION_STATUS_SUCCESS, FETCH_UPDATE_NOTIFICATION_STATUS_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -77,6 +78,35 @@ export const fetchNotificationCountData = (userId) => async (dispatch) => {
     }
     catch(error){
         dispatch(fetchNotificationCountFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchUpdateNotificationStatusRequest = () => ({ type: FETCH_UPDATE_NOTIFICATION_STATUS_REQUEST });
+export const fetchUpdateNotificationStatusSuccess = (data) => ({ type: FETCH_UPDATE_NOTIFICATION_STATUS_SUCCESS, payload: data });
+export const fetchUpdateNotificationStatusFailure = (error) => ({ type: FETCH_UPDATE_NOTIFICATION_STATUS_FAILURE, payload: error });
+
+export const fetchUpdateNotificationStatusData = (notificationId) => async (dispatch) => {
+    dispatch(fetchUpdateNotificationStatusRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/shared/update-notification-status?notificationId=${notificationId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchUpdateNotificationStatusSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchUpdateNotificationStatusFailure(error.message));
         return { ok: false, error };
     }
 };
