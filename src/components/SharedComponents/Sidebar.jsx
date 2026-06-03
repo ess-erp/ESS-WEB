@@ -210,11 +210,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Calendar,
       path: "/sru/schoolcalendar",
     },
-    {
-      name: "ARC Master List",
-      icon: DocumentIcon,
-      path: "/sru/arcmasterlist",
-    },
+    // {
+    //   name: "ARC Master List",
+    //   icon: DocumentIcon,
+    //   path: "/sru/arcmasterlist",
+    // },
 
     // 👇 Dropdown parent
     {
@@ -229,11 +229,23 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           name: "School Form",
           path: "/sru/generate-school-form",
         },
+        {
+          name: "ARC List",
+          path: "/sru/generate-school-form",
+        },
+        {
+          name: "Summary Sheet Report",
+          path: "/sru/generate-school-form",
+        },
+        {
+          name: "Honor List Report",
+          path: "/sru/generate-school-form",
+        },
       ],
     },
 
     {
-      name: "Grade Report Sequence Template",
+      name: "Grade Report Template",
       icon: Calendar,
       path: "/sru/gradereporttemplate",
     },
@@ -258,9 +270,15 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/academic/facultyloadentry",
     },
     {
-      name: "Subject Load Entry",
+      name: "Subject Master List",
       icon: BookPlus,
       path: "/academic/subjectloadentry",
+    },
+
+    {
+      name: "Curriculum Per Level Entry",
+      icon: DocumentIcon,
+      path: "/academic/subjectscheduleloadentry",
     },
     {
       name: "Subject Schedule Entry",
