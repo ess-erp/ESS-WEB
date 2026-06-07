@@ -18,6 +18,9 @@ import {
     FETCH_INSERT_FACULTY_LOAD_REQUEST, FETCH_INSERT_FACULTY_LOAD_SUCCESS, FETCH_INSERT_FACULTY_LOAD_FAILURE,
     FETCH_FACULTY_LOAD_TABLE_REQUEST, FETCH_FACULTY_LOAD_TABLE_SUCCESS, FETCH_FACULTY_LOAD_TABLE_FAILURE,
     FETCH_FACULTY_LOAD_ROW_TABLE_REQUEST, FETCH_FACULTY_LOAD_ROW_TABLE_SUCCESS, FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE,
+    FETCH_SECTION_PER_LEVEL_REQUEST, FETCH_SECTION_PER_LEVEL_SUCCESS, FETCH_SECTION_PER_LEVEL_FAILURE,
+    FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST, FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE,
+    FETCH_CURRICULUM_PER_LEVEL_REQUEST, FETCH_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_CURRICULUM_PER_LEVEL_FAILURE,
 } from "./ActionType";
 
 const initialDataState = {
@@ -47,6 +50,9 @@ const initialState = {
     facultyLoadState: { ...initialDataState },
     facultyLoadTableState: { ...initialDataState },
     loadTableState: { ...initialDataState },
+    sectionPerLevelState: { ...initialDataState },
+    insertCurriculumPerLevelState: { ...initialDataState },
+    curriculumPerLevelState: { ...initialDataState },
 };
 
 const academicReducer = (state = initialState, action) => {
@@ -185,6 +191,28 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, loadTableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE:
             return { ...state, loadTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SECTION_PER_LEVEL_REQUEST:
+            return { ...state, sectionPerLevelState: { loading: true, data: [], error: '' } };
+        case FETCH_SECTION_PER_LEVEL_SUCCESS:
+            return { ...state, sectionPerLevelState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SECTION_PER_LEVEL_FAILURE:
+            return { ...state, sectionPerLevelState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST:
+            return { ...state, insertCurriculumPerLevelState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS:
+            return { ...state, insertCurriculumPerLevelState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE:
+            return { ...state, insertCurriculumPerLevelState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_CURRICULUM_PER_LEVEL_REQUEST:
+            return { ...state, curriculumPerLevelState: { loading: true, data: [], error: '' } };
+        case FETCH_CURRICULUM_PER_LEVEL_SUCCESS:
+            return { ...state, curriculumPerLevelState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CURRICULUM_PER_LEVEL_FAILURE:
+            return { ...state, curriculumPerLevelState: { loading: false, data: [], error: action.payload } };
+
 
         default:
             return state;

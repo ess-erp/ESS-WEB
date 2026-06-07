@@ -18,6 +18,9 @@ import {
     FETCH_INSERT_FACULTY_LOAD_REQUEST, FETCH_INSERT_FACULTY_LOAD_SUCCESS, FETCH_INSERT_FACULTY_LOAD_FAILURE,
     FETCH_FACULTY_LOAD_TABLE_REQUEST, FETCH_FACULTY_LOAD_TABLE_SUCCESS, FETCH_FACULTY_LOAD_TABLE_FAILURE,
     FETCH_FACULTY_LOAD_ROW_TABLE_REQUEST, FETCH_FACULTY_LOAD_ROW_TABLE_SUCCESS, FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE,
+    FETCH_SECTION_PER_LEVEL_REQUEST, FETCH_SECTION_PER_LEVEL_SUCCESS, FETCH_SECTION_PER_LEVEL_FAILURE,
+    FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST, FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE,
+    FETCH_CURRICULUM_PER_LEVEL_REQUEST, FETCH_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_CURRICULUM_PER_LEVEL_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -578,6 +581,94 @@ export const fetchFacultyLoadRowTableData = (loadId,page, pageSize, search) => a
     }
     catch (error) {
         dispatch(fetchFacultyLoadRowTableFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchSectionPerLevelRequest = () => ({ type: FETCH_SECTION_PER_LEVEL_REQUEST });
+export const fetchSectionPerLevelSuccess = (data) => ({ type: FETCH_SECTION_PER_LEVEL_SUCCESS, payload: data });
+export const fetchSectionPerLevelFailure = (error) => ({ type: FETCH_SECTION_PER_LEVEL_FAILURE, payload: error });
+1
+export const fetchSectionPerLevelData = (levelId) => async (dispatch) => {
+    dispatch(fetchSectionPerLevelRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-section-per-level?levelId=${levelId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSectionPerLevelSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchSectionPerLevelFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchInsertCurriculumPerLevelRequest = () => ({ type: FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST });
+export const fetchInsertCurriculumPerLevelSuccess = (data) => ({ type: FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS, payload: data });
+export const fetchInsertCurriculumPerLevelFailure = (error) => ({ type: FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE, payload: error });
+
+export const fetchInsertCurriculumPerLevelData = (payload) => async (dispatch) => {
+    dispatch(fetchInsertCurriculumPerLevelRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/insert-curriculum-per-level`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchInsertCurriculumPerLevelSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchInsertCurriculumPerLevelFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetctCurriculumPerLevelRequest = () => ({ type: FETCH_CURRICULUM_PER_LEVEL_REQUEST });
+export const fetchCurriculumPerLevelSuccess = (data) => ({ type: FETCH_CURRICULUM_PER_LEVEL_SUCCESS, payload: data });
+export const fetchCurriculumPerLevelFailure = (error) => ({ type: FETCH_CURRICULUM_PER_LEVEL_FAILURE, payload: error });
+
+export const fetchCurriculumPerLevelData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetctCurriculumPerLevelRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-curriculum-per-level?$page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchCurriculumPerLevelSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchCurriculumPerLevelFailure(error.message));
         return { ok: false, error };
     }
 };

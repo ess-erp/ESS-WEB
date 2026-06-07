@@ -35,6 +35,7 @@ import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
 import AcadSubjectScheduleLoadEntry from "../pages/AcademicStaff/SubjectScheduleLoadEntry";
 import AcademicAdviserNonAdviser from "../pages/AcademicStaff/AssignAdviserNonAdviser";
+import AcademicCurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
 import HrDashboard from "../pages/HumanResources/Dashboard";
 import HrOnlineApplication from "../pages/HumanResources/EmployeeOnlineApp";
 import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
@@ -62,6 +63,7 @@ import Notification from "../pages/SharedPages/Notification";
 import Profile from "../pages/SharedPages/Profile";
 import Ticketing from "../pages/SharedPages/Ticketing";
 import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
+import CurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
 
 const AuthenticatedLayout = () => {
   return (
@@ -86,480 +88,488 @@ const AppRoutes = () => (
       <Route path="/employeecongratulationletter" element={<EmployeeCongratsLetter />} />
 
       <Route element={<AuthenticatedLayout />}>
-      {/* ✅ Admissions modules */}
-      <Route
-        path="/admission/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[1]}>
-            <AdmissionDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/admission/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[1]}>
-            <StudentOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/admission/studentappform"
-        element={
-          <ProtectedRoutes allowedRoles={[1]}>
-            <StudentOnlineAppForm />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/admission/templatesform"
-        element={
-          <ProtectedRoutes allowedRoles={[1]}>
-            <AdmissionTemplatesForm />
-          </ProtectedRoutes>
-        }
-      />
-      {/* End of admission modules */}
+        {/* ✅ Admissions modules */}
+        <Route
+          path="/admission/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[1]}>
+              <AdmissionDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/admission/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[1]}>
+              <StudentOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/admission/studentappform"
+          element={
+            <ProtectedRoutes allowedRoles={[1]}>
+              <StudentOnlineAppForm />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/admission/templatesform"
+          element={
+            <ProtectedRoutes allowedRoles={[1]}>
+              <AdmissionTemplatesForm />
+            </ProtectedRoutes>
+          }
+        />
+        {/* End of admission modules */}
 
-      {/* ✅ CFW modules */}
-      <Route
-        path="/cfw/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[2]}>
-            <CfwDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cfw/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[2]}>
-            <CfwStudentOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cfw/studentappform"
-        element={
-          <ProtectedRoutes allowedRoles={[2]}>
-            <CfwStudentOnlineAppForm />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cfw/examroomtemplates"
-        element={
-          <ProtectedRoutes allowedRoles={[2]}>
-            <CfwExamRoomTemplate />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cfw/templates"
-        element={
-          <ProtectedRoutes allowedRoles={[2]}>
-            <CfwTemplates />
-          </ProtectedRoutes>
-        }
-      />
-      {/* End of CFW Modules */}
-
-
-      {/* Cashier modules */}
-
-      <Route
-        path="/cashier/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[3]}>
-            <CashierDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cashier/cashierpayment"
-        element={
-          <ProtectedRoutes allowedRoles={[3]}>
-            <CashierPayment />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/cashier/transactionhistory"
-        element={
-          <ProtectedRoutes allowedRoles={[3]}>
-            <CashierTransactionHistory />
-          </ProtectedRoutes>
-        }
-      />
-
-      {/* End of Cashier modules */}
+        {/* ✅ CFW modules */}
+        <Route
+          path="/cfw/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <CfwDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cfw/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <CfwStudentOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cfw/studentappform"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <CfwStudentOnlineAppForm />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cfw/examroomtemplates"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <CfwExamRoomTemplate />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cfw/templates"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <CfwTemplates />
+            </ProtectedRoutes>
+          }
+        />
+        {/* End of CFW Modules */}
 
 
-      {/* Start of finance module */}
+        {/* Cashier modules */}
 
-      <Route
-        path="/finance/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[4]}>
-            <FinanceDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/finance/templates"
-        element={
-          <ProtectedRoutes allowedRoles={[4]}>
-            <FinanceTemplatesForm />
-          </ProtectedRoutes>
-        }
-      />
-      {/* End of finance module */}
+        <Route
+          path="/cashier/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[3]}>
+              <CashierDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cashier/cashierpayment"
+          element={
+            <ProtectedRoutes allowedRoles={[3]}>
+              <CashierPayment />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/cashier/transactionhistory"
+          element={
+            <ProtectedRoutes allowedRoles={[3]}>
+              <CashierTransactionHistory />
+            </ProtectedRoutes>
+          }
+        />
 
-      {/* SRU Modules */}
-      <Route
-        path="/sru/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SruDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sru/studentlist"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SruOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sru/StudentMasterFile"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <StudentMasterFile />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sru/sectionandhouseentry"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SectionAndHouseEntry />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sru/schoolcalendar"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SruSchoolCalendar />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sru/arcmasterlist"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SruArcMasterList />
-          </ProtectedRoutes>
-        }
-      />
-       <Route
-        path="/sru/gradereporttemplate"
-        element={
-          <ProtectedRoutes allowedRoles={[5]}>
-            <SruGradeReportTemplate />
-          </ProtectedRoutes>
-        }
-      />
-      {/* End of Sru modules */}
-
-      {/* start of academics modules */}
-      <Route
-        path="/academic/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[6]}>
-            <AcademicDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/academic/facultyloadentry"
-        element={
-          <ProtectedRoutes allowedRoles={[6]}>
-            <AcadFacultyLoadEntry />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/academic/subjectloadentry"
-        element={
-          <ProtectedRoutes allowedRoles={[6]}>
-            <AcadSubjectLoadEntry />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/academic/subjectscheduleloadentry"
-        element={
-          <ProtectedRoutes allowedRoles={[6]}>
-            <AcadSubjectScheduleLoadEntry />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/academic/assignadvisernonadviser"
-        element={
-          <ProtectedRoutes allowedRoles={[6]}>
-            <AcademicAdviserNonAdviser />
-          </ProtectedRoutes>
-        }
-      />
-      {/* end of academics modules */}
-
-      {/* start of hr modules */}
-
-      <Route
-        path="/hrd/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
-            <HrDashboard />
-          </ProtectedRoutes>
-        }
-      />
-
-      <Route
-        path="/hrd/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[7, 10]}>
-            <HrOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/hrd/employeeappform"
-        element={
-          <ProtectedRoutes allowedRoles={[7, 10]}>
-            <HrEmployeeAppForm />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/hrd/employeehiringprocess"
-        element={
-          <ProtectedRoutes allowedRoles={[7, 10]}>
-            <HrEmployeeHiringProcess />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/hrd/templates"
-        element={
-          <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
-            <HrTemplates />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/hrd/employeeinitialinterview"
-        element={
-          <ProtectedRoutes allowedRoles={[10]}>
-            <HrEmployeeInitialInterview />
-          </ProtectedRoutes>
-        }
-      />
-      {/* end of hr modules */}
-
-      {/* start of sac modules */}
-
-      <Route
-        path="/sac/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[11]}>
-            <SacDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sac/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[11]}>
-            <SacOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/sac/employeeinitialinterview"
-        element={
-          <ProtectedRoutes allowedRoles={[11]}>
-            <SacEmployeeinitialInterview />
-          </ProtectedRoutes>
-        }
-      />
-
-      {/* end of sac modules */}
-
-      {/* start of ap modules */}
-      <Route
-        path="/ap/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[12]}>
-            <ApDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/ap/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[12]}>
-            <ApOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/ap/employeeinitialinterview"
-        element={
-          <ProtectedRoutes allowedRoles={[12]}>
-            <ApEmployeeInitialInterview />
-          </ProtectedRoutes>
-        }
-      />
-      {/* end of ap modules */}
-
-      {/* start of principal modules */}
-      <Route
-        path="/principal/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[13]}>
-            <PrincipalDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/principal/onlineapplication"
-        element={
-          <ProtectedRoutes allowedRoles={[13]}>
-            <PrincipalOnlineApplication />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/principal/employeeinitialinterview"
-        element={
-          <ProtectedRoutes allowedRoles={[13]}>
-            <PrincipalEmployeeInitialInterview />
-          </ProtectedRoutes>
-        }
-      />
-      {/* end of principal modules */}
-
-      {/* Start of Parent Portal */}
-      <Route
-        path="/parent/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[17]}>
-            <ParentDashboard />
-          </ProtectedRoutes>
-        }
-      />
-
-      <Route
-        path="/parent/enrollstudent"
-        element={
-          <ProtectedRoutes allowedRoles={[17]}>
-            <ParentEnrollStudent />
-          </ProtectedRoutes>
-        }
-      />
-
-      <Route
-        path="/parent/listofstudent"
-        element={
-          <ProtectedRoutes allowedRoles={[17]}>
-            <ListOfStudent />
-          </ProtectedRoutes>
-        }
-      />
-
-      <Route
-        path="/parent/pendingliststudentform"
-        element={
-          <ProtectedRoutes allowedRoles={[17]}>
-            <PendingListStudentForm />
-          </ProtectedRoutes>
-        }
-      />
-
-      {/* End of Parent portal  */}
+        {/* End of Cashier modules */}
 
 
-      {/* start of teacher modules */}
-      <Route
-        path="/teacher/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[14, 15]}>
-            <TeacherDashboard />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/teacher/listofsection"
-        element={
-          <ProtectedRoutes allowedRoles={[14, 15]}>
-            <TeacherListOfSection />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/teacher/encodingofgradeorclub"
-        element={
-          <ProtectedRoutes allowedRoles={[14]}>
-            <TeacherEncodingOfGradeClub />
-          </ProtectedRoutes>
-        }
-      />
+        {/* Start of finance module */}
 
-      {/* end of teacher modules */}
+        <Route
+          path="/finance/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[4]}>
+              <FinanceDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/finance/templates"
+          element={
+            <ProtectedRoutes allowedRoles={[4]}>
+              <FinanceTemplatesForm />
+            </ProtectedRoutes>
+          }
+        />
+        {/* End of finance module */}
 
-      {/* student dashboard */}
-      <Route
-        path="/teacher/dashboard"
-        element={
-          <ProtectedRoutes allowedRoles={[16]}>
-            <StudentDashboard />
-          </ProtectedRoutes>
-        }
-      />
+        {/* SRU Modules */}
+        <Route
+          path="/sru/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/studentlist"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/StudentMasterFile"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <StudentMasterFile />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/sectionandhouseentry"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SectionAndHouseEntry />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/schoolcalendar"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruSchoolCalendar />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/arcmasterlist"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruArcMasterList />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/gradereporttemplate"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruGradeReportTemplate />
+            </ProtectedRoutes>
+          }
+        />
+        {/* End of Sru modules */}
 
-      {/*  */}
+        {/* start of academic modules */}
+        <Route
+          path="/academic/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcademicDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/facultyloadentry"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcadFacultyLoadEntry />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/subjectloadentry"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcadSubjectLoadEntry />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/subjectscheduleloadentry"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcadSubjectScheduleLoadEntry />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/assignadvisernonadviser"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcademicAdviserNonAdviser />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/curriculumentry"
+          element={
+            <ProtectedRoutes allowedRoles={[6]}>
+              <AcademicCurriculumEntry />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of academics modules */}
 
-      {/* shared components */}
+        {/* start of hr modules */}
+
+        <Route
+          path="/hrd/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrDashboard />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/hrd/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 10]}>
+              <HrOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employeeappform"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 10]}>
+              <HrEmployeeAppForm />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employeehiringprocess"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 10]}>
+              <HrEmployeeHiringProcess />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/templates"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrTemplates />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employeeinitialinterview"
+          element={
+            <ProtectedRoutes allowedRoles={[10]}>
+              <HrEmployeeInitialInterview />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of hr modules */}
+
+        {/* start of sac modules */}
+
+        <Route
+          path="/sac/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[11]}>
+              <SacDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sac/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[11]}>
+              <SacOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sac/employeeinitialinterview"
+          element={
+            <ProtectedRoutes allowedRoles={[11]}>
+              <SacEmployeeinitialInterview />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* end of sac modules */}
+
+        {/* start of ap modules */}
+        <Route
+          path="/ap/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[12]}>
+              <ApDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/ap/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[12]}>
+              <ApOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/ap/employeeinitialinterview"
+          element={
+            <ProtectedRoutes allowedRoles={[12]}>
+              <ApEmployeeInitialInterview />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of ap modules */}
+
+        {/* start of principal modules */}
+        <Route
+          path="/principal/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[13]}>
+              <PrincipalDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/principal/onlineapplication"
+          element={
+            <ProtectedRoutes allowedRoles={[13]}>
+              <PrincipalOnlineApplication />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/principal/employeeinitialinterview"
+          element={
+            <ProtectedRoutes allowedRoles={[13]}>
+              <PrincipalEmployeeInitialInterview />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of principal modules */}
+
+        {/* Start of Parent Portal */}
+        <Route
+          path="/parent/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[17]}>
+              <ParentDashboard />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/parent/enrollstudent"
+          element={
+            <ProtectedRoutes allowedRoles={[17]}>
+              <ParentEnrollStudent />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/parent/listofstudent"
+          element={
+            <ProtectedRoutes allowedRoles={[17]}>
+              <ListOfStudent />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/parent/pendingliststudentform"
+          element={
+            <ProtectedRoutes allowedRoles={[17]}>
+              <PendingListStudentForm />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* End of Parent portal  */}
 
 
-      <Route
-        path="/notification"
-        element={
-          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
-            <Notification />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/ticketing"
-        element={
-          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
-            <Ticketing />
-          </ProtectedRoutes>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
-            <Profile />
-          </ProtectedRoutes>
-        }
-      />
+        {/* start of teacher modules */}
+        <Route
+          path="/teacher/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[14, 15]}>
+              <TeacherDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/teacher/listofsection"
+          element={
+            <ProtectedRoutes allowedRoles={[14, 15]}>
+              <TeacherListOfSection />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/teacher/encodingofgradeorclub"
+          element={
+            <ProtectedRoutes allowedRoles={[14]}>
+              <TeacherEncodingOfGradeClub />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* end of teacher modules */}
+
+        {/* student dashboard */}
+        <Route
+          path="/teacher/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[16]}>
+              <StudentDashboard />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/*  */}
+
+        {/* shared components */}
+
+
+        <Route
+          path="/notification"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+              <Notification />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/ticketing"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+              <Ticketing />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+              <Profile />
+            </ProtectedRoutes>
+          }
+        />
       </Route>
 
       {/* end of shared components */}

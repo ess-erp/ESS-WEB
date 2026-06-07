@@ -210,19 +210,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Calendar,
       path: "/sru/schoolcalendar",
     },
-    // {
-    //   name: "ARC Master List",
-    //   icon: DocumentIcon,
-    //   path: "/sru/arcmasterlist",
-    // },
-
-    // 👇 Dropdown parent
     {
       name: "Generate",
       icon: FilePlus,
       children: [
         {
-          name: "Student ID",
+          name: "Student ID Form",
           path: "/sru/generate-student-id",
         },
         {
@@ -278,7 +271,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     {
       name: "Curriculum Per Level Entry",
       icon: DocumentIcon,
-      path: "/academic/subjectscheduleloadentry",
+      path: "/academic/curriculumentry",
     },
     {
       name: "Subject Schedule Entry",
