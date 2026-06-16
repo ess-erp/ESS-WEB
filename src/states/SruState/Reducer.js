@@ -16,6 +16,7 @@ import {
     FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
     FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
     FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
+    FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
 } from './ActionType';
 
@@ -44,6 +45,7 @@ const initialGeneralState = {
     schoolCalendarActivityState: { ...initialState },
     insertActivityState: { ...initialState },
     enrollmentHistoryTableState: { ...initialState },
+    insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
@@ -168,6 +170,13 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, enrollmentHistoryTableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE:
             return { ...state, enrollmentHistoryTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST:
+            return { ...state, insertGradeReportTemplateState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS:
+            return { ...state, insertGradeReportTemplateState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE:
+            return { ...state, insertGradeReportTemplateState: { loading: false, data: [], error: action.payload } };
 
         case FETCH_GRADE_REPORT_TEMPLATE_REQUEST:
             return { ...state, gradeReportTableState: { loading: true, data: [], error: '' } };

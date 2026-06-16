@@ -21,6 +21,8 @@ import {
     FETCH_SECTION_PER_LEVEL_REQUEST, FETCH_SECTION_PER_LEVEL_SUCCESS, FETCH_SECTION_PER_LEVEL_FAILURE,
     FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST, FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE,
     FETCH_CURRICULUM_PER_LEVEL_REQUEST, FETCH_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_CURRICULUM_PER_LEVEL_FAILURE,
+    FETCH_CURRICULUM_LIST_REQUEST, FETCH_CURRICULUM_LIST_SUCCESS, FETCH_CURRICULUM_LIST_FAILURE,
+    FETCH_CURRICULUM_TABLE_REQUEST, FETCH_CURRICULUM_TABLE_SUCCESS, FETCH_CURRICULUM_TABLE_FAILURE,
 } from "./ActionType";
 
 const initialDataState = {
@@ -53,6 +55,8 @@ const initialState = {
     sectionPerLevelState: { ...initialDataState },
     insertCurriculumPerLevelState: { ...initialDataState },
     curriculumPerLevelState: { ...initialDataState },
+    curriculumListState: { ...initialDataState },
+    curriculumTableState: { ...initialDataState },
 };
 
 const academicReducer = (state = initialState, action) => {
@@ -212,6 +216,20 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, curriculumPerLevelState: { loading: false, data: action.payload, error: '' } };
         case FETCH_CURRICULUM_PER_LEVEL_FAILURE:
             return { ...state, curriculumPerLevelState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_CURRICULUM_LIST_REQUEST:
+            return { ...state, curriculumListState: { loading: true, data: [], error: '' } };
+        case FETCH_CURRICULUM_LIST_SUCCESS:
+            return { ...state, curriculumListState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CURRICULUM_LIST_FAILURE:
+            return { ...state, curriculumListState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_CURRICULUM_TABLE_REQUEST:
+            return { ...state, curriculumTableState: { loading: true, data: [], error: '' } };
+        case FETCH_CURRICULUM_TABLE_SUCCESS:
+            return { ...state, curriculumTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CURRICULUM_TABLE_FAILURE:
+            return { ...state, curriculumTableState: { loading: false, data: [], error: action.payload } };
 
 
         default:

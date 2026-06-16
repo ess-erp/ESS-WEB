@@ -310,7 +310,7 @@ const SubjectLoadEntryComponent = () => {
     const [addNewModal, setAddNewModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    
+
     const {
         register,
         handleSubmit,
@@ -319,11 +319,10 @@ const SubjectLoadEntryComponent = () => {
     } = useForm({
         defaultValues: {
             rows: [
-                { subjectCode: "", subjectName: "", subjectUnit: "", parentId: null }
+                { id: crypto.randomUUID(), subjectCode: "", subjectName: "", subjectUnit: "", parentId: null }
             ]
         }
     });
-
     // Destructured 'insert' to handle placing rows right below their specific parent indexes
     const { fields, append, remove, insert } = useFieldArray({
         control,
@@ -343,33 +342,96 @@ const SubjectLoadEntryComponent = () => {
 
     const handleAddSubSubject = (parentIndex, parentFieldId) => {
         insert(parentIndex + 1, {
-            subjectCode: "",
             subjectName: "",
             subjectUnit: "",
-            parentId: parentFieldId // Track relational hierarchy
+            parentId: parentFieldId
         });
     };
 
+    // const handleSubmitModal = async () => {
+    //     console.log(formData);
+
+    //     const rowsWithIds = formData.rows.map((row, index) => ({
+    //         ...row,
+    //         id: fields[index]?.id
+    //     }));
+
+    //     // const parentRows = formData.rows.filter(r => !r.parentId);
+
+    //     // const childRows = formData.rows.filter(r => !!r.parentId);
+    //     const parentRows = rowsWithIds.filter(r => !r.parentId);
+    //     const childRows = rowsWithIds.filter(r => !!r.parentId);
+
+    //     const payload = {
+    //         SubjectRowDtos: parentRows.map(parent => {
+    //             // This will now perfectly match the string '4c1fe171-b5f0-444f...'
+    //             const childrenForThisParent = childRows.filter(
+    //                 child => child.parentId === parent.id
+    //             );
+
+    //             console.log(childRows);
+    //             // console.log(childrenForThisParent);
+
+    //             return {
+    //                 SubjectCode: parent.subjectCode,
+    //                 SubjectName: parent.subjectName,
+    //                 SubjectUnit: parent.subjectUnit,
+    //                 // ParentSubjectId: null,
+    //                 CreatedByUserId: userId,
+    //                 SubSubjectRowChildDtos: childrenForThisParent.map(child => ({
+    //                     SubjectName: child.subjectName,
+    //                     SubjectUnit: child.subjectUnit,
+    //                     // ParentSubjectId: null, 
+    //                 }))
+    //             };
+    //         })
+    //     };
+    //     console.log(payload);
+    //     // const res = await dispatch(fetchInsertGeneralOfferedSubjectsData(payload));
+
+    //     // if (res.ok) {
+    //     //     setIsSuccessModalOpen(true);
+    //     //     if (isSuccessModalOpen == false) {
+    //     //         setTimeout(() => window.location.reload(), 3000);
+    //     //     }
+    //     // }
+    // };
     const handleSubmitModal = async () => {
-        console.log(formData);
+        
+        const rowsWithIds = formData.rows.map((row, index) => ({
+            ...row,
+            id: fields[index]?.id
+        }));
 
-        const payload = {
-            SubjectRowDtos: formData.rows.map(r => ({
-                SubjectCode: r.subjectCode,
-                SubjectName: r.subjectName,
-                SubjectUnit: r.subjectUnit,
-                ParentId: r.parentId || null, // Included if your backend API consumes parent relations
-                CreatedByUserId: userId
-            }))
-        };
-        console.log(payload);
+        const parentRows = rowsWithIds.filter(r => !r.parentId);
+        const childRows = rowsWithIds.filter(r => !!r.parentId);
+
+        const payload = parentRows.map(parent => {
+            const childrenForThisParent = childRows.filter(
+                child => child.parentId === parent.id
+            );
+
+            return {
+                SubjectCode: parent.subjectCode,
+                SubjectName: parent.subjectName,
+                SubjectUnit: parent.subjectUnit,
+                CreatedByUserId: userId,
+                SubSubjectRowChildDtos: childrenForThisParent.map(child => ({
+                    SubjectName: child.subjectName,
+                    SubjectUnit: child.subjectUnit,
+                }))
+            };
+        });
+
+        console.log("Direct Array Payload:", payload); 
+
         const res = await dispatch(fetchInsertGeneralOfferedSubjectsData(payload));
-
-        if (res.ok) {
+        if (res?.ok) {
+            setIsModalOpen(false); 
             setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
         }
     };
 
@@ -385,7 +447,7 @@ const SubjectLoadEntryComponent = () => {
     useEffect(() => {
         dispatch(fetchGeneralOfferedSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
     }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, dispatch]);
-    
+
     useEffect(() => {
         if (generealOfferedTable.length == 0) return;
         setInactiveGeneralOfferedSubject(generealOfferedTable);
@@ -467,27 +529,31 @@ const SubjectLoadEntryComponent = () => {
                                 return (
                                     <div
                                         key={field.id}
-                                        className={`grid grid-cols-1 gap-3 items-center p-3 rounded-lg border transition-all ${
-                                            isSubSubject
-                                                ? "grid-cols-[40px_1fr_1fr_1fr_80px] ml-10 bg-gray-50 border-l-4 border-l-blue-400 border-gray-200"
-                                                : "grid-cols-[40px_1fr_1fr_1fr_120px] bg-white border-gray-100"
-                                        }`}
+                                        className={`grid gap-3 items-center p-3 rounded-lg border transition-all ${isSubSubject
+                                            ? "grid-cols-[40px_1fr_1fr_1fr_80px] ml-10 bg-gray-50 border-l-4 border-l-blue-400 border-gray-200"
+                                            : "grid-cols-[40px_1fr_1fr_1fr_120px] bg-white border-gray-100"
+                                            }`}
                                     >
+                                        {/* Index Signifier / Branching Icon */}
                                         <div className="text-center font-semibold text-gray-500">
                                             {isSubSubject ? "└─" : `${index + 1}:`}
                                         </div>
-                                        
-                                        <InputField
-                                            name={`rows.${index}.subjectCode`}
-                                            label="Subject Code"
-                                            register={register}
-                                            isEditing={true}
-                                            placeholder="Please input subject code...."
-                                            divClassName=""
-                                            required
-                                            errors={errors.rows?.[index]?.subjectCode}
-                                            errorMessage={errors.rows?.[index]?.subjectCode?.message}
-                                        />
+
+                                        {isSubSubject ? (
+                                            <div className="hidden md:block"></div>
+                                        ) : (
+                                            <InputField
+                                                name={`rows.${index}.subjectCode`}
+                                                label="Subject Code"
+                                                register={register}
+                                                isEditing={true}
+                                                placeholder="Please input subject code...."
+                                                divClassName=""
+                                                required
+                                                errors={errors.rows?.[index]?.subjectCode}
+                                                errorMessage={errors.rows?.[index]?.subjectCode?.message}
+                                            />
+                                        )}
 
                                         <InputField
                                             name={`rows.${index}.subjectName`}
@@ -515,7 +581,6 @@ const SubjectLoadEntryComponent = () => {
                                         />
 
                                         <div className="flex justify-end items-center gap-1">
-                                            {/* Sub subject action toggle */}
                                             {!isSubSubject && (
                                                 <button
                                                     type="button"
@@ -557,7 +622,7 @@ const SubjectLoadEntryComponent = () => {
                     { label: "Cancel", type: "red", onClick: () => setAddNewModal(false) },
                 ]}
             />
-            
+
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -568,7 +633,7 @@ const SubjectLoadEntryComponent = () => {
                     { label: "No", type: "red", onClick: () => console.log("No clicked") },
                 ]}
             />
-            
+
             <ModalComponent
                 isOpen={isSuccessModalOpen}
                 onClose={() => setIsSuccessModalOpen(false)}

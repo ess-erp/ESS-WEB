@@ -21,6 +21,8 @@ import {
     FETCH_SECTION_PER_LEVEL_REQUEST, FETCH_SECTION_PER_LEVEL_SUCCESS, FETCH_SECTION_PER_LEVEL_FAILURE,
     FETCH_INSERT_CURRICULUM_PER_LEVEL_REQUEST, FETCH_INSERT_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_INSERT_CURRICULUM_PER_LEVEL_FAILURE,
     FETCH_CURRICULUM_PER_LEVEL_REQUEST, FETCH_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_CURRICULUM_PER_LEVEL_FAILURE,
+    FETCH_CURRICULUM_LIST_REQUEST, FETCH_CURRICULUM_LIST_SUCCESS, FETCH_CURRICULUM_LIST_FAILURE,
+    FETCH_CURRICULUM_TABLE_REQUEST, FETCH_CURRICULUM_TABLE_SUCCESS, FETCH_CURRICULUM_TABLE_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -355,11 +357,11 @@ export const fetchSectionSubjectScheduleTableRequest = () => ({ type: FETCH_SECT
 export const fetchSectionSubjectScheduleTableSuccess = (data) => ({ type: FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_SUCCESS, payload: data });
 export const fetchSectionSubjectScheduleTableFailure = (error) => ({ type: FETCH_SECTION_SUBJECT_SCHEDULE_TABLE_FAILURE, payload: error });
 
-export const fetchSectionSubjectScheduleTableData = (secId, page, pageSize, search) => async (dispatch) => {
+export const fetchSectionSubjectScheduleTableData = (sectionId, page, pageSize, search) => async (dispatch) => {
     dispatch(fetchSectionSubjectScheduleTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/academic/get-section-subject-schedule-table?secId=${secId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/academic/get-section-subject-schedule-table?sectionId=${sectionId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -560,7 +562,7 @@ export const fetchFacultyLoadRowTableRequest = () => ({ type: FETCH_FACULTY_LOAD
 export const fetchFacultyLoadRowTableSuccess = (data) => ({ type: FETCH_FACULTY_LOAD_ROW_TABLE_SUCCESS, payload: data });
 export const fetchFacultyLoadRowTableFailure = (error) => ({ type: FETCH_FACULTY_LOAD_ROW_TABLE_FAILURE, payload: error });
 
-export const fetchFacultyLoadRowTableData = (loadId,page, pageSize, search) => async (dispatch) => {
+export const fetchFacultyLoadRowTableData = (loadId, page, pageSize, search) => async (dispatch) => {
     dispatch(fetchFacultyLoadRowTableRequest());
     try {
         const token = getToken();
@@ -669,6 +671,64 @@ export const fetchCurriculumPerLevelData = (page, pageSize, search) => async (di
     }
     catch (error) {
         dispatch(fetchCurriculumPerLevelFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetctCurriculumListRequest = () => ({ type: FETCH_CURRICULUM_LIST_REQUEST });
+export const fetchCurriculumListSuccess = (data) => ({ type: FETCH_CURRICULUM_LIST_SUCCESS, payload: data });
+export const fetchCurriculumListFailure = (error) => ({ type: FETCH_CURRICULUM_LIST_FAILURE, payload: error });
+
+export const fetchCurriculumListData = (levelId) => async (dispatch) => {
+    dispatch(fetctCurriculumListRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-curriculum-list?levelId=${levelId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchCurriculumListSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchCurriculumListFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetctCurriculumTableRequest = () => ({ type: FETCH_CURRICULUM_TABLE_REQUEST });
+export const fetchCurriculumTableSuccess = (data) => ({ type: FETCH_CURRICULUM_TABLE_SUCCESS, payload: data });
+export const fetchCurriculumTableFailure = (error) => ({ type: FETCH_CURRICULUM_TABLE_FAILURE, payload: error });
+
+export const fetchCurriculumTableData = (curId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetctCurriculumTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-curriculum-table?curId=${curId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        console.log(res);
+        dispatch(fetchCurriculumTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchCurriculumTableFailure(error.message));
         return { ok: false, error };
     }
 };

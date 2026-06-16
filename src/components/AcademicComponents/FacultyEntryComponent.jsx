@@ -198,11 +198,16 @@ const FacultyEntryComponent = () => {
         const res = await dispatch(fetchInsertFacultyLoadData(payload));
         if (res.ok) {
             setIsSuccessModalOpen(true);
-            setSuccessModalTitle("Success");
+            setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
             setSuccessModalBody("Done creating faculty load.");
             if (isSuccessModalOpen == false) {
                 setTimeout(() => window.location.reload(), 2000);
             }
+        }
+        else{
+            setIsSuccessModalOpen(true);
+            setSuccessModalTitle(<span className="font-bold text-lg text-red-700">Error!</span>);
+            setSuccessModalBody("Faculty Load was already exist.");
         }
     };
 

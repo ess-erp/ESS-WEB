@@ -6,11 +6,13 @@ import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
-    fetchCurriculumAndNonCurriculumSubjectData,
+    // fetchCurriculumAndNonCurriculumSubjectData,
     fetchSectionListData,
     fetchInsertSubjectScheduleData,
     fetchSubjectScheduleTableData,
     fetchMasterSubjectScheduleTableData,
+    fetchCurriculumListData,
+    fetchCurriculumTableData,
 } from "../../states/AcademicState/Action";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
@@ -77,127 +79,77 @@ const SubjectScheduleLoadEntryComponent = () => {
 
     const [addNewModal, setAddNewModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [sectionList, setSectionList] = useState([]);
+    const sectionListState = useSelector((state) => state.academic.sectionListState || {});
+    const sectionData = sectionListState.data || [];
+    const [selectedSection, setSelectedSection] = useState(null);
+    const [isRowModalOpen, setIsRowModalOpen] = useState(false);
+    const [curriculumList, setCurriculumList] = useState([]);
+    const curriculumListState = useSelector((state) => state.academic.curriculumListState || {});
+    const curriculumData = curriculumListState.data || [];
+    const [selectedCurriculum, setSelectedCurriculum] = useState(null);
+
+    const openAddNewModal = async () => {
+        setAddNewModal(true);
+        setIsRowModalOpen(true);
+    };
+
+    useEffect(() => {
+        if (!isRowModalOpen) return;
+        dispatch(fetchSectionListData());
+        // dispatch(fetchCurriculumListData());
+    }, [dispatch, isRowModalOpen,]);
+
+    useEffect(() => {
+        if (!isRowModalOpen) return;
+        if (Array.isArray(sectionData) && sectionData.length > 0) {
+            setSectionList(
+                sectionData.map(item => ({
+                    value: item.SectionId,
+                    label: item.SectionName,
+                    levelId: item.LevelId,
+                    levelName: item.LevelName,
+                }))
+            );
+        }
+
+        if (Array.isArray(curriculumData) && curriculumData.length > 0) {
+            setCurriculumList(
+                curriculumData.map(item => ({
+                    value: item.CurId,
+                    label: `${item.TempName} - ${item.LevelName}`
+                }))
+            );
+        }
+
+    }, [sectionData, curriculumData, isRowModalOpen]);
+
+    const handleSelectedSection = (data) => {
+        console.log(data);
+        dispatch(fetchCurriculumListData(data?.levelId));
+    };
+
     const [generalOfferedSubject, setInactiveGeneralOfferedSubject] = useState([]);
-    const generalOfferedSubjectState = useSelector((state) => state.academic.curriculumAndNonCurriculumSubjectState || {});
-    // const generealOfferedTable = generalOfferedSubjectState.data.data || [];
+    const generalOfferedSubjectState = useSelector((state) => state.academic.curriculumTableState || {});
+    const generealOfferedTable = generalOfferedSubjectState.data.data || [];
     const generealOfferedTotalRows = generalOfferedSubjectState.data.totalRecords || 0;
     const generealOfferedLoading = generalOfferedSubjectState.loading || false;
     const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
     const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
     const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
-    const [sectionList, setSectionList] = useState([]);
-    const sectionListState = useSelector((state) => state.academic.sectionListState || {});
-    const sectionData = sectionListState.data || [];
-    const [selectedSection, setSelectedSection] = useState(null);
-    const openAddNewModal = async () => {
-        setAddNewModal(true);
-        const res = await dispatch(fetchCurriculumAndNonCurriculumSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
-        console.log(res);
-        if (res.ok) {
-            setInactiveGeneralOfferedSubject(res.data);
-        }
+
+    const handleShowCurriculumTable = (data) => {
+        dispatch(fetchCurriculumTableData(data.value, generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
     };
 
-    useEffect(() => {
-        dispatch(fetchSectionListData());
-    }, [dispatch]);
+    console.log(generalOfferedSubjectState);
 
     useEffect(() => {
-        if (!Array.isArray(sectionData) || sectionData.length === 0) return;
-
-        setSectionList(
-            sectionData.map(item => ({
-                value: item.SecId,
-                label: item.SectionName,
-                levelName: item.LevelName,
-            }))
-        );
-    }, [sectionData]);
+        if (generealOfferedTable.length == 0) return;
+        setInactiveGeneralOfferedSubject(generealOfferedTable);
+    }, [generealOfferedTable])
 
     const subjectColumns = [
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
-        { name: 'Subject Type', selector: row => row.SubjectType, sortable: true },
-        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true },
-        {
-            name: "Action",
-            cell: row => (
-                <button
-                    onClick={() => handleAddSubject(row)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded text-sm"
-                >
-                    <Plus size={16} />
-                </button>
-            )
-        }
-    ];
-
-    const [addedSubjects, setAddedSubjects] = useState([]);
-
-    const handleAddSubject = (row) => {
-        const exists = addedSubjects.some(
-            s => s.RowId === row.RowId
-        );
-        if (exists) return;
-
-        setAddedSubjects(prev => [
-            ...prev,
-            {
-                RowId: row.RowId,
-                SubjectId: row.SubjectId,
-                SubjectCode: row.SubjectCode,
-                SubjectName: row.SubjectName,
-                SubjectType: row.SubjectType,
-                SubjectUnit: row.SubjectUnit,
-                term1: true,
-                term2: true,
-                term3: true,
-                Room: "",
-                StartTime: "",
-                EndTime: ""
-            }
-        ]);
-
-        setInactiveGeneralOfferedSubject(prev =>
-            prev.filter(s => s.RowId !== row.RowId)
-        );
-    };
-
-    const handleRemoveSubject = (row, index) => {
-        setAddedSubjects(prev =>
-            prev.filter((_, i) => i !== index)
-        );
-
-        setInactiveGeneralOfferedSubject(prev => [
-            ...prev,
-            {
-                SubjectCode: row.SubjectCode,
-                SubjectName: row.SubjectName,
-                SubjectType: row.SubjectType,
-                SubjectUnit: row.SubjectUnit,
-            }
-        ]);
-    };
-
-    const handleCheckboxChange = (index, field) => {
-        setAddedSubjects(prev =>
-            prev.map((item, i) =>
-                i === index
-                    ? { ...item, [field]: !item[field] }
-                    : item
-            )
-        );
-    };
-    const handleInputChange = (index, field, value) => {
-        setAddedSubjects(prev =>
-            prev.map((item, i) =>
-                i === index
-                    ? { ...item, [field]: value }
-                    : item
-            )
-        );
-    };
-    const addedColumns = [
         {
             name: "Subject Code",
             selector: row => row.SubjectCode
@@ -212,8 +164,9 @@ const SubjectScheduleLoadEntryComponent = () => {
         },
         {
             name: "Room",
+            style: { paddingLeft: '8px', paddingRight: '8px' }, // <-- Adds horizontal space between columns
             cell: (row, index) => (
-                <div>
+                <div className="w-full">
                     <input
                         type="text"
                         value={row.Room || ""}
@@ -221,72 +174,83 @@ const SubjectScheduleLoadEntryComponent = () => {
                         onChange={(e) =>
                             handleInputChange(index, "Room", e.target.value)
                         }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
+                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white border-gray-300"
                     />
                 </div>
             )
         },
         {
             name: "Start Time",
+            style: { paddingLeft: '8px', paddingRight: '8px' }, // <-- Adds horizontal space between columns
             cell: (row, index) => (
-                <div className="m-1">
+                <div className="w-full">
                     <input
                         type="time"
                         value={row.StartTime || ""}
                         onChange={(e) =>
                             handleInputChange(index, "StartTime", e.target.value)
                         }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
+                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white border-gray-300"
                     />
                 </div>
             )
         },
         {
             name: "End Time",
+            style: { paddingLeft: '8px', paddingRight: '8px' }, // <-- Adds horizontal space between columns
             cell: (row, index) => (
-                <div className="m-1">
+                <div className="w-full">
                     <input
                         type="time"
                         value={row.EndTime || ""}
                         onChange={(e) =>
                             handleInputChange(index, "EndTime", e.target.value)
                         }
-                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
+                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white border-gray-300"
                     />
                 </div>
             )
         },
         {
-            name: "Term Availability",
-            cell: (row, index) => (
+            name: 'Term Available',
+            cell: (row) => (
                 <div className="flex gap-3 m-1">
-                    {["term1", "term2", "term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
+                    {["Term1", "Term2", "Term3"].map((t, i) => (
+                        <label key={t} className="flex items-center gap-1 cursor-pointer">
                             <input
                                 type="checkbox"
-                                checked={row[t]}
-                                onChange={() => handleCheckboxChange(index, t)}
+                                checked={row[t] === "true" || row[t] === true}
+                                readOnly
+                                className="cursor-pointer"
                             />
                             T{i + 1}
                         </label>
                     ))}
                 </div>
             ),
-            wrap: true
-        },
-
-        {
-            name: "Action",
-            cell: (row, index) => (
-                <button
-                    onClick={() => handleRemoveSubject(row, index)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-sm"
-                >
-                    <Trash2 size={16} />
-                </button>
-            )
+            sortable: true,
+            wrap: true,
+            grow: 3,
+            style: {
+                whiteSpace: 'normal',
+                paddingLeft: '12px' // <-- Keeps checkboxes aligned neatly
+            }
         }
     ];
+
+    const handleInputChange = (index, field, value) => {
+        setInactiveGeneralOfferedSubject((prevSubjects) => {
+            const updatedSubjects = [...prevSubjects];
+
+            const updatedRow = { ...updatedSubjects[index] };
+
+            updatedRow[field] = value;
+
+            updatedSubjects[index] = updatedRow;
+
+            return updatedSubjects;
+        });
+    };
 
     const [successModalBody, setSuccessModalBody] = useState("");
     const [successModalTitle, setSuccessModalTitle] = useState("");
@@ -297,18 +261,19 @@ const SubjectScheduleLoadEntryComponent = () => {
 
     const handleSubmitModal = async () => {
         const payload = {
-            SecId: selectedSection?.value,
+            SectionId: selectedSection.value,
+            CurId: selectedCurriculum.value,
             CreatedByUserId: userId,
-            SubjectsDtos: addedSubjects.map(s => ({
-                RowId: s.RowId,
+            SubjectsDtos: generalOfferedSubject.map(s => ({
+                // RowId: s.RowId,
                 SubjectId: s.SubjectId,
                 SubjectType: s.SubjectType,
-                Room: s.Room,
-                StartTime: s.StartTime,
-                EndTime: s.EndTime,
-                Term1: s.term1 ? "true" : "false",
-                Term2: s.term2 ? "true" : "false",
-                Term3: s.term3 ? "true" : "false",
+                Room: s.Room || "",
+                StartTime: s.StartTime || "",
+                EndTime: s.EndTime || "",
+                // Term1: (s.Term1 === "true" || s.Term1 === true) ? "true" : "false",
+                // Term2: (s.Term2 === "true" || s.Term2 === true) ? "true" : "false",
+                // Term3: (s.Term3 === "true" || s.Term3 === true) ? "true" : "false",
             }))
         };
 
@@ -324,7 +289,7 @@ const SubjectScheduleLoadEntryComponent = () => {
                 setTimeout(() => window.location.reload(), 3000);
             }
         }
-        else if(res.ok){
+        else if (res.ok) {
             setIsSuccessModalOpen(true);
             setSuccessModalBody("Done Creating Subject Schedule.");
             setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
@@ -458,7 +423,7 @@ const SubjectScheduleLoadEntryComponent = () => {
                 body={
                     <div>
                         <div className="mt-6 relative overflow-hidden">
-                            <div className="px-4 py-3 rounded-t-lg flex justify-between">
+                            {/* <div className="px-4 py-3 rounded-t-lg flex justify-between">
                                 <div>
                                     <h3 className="text-lg font-semibold text-green-600">
                                         Subject Master List
@@ -494,22 +459,28 @@ const SubjectScheduleLoadEntryComponent = () => {
                                 />
                             </div>
 
-                            <hr className="my-4 border-t border-gray-300" />
-                            <h2 className="my-4 text-xl font-bold text-green-500">
-                                List of Added Subjects
-                            </h2>
+                            <hr className="my-4 border-t border-gray-300" /> */}
+                            <div className="px-4 py-3 rounded-t-lg flex justify-between">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-green-600">
+                                        Create Schedule for Section
+                                    </h3>
+                                </div>
+                            </div>
                             <div className="flex justify-center gap-6 mb-4">
 
                                 <SearchableSelect
                                     options={sectionList}
                                     value={selectedSection}
-                                    onChange={(selected) => setSelectedSection(selected)}
+                                    onChange={(selected) => {
+                                        setSelectedSection(selected);
+                                        handleSelectedSection(selected);
+                                    }}
                                     placeholder="-- Select Section Type --"
                                     label="Select Section"
                                 />
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-sm font-medium text-gray-700 ">
                                         Level
                                     </label>
                                     <input
@@ -517,11 +488,63 @@ const SubjectScheduleLoadEntryComponent = () => {
                                         value={selectedSection?.levelName || ""}
                                         placeholder="Level"
                                         disabled
-                                        className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-gray-100 text-gray-500 cursor-not-allowed"
+                                        className="mt-2 shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-gray-100 text-gray-500 cursor-not-allowed"
                                     />
                                 </div>
+                                <SearchableSelect
+                                    options={curriculumList}
+                                    value={selectedCurriculum}
+                                    onChange={(selected) => {
+                                        setSelectedCurriculum(selected);
+                                        // handleSetSection(selected);
+                                        handleShowCurriculumTable(selected);
+                                    }}
+                                    placeholder="-- Select Curriculum Type --"
+                                    label="Select Curriculum"
+                                />
                             </div>
-                            <div className="w-full overflow-y-auto max-h-[300px]">
+                            {selectedCurriculum && selectedCurriculum.value && (
+                                <>
+                                    <hr className="my-4 border-t border-gray-300" />
+                                    <div className="px-4 py-3 rounded-t-lg flex justify-between">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-green-600">
+                                                Curriculum Master List
+                                            </h3>
+                                        </div>
+                                        <input
+                                            type="text"
+                                            placeholder="Search..."
+                                            className="px-3 py-2 border border-gray-300 rounded w-64"
+                                            value={generalOfferedFilterText}
+                                            onChange={(e) => {
+                                                setGeneralOfferedFilterText(e.target.value);
+                                                setGeneralOfferedCurrentPage(1);
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="w-full overflow-x-auto">
+                                        <DataTable
+                                            columns={subjectColumns}
+                                            data={generalOfferedSubject}
+                                            progressPending={generealOfferedLoading}
+                                            pagination
+                                            paginationServer
+                                            paginationTotalRows={generealOfferedTotalRows}
+                                            paginationDefaultPage={generalOfferedCurrentPage}
+                                            onChangePage={(page) => setGeneralOfferedCurrentPage(page)}
+                                            onChangeRowsPerPage={(newPerPage, page) => {
+                                                setGeneralOfferedRowsPerPage(newPerPage);
+                                                setGeneralOfferedCurrentPage(page);
+                                            }}
+                                            highlightOnHover
+                                            responsive
+                                        />
+                                    </div>
+                                </>
+
+                            )}
+                            {/* <div className="w-full overflow-y-auto max-h-[300px]">
                                 <DataTable
                                     columns={addedColumns}
                                     data={addedSubjects}
@@ -533,7 +556,7 @@ const SubjectScheduleLoadEntryComponent = () => {
                                     fixedHeaderScrollHeight="260px"
                                     noDataComponent="No subjects added yet"
                                 />
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 }

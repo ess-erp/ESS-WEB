@@ -52,26 +52,50 @@ const NonCurriculumLoadEntryComponent = () => {
         setIsModalOpen(true);
     };
     const handleSubmitModal = async () => {
+        console.log("Form Data Raw:", formData);
 
-        console.log(formData);
+        // Build the payload directly as an array of items, mapping out the wrapper object shell
+        const payload = formData.rows.map(r => ({
+            SubjectCode: r.subjectCode,
+            SubjectName: r.subjectName,
+            CreatedByUserId: userId
+        }));
 
-        const payload = {
-            SubjectRowDtos: formData.rows.map(r => ({
-                SubjectCode: r.subjectCode,
-                SubjectName: r.subjectName,
-                CreatedByUserId: userId
-            }))
-        };
-        console.log(payload);
+        console.log("Clean Direct-Array Payload:", payload); // Output structure is now safely: [ { ... }, { ... } ]
+
         const res = await dispatch(fetchInsertNonCurriculumSubjectData(payload));
 
-        if (res.ok) {
+        if (res?.ok) {
+            setIsModalOpen(false); // Close the confirmation modal automatically
             setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
+
+            // Directly trigger the reload timer smoothly 
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
         }
     };
+    // const handleSubmitModal = async () => {
+
+    //     console.log(formData);
+
+    //     const payload = {
+    //         SubjectRowDtos: formData.rows.map(r => ({
+    //             SubjectCode: r.subjectCode,
+    //             SubjectName: r.subjectName,
+    //             CreatedByUserId: userId
+    //         }))
+    //     };
+    //     console.log(payload);
+    //     const res = await dispatch(fetchInsertNonCurriculumSubjectData(payload));
+
+    //     if (res.ok) {
+    //         setIsSuccessModalOpen(true);
+    //         if (isSuccessModalOpen == false) {
+    //             setTimeout(() => window.location.reload(), 3000);
+    //         }
+    //     }
+    // };
 
     const [generalOfferedSubject, setInactiveGeneralOfferedSubject] = useState([]);
     const nonCurriculumSubjectState = useSelector((state) => state.academic.nonCurriculumSubjectState || {});
@@ -110,7 +134,7 @@ const NonCurriculumLoadEntryComponent = () => {
 
                     <RowToggleComponent
                         row={row}
-                        //onToggle={handleToggleActive}
+                    //onToggle={handleToggleActive}
                     />
                 </div>
             )

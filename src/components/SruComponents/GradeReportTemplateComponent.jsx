@@ -7,10 +7,17 @@ import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Eye, Trash2, Plus } from "lucide-react";
-import { fetchGradeReportTemplateData } from "../../states/SruState/Action";
+import {
+    fetchInsertGradeReportTemplateData,
+    fetchGradeReportTemplateData,
+} from "../../states/SruState/Action";
 import { fetchCampusData } from "../../states/OnlineApplicationState/Action";
 import { fetchLevelData } from "../../states/AdmissionState/Action";
-import { fetchGeneralOfferedSubjectData } from "../../states/AcademicState/Action";
+import {
+    fetchGeneralOfferedSubjectData,
+    fetchCurriculumListData,
+    fetchCurriculumTableData,
+} from "../../states/AcademicState/Action";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
 
@@ -24,73 +31,25 @@ const GradeReportTemplateComponent = () => {
 
     const formatDate = getFormatDate;
     const formatToAMPM = getFormatToAMPM;
-    const [gradeReportList, setGradeReportList] = useState([]);
-    const gradeReportTableState = useSelector((state) => state.sru.gradeReportTableState || {});
-    const gradeReportTable = gradeReportTableState.data?.data || [];
-    const gradeReportTotalRows = gradeReportTableState.data?.totalRecords || 0;
-    const gradeReportLoading = gradeReportTableState.loading || false;
-    const [gradeReportCurrentPage, setGradeReportCurrentPage] = useState(1);
-    const [gradeReportRowsPerPage, setGradeReportRowsPerPage] = useState(10);
-    const [gradeReportSearchFilter, setGradeReportFilterText] = useState("");
-
-    useEffect(() => {
-        dispatch(fetchGradeReportTemplateData(gradeReportCurrentPage, gradeReportRowsPerPage, gradeReportSearchFilter));
-    }, [gradeReportCurrentPage, gradeReportRowsPerPage, gradeReportSearchFilter, dispatch]);
-
-    useEffect(() => {
-        if (gradeReportTable.length === 0) return;
-        setGradeReportList(gradeReportTable);
-    }, [gradeReportTable]);
-
-    const gradeReportColumn = [
-        { name: 'Name of Template', selector: row => row.CampusName, sortable: true },
-        { name: 'Campus', selector: row => row.CampusName, sortable: true },
-        { name: 'Level', selector: row => row.DivName, sortable: true },
-        { name: 'Term Available', selector: row => row.DivName, sortable: true },
-        { name: 'Status', selector: row => row.Term, sortable: true },
-        { name: 'Created By', selector: row => row.DivName, sortable: true },
-        { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
-        {
-            name: "Actions",
-            cell: (row) => (
-                <div className="flex gap-4 items-center">
-                    <button
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        onClick={() => openRowModal(row, "view")}
-                    >
-                        <Eye size={18} />
-                    </button>
-                </div>
-            ),
-            ignoreRowClick: true,
-            width: "180px",
-        }
-    ];
+    const [addNewModal, setAddNewModal] = useState(false);
 
     const [generalOfferedSubject, setInactiveGeneralOfferedSubject] = useState([]);
-    const generalOfferedSubjectState = useSelector((state) => state.academic.generalOfferedSubjectState || {});
-    const generealOfferedTotalRows = generalOfferedSubjectState.data?.totalRecords || 0;
-    const generealOfferedLoading = generalOfferedSubjectState.loading || false;
-    const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
-    const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
-    const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
+    const [selectedSequenceSubjects, setSelectedSequenceSubjects] = useState([]);
 
-    const [addNewModal, setAddNewModal] = useState(false);
-    
+    const [errors, setErrors] = useState({});
+
     const openAddNewModal = async () => {
         dispatch(fetchCampusData());
         dispatch(fetchLevelData());
+        setSelectedSequenceSubjects([]);
+        setInactiveGeneralOfferedSubject([]);
+        setTempName("");
+        setSelectedCampus(null);
+        setSelectedLevel(null);
+        setSelectedCurriculum(null);
+        setSelectedTerm(null);
+        setErrors({});
         setAddNewModal(true);
-        const res = await dispatch(fetchGeneralOfferedSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
-        if (res && res.ok) {
-            // Ensure each row definitely has a fallback identifier if RowId missing from server response
-            const formattedData = (res.data || []).map((item, index) => ({
-                ...item,
-                RowId: item.RowId || item.SubjectId || `subj-${index}`
-            }));
-            setInactiveGeneralOfferedSubject(formattedData);
-            setAddedSubjects([]); // Reset your added basket on structural modal openings
-        }
     };
 
     const campusState = useSelector((state) => state.online.campusState || {});
@@ -103,13 +62,17 @@ const GradeReportTemplateComponent = () => {
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [levelList, setLevelList] = useState([]);
     const [tempName, setTempName] = useState("");
+    const [selectedTerm, setSelectedTerm] = useState(null);
+    const [curriculumList, setCurriculumList] = useState([]);
+    const curriculumListState = useSelector((state) => state.academic.curriculumListState || {});
+    const curriculumData = curriculumListState.data || [];
+    const [selectedCurriculum, setSelectedCurriculum] = useState(null);
 
     const termList = [
         { value: "Term1", label: "1st Trimester Period" },
         { value: "Term2", label: "2nd Trimester Period" },
         { value: "Term3", label: "3rd Trimester Period" },
     ];
-    const [selectedTerm, setSelectedTerm] = useState(null);
 
     useEffect(() => {
         setCampusList(
@@ -125,33 +88,74 @@ const GradeReportTemplateComponent = () => {
                 label: item.LevelName,
             }))
         );
-    }, [campus, level]);
 
-    const [addedSubjects, setAddedSubjects] = useState([]);
+        if (Array.isArray(curriculumData) && curriculumData.length > 0) {
+            setCurriculumList(
+                curriculumData.map(item => ({
+                    value: item.CurId,
+                    label: `${item.TempName} - ${item.LevelName}`
+                }))
+            );
+        }
+    }, [campus, curriculumData, level]);
 
-    // --- FIXED: Identity Mappings preserved properly during additions ---
-    const handleAddSubject = (row) => {
-        const exists = addedSubjects.some(s => s.RowId === row.RowId);
-        if (exists) return;
-
-        setAddedSubjects(prev => [...prev, row]);
-        setInactiveGeneralOfferedSubject(prev => prev.filter(s => s.RowId !== row.RowId));
+    const handleSelectedLevel = (data) => {
+        dispatch(fetchCurriculumListData(data?.value));
     };
 
-    // --- FIXED: Full item definition retained when popping entries back into the main view ---
+    const generalOfferedSubjectState = useSelector((state) => state.academic.curriculumTableState || {});
+    const generealOfferedTable = generalOfferedSubjectState.data.data || [];
+    const generealOfferedTotalRows = generalOfferedSubjectState.data.totalRecords || 0;
+    const generealOfferedLoading = generalOfferedSubjectState.loading || false;
+    const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
+    const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
+    const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
+
+    const handleShowCurriculumTable = (data) => {
+        dispatch(fetchCurriculumTableData(data.value, generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
+    };
+
+    useEffect(() => {
+        if (!generealOfferedTable || generealOfferedTable.length === 0) return;
+
+        const filteredFromSelected = generealOfferedTable.filter(
+            reduxRow => !selectedSequenceSubjects.some(seqRow => seqRow.SubjectCode === reduxRow.SubjectCode)
+        );
+        setInactiveGeneralOfferedSubject(filteredFromSelected);
+    }, [generealOfferedTable]);
+
+    const handleAddSubject = (row) => {
+        setInactiveGeneralOfferedSubject(prev => prev.filter(item => item.SubjectCode !== row.SubjectCode));
+        setSelectedSequenceSubjects(prev => [
+            ...prev,
+            {
+                ...row,
+                SequenceNo: prev.length + 1
+            }
+        ]);
+        if (errors.sequence) {
+            setErrors(prev => ({ ...prev, sequence: null }));
+        }
+    };
+
     const handleRemoveSubject = (row) => {
-        setAddedSubjects(prev => prev.filter(s => s.RowId !== row.RowId));
-        setInactiveGeneralOfferedSubject(prev => [...prev, row]);
+        setSelectedSequenceSubjects(prev =>
+            prev
+                .filter(item => item.SubjectCode !== row.SubjectCode)
+                .map((item, index) => ({ ...item, SequenceNo: index + 1 }))
+        );
+        setInactiveGeneralOfferedSubject(prev => [row, ...prev]);
     };
 
     const subjectColumns = [
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
-        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true },
+        { name: "Subject Code", selector: row => row.SubjectCode },
+        { name: "Subject Name", selector: row => row.SubjectName },
+        { name: "Subject Type", selector: row => row.SubjectType },
         {
             name: "Action",
             cell: row => (
                 <button
+                    type="button"
                     onClick={() => handleAddSubject(row)}
                     className="bg-blue-500 hover:bg-blue-600 text-white p-1 rounded transition-colors"
                 >
@@ -161,14 +165,16 @@ const GradeReportTemplateComponent = () => {
         }
     ];
 
-    const addedColumns = [
+    const sequenceColumns = [
+        { name: "Seq No.", selector: row => row.SequenceNo, width: "90px", sortable: true },
         { name: "Subject Code", selector: row => row.SubjectCode },
         { name: "Subject Name", selector: row => row.SubjectName },
-        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true },
+        { name: "Subject Type", selector: row => row.SubjectType },
         {
             name: "Action",
             cell: row => (
                 <button
+                    type="button"
                     onClick={() => handleRemoveSubject(row)}
                     className="bg-red-500 hover:bg-red-600 text-white p-1 rounded transition-colors"
                 >
@@ -181,14 +187,132 @@ const GradeReportTemplateComponent = () => {
     const [isWarningModal, setIsWarningModal] = useState(false);
     const [isSuccessModal, setIsSuccessModal] = useState(false);
 
-    const handleOpenWarningModal = () => {
-        setIsWarningModal(true);
+    // FORM VALIDATION CHECK ENGINE
+    const validateForm = () => {
+        let tempErrors = {};
+
+        if (!tempName.trim()) {
+            tempErrors.tempName = "Template name is required.";
+        }
+        if (!selectedCampus) {
+            tempErrors.campus = "Please select a campus.";
+        }
+        if (!selectedLevel) {
+            tempErrors.level = "Please select an academic level.";
+        }
+        if (!selectedCurriculum) {
+            tempErrors.curriculum = "Please select a curriculum framework.";
+        }
+        if (!selectedTerm) {
+            tempErrors.term = "Please select a terminal period.";
+        }
+        if (selectedSequenceSubjects.length === 0) {
+            tempErrors.sequence = "You must select at least one subject to establish a sorting sequence template.";
+        }
+
+        setErrors(tempErrors);
+
+        return Object.keys(tempErrors).length === 0;
     };
 
+    const handleOpenWarningModal = () => {
+        if (validateForm()) {
+            setIsWarningModal(true);
+        }
+    };
+
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [successModalBody, setSuccessModalBody] = useState("");
+    const [successModalTitle, setSuccessModalTitle] = useState("");
+
     const handleSubmitModal = async () => {
-        // Implement save logic payload processing here
+        const payload = {
+            TempName: tempName,
+            CampusId: selectedCampus?.value,
+            LevelId: selectedLevel?.value,
+            CurId: selectedCurriculum?.value,
+            Term: selectedTerm?.value,
+            CreatedByUserId: userId,
+            SequenceDetailsDtos: selectedSequenceSubjects.map(sub => ({
+                SubjectId: sub.SubjectId,
+                SequenceNo: sub.SequenceNo.toString()
+            }))
+        };
+        console.log("Submitting Sequence Template Payload:", payload);
+        const res = await dispatch(fetchInsertGradeReportTemplateData(payload));
+        console.log(res);
+        if (res.data?.Message == "Success") {
+            setIsSuccessModalOpen(true);
+            setSuccessModalTitle(<span className="font-bold text-lg text-green-700">Success</span>);
+            setSuccessModalBody("Done creating grade report template.");
+            if (isSuccessModalOpen == false) {
+                setTimeout(() => window.location.reload(), 2000);
+            }
+        }
+        else {
+            setIsSuccessModalOpen(true);
+            setSuccessModalTitle(<span className="font-bold text-lg text-red-700">Error!</span>);
+            setSuccessModalBody(`${res.data.Message}`);
+        }
+
         setIsWarningModal(false);
         setIsSuccessModal(true);
+        setAddNewModal(false);
+    };
+
+    const [gradeReportTableList, setGradeReportList] = useState([]);
+    const gradeReportTableState = useSelector((state) => state.sru.gradeReportTableState || {});
+    const gradeReportTableTable = gradeReportTableState.data.data || [];
+    const gradeReportTableTotalRows = gradeReportTableState.data.totalRecords || 0;
+    const gradeReportTableLoading = gradeReportTableState.loading || false;
+    const [gradeReportTableCurrentPage, setGradeReportCurrentPage] = useState(1);
+    const [gradeReportTableRowsPerPage, setGradeReportRowsPerPage] = useState(10);
+    const [gradeReportTableTableSearchFilter, setGradeReportFilterText] = useState("");
+
+    useEffect(() => {
+        dispatch(fetchGradeReportTemplateData(gradeReportTableCurrentPage, gradeReportTableRowsPerPage, gradeReportTableTableSearchFilter));
+    }, [gradeReportTableCurrentPage, gradeReportTableRowsPerPage, gradeReportTableTableSearchFilter, dispatch]);
+
+    useEffect(() => {
+        if (gradeReportTableTable.length === 0) return;
+        setGradeReportList(gradeReportTableTable);
+    }, [gradeReportTableTable]);
+    const gradeReportColumn = [
+        { name: 'Name of Template', selector: row => row.TempName, sortable: true },
+        { name: 'Campus', selector: row => row.CampusName, sortable: true },
+        { name: 'Level', selector: row => row.LevelName, sortable: true },
+        { name: 'Curriculum', selector: row => row.CurriculumTempName, sortable: true },
+        { name: 'Term', selector: row => row.Term, sortable: true },
+        { name: 'Created By', selector: row => row.CreatedByFullname, sortable: true },
+        { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true },
+        {
+            name: "Actions",
+            cell: (row) => (
+                <div className="flex gap-4 items-center">
+                    <button
+                        className="p-1 text-blue-600 hover:text-blue-800"
+                        onClick={() => openRowModal(row, "view")}
+                    >
+                        <Eye size={18} />
+                    </button>
+
+                    <button
+                        className="p-1 text-yellow-600 hover:text-yellow-800"
+                        onClick={() => openRowModal(row, "edit")}
+                    >
+                        <Pencil size={18} />
+                    </button>
+
+                    <RowToggleComponent row={row} onToggle={handleToggleActive} />
+                </div>
+            ),
+            ignoreRowClick: true,
+            width: "180px",
+        }
+    ];
+
+    const handleToggleActive = (row) => {
+        console.log(row);
     };
 
     return (
@@ -200,14 +324,13 @@ const GradeReportTemplateComponent = () => {
                             Grade Report Sequence Templates
                         </h3>
                     </div>
-
                     <div className="flex items-center gap-3">
                         <OutlineBlueBtn label="Add new" onClick={openAddNewModal} />
                         <input
                             type="text"
                             placeholder="Search..."
                             className="px-3 py-2 border border-gray-300 rounded w-64"
-                            value={gradeReportSearchFilter}
+                            value={gradeReportTableTableSearchFilter}
                             onChange={(e) => {
                                 setGradeReportFilterText(e.target.value);
                                 setGradeReportCurrentPage(1);
@@ -218,16 +341,16 @@ const GradeReportTemplateComponent = () => {
                 <div className="w-full">
                     <DataTable
                         columns={gradeReportColumn}
-                        data={gradeReportList}
-                        progressPending={gradeReportLoading}
+                        data={gradeReportTableList}
+                        progressPending={gradeReportTableLoading}
                         pagination
                         paginationServer
-                        paginationTotalRows={gradeReportTotalRows}
-                        paginationDefaultPage={gradeReportCurrentPage}
+                        paginationTotalRows={gradeReportTableTotalRows}
+                        paginationDefaultPage={gradeReportTableCurrentPage}
                         onChangePage={(page) => setGradeReportCurrentPage(page)}
                         onChangeRowsPerPage={(newPerPage, page) => {
-                            setGradeReportRowsPerPage(newPerPage);
                             setGradeReportCurrentPage(page);
+                            setGradeReportRowsPerPage(newPerPage);
                         }}
                         highlightOnHover
                         responsive
@@ -240,101 +363,178 @@ const GradeReportTemplateComponent = () => {
                 onClose={() => setAddNewModal(false)}
                 title="Create Grade Report Sequence Template"
                 body={
-                    <div>
-                        <div className="mt-6 relative overflow-hidden">
-                            <div className="px-4 py-3 rounded-t-lg flex justify-between items-center">
+                    <div className="mt-6 relative overflow-hidden max-h-[75vh] overflow-y-auto px-1">
+                        <div className="px-4 py-3 rounded-t-lg flex justify-between">
+                            <div>
                                 <h3 className="text-lg font-semibold text-green-600">
-                                    Subject Master List
+                                    Create Schedule for Section
                                 </h3>
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    className="px-3 py-2 border border-gray-300 rounded w-64"
-                                    value={generalOfferedFilterText}
-                                    onChange={(e) => {
-                                        setGeneralOfferedFilterText(e.target.value);
-                                        setGeneralOfferedCurrentPage(1);
-                                    }}
-                                />
                             </div>
-                            <div className="w-full overflow-x-auto">
-                                <DataTable
-                                    columns={subjectColumns}
-                                    data={generalOfferedSubject}
-                                    progressPending={generealOfferedLoading}
-                                    pagination
-                                    paginationServer
-                                    paginationTotalRows={generealOfferedTotalRows}
-                                    paginationDefaultPage={generalOfferedCurrentPage}
-                                    onChangePage={(page) => setGeneralOfferedCurrentPage(page)}
-                                    onChangeRowsPerPage={(newPerPage, page) => {
-                                        setGeneralOfferedRowsPerPage(newPerPage);
-                                        setGeneralOfferedCurrentPage(page);
-                                    }}
-                                    highlightOnHover
-                                    responsive
-                                />
-                            </div>
+                        </div>
 
-                            <hr className="my-4 border-t border-gray-300" />
-                            
-                            <h2 className="my-4 text-xl font-bold text-green-500">
-                                List of Added Subjects
-                            </h2>
-                            <div className="flex justify-center gap-6 mb-4">
-                                <label className="flex flex-col">
+                        <div className="space-y-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="flex flex-col">
                                     <span className="text-sm font-medium mb-1">Name of Template</span>
                                     <input
                                         type="text"
                                         placeholder="Enter Template Name"
                                         value={tempName}
-                                        onChange={(e) => setTempName(e.target.value)}
-                                        className="w-full rounded-lg border p-2"
+                                        onChange={(e) => {
+                                            setTempName(e.target.value);
+                                            if (errors.tempName) setErrors(prev => ({ ...prev, tempName: null }));
+                                        }}
+                                        className={`mt-1 w-full rounded-lg border p-2 text-sm focus:outline-none focus:ring-2 h-[38px] ${errors.tempName ? "border-red-500 focus:ring-red-400" : "border-gray-300 focus:ring-green-500"
+                                            }`}
                                     />
-                                </label>
-                                <SearchableSelect
-                                    options={campusList}
-                                    value={selectedCampus}
-                                    onChange={(selected) => setSelectedCampus(selected)}
-                                    placeholder="-- Select Campus --"
-                                    label="Select Campus"
-                                />
-                                <SearchableSelect
-                                    options={levelList}
-                                    value={selectedLevel}
-                                    onChange={(selected) => setSelectedLevel(selected)}
-                                    placeholder="-- Select Level --"
-                                    label="Select Level"
-                                />
-                                <SearchableSelect
-                                    options={termList}
-                                    value={selectedTerm}
-                                    onChange={(selected) => setSelectedTerm(selected)}
-                                    placeholder="-- Select Term --"
-                                    label="Select Term"
-                                />
+                                    {errors.tempName && <span className="text-xs text-red-500 mt-1 font-medium">{errors.tempName}</span>}
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <SearchableSelect
+                                        options={campusList}
+                                        value={selectedCampus}
+                                        onChange={(selected) => {
+                                            setSelectedCampus(selected);
+                                            if (errors.campus) setErrors(prev => ({ ...prev, campus: null }));
+                                        }}
+                                        placeholder="-- Select Campus --"
+                                        label="Select Campus"
+                                    />
+                                    {errors.campus && <span className="text-xs text-red-500 mt-1 font-medium">{errors.campus}</span>}
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <SearchableSelect
+                                        options={levelList}
+                                        value={selectedLevel}
+                                        onChange={(selected) => {
+                                            setSelectedLevel(selected);
+                                            handleSelectedLevel(selected);
+                                            if (errors.level) setErrors(prev => ({ ...prev, level: null }));
+                                        }}
+                                        placeholder="-- Select Level --"
+                                        label="Select Level"
+                                    />
+                                    {errors.level && <span className="text-xs text-red-500 mt-1 font-medium">{errors.level}</span>}
+                                </div>
                             </div>
-                            
-                            <div className="w-full overflow-y-auto max-h-[300px]">
-                                <DataTable
-                                    columns={addedColumns}
-                                    data={addedSubjects}
-                                    highlightOnHover
-                                    striped
-                                    responsive
-                                    dense
-                                    fixedHeader
-                                    fixedHeaderScrollHeight="260px"
-                                    noDataComponent="No subjects added yet"
-                                />
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col">
+                                    <SearchableSelect
+                                        options={curriculumList}
+                                        value={selectedCurriculum}
+                                        onChange={(selected) => {
+                                            setSelectedCurriculum(selected);
+                                            handleShowCurriculumTable(selected);
+                                            if (errors.curriculum) setErrors(prev => ({ ...prev, curriculum: null }));
+                                        }}
+                                        placeholder="-- Select Curriculum Type --"
+                                        label="Select Curriculum"
+                                    />
+                                    {errors.curriculum && <span className="text-xs text-red-500 mt-1 font-medium">{errors.curriculum}</span>}
+                                </div>
+
+                                <div className="flex flex-col">
+                                    <SearchableSelect
+                                        options={termList}
+                                        value={selectedTerm}
+                                        onChange={(selected) => {
+                                            setSelectedTerm(selected);
+                                            if (errors.term) setErrors(prev => ({ ...prev, term: null }));
+                                        }}
+                                        placeholder="-- Select Term --"
+                                        label="Select Term"
+                                    />
+                                    {errors.term && <span className="text-xs text-red-500 mt-1 font-medium">{errors.term}</span>}
+                                </div>
                             </div>
                         </div>
+
+                        {/* SEQUENCE SELECTION TABLE INTEGRITY ERROR */}
+                        {errors.sequence && (
+                            <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-lg">
+                                <p className="text-sm text-red-600 font-semibold">{errors.sequence}</p>
+                            </div>
+                        )}
+
+                        {selectedCurriculum && selectedCurriculum.value && (
+                            <>
+                                <hr className="my-4 border-t border-gray-300" />
+
+                                {/* TABLE 1: AVAILABLE CURRICULUM SUBJECTS */}
+                                <div className="px-4 py-3 rounded-t-lg flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-md font-semibold text-gray-700">
+                                            Curriculum Master List
+                                        </h3>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Search..."
+                                        className="px-3 py-2 border border-gray-300 rounded w-64 text-sm"
+                                        value={generalOfferedFilterText}
+                                        onChange={(e) => {
+                                            setGeneralOfferedFilterText(e.target.value);
+                                            setGeneralOfferedCurrentPage(1);
+                                        }}
+                                    />
+                                </div>
+                                <div className="w-full overflow-x-auto border border-gray-200 rounded-lg">
+                                    <DataTable
+                                        columns={subjectColumns}
+                                        data={generalOfferedSubject}
+                                        progressPending={generealOfferedLoading}
+                                        pagination
+                                        paginationServer
+                                        paginationTotalRows={generealOfferedTotalRows}
+                                        paginationDefaultPage={generalOfferedCurrentPage}
+                                        onChangePage={(page) => setGeneralOfferedCurrentPage(page)}
+                                        onChangeRowsPerPage={(newPerPage, page) => {
+                                            setGeneralOfferedRowsPerPage(newPerPage);
+                                            setGeneralOfferedCurrentPage(page);
+                                        }}
+                                        highlightOnHover
+                                        responsive
+                                    />
+                                </div>
+
+                                {/* TABLE 2: SELECTED SEQUENCE PREVIEW */}
+                                {selectedSequenceSubjects.length > 0 && (
+                                    <div className="mt-8">
+                                        <hr className="my-6 border-t-2 border-dashed border-gray-200" />
+                                        <div className="px-4 py-2 flex justify-between items-center bg-gray-50 rounded-t-lg border border-b-0 border-gray-200">
+                                            <div>
+                                                <h3 className="text-md font-bold text-green-700 flex items-center gap-2">
+                                                    <span>Template Sequence Preview</span>
+                                                    <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                                                        {selectedSequenceSubjects.length} Items Selected
+                                                    </span>
+                                                </h3>
+                                                <p className="text-xs text-gray-500">This dictates the final sorting layout sequence in grade report generation.</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-full overflow-x-auto border border-gray-200 rounded-b-lg">
+                                            <DataTable
+                                                columns={sequenceColumns}
+                                                data={selectedSequenceSubjects}
+                                                highlightOnHover
+                                                responsive
+                                                pagination
+                                                paginationRowsPerPageOptions={[5, 10, 15]}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
                     </div>
                 }
                 size="w-[1000px]"
                 maxHeight="100vh"
                 buttons={[
-                    { label: "Submit", type: "green", onClick: handleOpenWarningModal },
+                    { label: "Submit", type: "green", onClick: handleOpenWarningModal, closeOnClick: false },
                     { label: "Cancel", type: "red", onClick: () => setAddNewModal(false) },
                 ]}
             />
@@ -349,12 +549,12 @@ const GradeReportTemplateComponent = () => {
                     { label: "Cancel", type: "red", onClick: () => setIsWarningModal(false) },
                 ]}
             />
-            
+
             <ModalComponent
-                isOpen={isSuccessModal}
-                onClose={() => setIsSuccessModal(false)}
-                title={<span className="font-bold text-lg text-green-700">Success!</span>}
-                body={<p>Done creating new Grade Report Template!</p>}
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                title={successModalTitle}
+                body={<p>{successModalBody}</p>}
             />
         </div>
     );
