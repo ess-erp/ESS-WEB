@@ -315,6 +315,10 @@ const GradeReportTemplateComponent = () => {
         console.log(row);
     };
 
+    const openRowModal = (data, status) => {
+        console.log(data);
+    };
+
     return (
         <div>
             <div className="bg-white rounded-lg shadow border border-gray-200">

@@ -18,6 +18,7 @@ import {
     FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
     FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
+    FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -47,6 +48,7 @@ const initialGeneralState = {
     enrollmentHistoryTableState: { ...initialState },
     insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
+    rowGradeTemplateState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -184,6 +186,14 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, gradeReportTableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GRADE_REPORT_TEMPLATE_FAILURE:
             return { ...state, gradeReportTableState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST:
+            return { ...state, rowGradeTemplateState: { loading: true, data: [], error: '' } };
+        case FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS:
+            return { ...state, rowGradeTemplateState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE:
+            return { ...state, rowGradeTemplateState: { loading: false, data: [], error: action.payload } };
+
 
         default:
             return state;

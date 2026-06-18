@@ -18,6 +18,7 @@ import {
     FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
     FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
+    FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -530,36 +531,6 @@ export const fetchEnrollmentHistoryTableData = (studentId, page, pageSize, searc
     };
 };
 
-// export const fetchGradeReportTemplateRequest = () => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST });
-// export const fetchGradeReportTemplateSuccess = (data) => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, payload: data });
-// export const fetchGradeReportTemplateFailure = (error) => ({ type: FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE, payload: error });
-
-
-// export const fetchGradeReportTemplateData = (page, pageSize, search) => async (dispatch) => {
-//     dispatch(fetchGradeReportTemplateRequest());
-//     try {
-//         const token = getToken();
-//         const url = `${baseUrl}/sru/get-grade-report-template?page=${page}&pageSize=${pageSize}&search=${search}`;
-
-//         const response = await fetch(url, {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`
-//             },
-//         });
-
-//         const res = await response.json();
-
-//         dispatch(fetchGradeReportTemplateSuccess(res));
-//         return { ok: true, data: res.data, totalRecords: res.totalRecords };
-//     }
-//     catch (error) {
-//         dispatch(fetchGradeReportTemplateFailure(error.message));
-//         return { ok: false, error };
-//     };
-// };
-
 export const fetchInsertGradeReportTemplateRequest = () => ({ type: FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST });
 export const fetchInsertGradeReportTemplateSuccess = (data) => ({ type: FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, payload: data });
 export const fetchInsertGradeReportTemplateFailure = (error) => ({ type: FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE, payload: error });
@@ -621,3 +592,32 @@ export const fetchGradeReportTemplateData = (page, pageSize, search) => async (d
     };
 };
 
+export const fetchRowGradeReportTemplateRequest = () => ({ type: FETCH_GRADE_REPORT_TEMPLATE_REQUEST });
+export const fetchRowGradeReportTemplateSuccess = (data) => ({ type: FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, payload: data });
+export const fetchRowGradeReportTemplateFailure = (error) => ({ type: FETCH_GRADE_REPORT_TEMPLATE_FAILURE, payload: error });
+
+
+export const fetchRowGradeReportTemplateData = (reportId) => async (dispatch) => {
+    dispatch(fetchRowGradeReportTemplateRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-row-grade-report-template?reportId=${reportId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchRowGradeReportTemplateSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchRowGradeReportTemplateFailure(error.message));
+        return { ok: false, error };
+    };
+};
