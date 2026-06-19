@@ -64,6 +64,9 @@ import Profile from "../pages/SharedPages/Profile";
 import Ticketing from "../pages/SharedPages/Ticketing";
 import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
 import CurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
+import AccountingChartOfAccounts from "../pages/Accounting/ChartOfAccounts";
+
+
 
 const AuthenticatedLayout = () => {
   return (
@@ -567,6 +570,14 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
               <Profile />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/chartofaccounts"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+              <AccountingChartOfAccounts />
             </ProtectedRoutes>
           }
         />

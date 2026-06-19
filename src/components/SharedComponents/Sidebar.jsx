@@ -80,7 +80,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Bell,
       path: "/notification",
     },
-
+    {
+      name: "Chart of Accounts",
+      icon: Bell,
+      path: "/chartofaccounts",
+    },
     // Dynamic Ticket Visibility
     ...(!shouldHideTickets(user?.UserRoleId)
       ? [
