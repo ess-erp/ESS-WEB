@@ -30,6 +30,7 @@ import SectionAndHouseEntry from "../pages/SRU/SectionAndHouseEntry";
 import SruSchoolCalendar from "../pages/SRU/SchoolCalendar";
 import SruArcMasterList from "../pages/SRU/ArcMasterList";
 import SruGradeReportTemplate from "../pages/SRU/GradeReportTemplate";
+import SruSummarySheet from "../pages/SRU/SummarySheet";
 import AcademicDashboard from "../pages/AcademicStaff/Dashboard";
 import AcadFacultyLoadEntry from "../pages/AcademicStaff/FacultyLoadEntry";
 import AcadSubjectLoadEntry from "../pages/AcademicStaff/SubjectLoadEntry";
@@ -274,6 +275,14 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[5]}>
               <SruGradeReportTemplate />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/sru/summarysheet"
+          element={
+            <ProtectedRoutes allowedRoles={[5]}>
+              <SruSummarySheet />
             </ProtectedRoutes>
           }
         />

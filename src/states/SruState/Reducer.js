@@ -19,6 +19,7 @@ import {
     FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
+    FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -49,6 +50,7 @@ const initialGeneralState = {
     insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
     rowGradeTemplateState: { ...initialState },
+    summarySheetTableState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -194,6 +196,12 @@ const sruReducer = (state = initialGeneralState, action) => {
         case FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE:
             return { ...state, rowGradeTemplateState: { loading: false, data: [], error: action.payload } };
 
+        case FETCH_SUMMARY_SHEET_TABLE_REQUEST:
+            return { ...state, summarySheetTableState: { loading: true, data: [], error: '' } };
+        case FETCH_SUMMARY_SHEET_TABLE_SUCCESS:
+            return { ...state, summarySheetTableState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SUMMARY_SHEET_TABLE_FAILURE:
+            return { ...state, summarySheetTableState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

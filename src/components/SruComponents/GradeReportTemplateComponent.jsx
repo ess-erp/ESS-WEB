@@ -10,6 +10,7 @@ import { Pencil, Eye, Trash2, Plus } from "lucide-react";
 import {
     fetchInsertGradeReportTemplateData,
     fetchGradeReportTemplateData,
+    fetchRowGradeReportTemplateData,
 } from "../../states/SruState/Action";
 import { fetchCampusData } from "../../states/OnlineApplicationState/Action";
 import { fetchLevelData } from "../../states/AdmissionState/Action";
@@ -315,9 +316,19 @@ const GradeReportTemplateComponent = () => {
         console.log(row);
     };
 
+
+    const rowGradeTemplateState = useSelector((state) => state.sru.rowGradeTemplateState || {});
+    const gradeReportTemplateData = rowGradeTemplateState.data || [];
+    const gradeReportTemplateLoading = rowGradeTemplateState.loading;
+    const [isPreviewModal, setIsPreviewModal] = useState(false);
+
     const openRowModal = (data, status) => {
         console.log(data);
+        dispatch(fetchRowGradeReportTemplateData(data?.ReportId));
+        setIsPreviewModal(true);
     };
+
+    console.log(rowGradeTemplateState);
 
     return (
         <div>
@@ -560,6 +571,108 @@ const GradeReportTemplateComponent = () => {
                 title={successModalTitle}
                 body={<p>{successModalBody}</p>}
             />
+            <ModalComponent
+                isOpen={isPreviewModal}
+                onClose={() => setIsPreviewModal(false)}
+                title="Grade Report Template"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex gap-6">
+                        <div className="w-full flex flex-col gap-2"> {/* Changed w-2/3 to w-full if you don't have side items */}
+                            <label className="text-sm font-medium text-gray-600">Preview</label>
+                            <div className="border rounded-lg shadow overflow-hidden flex-1">
+                                {gradeReportTemplateLoading ? (
+                                    <div className="flex items-center justify-center h-[50vh] text-gray-400">
+                                        Loading template preview...
+                                    </div>
+                                ) : gradeReportTemplateData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${gradeReportTemplateData.PdfBase64}`}
+                                        className="w-full h-[60vh]"
+                                        title="Grade Report Template Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[50vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Download",
+                        type: "green",
+                        onClick: () => {
+                            if (gradeReportTemplateData?.PdfBase64) {
+                                const link = document.createElement("a");
+                                link.href = `data:application/pdf;base64,${gradeReportTemplateData.PdfBase64}`;
+                                // Changed naming to match template layout since it's not bound to a specific student
+                                // link.download = `Grade_Report_Template_SY_${gradeReportTemplateData.schoolYear || "Preview"}.pdf`;
+                                link.click();
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsPreviewModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            />
+            {/* <ModalComponent
+                isOpen={isPreviewModal}
+                onClose={() => setIsPreviewModal(false)}
+                title="Grade Report Template"
+                body={
+                    <div className="max-h-[80vh] w-full p-6 flex gap-6">
+
+                        <div className="w-2/3 flex flex-col gap-2">
+                            <label className="text-sm font-medium text-gray-600">Preview</label>
+                            <div className="border rounded-lg shadow overflow-hidden flex-1">
+                                {religionWaverLoading ? (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        Loading preview...
+                                    </div>
+                                ) : religionWaverData?.PdfBase64 ? (
+                                    <iframe
+                                        src={`data:application/pdf;base64,${religionWaverData.PdfBase64}`}
+                                        className="w-full h-[40vh]"
+                                        title="Test Permit Preview"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-[40vh] text-gray-400">
+                                        No preview available
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Download",
+                        type: "green",
+                        onClick: () => {
+                            if (religionWaverData?.PdfBase64) {
+                                const link = document.createElement("a");
+                                link.href = `data:application/pdf;base64,${religionWaverData.PdfBase64}`;
+                                link.download = `${religionWaverData.Fname} ${religionWaverData.Mname ?? ""} ${religionWaverData.Lname}-Religion Waiver.pdf`;
+                                link.click();
+                            }
+                        },
+                    },
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsReligionWaverModal(false),
+                    },
+                ]}
+                size="w-[1000px]"
+                maxHeight="100vh"
+            /> */}
         </div>
     );
 };

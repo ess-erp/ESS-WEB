@@ -19,6 +19,7 @@ import {
     FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
+    FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -592,9 +593,9 @@ export const fetchGradeReportTemplateData = (page, pageSize, search) => async (d
     };
 };
 
-export const fetchRowGradeReportTemplateRequest = () => ({ type: FETCH_GRADE_REPORT_TEMPLATE_REQUEST });
-export const fetchRowGradeReportTemplateSuccess = (data) => ({ type: FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, payload: data });
-export const fetchRowGradeReportTemplateFailure = (error) => ({ type: FETCH_GRADE_REPORT_TEMPLATE_FAILURE, payload: error });
+export const fetchRowGradeReportTemplateRequest = () => ({ type: FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST });
+export const fetchRowGradeReportTemplateSuccess = (data) => ({ type: FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, payload: data });
+export const fetchRowGradeReportTemplateFailure = (error) => ({ type: FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE, payload: error });
 
 
 export const fetchRowGradeReportTemplateData = (reportId) => async (dispatch) => {
@@ -612,12 +613,43 @@ export const fetchRowGradeReportTemplateData = (reportId) => async (dispatch) =>
         });
 
         const res = await response.json();
+        console.log(res);
 
         dispatch(fetchRowGradeReportTemplateSuccess(res));
         return { ok: true, data: res.data };
     }
     catch (error) {
         dispatch(fetchRowGradeReportTemplateFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+export const fetchSummarySheetTableRequest = () => ({ type: FETCH_SUMMARY_SHEET_TABLE_REQUEST });
+export const fetchSummarySheetTableSuccess = (data) => ({ type: FETCH_SUMMARY_SHEET_TABLE_SUCCESS, payload: data });
+export const fetchSummarySheetTableFailure = (error) => ({ type: FETCH_SUMMARY_SHEET_TABLE_FAILURE, payload: error });
+
+
+export const fetchSummarySheetTableData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchSummarySheetTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-summary-sheet-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSummarySheetTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchSummarySheetTableFailure(error.message));
         return { ok: false, error };
     };
 };

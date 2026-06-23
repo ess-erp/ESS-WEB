@@ -232,7 +232,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         },
         {
           name: "Summary Sheet Report",
-          path: "/sru/generate-school-form",
+          path: "/sru/summarysheet",
         },
         {
           name: "Honor List Report",

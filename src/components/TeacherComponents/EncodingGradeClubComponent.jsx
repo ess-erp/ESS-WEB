@@ -439,9 +439,9 @@ const EncodingGradeClubComponent = () => {
     }
 
     // };
-    const [noOfSchoolDays, setNoOfSchoolDays] = useState("");
-    const [schoolDaysError, setSchoolDaysError] = useState(false);
-    const [schoolDaysErrorMsg, setSchoolDaysErrorMsg] = useState("");
+    // const [noOfSchoolDays, setNoOfSchoolDays] = useState("");
+    // const [schoolDaysError, setSchoolDaysError] = useState(false);
+    // const [schoolDaysErrorMsg, setSchoolDaysErrorMsg] = useState("");
     const handleCloseEncodeGrades = () => {
         setRowModalOpen(false);
         // setStudentList([]);
@@ -450,20 +450,21 @@ const EncodingGradeClubComponent = () => {
     };
 
     const handleOpenWarningModal = () => {
-        console.log(noOfSchoolDays);
-        if (noOfSchoolDays == "" || noOfSchoolDays.length == 0) {
-            setSchoolDaysError(true);
-            setRowModalOpen(true);
-            setTimeout(() =>
-                setSchoolDaysErrorMsg("Number of school days is required.")
-                , 1000);
-            return;
-        }
-        else {
-            setRowModalOpen(false);
-            setShowEncodingTable(false);
-            setIsModalOpen(true);
-        }
+        // console.log(noOfSchoolDays);
+        // if (noOfSchoolDays == "" || noOfSchoolDays.length == 0) {
+        //     setSchoolDaysError(true);
+        //     setRowModalOpen(true);
+        //     setTimeout(() =>
+        //         setSchoolDaysErrorMsg("Number of school days is required.")
+        //         , 1000);
+        //     return;
+        // }
+        // else {
+
+        // }
+        setRowModalOpen(false);
+        setShowEncodingTable(false);
+        setIsModalOpen(true);
     };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -549,7 +550,7 @@ const EncodingGradeClubComponent = () => {
             LoadId: studentList[0]?.LoadId,
             TermActivated: studentList[0]?.TermActivated,
             CreatedByUserid: userId,
-            NoOfSchoolDays: noOfSchoolDays,
+            // NoOfSchoolDays: noOfSchoolDays,
             IsValidated: "Y",
 
             InsertEncodeGradeChildDtos: studentList.map((s) => {
@@ -811,7 +812,7 @@ const EncodingGradeClubComponent = () => {
                                             />
                                         </motion.div>
                                     </AnimatePresence>
-                                    <div className="flex justify-end pt-2">
+                                    {/* <div className="flex justify-end pt-2">
                                         <label className="flex flex-col">
                                             <span className="text-sm font-medium mb-1">Number of school days <span className="text-red-700">*</span></span>
                                             <input
@@ -827,7 +828,7 @@ const EncodingGradeClubComponent = () => {
                                             )}
                                         </label>
 
-                                    </div>
+                                    </div> */}
                                 </>
                             )}
                         </div>
