@@ -227,7 +227,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           path: "/sru/generate-school-form",
         },
         {
-          name: "ARC List",
+          name: "ARC Sending",
           path: "/sru/generate-school-form",
         },
         {

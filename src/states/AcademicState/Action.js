@@ -3,7 +3,7 @@ import {
     FETCH_GENERAL_OFFERED_SUBJECTS_REQUEST, FETCH_GENERAL_OFFERED_SUBJECTS_SUCCESS, FETCH_GENERAL_OFFERED_SUBJECTS_FAILURE,
     FETCH_INSERT_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_INSERT_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_INSERT_NON_CURRICULUM_SUBJECT_FAILURE,
     FETCH_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_NON_CURRICULUM_SUBJECT_FAILURE,
-    FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
+    // FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
     FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_CURRICULUM_AND_NON_CURRICULUM_SUBJECT_FAILURE,
@@ -149,34 +149,34 @@ export const fetchNonCurriculumSubjectData = (page, pageSize, search) => async (
 };
 
 
-export const fetchSubjectScheduleLoadRequest = () => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST });
-export const fetchSubjectScheduleLoadSuccess = (data) => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, payload: data });
-export const fetchSubjectScheduleLoadFailure = (error) => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE, payload: error });
+// export const fetchSubjectScheduleLoadRequest = () => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST });
+// export const fetchSubjectScheduleLoadSuccess = (data) => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, payload: data });
+// export const fetchSubjectScheduleLoadFailure = (error) => ({ type: FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE, payload: error });
 
-export const fetchSubjectScheduleLoadData = (page, pageSize, search) => async (dispatch) => {
-    dispatch(fetchSubjectScheduleLoadRequest());
-    try {
-        const token = getToken();
-        const url = `${baseUrl}/academic/get-subject-schedule-load?page=${page}&pageSize=${pageSize}&search=${search}`;
+// export const fetchSubjectScheduleLoadData = (page, pageSize, search) => async (dispatch) => {
+//     dispatch(fetchSubjectScheduleLoadRequest());
+//     try {
+//         const token = getToken();
+//         const url = `${baseUrl}/academic/get-subject-schedule-load?page=${page}&pageSize=${pageSize}&search=${search}`;
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-        });
+//         const response = await fetch(url, {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Authorization': `Bearer ${token}`
+//             },
+//         });
 
-        const res = await response.json();
+//         const res = await response.json();
 
-        dispatch(fetchSubjectScheduleLoadSuccess(res));
-        return { ok: true, data: res.data, totalRecords: res.totalRecords };
-    }
-    catch (error) {
-        dispatch(fetchSubjectScheduleLoadFailure(error.message));
-        return { ok: false, error };
-    }
-};
+//         dispatch(fetchSubjectScheduleLoadSuccess(res));
+//         return { ok: true, data: res.data, totalRecords: res.totalRecords };
+//     }
+//     catch (error) {
+//         dispatch(fetchSubjectScheduleLoadFailure(error.message));
+//         return { ok: false, error };
+//     }
+// };
 
 export const fetchSectionListRequest = () => ({ type: FETCH_SECTION_LIST_REQUEST });
 export const fetchSectionListSuccess = (data) => ({ type: FETCH_SECTION_LIST_SUCCESS, payload: data });
