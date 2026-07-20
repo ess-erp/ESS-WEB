@@ -236,7 +236,8 @@ const GradeReportTemplateComponent = () => {
             CreatedByUserId: userId,
             SequenceDetailsDtos: selectedSequenceSubjects.map(sub => ({
                 SubjectId: sub.SubjectId,
-                SequenceNo: sub.SequenceNo.toString()
+                SequenceNo: sub.SequenceNo.toString(),
+                SubjectType: sub.SubjectType,
             }))
         };
         console.log("Submitting Sequence Template Payload:", payload);
