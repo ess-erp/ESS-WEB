@@ -69,12 +69,14 @@ const SummarySheetDataTable = () => {
     ];
     const [viewModal, setViewModal] = useState(false);
     const [errors, setErrors] = useState({});
+    const [reportId, setReportId] = useState(0);
 
     const openRowModal = (data, status) => {
         console.log(data);
         setViewModal(true);
         dispatch(fetchDivisionData());
         dispatch(fetchLevelData());
+        setReportId(data?.ReportId);
     };
 
     // const handleSubmitViewModal = () => {
@@ -106,7 +108,7 @@ const SummarySheetDataTable = () => {
 
             setDivisionList([{ value: "ALL", label: "Select All" }, ...divisions]);
         } else {
-            setDivisionList([]); 
+            setDivisionList([]);
         }
 
         if (levelData && levelData.length > 0) {
@@ -117,7 +119,7 @@ const SummarySheetDataTable = () => {
 
             setLevelList([{ value: "ALL", label: "Select All" }, ...levels]);
         } else {
-            setLevelList([]); 
+            setLevelList([]);
         }
     }, [divisionData, levelData]);
 
@@ -126,13 +128,26 @@ const SummarySheetDataTable = () => {
         setSelectedLevel(null);
     };
 
-    const handleGenerateTable = () => {
+    const handleGenerateTable = async () => {
         console.log("test");
-
         console.log(selectedLevel);
         console.log(selectedDivision);
 
+        // Provide 0 as default if value is null or undefined
+        const divId = selectedDivision?.value ?? 0;
+        const levelId = selectedLevel?.value ?? 0;
 
+        // Optional validation check: ensure reportId exists before dispatching
+        if (!reportId) {
+            console.warn("Report ID is required");
+            return;
+        }
+
+        const res = await dispatch(
+            fetchGenerateSummarySheetData(reportId, divId, levelId)
+        );
+
+        console.log(res);
     };
 
     return (
@@ -177,7 +192,7 @@ const SummarySheetDataTable = () => {
                     />
                 </div>
             </div>
-            
+
             <ModalComponent
                 isOpen={viewModal}
                 onClose={() => setViewModal(false)}
@@ -229,7 +244,7 @@ const SummarySheetDataTable = () => {
                                     >
                                         Generate
                                     </button>
-                                    
+
                                     <button
                                         type="button"
                                         onClick={handleResetFilters}
