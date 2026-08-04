@@ -373,7 +373,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     {
       name: "Enroll Student",
       icon: UserRoundPlus,
-      path: "/teacher/enrollstudent",
+      path: "/parent/enrollstudent",
     },
     {
       name: "List of Student",

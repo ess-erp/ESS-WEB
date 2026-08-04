@@ -4,9 +4,7 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
-import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
-import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Eye, Trash2, Plus, RotateCcw } from "lucide-react";
+import { Eye } from "lucide-react";
 import { getFormatDate } from "../../GlobalFunction/FormatDate";
 import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
 import {
@@ -17,6 +15,9 @@ import {
     fetchDivisionData,
     fetchLevelData,
 } from "../../states/AdmissionState/Action";
+import {
+    fetchSectionListData,
+} from "../../states/AcademicState/Action";
 
 const SummarySheetDataTable = () => {
     const dispatch = useDispatch();
@@ -24,14 +25,15 @@ const SummarySheetDataTable = () => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
-    const userId = user?.UserId;
 
     const formatDate = getFormatDate;
     const formatToAMPM = getFormatToAMPM;
+
+    // --- Table Data & State ---
     const [summarySheetList, setSummarySheetList] = useState([]);
-    const summarySheetTableState = useSelector((state) => state.sru.summarySheetTableState || {});
-    const summarySheetTable = summarySheetTableState.data.data || [];
-    const summarySheetTotalRows = summarySheetTableState.data.totalRecords || 0;
+    const summarySheetTableState = useSelector((state) => state.sru?.summarySheetTableState || {});
+    const summarySheetTable = summarySheetTableState.data?.data || [];
+    const summarySheetTotalRows = summarySheetTableState.data?.totalRecords || 0;
     const summarySheetLoading = summarySheetTableState.loading || false;
     const [summarySheetCurrentPage, setSummarySheetCurrentPage] = useState(1);
     const [summarySheetRowsPerPage, setSummarySheetRowsPerPage] = useState(10);
@@ -42,8 +44,9 @@ const SummarySheetDataTable = () => {
     }, [summarySheetCurrentPage, summarySheetRowsPerPage, summarySheetSearchFilter, dispatch]);
 
     useEffect(() => {
-        if (summarySheetTable.length === 0) return;
-        setSummarySheetList(summarySheetTable);
+        if (summarySheetTable.length > 0) {
+            setSummarySheetList(summarySheetTable);
+        }
     }, [summarySheetTable]);
 
     const summarySheetColumn = [
@@ -67,37 +70,41 @@ const SummarySheetDataTable = () => {
             width: "180px",
         }
     ];
+
     const [viewModal, setViewModal] = useState(false);
-    const [errors, setErrors] = useState({});
     const [reportId, setReportId] = useState(0);
 
-    const openRowModal = (data, status) => {
-        console.log(data);
-        setViewModal(true);
-        dispatch(fetchDivisionData());
-        dispatch(fetchLevelData());
-        setReportId(data?.ReportId);
-    };
+    const [enableDivision, setEnableDivision] = useState(false);
+    const [enableLevel, setEnableLevel] = useState(false);
+    const [enableSection, setEnableSection] = useState(false);
+    const [enableSchoolYear, setEnableSchoolYear] = useState(false);
+    const [enableTerm, setEnableTerm] = useState(false);
 
-    // const handleSubmitViewModal = () => {
-    //     console.log("test");
-    //     let tempErrors = {};
-
-    //     if (!tempName.trim()) {
-    //         tempErrors.tempName = "Template name is required.";
-    //     }
-    // };
-
-    const [divisionList, setDivisionList] = useState(null);
-    const divisionState = useSelector((state) => state.admission.divisionState || {});
-    const divisionData = divisionState.data || [];
+    const [divisionList, setDivisionList] = useState([]);
     const [selectedDivision, setSelectedDivision] = useState(null);
-    const [levelList, setLevelList] = useState(null);
-    const levelState = useSelector((state) => state.admission.levelState || {});
-    const levelData = levelState.data || [];
+
+    const [levelList, setLevelList] = useState([]);
     const [selectedLevel, setSelectedLevel] = useState(null);
 
-    console.log(divisionData);
+    const [sectionList, setSectionList] = useState([]);
+    const [selectedSection, setSelectedSection] = useState(null);
+
+    const [schoolYearList, setSchoolYearList] = useState([]);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState(null);
+
+    const [termList, setTermList] = useState([]);
+    const [selectedTerm, setSelectedTerm] = useState(null);
+
+    const isAllSelected =
+        selectedSchoolYear?.value === "ALL" ||
+        selectedTerm?.value === "ALL" ||
+        selectedDivision?.value === "ALL" ||
+        selectedLevel?.value === "ALL" ||
+        selectedSection?.value === "ALL";
+
+    const divisionData = useSelector((state) => state.admission?.divisionState?.data || []);
+    const levelData = useSelector((state) => state.admission?.levelState?.data || []);
+    const sectionData = useSelector((state) => state.academic?.sectionListState?.data || []);
 
     useEffect(() => {
         if (divisionData && divisionData.length > 0) {
@@ -105,7 +112,6 @@ const SummarySheetDataTable = () => {
                 value: item.DivId,
                 label: item.DivName,
             }));
-
             setDivisionList([{ value: "ALL", label: "Select All" }, ...divisions]);
         } else {
             setDivisionList([]);
@@ -116,38 +122,55 @@ const SummarySheetDataTable = () => {
                 value: item.LevelId,
                 label: item.LevelName,
             }));
-
             setLevelList([{ value: "ALL", label: "Select All" }, ...levels]);
         } else {
             setLevelList([]);
         }
-    }, [divisionData, levelData]);
 
-    const handleResetFilters = () => {
-        setSelectedDivision(null);
-        setSelectedLevel(null);
+        if (sectionData && sectionData.length > 0) {
+            const sections = sectionData.map(item => ({
+                value: item.SectionId,
+                label: item.SectionName,
+            }));
+            setSectionList([{ value: "ALL", label: "Select All" }, ...sections]);
+        } else {
+            setSectionList([]);
+        }
+    }, [divisionData, levelData, sectionData]);
+
+    const openRowModal = (data) => {
+        setViewModal(true);
+        dispatch(fetchDivisionData());
+        dispatch(fetchLevelData());
+        dispatch(fetchSectionListData());
+        setReportId(data?.ReportId);
+    };
+
+    const openGenerateModal = () => {
+        setViewModal(true);
+        dispatch(fetchDivisionData());
+        dispatch(fetchLevelData());
+        dispatch(fetchSectionListData());
     };
 
     const handleGenerateTable = async () => {
-        console.log("test");
-        console.log(selectedLevel);
-        console.log(selectedDivision);
-
-        // Provide 0 as default if value is null or undefined
         const divId = selectedDivision?.value ?? 0;
         const levelId = selectedLevel?.value ?? 0;
+        // await dispatch(fetchGenerateSummarySheetData(divId, levelId));
+    };
 
-        // Optional validation check: ensure reportId exists before dispatching
-        if (!reportId) {
-            console.warn("Report ID is required");
-            return;
-        }
+    const handleResetFilters = () => {
+        setEnableDivision(false);
+        setEnableLevel(false);
+        setEnableSection(false);
+        setEnableSchoolYear(false);
+        setEnableTerm(false);
 
-        const res = await dispatch(
-            fetchGenerateSummarySheetData(reportId, divId, levelId)
-        );
-
-        console.log(res);
+        setSelectedDivision(null);
+        setSelectedLevel(null);
+        setSelectedSection(null);
+        setSelectedSchoolYear(null);
+        setSelectedTerm(null);
     };
 
     return (
@@ -161,6 +184,10 @@ const SummarySheetDataTable = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <OutlineBlueBtn
+                            label="Generate Summary Sheet"
+                            onClick={openGenerateModal}
+                        />
                         <input
                             type="text"
                             placeholder="Search..."
@@ -199,61 +226,151 @@ const SummarySheetDataTable = () => {
                 title="Generate Summary Sheet Report"
                 body={
                     <div className="mt-6 relative overflow-hidden max-h-[75vh] overflow-y-auto px-1">
-                        <div className="space-y-4 mb-6">
-                            {/* Adjusted to a 5-column grid layout for finer alignment control */}
-                            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                        <div className="space-y-6 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
 
-                                {/* Column 1 & 2: Division Select (Takes up 2/5 columns) */}
-                                <div className="flex flex-col md:col-span-2">
+                                <div className="flex flex-col space-y-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={enableSchoolYear}
+                                            onChange={(e) => {
+                                                setEnableSchoolYear(e.target.checked);
+                                                if (!e.target.checked) setSelectedSchoolYear(null);
+                                            }}
+                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        />
+                                        <span>Filter by School Year</span>
+                                    </label>
                                     <SearchableSelect
-                                        // If a Level is picked, we override options to an empty array so nothing can be picked
-                                        options={selectedLevel ? [] : divisionList}
+                                        options={enableSchoolYear ? schoolYearList : []}
+                                        value={selectedSchoolYear}
+                                        onChange={setSelectedSchoolYear}
+                                        placeholder={
+                                            !enableSchoolYear
+                                                ? "Disabled"
+                                                : isAllSelected && selectedSchoolYear?.value !== "ALL"
+                                                    ? "Locked (Select All active)"
+                                                    : "-- Select School Year --"
+                                        }
+                                        isDisabled={!enableSchoolYear || (isAllSelected && selectedSchoolYear?.value !== "ALL")}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col space-y-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={enableTerm}
+                                            onChange={(e) => {
+                                                setEnableTerm(e.target.checked);
+                                                if (!e.target.checked) setSelectedTerm(null);
+                                            }}
+                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        />
+                                        <span>Filter by Term</span>
+                                    </label>
+                                    <SearchableSelect
+                                        options={enableTerm ? termList : []}
+                                        value={selectedTerm}
+                                        onChange={setSelectedTerm}
+                                        placeholder={
+                                            !enableTerm
+                                                ? "Disabled"
+                                                : isAllSelected && selectedTerm?.value !== "ALL"
+                                                    ? "Locked (Select All active)"
+                                                    : "-- Select Term --"
+                                        }
+                                        isDisabled={!enableTerm || (isAllSelected && selectedTerm?.value !== "ALL")}
+                                    />
+                                </div>
+
+                                <div className="flex flex-col space-y-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={enableDivision}
+                                            onChange={(e) => {
+                                                setEnableDivision(e.target.checked);
+                                                if (!e.target.checked) setSelectedDivision(null);
+                                            }}
+                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                        />
+                                        <span>Filter by Division</span>
+                                    </label>
+                                    <SearchableSelect
+                                        options={enableDivision ? divisionList : []}
                                         value={selectedDivision}
-                                        onChange={(selected) => {
-                                            if (!selectedLevel) setSelectedDivision(selected);
-                                        }}
-                                        placeholder={selectedLevel ? "Locked (Level Selected)" : "-- Select Division --"}
-                                        label="Select Division"
-                                        isDisabled={!!selectedLevel} // Standard prop variation names just in case
-                                        disabled={!!selectedLevel}
+                                        onChange={setSelectedDivision}
+                                        placeholder={
+                                            !enableDivision
+                                                ? "Disabled"
+                                                : isAllSelected && selectedDivision?.value !== "ALL"
+                                                    ? "Locked (Select All active)"
+                                                    : "-- Select Division --"
+                                        }
+                                        isDisabled={!enableDivision || (isAllSelected && selectedDivision?.value !== "ALL")}
                                     />
                                 </div>
 
-                                {/* Column 3 & 4: Level Select (Takes up 2/5 columns) */}
-                                <div className="flex flex-col md:col-span-2">
-                                    <SearchableSelect
-                                        // If a Division is picked, we override options to an empty array so nothing can be picked
-                                        options={selectedDivision ? [] : levelList}
-                                        value={selectedLevel}
-                                        onChange={(selected) => {
-                                            if (!selectedDivision) setSelectedLevel(selected);
-                                        }}
-                                        placeholder={selectedDivision ? "Locked (Division Selected)" : "-- Select Level --"}
-                                        label="Select Level"
-                                        isDisabled={!!selectedDivision} // Standard prop variation names just in case
-                                        disabled={!!selectedDivision}
-                                    />
-                                </div>
+                                <div className="md:col-span-3 flex flex-col md:flex-row justify-center gap-6">
 
-                                {/* Column 5: Action Row containing smaller Generate and Reset buttons */}
-                                <div className="flex gap-2 items-center justify-end md:col-span-1">
-                                    <button
-                                        type="button"
-                                        onClick={handleGenerateTable}
-                                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 text-sm rounded h-[38px] transition-colors duration-200"
-                                    >
-                                        Generate
-                                    </button>
+                                    <div className="flex flex-col space-y-2 w-full md:w-1/3">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={enableLevel}
+                                                onChange={(e) => {
+                                                    setEnableLevel(e.target.checked);
+                                                    if (!e.target.checked) setSelectedLevel(null);
+                                                }}
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                            />
+                                            <span>Filter by Level</span>
+                                        </label>
+                                        <SearchableSelect
+                                            options={enableLevel ? levelList : []}
+                                            value={selectedLevel}
+                                            onChange={setSelectedLevel}
+                                            placeholder={
+                                                !enableLevel
+                                                    ? "Disabled"
+                                                    : isAllSelected && selectedLevel?.value !== "ALL"
+                                                        ? "Locked (Select All active)"
+                                                        : "-- Select Level --"
+                                            }
+                                            isDisabled={!enableLevel || (isAllSelected && selectedLevel?.value !== "ALL")}
+                                        />
+                                    </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={handleResetFilters}
-                                        className="flex items-center justify-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-2.5 text-sm rounded h-[38px] transition-colors duration-200 border border-gray-300"
-                                        title="Reset Filters"
-                                    >
-                                        <RotateCcw size={14} />
-                                        <span>Reset</span>
-                                    </button>
+                                    <div className="flex flex-col space-y-2 w-full md:w-1/3">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={enableSection}
+                                                onChange={(e) => {
+                                                    setEnableSection(e.target.checked);
+                                                    if (!e.target.checked) setSelectedSection(null);
+                                                }}
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                            />
+                                            <span>Filter by Section</span>
+                                        </label>
+                                        <SearchableSelect
+                                            options={enableSection ? sectionList : []}
+                                            value={selectedSection}
+                                            onChange={setSelectedSection}
+                                            placeholder={
+                                                !enableSection
+                                                    ? "Disabled"
+                                                    : isAllSelected && selectedSection?.value !== "ALL"
+                                                        ? "Locked (Select All active)"
+                                                        : "-- Select Section --"
+                                            }
+                                            isDisabled={!enableSection || (isAllSelected && selectedSection?.value !== "ALL")}
+                                        />
+                                    </div>
+
                                 </div>
 
                             </div>
@@ -263,7 +380,8 @@ const SummarySheetDataTable = () => {
                 size="w-[1000px]"
                 maxHeight="100vh"
                 buttons={[
-                    // { label: "Submit", type: "green", onClick: handleSubmitViewModal, closeOnClick: false },
+                    { label: "Generate", type: "green", onClick: handleGenerateTable, closeOnClick: false },
+                    { label: "Reset", type: "blue", onClick: handleResetFilters, closeOnClick: false },
                     { label: "Cancel", type: "red", onClick: () => setViewModal(false) },
                 ]}
             />
