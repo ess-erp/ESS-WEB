@@ -660,11 +660,11 @@ export const fetchGenerateSummarySheetSuccess = (data) => ({ type: FETCH_GENERAT
 export const fetchGenerateSummarySheetFailure = (error) => ({ type: FETCH_GENERATE_SUMMARY_SHEET_FAILURE, payload: error });
 
 
-export const fetchGenerateSummarySheetData = (reportId, divId, levelId) => async (dispatch) => {
+export const fetchGenerateSummarySheetData = (payload) => async (dispatch) => {
     dispatch(fetchGenerateSummarySheetRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/generate-summary-sheet?reportId=${reportId}&divId=${divId}&levelId=${levelId}`;
+        const url = `${baseUrl}/sru/generate-summary-sheet`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -672,6 +672,7 @@ export const fetchGenerateSummarySheetData = (reportId, divId, levelId) => async
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
+            body: JSON.stringify(payload),
         });
 
         const res = await response.json();

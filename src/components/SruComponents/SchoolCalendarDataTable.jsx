@@ -99,15 +99,15 @@ const SchoolCalendarDataTable = () => {
     const termList = [
         {
             value: "Term1",
-            label: "1st Grading Period",
+            label: "1st Term",
         },
         {
             value: "Term2",
-            label: "2nd Grading Period",
+            label: "2nd Term",
         },
         {
             value: "Term3",
-            label: "3rd Grading Period",
+            label: "3rd Third",
         },
     ];
     const [selectedTerm, setSelectedTerm] = useState(null);
