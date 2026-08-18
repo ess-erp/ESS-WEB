@@ -21,6 +21,7 @@ import {
     FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
     FETCH_GENERATE_SUMMARY_SHEET_REQUEST, FETCH_GENERATE_SUMMARY_SHEET_SUCCESS, FETCH_GENERATE_SUMMARY_SHEET_FAILURE,
+    FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST, FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS, FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -53,6 +54,7 @@ const initialGeneralState = {
     rowGradeTemplateState: { ...initialState },
     summarySheetTableState: { ...initialState },
     generateSummarySheetState: { ...initialState },
+    sectionLevelState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -211,6 +213,13 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, generateSummarySheetState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GENERATE_SUMMARY_SHEET_FAILURE:
             return { ...state, generateSummarySheetState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST:
+            return { ...state, generateSummsectionLevelStatearySheetState: { loading: true, data: [], error: '' } };
+        case FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS:
+            return { ...state, sectionLevelState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE:
+            return { ...state, sectionLevelState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

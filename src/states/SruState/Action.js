@@ -21,6 +21,7 @@ import {
     FETCH_ROW_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_ROW_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_ROW_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
     FETCH_GENERATE_SUMMARY_SHEET_REQUEST, FETCH_GENERATE_SUMMARY_SHEET_SUCCESS, FETCH_GENERATE_SUMMARY_SHEET_FAILURE,
+    FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST, FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS, FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -684,4 +685,33 @@ export const fetchGenerateSummarySheetData = (payload) => async (dispatch) => {
         dispatch(fetchGenerateSummarySheetFailure(error.message));
         return { ok: false, error };
     };
+};
+
+export const fetchSectionListByLevelIdRequest = () => ({ type: FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST });
+export const fetchSectionListByLevelIdSuccess = (data) => ({ type: FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS, payload: data });
+export const fetchSectionListByLevelIdFailure = (error) => ({ type: FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE, payload: error });
+
+export const fetchSectionListByLevelIdData = (levelId) => async (dispatch) => {
+    dispatch(fetchSectionListByLevelIdRequest());
+    try{
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-section-list-by-level-id?$levelId=${levelId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchSectionListByLevelIdSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchSectionListByLevelIdFailure(error.message));
+        return { ok: false, error };
+    }
 };
