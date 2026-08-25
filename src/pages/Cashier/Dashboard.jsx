@@ -64,7 +64,7 @@ const Dashboard = () => {
         if(res.ok){
             setIsSuccessModalOpen(true);
             if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
+                setTimeout(() => window.location.reload(), 1000);
             }
         }
         else {

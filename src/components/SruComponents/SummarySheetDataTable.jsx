@@ -190,22 +190,67 @@ const SummarySheetDataTable = () => {
         return `-- Select ${labelName} --`;
     };
     const [sectionList, setSectionList] = useState(null);
+    const [sectionLoaded, setSectionLoaded] = useState(false);
+    // const handleLevelChange = async (data) => {
+    //     const levelId = data?.value;
+
+    //     console.log(levelId);
+    //     // if (!levelId) {
+    //     //     setSectionList([]); // Clear options if level is deselected
+    //     //     return;
+    //     // }
+    //     const res = await dispatch(fetchSectionListByLevelIdData(levelId));
+
+    //     if (res?.ok) {
+    //         setSectionList(res.data || []);
+    //         setSectionLoaded(true);
+    //     } else {
+    //         setSectionList([]);
+    //     }
+    // };
+
+    // useEffect(() => {
+    //     set
+    // })
     const handleLevelChange = async (data) => {
         const levelId = data?.value;
 
-        // if (!levelId) {
-        //     setSectionList([]); // Clear options if level is deselected
-        //     return;
-        // }
-        const res = await dispatch(fetchSectionListByLevelIdData(data?.value));
+        // Reset section selection when Level changes
+        setSelectedSection(null);
 
-        if (res?.ok) {
-            setSectionList(res.data || []);
+        if (!levelId || levelId === "ALL") {
+            setSectionList([]);
+            setSectionLoaded(false);
+            return;
+        }
+
+        const res = await dispatch(fetchSectionListByLevelIdData(levelId));
+        console.log(res);
+        if (res?.ok && Array.isArray(res.data)) {
+            // Map raw backend keys (e.g., SectionId, SectionName) into { value, label }
+            const formattedSections = [
+                { value: "ALL", label: "Select All" },
+                ...res.data.map((item) => ({
+                    value: item.SectionId, // adjust key name if API differs (e.g., item.id)
+                    label: item.SectionName, // adjust key name if API differs (e.g., item.name)
+                }))
+            ];
+
+            setSectionList(formattedSections);
+            setSectionLoaded(true);
+
         } else {
             setSectionList([]);
+            setSectionLoaded(false);
         }
     };
-
+    useEffect(() => {
+        if (!enableLevel) {
+            setSectionList([]);
+            setSelectedSection(null);
+            setSectionLoaded(false);
+        }
+    }, [enableLevel]);
     return (
         <div>
             <div className="bg-white rounded-lg shadow border border-gray-200">
@@ -365,7 +410,7 @@ const SummarySheetDataTable = () => {
                                                     if (!isChecked) {
                                                         setSelectedLevel(null);
                                                     }
-                                                    handleChangeSection();
+                                                    // handleChangeSection();
                                                 }}
                                                 className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                                             />

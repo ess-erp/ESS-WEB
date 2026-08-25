@@ -1,0 +1,13 @@
+﻿var fs = require("fs");
+var p = "f:/ERP-2026/ESS-WEB/src/components/CashierComponents/PaymentComponent.jsx";
+var c = fs.readFileSync(p, "utf8");
+var suffix = ".toLocaleString(\"en-US\", { minimumFractionDigits: 2, maximumFractionDigits: 2 })";
+c = c.replace("Number(dailyBalance.Amount).toFixed(2)", "Number(dailyBalance.Amount)" + suffix);
+c = c.replace("Number(realtimeBalance.Amount).toFixed(2)", "Number(realtimeBalance.Amount)" + suffix);
+c = c.replace("Number(t.price).toFixed(2)", "Number(t.price)" + suffix);
+c = c.replace("Number(amountToPay || 0).toFixed(2)", "Number(amountToPay || 0)" + suffix);
+c = c.replace("Number(change || 0).toFixed(2)", "Number(change || 0)" + suffix);
+c = c.replace("transactionsTotal.toFixed(2)", "transactionsTotal" + suffix);
+c = c.replace("grandTotal.toFixed(2)", "grandTotal" + suffix);
+fs.writeFileSync(p, c, "utf8");
+console.log("Done");

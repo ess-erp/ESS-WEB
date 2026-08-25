@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-// import TestPermitComponent from "./TestPermitComponent";
-import { Printer } from "lucide-react";
+import { Printer, Trash2 } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchTransactionTypeData,
@@ -11,12 +10,10 @@ import {
     fetchGetDailyBalanceData,
     fetchPrintReceiptData,
     fetchInsertSubmitPaymentData,
-    // fetchGetTuitionFeeData,
     fetchStudentAppAssessmentData,
 } from "../../states/CashierState/Action";
 import SearchBoxAppNo from "../ButtonsComponents/SearchBoxAppNo";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
-// import EnrollmentComponent from "./EnrollmentComponent";
 
 const PaymentComponent = () => {
     const dispatch = useDispatch();
@@ -25,8 +22,6 @@ const PaymentComponent = () => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
     const userId = user.UserId;
-
-
 
     const transactionTypeState = useSelector((state) => state.cashier.transactionTypeState || {});
     const transData = transactionTypeState.data || [];
@@ -39,11 +34,10 @@ const PaymentComponent = () => {
     const dailyBalance = dailyBalanceState.data || [];
     const realtimeBalanceState = useSelector((state) => state.cashier.realtimeBalanceState || {});
     const realtimeBalance = realtimeBalanceState.data || [];
-    const tuitionFeeState = useSelector((state) => state.cashier.tuitionFeeState || {});
-    const tuitionFee = tuitionFeeState.data || [];
     const printReceiptState = useSelector((state) => state.cashier.printReceiptState || {});
     const receiptData = printReceiptState.data || [];
     const receiptLoading = printReceiptState.loading;
+
     const [transList, setTransList] = useState([]);
     const [transType, setIsTransType] = useState("");
     const [transDropdown, setTransDropdown] = useState(null);
@@ -51,17 +45,20 @@ const PaymentComponent = () => {
     const [studentId, setStudentId] = useState(0);
     const [fullName, setFullname] = useState("");
     const [referenceNumber, setReferenceNumber] = useState("");
-    const [planList, setPlanList] = useState([]);
-    const [planDropdown, setPlanDropdown] = useState(null);
     const [planAmount, setPlanAmount] = useState(0);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [paymentMode, setPaymentMode] = useState(null);
     const [tuitionChildId, setTuitionChildId] = useState(0);
     const [planId, setPlanId] = useState(0);
+
+    // NEW: holds the list of transactions added before final submit
+    const [transactions, setTransactions] = useState([]);
+
     const paymentOptions = [
         { value: "Cash", label: "Cash" },
         { value: "Check", label: "Check" },
     ];
+
     useEffect(() => {
         dispatch(fetchTransactionTypeData());
         dispatch(fetchGetDailyBalanceData(userId));
@@ -74,13 +71,10 @@ const PaymentComponent = () => {
             label: item.TransType,
             amount: item.Value,
         }));
-
         setTransList(mappedOptions);
     }, [transData]);
 
     const setTransType = (data) => {
-        console.log(data);
-
         resetForm();
         setAmountValue(data.amount);
         setIsTransType(data.label);
@@ -99,27 +93,21 @@ const PaymentComponent = () => {
             case "Assessment Plan":
                 status = "O-ASSESSMENT-PLAN";
                 dispatch(fetchStudentAppData(status));
-                break
+                break;
             case "Tuition Fee":
                 status = "Y";
                 dispatch(fetchStudentAppData(status));
         }
-
     };
-    console.log(assessmentData);
+
     const handleStudentSelect = (student) => {
-        console.log(student);
-        console.log(transType);
         if (transType == "Tuition Fee") {
             setReferenceNumber(student.StudentNumber);
-        }
-        else {
+        } else {
             setReferenceNumber(student.AppNumber);
         }
         setStudentId(student.StudentId);
         setFullname(student.Fname + " " + student?.Mname + " " + student.Lname);
-        console.log(student.LevelId);
-        // dispatch(fetchGetTuitionFeeData(student.StudentId, student.LevelId));
         dispatch(fetchStudentAppAssessmentData(student.AppId));
     };
 
@@ -130,55 +118,9 @@ const PaymentComponent = () => {
         setPlanId(assessmentData[0]?.PlanId);
     }, [assessmentData]);
 
-    // const getPlanGroup = (planName) => {
-    //     return planName.replace(/[0-9]/g, "");
-    // };
-
-    // useEffect(() => {
-    //     if (!tuitionFee || tuitionFee.length === 0) {
-    //         setPlanList([]);
-    //         return;
-    //     }
-
-    //     const grouped = {};
-
-    //     tuitionFee.forEach(item => {
-    //         const groupKey = getPlanGroup(item.PlanName);
-
-    //         if (!grouped[groupKey]) {
-    //             grouped[groupKey] = {
-    //                 id: item.TuitionId,
-    //                 tuitionChildId: item.TuitionChildId,
-    //                 value: item.Amount,      // ✅ AMOUNT AS VALUE
-    //                 label: groupKey,         // Plan A / B / C / D
-    //                 planKey: groupKey
-    //             };
-    //         }
-    //     });
-
-    //     setPlanList(Object.values(grouped));
-    // }, [tuitionFee]);
-
-
-    // const [selectedPlanGroup, setSelectedPlanGroup] = useState(null);
-
-    // const setEnrollmentPlan = (data) => {
-    //     console.log(data);
-    //     setPlanDropdown(data);            // REQUIRED
-    //     setSelectedPlanGroup(data?.planKey);
-    //     setPlanAmount(data?.value);
-    //     setTuitionId(data?.id);
-    //     setTuitionChildId(data?.tuitionChildId);
-    // };
-
-    // const filteredPlans = tuitionFee.filter(item =>
-    //     getPlanGroup(item.PlanName) === selectedPlanGroup
-    // );
-
     useEffect(() => {
         dispatch(fetchOrNumberData(userId));
     }, [userId, dispatch]);
-
 
     const [isOpenModal, setIsOpenModal] = useState(false);
     const [isWarningModal, setIsWarningModal] = useState(false);
@@ -193,77 +135,32 @@ const PaymentComponent = () => {
     const [checkNumber, setCheckNumber] = useState("");
     const [checkNumberError, setCheckNumberError] = useState("");
     const [isCheckNumberError, setIsCheckNumberError] = useState(false);
+
     const priceToUse =
         transType === "Assessment Plan"
             ? Number(planAmount || 0)
             : Number(amountValue || 0);
 
+    // Running total = already-added transactions + whatever is currently in the form
+    const transactionsTotal = transactions.reduce((sum, t) => sum + Number(t.price || 0), 0);
+    const grandTotal = transactionsTotal + (totalAmount || 0);
+
     const handleChangeAmountToPay = (value) => {
-        const cash = Number(value || 0);   // entered cash
-        const price = priceToUse;          // always use priceToUse
+        const cash = Number(value || 0);
+        const price = priceToUse;
 
-        setAmountToPay(value);             // store cash input
+        setAmountToPay(value);
 
-        const computedChange = cash - price;    // calculate change
+        const computedChange = cash - price;
         setChange(Number(computedChange.toFixed(2)));
 
-        setTotalAmount(price);             // total always = price
+        setTotalAmount(price);
     };
-    // const handleChangeAmountToPay = (value) => {
-    //     console.log(value);
-    //     const cash = Number(value);
-    //     const price = Number(amountValue);
-
-    //     setAmountToPay(value);
-
-    //     const computedChange = cash - price;
-
-    //     setChange(Number(computedChange.toFixed(2)));
-    //     setTotalAmount(price);
-    // };
-
-    // const handlePrint = async () => {
-    //     if (referenceNumber === "" || referenceNumber === null) {
-    //         setErrors(true);
-    //         if (transType == "Tuition Fee") {
-    //             setErrorMessage("Please enter student number.");
-    //         }
-
-    //         else {
-    //             setErrorMessage("Please enter application number.");
-    //         }
-    //         return;
-    //     }
-
-    //     if (amountToPay === 0 || amountToPay === "") {
-    //         setIsAmount(true);
-    //         setAmountError("Please enter amount before you proceed.");
-    //         return;
-    //     }
-    //     const payload = {
-    //         UserId: studentId,
-    //         ReferenceId: "",
-    //         TransType: orNumberData.OrType,
-    //         OrId: orNumberData.OrId,
-    //         CreatedByUserId: userId,
-    //         OrChildDtos: [{
-    //             OrChildId: orNumberData.OrChildId,
-    //             OrNumberUsed: orNumberData.LastOrNoUsed,
-    //             Amount: amountValue.toString(),
-    //         }]
-    //     };
-
-    //     console.log(payload);
-    //     await dispatch(fetchPrintTestPermitData(payload));
-    //     setIsOpenModal(true);
-    // };
 
     const resetForm = () => {
         setStudentId(0);
         setFullname("");
         setReferenceNumber("");
-        setPlanDropdown(null);
-        // setSelectedPlanGroup(null);
         setPlanAmount(0);
         setAmountValue(0);
         setAmountToPay(0);
@@ -275,10 +172,28 @@ const PaymentComponent = () => {
         setErrorMessage("");
         setSelectedStudent(null);
         setCheckNumber("");
+        setIsCheckNumberError(false);
+        setCheckNumberError("");
     };
 
-    const handlePrint = async () => {
-        console.log("test");
+    // Fully clears the transaction type too (used after adding to list)
+    const resetFormAndType = () => {
+        resetForm();
+        setTransDropdown(null);
+        setIsTransType("");
+        setPaymentMode(null);
+        setTuitionChildId(0);
+        setPlanId(0);
+    };
+
+    // NEW: validate current form entry and push it into the transactions list
+    const addTransaction = () => {
+        if (!transType) {
+            setErrors(true);
+            setErrorMessage("Please select a transaction type.");
+            return;
+        }
+
         if (!referenceNumber) {
             setErrors(true);
             setErrorMessage(
@@ -289,19 +204,82 @@ const PaymentComponent = () => {
             return;
         }
 
-        if (!amountToPay || amountToPay === 0) {
+        if (!amountToPay || Number(amountToPay) === 0) {
             setIsAmount(true);
             setAmountError("Please enter amount before you proceed.");
             return;
         }
-        if (paymentMode?.value == "Check") {
-            if (!checkNumber || checkNumber === "") {
+
+        if (paymentMode?.value === "Check" && !checkNumber) {
+            setIsCheckNumberError(true);
+            setCheckNumberError("Please enter the check number.");
+            return;
+        }
+
+        const newTransaction = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            transType,
+            studentId,
+            fullName,
+            referenceNumber,
+            price: priceToUse,
+            amountToPay: Number(amountToPay),
+            change,
+            paymentMode,
+            checkNumber,
+            tuitionChildId,
+            planId,
+            orChildId: orNumberData.OrChildId,
+            orNumberUsed: orNumberData.LatestOrAvailable,
+            planName: assessmentData[0]?.PlanName ?? "",
+        };
+
+        setTransactions((prev) => [...prev, newTransaction]);
+        resetFormAndType();
+    };
+
+    // NEW: remove a transaction from the list before submitting
+    const removeTransaction = (id) => {
+        setTransactions((prev) => prev.filter((t) => t.id !== id));
+    };
+
+    const handlePrint = async () => {
+        // If nothing has been added yet, validate + treat current form as the only transaction
+        if (transactions.length === 0) {
+            if (!referenceNumber) {
+                setErrors(true);
+                setErrorMessage(
+                    transType === "Tuition Fee"
+                        ? "Please enter student number."
+                        : "Please enter application number."
+                );
+                return;
+            }
+
+            if (!amountToPay || amountToPay === 0) {
+                setIsAmount(true);
+                setAmountError("Please enter amount before you proceed.");
+                return;
+            }
+
+            if (paymentMode?.value == "Check" && (!checkNumber || checkNumber === "")) {
                 setIsCheckNumberError(true);
                 setCheckNumberError("Please enter the check number.");
                 return;
             }
         }
 
+        const allTransactions =
+            transactions.length > 0
+                ? transactions
+                : [
+                      {
+                          transType,
+                          price: priceToUse,
+                          orChildId: orNumberData.OrChildId,
+                          orNumberUsed: orNumberData.LatestOrAvailable,
+                      },
+                  ];
 
         const payload = {
             UserId: studentId,
@@ -310,50 +288,82 @@ const PaymentComponent = () => {
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
             TuitionChildId: 0,
-            TypeOfTransaction: transType,
-            OrChildDtos: [
-                {
-                    OrChildId: orNumberData.OrChildId,
-                    OrNumberUsed: orNumberData.LastOrNoUsed,
-                    Amount: priceToUse.toString(),
-                },
-            ],
+            TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
+            OrChildDtos: allTransactions.map((t) => ({
+                OrChildId: t.orChildId,
+                OrNumberUsed: t.orNumberUsed,
+                Amount: t.price.toString(),
+            })),
         };
 
-        console.log(payload);
         await dispatch(fetchPrintReceiptData(payload));
         setIsOpenModal(true);
     };
 
     const handleSubmitOrNumber = () => {
-        console.log("test");
+        // Combine any added transactions with whatever is currently in the form
+        const allTransactions =
+            transactions.length > 0
+                ? transactions
+                : [
+                      {
+                          transType,
+                          studentId,
+                          referenceNumber,
+                          price: priceToUse,
+                          amountToPay,
+                          paymentMode,
+                          tuitionChildId,
+                          planId,
+                          orChildId: orNumberData.OrChildId,
+                          orNumberUsed: orNumberData.LatestOrAvailable,
+                      },
+                  ];
 
         const payload = {
-            UserId: studentId,
-            ReferenceId: referenceNumber,
+            UserId: allTransactions[0].studentId,
+            ReferenceId: allTransactions[0].referenceNumber,
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
-            TuitionChildId: tuitionChildId,
-            TypeOfTransaction: transType,
-            OrChildDtos: [{
+            TuitionChildId: allTransactions[0].tuitionChildId,
+            TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
+            OrChildDtos: allTransactions.map((t) => ({
                 BalId: dailyBalance.BalId,
-                OrChildId: orNumberData.OrChildId,
-                PlanId: planId,
-                OrNumberUsed: orNumberData.LatestOrAvailable,
-                Amount: priceToUse.toString(),
-                AmountPaid: amountToPay.toString(),
-                ModeOfPayment: paymentMode?.value,
-                FromTransaction: transType,
-
-            }]
+                OrChildId: t.orChildId,
+                PlanId: t.planId,
+                OrNumberUsed: t.orNumberUsed,
+                Amount: t.price.toString(),
+                AmountPaid: t.amountToPay.toString(),
+                ModeOfPayment: t.paymentMode?.value,
+                FromTransaction: t.transType,
+            })),
         };
-        console.log("Payload to be submitted: " + payload);
+
         dispatch(fetchInsertSubmitPaymentData(payload));
         setIsOpenModal(true);
         setIsWarningModal(false);
-        resetForm();
+        setTransactions([]);
+        resetFormAndType();
+    };
 
+    const printSilently = (base64Pdf) => {
+        const iframe = document.createElement("iframe");
+        iframe.style.position = "fixed";
+        iframe.style.right = "0";
+        iframe.style.bottom = "0";
+        iframe.style.width = "0";
+        iframe.style.height = "0";
+        iframe.style.border = "none";
+        iframe.src = `data:application/pdf;base64,${base64Pdf}`;
+        document.body.appendChild(iframe);
+        iframe.onload = () => {
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                setTimeout(() => document.body.removeChild(iframe), 1000);
+            }, 300);
+        };
     };
 
     return (
@@ -369,7 +379,7 @@ const PaymentComponent = () => {
                         <div className="mt-8 max-w-lg">
                             <div className="mt-12">
                                 <div className="grid gap-4">
-                                    {/* Dropdown for payment method */}
+                                    {/* Dropdown for transaction type */}
                                     <div className="flex flex-col gap-2 w-full">
                                         <SearchableSelect
                                             options={transList}
@@ -391,23 +401,25 @@ const PaymentComponent = () => {
                                                         htmlFor="appNumber"
                                                         className="text-sm font-medium text-gray-700"
                                                     >
-                                                        {transType === "Tuition Fee"
-                                                            ? <>Student Number</>
-                                                            : <>Application Number</>
-                                                        }
+                                                        {transType === "Tuition Fee" ? (
+                                                            <>Student Number</>
+                                                        ) : (
+                                                            <>Application Number</>
+                                                        )}
                                                     </label>
                                                     <SearchBoxAppNo
                                                         label="Search Student"
-                                                        placeholder={transType === "Tuition Fee"
-                                                            ? "Search by student number or fullname..."
-                                                            : "Search by application number or fullname..."
+                                                        placeholder={
+                                                            transType === "Tuition Fee"
+                                                                ? "Search by student number or fullname..."
+                                                                : "Search by application number or fullname..."
                                                         }
                                                         required
                                                         options={studentApp}
-                                                        value={selectedStudent}          // ✅ bind the value
+                                                        value={selectedStudent}
                                                         onSelect={(student) => {
                                                             handleStudentSelect(student);
-                                                            setSelectedStudent(student); // ✅ update selectedStudent state
+                                                            setSelectedStudent(student);
                                                         }}
                                                     />
                                                     {errors && (
@@ -415,43 +427,6 @@ const PaymentComponent = () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            {/* {transType == "Enrollment Fee" && (
-                                                <>
-                                                    <div className="flex flex-col gap-2 w-full">
-                                                        <SearchableSelect
-                                                            options={planList}
-                                                            value={planDropdown}
-                                                            onChange={setEnrollmentPlan}
-                                                            placeholder="-- Select Plan Type --"
-                                                            label="Select Plan Type"
-                                                        />
-                                                    </div>
-                                                    {selectedPlanGroup && (
-                                                        <table className="w-full border mt-4">
-                                                            <thead>
-                                                                <tr className="bg-gray-100">
-                                                                    <th className="border p-2">Plan</th>
-                                                                    <th className="border p-2">Amount</th>
-                                                                    <th className="border p-2">Date of Payment</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody>
-                                                                {filteredPlans.map(item => (
-                                                                    <tr key={item.TuitionChildId}>
-                                                                        <td className="border p-2">{item.PlanName}</td>
-                                                                        <td className="border p-2">{item.Amount}</td>
-                                                                        <td className="border p-2">
-                                                                            {item.DateOfPayment
-                                                                                ? new Date(item.DateOfPayment).toLocaleDateString()
-                                                                                : "-"}
-                                                                        </td>
-                                                                    </tr>
-                                                                ))}
-                                                            </tbody>
-                                                        </table>
-                                                    )}
-                                                </>
-                                            )} */}
 
                                             <div className="flex flex-col gap-2 w-full">
                                                 <label
@@ -488,27 +463,25 @@ const PaymentComponent = () => {
                                             </div>
                                             <div className="flex flex-col gap-2 w-full">
                                                 <label
-                                                    htmlFor="amount"
+                                                    htmlFor="price"
                                                     className="text-sm font-medium text-gray-700"
                                                 >
                                                     Price
                                                 </label>
                                                 <input
-                                                    id="amount"
+                                                    id="price"
                                                     type="number"
                                                     placeholder="Enter Amount."
-                                                    className={`px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg`}
+                                                    className="px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg"
                                                     value={transType === "Assessment Plan" ? planAmount : amountValue}
                                                     readOnly
                                                 />
-
                                             </div>
                                             <div className="flex flex-col gap-2 w-full">
                                                 <label
                                                     htmlFor="amount"
                                                     className="text-sm font-medium text-gray-700"
                                                 >
-
                                                     Amount
                                                 </label>
                                                 <input
@@ -531,9 +504,6 @@ const PaymentComponent = () => {
                                                         placeholder="-- Select Mode of Payment --"
                                                         label="Select Mode Of Payment"
                                                     />
-                                                    {isAmount && (
-                                                        <p className="text-red-500 text-sm mt-1">{amountError}</p>
-                                                    )}
                                                 </div>
                                                 {paymentMode?.value == "Check" && (
                                                     <div className="flex flex-col gap-2 w-full">
@@ -541,7 +511,6 @@ const PaymentComponent = () => {
                                                             htmlFor="checkNumber"
                                                             className="text-sm font-medium text-gray-700"
                                                         >
-
                                                             Check Number
                                                         </label>
                                                         <input
@@ -563,15 +532,27 @@ const PaymentComponent = () => {
                                             <div className="mt-8 flex gap-4">
                                                 <button
                                                     type="button"
-                                                    onClick={handlePrint}
-                                                    className="w-40 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 tracking-wide cursor-pointer"
+                                                    onClick={addTransaction}
+                                                    className="w-48 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-600 tracking-wide cursor-pointer"
                                                 >
-                                                    <Printer className="w-5 h-5" />
-                                                    Print
+                                                    + Add Transaction
                                                 </button>
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* Always-visible Print button, enabled once there's something to print */}
+                                    <div className="mt-4 flex gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={handlePrint}
+                                            disabled={transactions.length === 0 && !transType}
+                                            className="w-40 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <Printer className="w-5 h-5" />
+                                            Print
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -586,65 +567,77 @@ const PaymentComponent = () => {
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Daily Starting Balance
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(dailyBalance.Amount).toFixed(2)}
+                                    ₱{Number(dailyBalance.Amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                                 Current Balance
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(realtimeBalance.Amount).toFixed(2)}
+                                    ₱{Number(realtimeBalance.Amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </li>
-                            < hr />
+                            <hr />
                         </ul>
-                        <h2 className="text-2xl font-semibold text-slate-900">
+
+                        <h2 className="text-2xl font-semibold text-slate-900 mt-6">
                             Payment Information
                         </h2>
-                        <ul className="text-slate-500 font-medium mt-8 space-y-4">
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                <strong>
-                                    {
-                                        transType === "Assessment Plan"
+
+                        {/* NEW: list of added transactions */}
+                        {transactions.length > 0 && (
+                            <div className="mt-4 border rounded-md divide-y bg-white overflow-hidden">
+                                {transactions.map((t) => (
+                                    <div
+                                        key={t.id}
+                                        className="flex items-center justify-between text-sm p-3"
+                                    >
+                                        <div>
+                                            <div className="font-semibold text-slate-900">
+                                                {t.transType === "Assessment Plan"
+                                                    ? `${t.transType} - ${t.planName}`
+                                                    : t.transType}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {t.referenceNumber} — {t.fullName}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <span className="font-semibold text-slate-900">
+                                                ₱{Number(t.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeTransaction(t.id)}
+                                                className="text-red-500 hover:text-red-600"
+                                                title="Remove"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <ul className="text-slate-500 font-medium mt-4 space-y-4">
+                            {transactions.length === 0 && (
+                                <li className="flex flex-wrap gap-4 text-sm">
+                                    <strong>
+                                        {transType === "Assessment Plan"
                                             ? `${transType} - ${assessmentData[0]?.PlanName ?? ""}`
-                                            : transType
-                                    }
-                                </strong>
-
-                                {/* <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{priceToUse.toFixed(2)}
-                                </span> */}
-                            </li>
-                            {assessmentData.map((item, index) => (
-                                <li key={index} className="flex flex-wrap gap-4 text-sm">
-                                    {
-                                        transType === "Assessment Plan"
-                                            ? item.NumberOfPayment
-                                            : item.transType
-                                    }
-
-                                    <span className="ml-auto font-semibold text-slate-900">
-                                        ₱{Number(item.Amount).toFixed(2)}
-                                    </span>
-                                    <span className="ml-auto font-semibold text-slate-900">
-                                        {new Date(item.DateOfPayment).toLocaleDateString()}
-                                    </span>
+                                            : transType || "No transaction added yet"}
+                                    </strong>
                                 </li>
-                            ))}
-                            {/* <li className="flex flex-wrap gap-4 text-sm">
-                                First Payment
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{priceToUse.toFixed(2)}
-                                </span>
+                            )}
 
-                            </li> */}
                             <li className="flex flex-wrap gap-4 text-sm">
-                                Amount{" "}
+                                Current Entry Amount{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountToPay || 0).toFixed(2)}
+                                    ₱{Number(amountToPay || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </li>
                             <li className="flex flex-wrap gap-4 text-sm">
                                 Change{" "}
                                 <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(change || 0).toFixed(2)}
+                                    ₱{Number(change || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                             </li>
                             <li className="flex flex-wrap gap-4 text-sm">
@@ -661,15 +654,21 @@ const PaymentComponent = () => {
                                     </span>
                                 </li>
                             )}
+                            <li className="flex flex-wrap gap-4 text-sm border-t border-gray-300 pt-4">
+                                Added Transactions Subtotal{" "}
+                                <span className="ml-auto font-semibold text-slate-900">
+                                    ₱{transactionsTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            </li>
                             <li className="flex flex-wrap gap-4 text-[15px] font-semibold text-slate-900 border-t border-gray-300 pt-4">
-
                                 Total{" "}
-                                <span className="ml-auto">₱{Number(totalAmount).toFixed(2)}</span>
+                                <span className="ml-auto">₱{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </li>
                         </ul>
                     </div>
                 </div>
             </div>
+
             <ModalComponent
                 isOpen={isOpenModal}
                 onClose={() => setIsOpenModal(false)}
@@ -722,25 +721,12 @@ const PaymentComponent = () => {
                 body={"Are you sure you want to print?"}
                 buttons={[
                     {
-                        label: "Yes",
+                        label: "Submit & Print",
                         type: "green",
                         onClick: async () => {
-
                             if (receiptData?.PdfBase64) {
                                 handleSubmitOrNumber();
-                                const pdfWindow = window.open("", "_blank");
-                                if (pdfWindow) {
-                                    pdfWindow.document.write(
-                                        `<iframe width='100%' height='100%' src='data:application/pdf;base64,${receiptData.PdfBase64}'></iframe>`
-                                    );
-
-                                    // Wait a bit before calling print (ensure iframe is loaded)
-                                    setTimeout(() => {
-                                        pdfWindow.focus();
-                                        pdfWindow.print();
-                                    }, 500);
-                                }
-
+                                printSilently(receiptData.PdfBase64);
                             }
                         },
                     },
@@ -752,7 +738,6 @@ const PaymentComponent = () => {
                 ]}
                 maxHeight="100vh"
             />
-
         </div>
     );
 };

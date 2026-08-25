@@ -695,7 +695,7 @@ export const fetchSectionListByLevelIdData = (levelId) => async (dispatch) => {
     dispatch(fetchSectionListByLevelIdRequest());
     try{
         const token = getToken();
-        const url = `${baseUrl}/sru/get-section-list-by-level-id?$levelId=${levelId}`;
+        const url = `${baseUrl}/sru/get-section-list-by-level-id?levelId=${levelId}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -708,7 +708,7 @@ export const fetchSectionListByLevelIdData = (levelId) => async (dispatch) => {
         const res = await response.json();
 
         dispatch(fetchSectionListByLevelIdSuccess(res));
-        return { ok: true, data: res.data };
+        return { ok: true, data: res };
     }
     catch(error){
         dispatch(fetchSectionListByLevelIdFailure(error.message));
