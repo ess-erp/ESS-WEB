@@ -83,7 +83,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     {
       name: "Chart of Accounts",
       icon: Bell,
-      path: "/chartofaccounts",
+      path: "/accounting/chartofaccounts",
     },
     // Dynamic Ticket Visibility
     ...(!shouldHideTickets(user?.UserRoleId)
