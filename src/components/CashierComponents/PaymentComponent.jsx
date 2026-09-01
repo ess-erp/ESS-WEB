@@ -321,12 +321,12 @@ const PaymentComponent = () => {
                   ];
 
         const payload = {
-            UserId: allTransactions[0].studentId,
-            ReferenceId: allTransactions[0].referenceNumber,
+            UserId: allTransactions[0].StudentId,
+            ReferenceId: allTransactions[0].ReferenceNumber,
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
-            CreatedByUserId: userId,
-            TuitionChildId: allTransactions[0].tuitionChildId,
+            CreatedByUserId: UserId,
+            TuitionChildId: allTransactions[0].TuitionChildId,
             TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
             OrChildDtos: allTransactions.map((t) => ({
                 BalId: dailyBalance.BalId,

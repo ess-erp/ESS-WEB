@@ -36,6 +36,7 @@ const AppFormOthersComponent = ({ appId }) => {
     const [isOpenTestPermitModal, setIsOpenTestPermitModal] = useState(false);
     const [isOpenAdmissionTestResultModal, setIsOpenAdmissionTestResultModal] = useState(false);
     const [isOpenGeneratedLetter, setIsOpenGeneratedLetter] = useState(false);
+    const [letterBlobUrl, setLetterBlobUrl] = useState(null);
 
     const testPermitState = useSelector((state) => state.admission.testPermitState);
     const { loading: permitLoading, data: permitData } = testPermitState || {};
@@ -47,6 +48,21 @@ const AppFormOthersComponent = ({ appId }) => {
 
     const generatedLetterState = useSelector((state) => state.admission.generatedLetterState);
     const { loading: generatedLetterLoading, data: generatedLetterData } = generatedLetterState || {};
+
+    // Convert base64 PDF to a blob URL so the iframe can render it (browsers block data: URIs in iframes)
+    useEffect(() => {
+        if (generatedLetterData?.PdfBase64 && isOpenGeneratedLetter) {
+            const binary = atob(generatedLetterData.PdfBase64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const blob = new Blob([bytes], { type: "application/pdf" });
+            const url = URL.createObjectURL(blob);
+            setLetterBlobUrl(url);
+            return () => URL.revokeObjectURL(url);
+        } else {
+            setLetterBlobUrl(null);
+        }
+    }, [generatedLetterData, isOpenGeneratedLetter]);
 
     const religionWaverState = useSelector((state) => state.admission.religionWaverState || {});
     const { loading: religionWaverLoading, data: religionWaverData } = religionWaverState || {};
@@ -135,6 +151,7 @@ const AppFormOthersComponent = ({ appId }) => {
 
         switch (row.TempName) {
             case "Admission Test Result":
+                console.log(row.OthersTableId);
                 dispatch(fetchAdmissionTestResultData(row.OthersTableId));
                 setIsOpenAdmissionTestResultModal(true);
                 break;
@@ -527,8 +544,12 @@ const AppFormOthersComponent = ({ appId }) => {
                                         <span className="font-semibold text-gray-700"> {generatedLetterData.MothersEmail}</span>
                                     </span> */}
                                     <span>
+                                        Parent's Fullname:{""}
+                                        <span className="font-semibold text-gray-700"> {generatedLetterData.ParentFullName}</span>
+                                    </span>
+                                    <span>
                                         Parent's Email:{""}
-                                        <span className="font-semibold text-gray-700"> {generatedLetterData.PrimaryEmail}</span>
+                                        <span className="font-semibold text-gray-700"> {generatedLetterData.ParentEmail}</span>
                                     </span>
                                     <span>
                                         Last sent:{" "}
@@ -557,15 +578,11 @@ const AppFormOthersComponent = ({ appId }) => {
                                     <div className="flex items-center justify-center h-[40vh] text-gray-400">
                                         Loading preview...
                                     </div>
-                                ) : generatedLetterData?.PdfBase64 ? (
+                                ) : letterBlobUrl ? (
                                     <iframe
-                                        src={`data:application/pdf;base64,${generatedLetterData?.PdfBase64}`}
+                                        src={letterBlobUrl}
                                         className="w-full h-[40vh]"
-                                        title="Letter"
-                                        allow="fullscreen"
-                                        type="application/pdf"
-                                        sandbox=""
-                                    />
+                                        title="Letter" />
                                 ) : (
                                     <div className="flex items-center justify-center h-[40vh] text-gray-400">
                                         No preview available

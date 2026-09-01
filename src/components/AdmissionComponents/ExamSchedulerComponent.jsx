@@ -69,20 +69,34 @@ const ExamSchedulerComponent = ({ appId, levelId }) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const form = {
-        SchedId: selectedExam?.SchedId || 0,
-        SchedTempId: selectedExam?.SchedTempId || 0,
-        RoomId: selectedExam?.RoomId || 0,
-        RoomTemp: selectedExam?.RoomTempId || 0,
-        AppId: appId,
-        CreatedByUserId: user.UserId,
-        ExamDate: formData?.examDate || null,
-        ExamResultDate: formData?.examResultDate || null,
-    };
+    // const form = {
+    //     SchedId: selectedExam?.SchedId || 0,
+    //     SchedTempId: selectedExam?.SchedTempId || 0,
+    //     RoomId: selectedExam?.RoomId || 0,
+    //     RoomTemp: selectedExam?.RoomTempId || 0,
+    //     AppId: appId,
+    //     CreatedByUserId: user.UserId,
+    //     ExamDate: formData?.examDate || null,
+    //     ExamResultDate: formData?.examResultDate || null,
+    // };
     const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
 
     const handleSubmit = async () => {
         setIsLoadingModalOpen(true);
+
+
+        const form = {
+            SchedId: selectedExam?.SchedId || 0,
+            SchedTempId: selectedExam?.SchedTempId || 0,
+            RoomId: selectedExam?.RoomId || 0,
+            RoomTemp: selectedExam?.RoomTempId || 0,
+            AppId: appId,
+            CreatedByUserId: user.UserId,
+            ExamDate: formData?.examDate || null,
+            ExamResultDate: formData?.examResultDate || null,
+        };
+        // console.log(selectedExam);
+        // console.log(form);
         const res = await dispatch(fetchInsertExamScheduleData(form));
         if(res.ok){
             if(isSuccessModalOpen == false) {
