@@ -91,7 +91,7 @@ const PaymentComponent = () => {
                 dispatch(fetchStudentAppData(status));
                 break;
             case "Assessment Plan":
-                status = "O-ASSESSMENT-PLAN";
+                status = "O-RESERVED";
                 dispatch(fetchStudentAppData(status));
                 break;
             case "Tuition Fee":
@@ -319,14 +319,14 @@ const PaymentComponent = () => {
                           orNumberUsed: orNumberData.LatestOrAvailable,
                       },
                   ];
-
+        console.log(allTransactions);
         const payload = {
-            UserId: allTransactions[0].StudentId,
-            ReferenceId: allTransactions[0].ReferenceNumber,
+            UserId: allTransactions[0].studentId,
+            ReferenceId: allTransactions[0].referenceNumber,
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
-            CreatedByUserId: UserId,
-            TuitionChildId: allTransactions[0].TuitionChildId,
+            CreatedByUserId: userId,
+            TuitionChildId: allTransactions[0].tuitionChildId,
             TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
             OrChildDtos: allTransactions.map((t) => ({
                 BalId: dailyBalance.BalId,
@@ -339,7 +339,7 @@ const PaymentComponent = () => {
                 FromTransaction: t.transType,
             })),
         };
-
+        console.log(payload);
         dispatch(fetchInsertSubmitPaymentData(payload));
         setIsOpenModal(true);
         setIsWarningModal(false);
