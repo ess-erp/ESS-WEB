@@ -4,6 +4,7 @@ import {
     FETCH_INSERTORSERIES_REQUEST, FETCH_INSERTORSERIES_SUCCESS, FETCH_INSERTORSERIES_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_REQUEST, FETCH_INSERT_TABLE_OF_FEES_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_FAILURE,
     FETCH_INSERT_TUITION_FEE_REQUEST, FETCH_INSERT_TUITION_FEE_SUCCESS, FETCH_INSERT_TUITION_FEE_FAILURE,
+    FETCH_INSERT_MISCELLANEOUS_REQUEST, FETCH_INSERT_MISCELLANEOUS_SUCCESS, FETCH_INSERT_MISCELLANEOUS_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -154,3 +155,29 @@ export const fetchInsertTuitioFeeData = (formData) => async (dispatch) => {
         return { ok: false, error};
     }
 }; 
+// insert miscellaneous fees
+export const fetchInsertMiscellaneousRequest = () => ({ type: FETCH_INSERT_MISCELLANEOUS_REQUEST });
+export const fetchInsertMiscellaneousSuccess = (data) => ({ type: FETCH_INSERT_MISCELLANEOUS_SUCCESS, payload: data });
+export const fetchInsertMiscellaneousFailure = (error) => ({ type: FETCH_INSERT_MISCELLANEOUS_FAILURE, payload: error });
+
+export const fetchInsertMiscellaneousData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertMiscellaneousRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/finance/insert-miscellaneous`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+        const res = await response.json();
+        dispatch(fetchInsertMiscellaneousSuccess(res));
+        return { ok: true, data: res.data };
+    } catch (error) {
+        dispatch(fetchInsertMiscellaneousFailure(error.message));
+        return { ok: false, error };
+    }
+};

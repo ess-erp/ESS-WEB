@@ -8,10 +8,11 @@ import {
     FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
     FETCH_STUDENT_STATUS_REQUEST, FETCH_STUDENT_STATUS_SUCCESS, FETCH_STUDENT_STATUS_FAILURE,
     FETCH_PAYMENT_TRANSACTION_TYPE_REQUEST, FETCH_PAYMENT_TRANSACTION_TYPE_SUCCESS, FETCH_PAYMENT_TRANSACTION_TYPE_FAILURE,
-    FETCH_STUDENT_OR_NUMBER_REQUEST, FETCH_STUDENT_OR_NUMBER_SUCCESS, FETCH_STUDENT_OR_NUMBER_FAILURE,
+    // FETCH_STUDENT_OR_NUMBER_REQUEST, FETCH_STUDENT_OR_NUMBER_SUCCESS, FETCH_STUDENT_OR_NUMBER_FAILURE,
     FETCH_INSERT_PAYMENT_REQUEST, FETCH_INSERT_PAYMENT_SUCCESS, FETCH_INSERT_PAYMENT_FAILURE,
     FETCH_PARENT_TRANSACTION_HISTORY_REQUEST, FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS,FETCH_PARENT_TRANSACTION_HISTORY_FAILURE,
-    FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
+    FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
+    FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
 } from "./ActionType";
 
 import { getToken } from "../../services/tokenServices";
@@ -315,30 +316,30 @@ export const fetchPaymentTransactionTypeData = () => async (dispatch) => {
 };
 
 
-// STUDENT OR NUMBER
-export const fetchStudentOrNumberRequest = () => ({ type: FETCH_STUDENT_OR_NUMBER_REQUEST });
-export const fetchStudentOrNumberSuccess = (data) => ({ type: FETCH_STUDENT_OR_NUMBER_SUCCESS, payload: data });
-export const fetchStudentOrNumberFailure = (error) => ({ type: FETCH_STUDENT_OR_NUMBER_FAILURE, payload: error });
+// // STUDENT OR NUMBER
+// export const fetchStudentOrNumberRequest = () => ({ type: FETCH_STUDENT_OR_NUMBER_REQUEST });
+// export const fetchStudentOrNumberSuccess = (data) => ({ type: FETCH_STUDENT_OR_NUMBER_SUCCESS, payload: data });
+// export const fetchStudentOrNumberFailure = (error) => ({ type: FETCH_STUDENT_OR_NUMBER_FAILURE, payload: error });
  
-export const fetchStudentOrNumberData = (userId) => async (dispatch) => {
-    dispatch(fetchStudentOrNumberRequest());
+// export const fetchStudentOrNumberData = (userId) => async (dispatch) => {
+//     dispatch(fetchStudentOrNumberRequest());
     
-    try {
-        const token = getToken();
-        const url = `${baseUrl}/parent/student-or-number?userId=${userId}`;
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        });
-        const res = await response.json();
+//     try {
+//         const token = getToken();
+//         const url = `${baseUrl}/parent/student-or-number?userId=${userId}`;
+//         const response = await fetch(url, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+//         });
+//         const res = await response.json();
 
-        dispatch(fetchStudentOrNumberSuccess(res));
-        return { ok: true, data: res };
-    } catch (error) {
-        dispatch(fetchStudentOrNumberFailure(error.message));
-        return { ok: false, error };
-    }
-};
+//         dispatch(fetchStudentOrNumberSuccess(res));
+//         return { ok: true, data: res };
+//     } catch (error) {
+//         dispatch(fetchStudentOrNumberFailure(error.message));
+//         return { ok: false, error };
+//     }
+// };
 
 
 // INSERT PAYMENT
@@ -398,31 +399,54 @@ export const fetchParentTransactionHistoryData = (StartDate, EndDate, page, page
     };
 };
 
-//Assesment Data
-export const fetchStudentAppAssessmentRequest = () => ({ type: FETCH_STUDENT_APP_ASSESSMENT_REQUEST });
-export const fetchStudentAppAssessmentSuccess = (data) => ({ type: FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, payload: data });
-export const fetchStudentAppAssessmentFailure = (error) => ({ type: FETCH_STUDENT_APP_ASSESSMENT_FAILURE, payload: error });
- 
-export const fetchStudentAppAssessmentData = (appId) => async (dispatch) => {
-    dispatch(fetchStudentAppAssessmentRequest());
+// Student Pending Transaction
+export const fetchStudentPendingTransactionRequest = () => ({ type: FETCH_STUDENT_PENDING_TRANSACTION_REQUEST });
+export const fetchStudentPendingTransactionSuccess = (data) => ({ type: FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, payload: data });
+export const fetchStudentPendingTransactionFailure = (error) => ({ type: FETCH_STUDENT_PENDING_TRANSACTION_FAILURE, payload: error });
+
+export const fetchStudentPendingTransactionData = (appId) => async (dispatch) => {
+    dispatch(fetchStudentPendingTransactionRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/parent/parent-assessment-plan?appId=${appId}`;
+        const url = `${baseUrl}/parent/student-pending-transaction?appId=${appId}`;
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` },
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
         });
         const res = await response.json();
-
-        dispatch(fetchStudentAppAssessmentSuccess(res));
+        dispatch(fetchStudentPendingTransactionSuccess(res));
         return { ok: true, data: res };
     } catch (error) {
-        dispatch(fetchStudentAppAssessmentFailure(error.message));
+        dispatch(fetchStudentPendingTransactionFailure(error.message));
         return { ok: false, error };
     }
 };
 
 
+export const fetchSISeriesRequest = () => ({ type: FETCH_SI_SERIES_REQUEST });
+export const fetchSISeriesSuccess = (data) => ({ type: FETCH_SI_SERIES_SUCCESS, payload: data });
+export const fetchSISeriesFailure = (error) => ({ type: FETCH_SI_SERIES_FAILURE, payload: error });
 
+export const fetchSISeriesData = (userId) => async (dispatch) => {
+    dispatch(fetchSISeriesRequest());
+     try {
+        const token = getToken();
+        const url = `${baseUrl}/parent/get-si-series?userId=${userId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        const res = await response.json();
+        dispatch(fetchSISeriesSuccess(res));
+        return { ok: true, data: res };
+    } catch (error) {
+        dispatch(fetchSISeriesFailure(error.message));
+        return { ok: false, error };
+    }
+};

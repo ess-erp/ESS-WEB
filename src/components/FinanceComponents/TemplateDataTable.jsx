@@ -11,6 +11,7 @@ import {
     fetchInsertTableOfFeesData,
     fetchInsertOrSeriesData,
     fetchInsertTuitioFeeData,
+    fetchInsertMiscellaneousData,
 } from "../../states/FinanceState/Action";
 import {
     fetchLevelData,
@@ -165,14 +166,9 @@ const TemplateDataTable = ({ selectedStatus }) => {
         const activeStatus = newStatus ? "Y" : "DR";
 
         try {
-            const result = await dispatch(
-                fetchUpdateRowTemplateData(
-                    selectedRow.TemplateId,
-                    selectedRow.TempType,
-                    CreatedByUserId,
-                    activeStatus
-                )
-            );
+            // TODO: implement fetchUpdateRowTemplateData in FinanceState/Action.js
+            console.warn("fetchUpdateRowTemplateData not yet implemented");
+            return;
 
             if (result.ok) {
                 setTable((prev) =>
@@ -214,9 +210,14 @@ const TemplateDataTable = ({ selectedStatus }) => {
         addFeesFormRow,
         deleteBookletFormRow,
         deleteFeesFormRow,
-        setFileUpload,
         errors,
         setErrors,
+        miscForm,
+        setMiscFormField,
+        addMiscRow,
+        deleteMiscRow,
+        updateMiscRow,
+        updateMiscAmount,
     } = useTemplateStore();
 
     const openSubmitModal = () => {
@@ -256,6 +257,18 @@ const TemplateDataTable = ({ selectedStatus }) => {
                 });
                 break;
 
+            case "miscellaneous":
+                if (!miscForm.tempName?.trim())
+                    newErrors["miscTempName"] = "Template name is required";
+                if (!miscForm.schoolYear?.trim())
+                    newErrors["miscSchoolYear"] = "School year is required";
+                if (miscForm.rows.length === 0)
+                    newErrors["miscRows"] = "Add at least one fee item";
+                miscForm.rows.forEach((row, i) => {
+                    if (!row.feeName?.trim())
+                        newErrors[`miscFeeName-${i}`] = "Fee name is required";
+                });
+                break;
             case "tuitionfee":
                 if (!tuitionForm.tempName?.trim())
                     newErrors["tempName"] = "Name of template is required";
@@ -492,6 +505,43 @@ const TemplateDataTable = ({ selectedStatus }) => {
                     setIsErrorModalOpen(true);
                 }
                 break;
+            case "miscellaneous":
+                payload = {
+                    TempName: miscForm.tempName,
+                    SchoolYear: miscForm.schoolYear,
+                    CreatedByUserId: currentUserId,
+                    MiscellaneousChildDtos: miscForm.rows.map((row) => ({
+                        FeeName: row.feeName,
+                        ToddlerAmount: String(row.amounts?.["Toddler"] || ""),
+                        NurseryAmount: String(row.amounts?.["Nursery"] || ""),
+                        KinderAmount: String(row.amounts?.["Kinder"] || ""),
+                        Grade1Amount: String(row.amounts?.["Grade 1"] || ""),
+                        Grade2Amount: String(row.amounts?.["Grade 2"] || ""),
+                        Grade3Amount: String(row.amounts?.["Grade 3"] || ""),
+                        Grade4Amount: String(row.amounts?.["Grade 4"] || ""),
+                        Grade5Amount: String(row.amounts?.["Grade 5"] || ""),
+                        Grade6Amount: String(row.amounts?.["Grade 6"] || ""),
+                        Grade7Amount: String(row.amounts?.["Grade 7"] || ""),
+                        Grade8Amount: String(row.amounts?.["Grade 8"] || ""),
+                        Grade9Amount: String(row.amounts?.["Grade 9"] || ""),
+                        Grade10Amount: String(row.amounts?.["Grade 10"] || ""),
+                        Grade11Amount: String(row.amounts?.["Grade 11"] || ""),
+                        Grade12Amount: String(row.amounts?.["Grade 12"] || ""),
+                    })),
+                };
+                res = await dispatch(fetchInsertMiscellaneousData(payload));
+                if (res.ok) {
+                    setIsLoadingModalOpen(false);
+                    setIsSuccessModalOpen(true);
+                    setModalBody("Done saving the miscellaneous fees template.");
+                    if (isSuccessModalOpen === false) {
+                        setTimeout(() => window.location.reload(), 3000);
+                    }
+                } else {
+                    setIsLoadingModalOpen(false);
+                    setIsErrorModalOpen(true);
+                }
+                break;
         }
         console.log(payload);
     };
@@ -562,6 +612,9 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 </option>
                                 <option value="tuitionfee">
                                     Tuition Fee Table
+                                </option>
+                                <option value="miscellaneous">
+                                    Miscellaneous Fees
                                 </option>
                             </select>
                         </div>
@@ -1343,6 +1396,280 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                     + Add Row
                                 </button> */}
                             </div>
+                        )}
+
+                        {templateType === "miscellaneous" && (
+                            <div>
+                                <div className="flex gap-4 mb-4">
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-gray-700">Template Name</label>
+                                        <input
+                                            type="text"
+                                            value={miscForm.tempName}
+                                            placeholder="e.g. Tuition and Miscellaneous Fees"
+                                            onChange={(e) => setMiscFormField("tempName", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.miscTempName ? "border-red-500" : ""}`}
+                                        />
+                                        {errors.miscTempName && <p className="text-red-500 text-sm">{errors.miscTempName}</p>}
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-gray-700">School Year</label>
+                                        <input
+                                            type="text"
+                                            value={miscForm.schoolYear}
+                                            placeholder="e.g. SY 2026 - 2027"
+                                            onChange={(e) => setMiscFormField("schoolYear", e.target.value)}
+                                            className={`w-full rounded-lg border p-2 ${errors.miscSchoolYear ? "border-red-500" : ""}`}
+                                        />
+                                        {errors.miscSchoolYear && <p className="text-red-500 text-sm">{errors.miscSchoolYear}</p>}
+                                    </div>
+                                </div>
+
+                                <div className="overflow-x-auto border rounded-lg" style={{ position: "relative" }}>
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-gray-100">
+                                            <tr>
+                                                <th className="border px-3 py-2 text-left font-semibold text-gray-700 min-w-[180px] bg-gray-100 z-20" style={{ position: "sticky", left: 0, boxShadow: "2px 0 4px rgba(0,0,0,0.08)" }}>
+                                                    Miscellaneous Fees
+                                                </th>
+                                                <th key="Toddler" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Toddler
+                                                </th>
+                                                <th key="Nursery" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Nursery
+                                                </th>
+                                                <th key="Kinder" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Kinder
+                                                </th>
+                                                <th key="Grade 1" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 1
+                                                </th>
+                                                <th key="Grade 2" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 2
+                                                </th>
+                                                <th key="Grade 3" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 3
+                                                </th>
+                                                <th key="Grade 4" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 4
+                                                </th>
+                                                <th key="Grade 5" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 5
+                                                </th>
+                                                <th key="Grade 6" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 6
+                                                </th>
+                                                <th key="Grade 7" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 7
+                                                </th>
+                                                <th key="Grade 8" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 8
+                                                </th>
+                                                <th key="Grade 9" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 9
+                                                </th>
+                                                <th key="Grade 10" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 10
+                                                </th>
+                                                <th key="Grade 11" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 11
+                                                </th>
+                                                <th key="Grade 12" className="border px-2 py-2 text-center font-semibold text-gray-700 whitespace-nowrap">
+                                                    Grade 12
+                                                </th>
+                                                <th className="border px-2 py-2 w-10"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {miscForm.rows.map((row, index) => (
+                                                <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                                    <td className="border px-2 py-1 min-w-[180px] z-10" style={{ position: "sticky", left: 0, background: index % 2 === 0 ? "#ffffff" : "#f9fafb", boxShadow: "2px 0 4px rgba(0,0,0,0.08)" }}>
+                                                        <input
+                                                            type="text"
+                                                            value={row.feeName ?? ""}
+                                                            placeholder="Fee name"
+                                                            onChange={(e) => updateMiscRow(index, "feeName", e.target.value)}
+                                                            className={`w-full rounded border-0 bg-transparent px-1 py-1 focus:ring-1 focus:ring-blue-400 outline-none ${errors[`miscFeeName-${index}`] ? "ring-1 ring-red-500" : ""}`}
+                                                        />
+                                                    </td>
+                                                    <td key="Toddler" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Toddler"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Toddler", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Nursery" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Nursery"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Nursery", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Kinder" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Kinder"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Kinder", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 1" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 1"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 1", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 2" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 2"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 2", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 3" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 3"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 3", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 4" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 4"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 4", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 5" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 5"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 5", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 6" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 6"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 6", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 7" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 7"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 7", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 8" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 8"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 8", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 9" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 9"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 9", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 10" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 10"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 10", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 11" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 11"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 11", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td key="Grade 12" className="border px-1 py-1">
+                                                        <input
+                                                            type="number"
+                                                            min="0"
+                                                            value={row.amounts?.["Grade 12"] ?? ""}
+                                                            placeholder="-"
+                                                            onChange={(e) => updateMiscAmount(index, "Grade 12", e.target.value)}
+                                                            className="w-20 rounded border-0 bg-transparent px-1 py-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-sm"
+                                                        />
+                                                    </td>
+                                                    <td className="border px-1 py-1 text-center">
+                                                        {miscForm.rows.length > 1 && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => deleteMiscRow(index)}
+                                                                className="p-1 text-red-500 hover:bg-red-100 rounded"
+                                                            >
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {errors.miscRows && <p className="text-red-500 text-sm mt-1">{errors.miscRows}</p>}
+
+                                <button
+                                    type="button"
+                                    onClick={addMiscRow}
+                                    className="mt-3 px-3 py-1 rounded-lg bg-green-700 text-white text-sm flex items-center gap-1"
+                                >
+                                    <Plus size={15} /> Add Row
+                                </button>
+                            </div>
+
                         )}
                     </div>
                 }

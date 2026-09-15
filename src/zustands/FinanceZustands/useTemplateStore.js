@@ -44,6 +44,12 @@ const useTemplateStore = create((set) => ({
         dateOfPaymentD4: "",
     },
 
+    miscForm: {
+        tempName: "",
+        schoolYear: "",
+        rows: [{ feeName: "", amounts: {} }],
+    },
+
     openModal: () => set({ isModalOpen: true }),
     closeModal: () => set({ isModalOpen: false }),
 
@@ -128,6 +134,48 @@ const useTemplateStore = create((set) => ({
         set((state) => ({
             bookletForm: { ...state.bookletForm, fileUpload: file },
         })),
-}));
 
+    setMiscFormField: (field, value) =>
+        set((state) => ({
+            miscForm: { ...state.miscForm, [field]: value },
+        })),
+
+    addMiscRow: () =>
+        set((state) => ({
+            miscForm: {
+                ...state.miscForm,
+                rows: [...state.miscForm.rows, { feeName: "", amounts: {} }],
+            },
+        })),
+
+    deleteMiscRow: (index) =>
+        set((state) => ({
+            miscForm: {
+                ...state.miscForm,
+                rows: state.miscForm.rows.filter((_, i) => i !== index),
+            },
+        })),
+
+    updateMiscRow: (index, field, value) =>
+        set((state) => ({
+            miscForm: {
+                ...state.miscForm,
+                rows: state.miscForm.rows.map((row, i) =>
+                    i === index ? { ...row, [field]: value } : row
+                ),
+            },
+        })),
+
+    updateMiscAmount: (rowIndex, levelKey, value) =>
+        set((state) => ({
+            miscForm: {
+                ...state.miscForm,
+                rows: state.miscForm.rows.map((row, i) =>
+                    i === rowIndex
+                        ? { ...row, amounts: { ...row.amounts, [levelKey]: value } }
+                        : row
+                ),
+            },
+        })),
+}));
 export default useTemplateStore;

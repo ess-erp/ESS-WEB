@@ -1,688 +1,543 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import DataTable from "react-data-table-component";
 import { motion, AnimatePresence } from "framer-motion";
+import { Trash2, Plus, Receipt, CheckCircle } from "lucide-react";
 import BlueBtn from "../ButtonsComponents/BlueBtn";
+import GreenBtn from "../ButtonsComponents/GreenBtn";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
+import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import {
   fetchListOfStudentTableData,
-  fetchStudentOrNumberData,
+  // fetchStudentOrNumberData,
+  fetchStudentPendingTransactionData,
   fetchInsertPaymentData,
-  fetchStudentAppAssessmentData,
-  fetchParentTransactionHistoryData,
+  fetchSISeriesData,
 } from "../../states/ParentState/Action";
-import GreenBtn from "../ButtonsComponents/GreenBtn";
+import { fetchTransactionTypeData } from "../../states/CashierState/Action";
 
+const fmt = (n) =>
+  Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const SkeletonLine = ({ w = "w-full", h = "h-12" }) => (
-  <div className={`${w} ${h} bg-gray-200 rounded-lg animate-pulse`} />
-);
+const READONLY =
+  "w-full px-3 py-2.5 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600 cursor-not-allowed select-none focus:outline-none";
 
-const SkeletonLabel = ({ w = "w-28" }) => (
-  <div className={`${w} h-4 bg-gray-200 rounded animate-pulse mb-1`} />
-);
+const INPUT =
+  "w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition bg-white text-gray-800";
 
-const SkeletonField = () => (
-  <div className="flex flex-col gap-1">
-    <SkeletonLabel />
-    <SkeletonLine />
-  </div>
-);
-
-const SkeletonSummaryRow = () => (
-  <div className="flex justify-between items-center">
-    <div className="w-28 h-4 bg-gray-200 rounded animate-pulse" />
-    <div className="w-20 h-4 bg-gray-300 rounded animate-pulse" />
-  </div>
-);
-
-const PaymentStatusBadge = ({ amountToPay, priceAmount }) => {
-  const paid = parseFloat(amountToPay) || 0;
-  if (!paid || !priceAmount) return null;
-
-  const isFullyPaid = paid >= priceAmount;
+// Receipt panel
+const ReceiptPanel = ({ studentRow, transactions, orNumber }) => {
+  const total = transactions.reduce((s, t) => s + t.amount, 0);
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wide ${
-        isFullyPaid
-          ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
-          : "bg-amber-100 text-amber-700 border border-amber-200"
-      }`}
-    >
-      <span
-        className={`w-1.5 h-1.5 rounded-full ${
-          isFullyPaid ? "bg-emerald-500" : "bg-amber-500"
-        }`}
-      />
-      {isFullyPaid ? "Fully Paid" : "Partial Payment"}
-    </span>
-  );
-};
-
-
-const SummaryCard = ({
-  transactionLabel,
-  pendingRow,
-  priceAmount,
-  amountToPay,
-  planName,
-}) => {
-  const paid       = parseFloat(amountToPay) || 0;
-  const remaining  = Math.max(0, priceAmount - paid);
-  const change     = Math.max(0, paid - priceAmount);
-  const refId =
-    transactionLabel === "Tuition Fee"
-      ? pendingRow.StudentNumber || "—"
-      : pendingRow.AppNumber || "—";
-
-  const fmt = (n) =>
-    n != null && n !== ""
-      ? `₱${Number(n).toLocaleString("en-PH", { minimumFractionDigits: 2 })}`
-      : "—";
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden lg:sticky lg:top-0 self-start">
-      <div className="px-5 py-4">
-        <h2 className="text-2xl font-semibold text-slate-900"> Payment Information </h2>
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <h3 className="text-white font-bold text-lg leading-tight">
-            {transactionLabel || "—"}
-          </h3>
-          <PaymentStatusBadge amountToPay={paid} priceAmount={priceAmount} />
-        </div>
+    <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-5 font-mono text-sm sticky top-0">
+      <div className="text-center mb-4">
+        <Receipt className="mx-auto mb-1 text-green-600" size={28} />
+        <p className="font-bold text-base text-gray-800 uppercase tracking-widest">Online Payment</p>
+        <p className="text-xs text-gray-400">Receipt Preview</p>
       </div>
-
-      {/* Card body */}
-      <div className="px-5 py-4 space-y-3">
-        <div className="flex justify-between items-start text-sm gap-2">
-          <span className="text-gray-500 shrink-0">
-            {transactionLabel === "Tuition Fee"
-              ? "Student No."
-              : "App No."}
-          </span>
-          <span className="font-semibold text-gray-800 text-right break-all">
-            {refId}
+      <div className="border-t border-b border-dashed border-gray-200 py-3 mb-3 space-y-1 text-xs text-gray-600">
+        <div className="flex justify-between">
+          <span className="text-gray-400">Student</span>
+          <span className="font-semibold text-right max-w-[60%] break-words">
+            {studentRow ? `${studentRow.Lname}, ${studentRow.Fname} ${studentRow.Mname || ""}`.trim() : "—"}
           </span>
         </div>
-
-        {planName && (
-          <div className="flex justify-between items-start text-sm gap-2">
-            <span className="text-gray-500 shrink-0">Plan</span>
-            <span className="font-semibold text-gray-800 text-right">{planName}</span>
-          </div>
-        )}
-
-        <div className="border-t border-dashed border-gray-200 pt-3 space-y-3">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500">Total Amount</span>
-            <span className="font-semibold text-gray-800">{fmt(priceAmount)}</span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500">Amount Entered</span>
-            <span className="font-semibold text-gray-800">{paid ? fmt(paid) : "—"}</span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500">Remaining Balance</span>
-            <span
-              className={`font-semibold ${
-                remaining > 0 ? "text-amber-600" : "text-emerald-600"
-              }`}
-            >
-              {paid ? fmt(remaining) : "—"}
-            </span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-gray-500">Change</span>
-            <span className="font-semibold text-emerald-600">
-              {paid && change > 0 ? fmt(change) : "—"}
-            </span>
-          </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">App No.</span>
+          <span className="font-semibold">{studentRow?.AppNumber || "—"}</span>
         </div>
-
-        <div className="border-t border-gray-200 pt-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-bold text-gray-700">Total Due</span>
-            <span className="text-base font-extrabold text-green-700">
-              {fmt(priceAmount)}
-            </span>
-          </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">OR No.</span>
+          <span className="font-semibold">{orNumber || "—"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-gray-400">Date</span>
+          <span className="font-semibold">{new Date().toLocaleDateString("en-PH")}</span>
         </div>
       </div>
-
-      {paid > priceAmount && (
-        <div className="mx-5 mb-4 px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-700 font-medium">
-          ✓ Excess amount of {fmt(change)} will be returned as change.
+      {transactions.length === 0 ? (
+        <p className="text-center text-xs text-gray-300 py-6 italic">No transactions added yet</p>
+      ) : (
+        <div className="space-y-2 mb-3">
+          {transactions.map((t, i) => (
+            <div key={i} className="flex justify-between items-start text-xs">
+              <div className="max-w-[65%]">
+                <p className="font-semibold text-gray-700">{t.label}</p>
+                {t.planName && <p className="text-gray-400">{t.planName}</p>}
+              </div>
+              <span className="font-semibold text-gray-800">₱{fmt(t.amount)}</span>
+            </div>
+          ))}
         </div>
       )}
+      <div className="border-t border-dashed border-gray-200 pt-3">
+        <div className="flex justify-between text-sm font-bold text-gray-900">
+          <span>TOTAL</span>
+          <span className="text-green-700">₱{fmt(total)}</span>
+        </div>
+      </div>
+      <p className="text-center text-[10px] text-gray-300 mt-4 italic">
+        This is a preview — not an official receipt.
+      </p>
     </div>
   );
 };
 
-
+// Payment modal body
 const PaymentModalBody = ({
-  assessmentLoading,
-  assessmentData,
-  transactionLabel,
-  pendingRow,
-  fullName,
-  priceAmount,
-  planName,
-  amountToPay,
-  setAmountToPay,
+  studentRow, transTypeOptions, pendingTransactions, pendingLoading,
+  orNumberData, transactions, onAdd, onRemove,
 }) => {
-  const paid = parseFloat(amountToPay) || 0;
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [assessmentAmount, setAssessmentAmount] = useState("");
+  const [selectedExtraType, setSelectedExtraType] = useState(null);
+  const [extraAmount, setExtraAmount] = useState("");
+  const [extraError, setExtraError] = useState("");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [installmentSchedule, setInstallmentSchedule] = useState([]);
 
-  const inputBase =
-    "h-12 w-full px-4 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-400 transition";
-  const readonlyInput =
-    `${inputBase} bg-gray-50 text-gray-600 cursor-not-allowed select-none`;
+  const pendingList = Array.isArray(pendingTransactions) ? pendingTransactions : [];
+  const isAssessmentPlan = pendingList.some((t) => t.TransType === "Assessment Plan");
 
-  if (assessmentLoading) {
-    return (
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
-        <div className="lg:col-span-2 space-y-5">
-          {[...Array(5)].map((_, i) => (
-            <SkeletonField key={i} />
-          ))}
-          <div className="flex flex-col gap-1">
-            <SkeletonLabel w="w-36" />
-            <div className="space-y-2 border rounded-lg p-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
-                  <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
-                  <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
+  // Unique plans from pending data
+  const planOptions = isAssessmentPlan
+    ? [...new Map(pendingList.map((t) => [t.TuitionChildId, {
+      value: t.TuitionChildId,
+      label: t.PlanName,
+      planId: t.PlanId,
+    }])).values()]
+    : [];
+
+  // When plan selected, show its installment rows and prefill first amount
+  useEffect(() => {
+    if (selectedPlan) {
+      const rows = pendingList.filter((t) => t.TuitionChildId === selectedPlan.value);
+      setInstallmentSchedule(rows);
+      setAssessmentAmount(rows[0]?.Amount || "");
+    } else {
+      setInstallmentSchedule([]);
+      setAssessmentAmount("");
+    }
+  }, [selectedPlan]);
+
+  // Extra transaction types — exclude ones that come from the API
+  const extraTypeOptions = Array.isArray(transTypeOptions)
+    ? transTypeOptions.filter((t) =>
+      !["Assessment Plan", "Tuition Fee", "Test Permit", "Enlistment Fee"].includes(t.label)
+    )
+    : [];
+
+  const handleAddExtra = () => {
+    setExtraError("");
+    if (!selectedExtraType) { setExtraError("Please select a transaction type."); return; }
+    if (!extraAmount || Number(extraAmount) <= 0) { setExtraError("Please enter a valid amount."); return; }
+    onAdd({
+      typeId: selectedExtraType.value,
+      label: selectedExtraType.label,
+      planName: "",
+      tuitionChildId: null,
+      planId: null,
+      amount: Number(extraAmount),
+    });
+    setSelectedExtraType(null);
+    setExtraAmount("");
+    setExtraError("");
+    setShowAddForm(false);
+  };
+
+  const handleAddAssessment = () => {
+    if (!selectedPlan || !assessmentAmount || Number(assessmentAmount) <= 0) return;
+    onAdd({
+      typeId: null,
+      label: "Assessment Plan",
+      planName: selectedPlan.label,
+      tuitionChildId: selectedPlan.value,
+      planId: installmentSchedule[0]?.PlanId || null,
+      amount: Number(assessmentAmount),
+    });
+    setSelectedPlan(null);
+    setAssessmentAmount("");
+    setInstallmentSchedule([]);
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      <div className="lg:col-span-3 space-y-5">
+
+        {/* Student info strip */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">Student Name</label>
+            <input readOnly className={READONLY}
+              value={studentRow ? `${studentRow.Lname}, ${studentRow.Fname} ${studentRow.Mname || ""}`.trim() : ""} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-500 mb-1 block">App Number</label>
+            <input readOnly className={READONLY} value={studentRow?.AppNumber || ""} />
+          </div>
+        </div>
+
+        {/* Current transaction from API */}
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-3">Current Transaction</h3>
+
+          {pendingLoading ? (
+            <div className="space-y-2">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="h-14 bg-gray-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : pendingList.length === 0 ? (
+            <p className="text-sm text-gray-400 italic">No pending transactions found.</p>
+          ) : isAssessmentPlan ? (
+            // Assessment Plan — plan picker + installment table
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Choose a Plan</label>
+                <SearchableSelect
+                  options={planOptions}
+                  value={selectedPlan}
+                  onChange={(v) => setSelectedPlan(v)}
+                  placeholder="— Select a tuition plan —"
+                />
+              </div>
+
+              {installmentSchedule.length > 0 && (
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        {["Payment", "Amount", "Due Date"].map((h) => (
+                          <th key={h} className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {installmentSchedule.map((row, i) => (
+                        <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/60"}>
+                          <td className="px-3 py-2 text-gray-700">{row.NumberOfPayment}</td>
+                          <td className="px-3 py-2 font-medium text-gray-800">₱{fmt(row.Amount)}</td>
+                          <td className="px-3 py-2 text-gray-500">
+                            {row.DateOfPayment ? new Date(row.DateOfPayment).toLocaleDateString() : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {selectedPlan && (
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Down Payment Amount</label>
+                  <input type="number" min="0" step="0.01"
+                    className={INPUT} value={assessmentAmount}
+                    onChange={(e) => setAssessmentAmount(e.target.value)} />
+                </div>
+              )}
+
+              {selectedPlan && (
+                <button type="button" onClick={handleAddAssessment}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition">
+                  <Plus size={15} /> Add Plan to Receipt
+                </button>
+              )}
+            </div>
+          ) : (
+            // Test Permit / Enlistment Fee / Tuition Fee — quick Add button per item
+            <div className="space-y-2">
+              {pendingList.map((item, i) => (
+                <div key={i} className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-4 py-3 text-sm">
+                  <div>
+                    <p className="font-semibold text-gray-800">{item.TransType}</p>
+                    {item.PlanName && <p className="text-xs text-gray-400">{item.PlanName}</p>}
+                    {item.NumberOfPayment && <p className="text-xs text-gray-400">{item.NumberOfPayment}</p>}
+                    {item.DateOfPayment && (
+                      <p className="text-xs text-gray-400">Due: {new Date(item.DateOfPayment).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-green-700">₱{fmt(item.Amount)}</span>
+                    <button type="button"
+                      onClick={() => onAdd({
+                        typeId: null,
+                        label: item.TransType,
+                        planName: item.PlanName || "",
+                        tuitionChildId: item.TuitionChildId || null,
+                        planId: item.PlanId || null,
+                        amount: Number(item.Amount || 0),
+                      })}
+                      className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md transition">
+                      <Plus size={12} /> Add
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Optional extras (books, uniform, etc.) */}
+        <div>
+          <button type="button" onClick={() => setShowAddForm((v) => !v)}
+            className="flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition">
+            <Plus size={15} />
+            {showAddForm ? "Hide extra transaction" : "Add other payment (books, uniform, etc.)"}
+          </button>
+
+          {showAddForm && (
+            <div className="mt-3 space-y-3 border border-gray-200 rounded-xl p-4 bg-gray-50">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Transaction Type</label>
+                {extraTypeOptions.length === 0 ? (
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    No additional transaction types available yet. Add Books, Uniforms, or ID in the Accounting module first.
+                  </p>
+                ) : (
+                  <SearchableSelect
+                    options={extraTypeOptions}
+                    value={selectedExtraType}
+                    onChange={(v) => { setSelectedExtraType(v); setExtraAmount(v?.amount || ""); setExtraError(""); }}
+                    placeholder="— Select type (Books, Uniform, ID, etc.) —"
+                  />
+                )}
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Amount</label>
+                <input type="number" min="0" step="0.01" placeholder="Enter amount"
+                  className={INPUT} value={extraAmount} onChange={(e) => setExtraAmount(e.target.value)} />
+              </div>
+              {extraError && <p className="text-xs text-red-500">{extraError}</p>}
+              <button type="button" onClick={handleAddExtra}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition">
+                <Plus size={15} /> Add to Receipt
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Added transactions list */}
+        {transactions.length > 0 && (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-3">
+              Receipt Items ({transactions.length})
+            </h3>
+            <div className="space-y-2">
+              {transactions.map((t, i) => (
+                <div key={i} className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm shadow-sm">
+                  <div>
+                    <p className="font-semibold text-gray-800">{t.label}</p>
+                    {t.planName && <p className="text-xs text-gray-400">{t.planName}</p>}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-800">₱{fmt(t.amount)}</span>
+                    <button onClick={() => onRemove(i)} className="text-red-400 hover:text-red-600 transition">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-          <SkeletonField />
-        </div>
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-          <div className="bg-gray-200 animate-pulse h-20" />
-          <div className="px-5 py-4 space-y-4">
-            {[...Array(5)].map((_, i) => (
-              <SkeletonSummaryRow key={i} />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-1">
-
-      <div className="lg:col-span-2 space-y-5">
-
-        {/* Transaction Type */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Transaction Type
-          </label>
-          <input
-            type="text"
-            value={transactionLabel}
-            readOnly
-            disabled
-            aria-label="Transaction type (read-only)"
-            className={readonlyInput}
-          />
-          <p className="text-xs text-gray-400 mt-0.5">
-            Payment Transaction.
-          </p>
-        </div>
-
-        {/* App / Student Number */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-gray-700">
-            {transactionLabel === "Tuition Fee"
-              ? "Student Number"
-              : "Application Number"}
-          </label>
-          <input
-            type="text"
-            value={
-              transactionLabel === "Tuition Fee"
-                ? pendingRow.StudentNumber || ""
-                : pendingRow.AppNumber || ""
-            }
-            readOnly
-            disabled
-            aria-label="Reference number (read-only)"
-            className={readonlyInput}
-          />
-        </div>
-
-        {/* Full Name */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-gray-700">Full Name</label>
-          <input
-            type="text"
-            value={fullName}
-            readOnly
-            disabled
-            aria-label="Student full name (read-only)"
-            className={readonlyInput}
-          />
-        </div>
-
-        {/* Tuition Plan */}
-        {planName && (
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              Tuition Plan
-            </label>
-            <input
-              type="text"
-              value={planName}
-              readOnly
-              disabled
-              aria-label="Tuition plan (read-only)"
-              className={readonlyInput}
-            />
-          </div>
         )}
-
-        {/* Payment Schedule */}
-        {assessmentData.length > 0 && (
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">
-              Payment Schedule
-            </label>
-            <div className="max-h-52 overflow-y-auto border border-gray-200 rounded-xl">
-              <table className="w-full text-sm min-w-[320px]">
-                <thead className="sticky top-0 bg-gray-50 z-10">
-                  <tr>
-                    <th className="border-b border-gray-200 px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Payment
-                    </th>
-                    <th className="border-b border-gray-200 px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Amount
-                    </th>
-                    <th className="border-b border-gray-200 px-4 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Due Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assessmentData.map((item, i) => (
-                    <tr
-                      key={i}
-                      className={i % 2 === 0 ? "bg-white" : "bg-gray-50/60"}
-                    >
-                      <td className="px-4 py-2.5 text-gray-700">
-                        {item.NumberOfPayment}
-                      </td>
-                      <td className="px-4 py-2.5 font-medium text-gray-800">
-                        ₱{Number(item.Amount).toLocaleString("en-PH", {
-                          minimumFractionDigits: 2,
-                        })}
-                      </td>
-                      <td className="px-4 py-2.5 text-gray-500">
-                        {item.DateOfPayment
-                          ? new Date(item.DateOfPayment).toLocaleDateString()
-                          : "—"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Price */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Total Price
-          </label>
-          <input
-            type="number"
-            value={priceAmount}
-            readOnly
-            disabled
-            aria-label="Total price (read-only)"
-            className={readonlyInput}
-          />
-        </div>
-
-        {/* Amount to Pay */}
-        <div className="flex flex-col gap-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Amount to Pay
-            <span className="text-red-500 ml-0.5">*</span>
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Enter amount"
-            aria-label="Amount to pay"
-            className={`${inputBase} text-gray-900 bg-white ${
-              paid > priceAmount && priceAmount > 0
-                ? "border-emerald-400 focus:ring-emerald-400"
-                : paid > 0 && paid < priceAmount
-                ? "border-amber-400 focus:ring-amber-400"
-                : ""
-            }`}
-            value={amountToPay}
-            onChange={(e) => {
-              const v = e.target.value;
-              if (v === "" || parseFloat(v) >= 0) setAmountToPay(v);
-            }}
-          />
-          {paid > priceAmount && priceAmount > 0 && (
-            <p className="text-xs text-emerald-600 font-medium mt-0.5">
-              ✓ Excess amount will be returned as change.
-            </p>
-          )}
-          {paid > 0 && paid < priceAmount && (
-            <p className="text-xs text-amber-600 font-medium mt-0.5">
-              Partial payment — remaining balance will be recorded.
-            </p>
-          )}
-        </div>
       </div>
 
-      <div>
-        <SummaryCard
-          transactionLabel={transactionLabel}
-          pendingRow={pendingRow}
-          priceAmount={priceAmount}
-          amountToPay={amountToPay}
-          planName={planName}
-        />
+      {/* Receipt panel */}
+      <div className="lg:col-span-2">
+        <ReceiptPanel studentRow={studentRow} transactions={transactions} orNumber={orNumberData?.LatestOrNumber} />
       </div>
     </div>
   );
 };
-
-
+// Main component
 const PendingListOfStudent = ({ type, userId }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const tableState   = useSelector((state) => state.parent.tableState);
-  const totalRows    = tableState.data?.totalRecords || 0;
+  const tableState = useSelector((state) => state.parent.tableState);
+  const totalRows = tableState.data?.totalRecords || 0;
   const tableLoading = tableState.loading || false;
+  const orNumberData = useSelector((state) => state.parent.siSeriesState.data || {});
+  const pendingTransactions = useSelector((state) => state.parent.studentPendingTransactionState.data || []);
+  const pendingLoading = useSelector((state) => state.parent.studentPendingTransactionState.loading || false);
+  const transTypeRaw = useSelector((state) => state.cashier.transactionTypeState.data || []);
+  const transTypeOptions = Array.isArray(transTypeRaw)
+    ? transTypeRaw.map((t) => ({ value: t.FeeChildId, label: t.TransType, amount: t.Value }))
+    : [];
 
-  const orNumberData = useSelector(
-    (state) => state.parent.studentOrNumber.data || {}
-  );
-
-  const assessmentData = useSelector(
-    (state) => state.parent.studentAssementState.data || []
-  );
-  const assessmentLoading = useSelector(
-    (state) => state.parent.studentAssementState.loading || false
-  );
-
-  const [table,    setTable]    = useState([]);
-  const [page,     setPage]     = useState(1);
-  const [search,   setSearch]   = useState("");
+  const [table, setTable] = useState([]);
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(10);
-  const [isPaymentOpen,     setIsPaymentOpen]     = useState(false);
-  const [pendingRow,        setPendingRow]         = useState({});
-  const [fullName,          setFullName]           = useState("");
-  const [amountToPay,       setAmountToPay]        = useState(0);
-  const [isWarningModal,    setIsWarningModal]     = useState(false);
-  const [isSuccessModalOpen,setIsSuccessModalOpen] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const transactionLabel = assessmentData[0]?.TransactionLabel ?? "";
-  const priceAmount      = parseFloat(assessmentData[0]?.Amount ?? 0);
-  const tuitionChildId   = assessmentData[0]?.TuitionChildId   ?? null;
-  const planName         = assessmentData[0]?.PlanName          ?? "";
+  const totalAmount = transactions.reduce((s, t) => s + t.amount, 0);
 
   const columns = [
-    {
-      name: "Application Number",
-      selector: (row) => row.AppNumber,
-      sortable: true,
-    },
-    {
-      name: "Fullname",
-      selector: (row) => `${row.Lname}, ${row.Fname} ${row.Mname || ""}`,
-      sortable: true,
-    },
-    { name: "Campus",  selector: (row) => row.CampusName,   sortable: true },
-    { name: "Level",   selector: (row) => row.LevelName,    sortable: true },
-    { name: "Status",  selector: (row) => row.ActiveStatus, sortable: true },
-    {
-      name: "Date Created",
-      selector: (row) => new Date(row.DateCreated).toLocaleDateString(),
-      sortable: true,
-    },
+    { name: "Application Number", selector: (r) => r.AppNumber, sortable: true },
+    { name: "Fullname", selector: (r) => `${r.Lname}, ${r.Fname} ${r.Mname || ""}`, sortable: true },
+    { name: "Campus", selector: (r) => r.CampusName, sortable: true },
+    { name: "Level", selector: (r) => r.LevelName, sortable: true },
+    { name: "Status", selector: (r) => r.ActiveStatus, sortable: true },
+    { name: "Date Created", selector: (r) => new Date(r.DateCreated).toLocaleDateString(), sortable: true },
     {
       name: "Actions",
       cell: (row) => (
-        <div className="flex items-center whitespace-nowrap">
-          <BlueBtn  label="View"    onClick={() => handleButtonClick(row)} />
-          <GreenBtn label="Payment" onClick={() => handlePaymentClick(row)} />
+        <div className="flex items-center gap-1 whitespace-nowrap">
+          <BlueBtn label="View" onClick={() => navigate(`/parent/pendingliststudentform?StudentId=${row.StudentId}`)} />
+          {["O-EXAMINATION-CASHIER", "O-RESERVATION", "O-RESERVED", "Y"].includes(row.ActiveStatus) && (
+            <GreenBtn label="Payment" onClick={() => handleOpenPayment(row)} />
+          )}
         </div>
       ),
       ignoreRowClick: true,
     },
   ];
 
-  const fetchTableData = async () => {
-    const res = await dispatch(
-      fetchListOfStudentTableData(userId, type, page, pageSize, search)
-    );
-    setTable(res?.data || []);
-  };
-
   useEffect(() => {
     if (userId) fetchTableData();
   }, [userId, type, page, pageSize, search]);
 
   useEffect(() => {
-    if (userId) dispatch(fetchStudentOrNumberData(userId));
+    if (userId) {
+      // dispatch(fetchStudentOrNumberData(userId));
+      dispatch(fetchSISeriesData(userId));
+      dispatch(fetchTransactionTypeData());
+    }
   }, [userId, dispatch]);
 
-  useEffect(() => {
-    if (assessmentData.length > 0) {
-      setAmountToPay(parseFloat(assessmentData[0]?.Amount ?? 0));
-    }
-  }, [assessmentData]);
-
-  const handleButtonClick = (row) => {
-    navigate(`/parent/pendingliststudentform?StudentId=${row.StudentId}`);
+  const fetchTableData = async () => {
+    const res = await dispatch(fetchListOfStudentTableData(userId, type, page, pageSize, search));
+    setTable(res?.data || []);
   };
 
-  const handlePaymentClick = (row) => {
-    setAmountToPay(0);
-    setPendingRow(row);
-    setFullName(`${row.Lname}, ${row.Fname} ${row.Mname || ""}`);
+  const handleOpenPayment = (row) => {
+    setSelectedRow(row);
+    setTransactions([]);
+    dispatch(fetchStudentPendingTransactionData(row.AppId));
     setIsPaymentOpen(true);
-    dispatch(fetchStudentAppAssessmentData(row.AppId));
   };
 
-  const handleOverTheCounterSubmit = () => setIsWarningModal(true);
+  const handleAddTransaction = (t) => setTransactions((prev) => [...prev, t]);
+  const handleRemoveTransaction = (i) => setTransactions((prev) => prev.filter((_, idx) => idx !== i));
 
   const handleConfirmSubmit = async () => {
-    const payload = {
-      UserId:          pendingRow.StudentId,
-      CreatedByUserId: userId,
-      OrId:            orNumberData?.OrId  || 0,
-      ReferenceId:     transactionLabel === "Tuition Fee"
-                         ? pendingRow.StudentNumber || ""
-                         : pendingRow.AppNumber     || "",
-      TransType: transactionLabel,
+    console.log(orNumberData);
 
-      OrChildDtos: [
-        {
-          OrChildId:       orNumberData?.OrChildId         || 0,
-          OrNumberUsed:    orNumberData?.LatestOrAvailable || "",
-          BalId:           null,
-          TuitionChildId:  tuitionChildId,
-          Amount:          String(priceAmount),
-          AmountPaid:      String(amountToPay),
-          FromTransaction: transactionLabel,
-          ModeOfPayment:   "Over The Counter",
-        },
-      ],
+    if (!selectedRow || transactions.length === 0) return;
+    setIsSubmitting(true);
+    const payload = {
+      UserId: selectedRow.StudentId,
+      CreatedByUserId: userId,
+      OrId: orNumberData?.OrId || 0,
+      ReferenceId: selectedRow.AppId || 0,
+      ReferenceNo: selectedRow.AppNumber || "",
+      TransType: "Online",
+      PaymentChildDtos: transactions.map((t) => ({
+        OrChildId: orNumberData?.OrChildId || 0,
+        OrNumberUsed: orNumberData?.LatestOrNumber || "",
+        TuitionChildId: t.tuitionChildId,
+        PlanId: t.planId,
+        Amount: String(t.amount),
+        AmountPaid: String(t.amount),
+        FromTransaction: t.label,
+        ModeOfPayment: "Online",
+      })),
     };
 
+    console.log(payload);
     const res = await dispatch(fetchInsertPaymentData(payload));
+    setIsSubmitting(false);
     if (res.ok) {
-      setIsWarningModal(false);
+      setIsConfirmOpen(false);
       setIsPaymentOpen(false);
-      setIsSuccessModalOpen(true);
-      setTimeout(() => window.location.reload(), 3000);
+      setTransactions([]);
+      setSelectedRow(null);
+      setIsSuccessOpen(true);
+      setTimeout(() => fetchTableData(), 2000);
     }
   };
 
-  const handleOnlineSubmit = () => console.log("Online payment for:", pendingRow);
-
   return (
-    <div>
-      <div className="overflow-x-auto pt-2">
-        <div className="p-6 bg-white rounded shadow">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-green-500">
-              List of Pending in Enrollment
-            </h2>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="px-3 py-2 border border-gray-300 rounded w-full max-w-xs"
-              value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            />
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={"Pending" + page + search}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
-            >
-              <DataTable
-                columns={columns}
-                data={table}
-                progressPending={tableLoading}
-                pagination
-                paginationServer
-                paginationTotalRows={totalRows}
-                paginationDefaultPage={page}
-                onChangePage={(p) => setPage(p)}
-                onChangeRowsPerPage={(newPerPage, p) => {
-                  setPageSize(newPerPage);
-                  setPage(p);
-                }}
-                highlightOnHover
-                responsive
-              />
-            </motion.div>
-          </AnimatePresence>
+    <div className="overflow-x-auto pt-2">
+      <div className="p-6 bg-white rounded shadow">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-green-500">List of Pending in Enrollment</h2>
+          <input type="text" placeholder="Search..."
+            className="px-3 py-2 border border-gray-300 rounded w-full max-w-xs"
+            value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
+        <AnimatePresence mode="wait">
+          <motion.div key={"Pending" + page + search}
+            initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.3 }}>
+            <DataTable columns={columns} data={table} progressPending={tableLoading}
+              pagination paginationServer paginationTotalRows={totalRows}
+              paginationDefaultPage={page}
+              onChangePage={(p) => setPage(p)}
+              onChangeRowsPerPage={(newPerPage, p) => { setPageSize(newPerPage); setPage(p); }}
+              highlightOnHover responsive />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
-      {/* ── Payment Modal ── */}
       <ModalComponent
         isOpen={isPaymentOpen}
         onClose={() => setIsPaymentOpen(false)}
-        size="w-[95vw] max-w-6xl"
-        title={
-          <div className="flex items-center justify-center gap-2">
-            <div>
-              <h2 className="font-bold text-base text-gray-800 leading-none block">
-                Payment Form
-              </h2>            
-            </div>
-          </div>
-        }
+        title="Online Payment"
+        size="w-[95vw] max-w-5xl"
+        maxHeight="90vh"
         body={
-          <div className="max-h-[calc(90vh-180px)] overflow-y-auto px-1 py-2">
-            <PaymentModalBody
-              assessmentLoading={assessmentLoading}
-              assessmentData={assessmentData}
-              transactionLabel={transactionLabel}
-              pendingRow={pendingRow}
-              fullName={fullName}
-              priceAmount={priceAmount}
-              planName={planName}
-              amountToPay={amountToPay}
-              setAmountToPay={setAmountToPay}
-            />
-          </div>
+          <PaymentModalBody
+            studentRow={selectedRow}
+            transTypeOptions={transTypeOptions}
+            pendingTransactions={pendingTransactions}
+            pendingLoading={pendingLoading}
+            orNumberData={orNumberData}
+            transactions={transactions}
+            onAdd={handleAddTransaction}
+            onRemove={handleRemoveTransaction}
+          />
         }
-        footerClassName="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4"
-        buttonsClassName="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 w-full"
         buttons={[
           {
-            label: (
-              <span className="flex items-center gap-2 justify-center">            
-                Over The Counter
-              </span>
-            ),
-            type: "blue",
-            onClick: handleOverTheCounterSubmit,
-            closeOnClick: false,
-            className:
-              "w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-400",
-            "aria-label": "Pay over the counter",
-          },
-          {
-            label: (
-              <span className="flex items-center gap-2 justify-center">
-                Online Payment
-              </span>
-            ),
+            label: transactions.length === 0 ? "Add transactions above" : `Submit Payment — ₱${fmt(totalAmount)}`,
             type: "green",
-            onClick: handleOnlineSubmit,
             closeOnClick: false,
-            className:
-              "w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold text-sm transition focus:outline-none focus:ring-2 focus:ring-emerald-400",
-            "aria-label": "Pay online",
+            onClick: () => { if (transactions.length > 0) setIsConfirmOpen(true); },
           },
+          { label: "Cancel", type: "red", onClick: () => setIsPaymentOpen(false) },
         ]}
       />
 
-      {/* ── Warning Modal ── */}
       <ModalComponent
-        isOpen={isWarningModal}
-        onClose={() => setIsWarningModal(false)}
-        title={<span className="font-bold text-lg text-red-700">Confirm Payment</span>}
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Confirm Payment"
         body={
-          <div className="py-2 space-y-1">
-            <p className="text-gray-700">
-              Are you sure you want to submit this payment?
-            </p>
-            {parseFloat(amountToPay) < priceAmount && (
-              <p className="text-xs text-amber-600 font-medium">
-                Note: This is a partial payment. A balance will remain.
-              </p>
-            )}
+          <div className="space-y-2 text-sm text-gray-700">
+            <p>You are about to submit <strong>{transactions.length}</strong> transaction(s) totalling <strong className="text-green-700">₱{fmt(totalAmount)}</strong>.</p>
+            <p className="text-xs text-gray-400">This action cannot be undone.</p>
           </div>
         }
         buttons={[
-          { label: "Yes, Submit", type: "green", onClick: handleConfirmSubmit },
-          { label: "Cancel",      type: "red",   onClick: () => setIsWarningModal(false) },
+          { label: isSubmitting ? "Submitting…" : "Yes, Submit", type: "green", closeOnClick: false, onClick: handleConfirmSubmit },
+          { label: "Cancel", type: "red", onClick: () => setIsConfirmOpen(false) },
         ]}
       />
 
-      {/* ── Success Modal ── */}
       <ModalComponent
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        title={
-          <span className="font-bold text-lg text-green-700">
-            Payment Successful
-          </span>
-        }
-        body="Payment submitted successfully. The page will refresh shortly."
-        buttons={[
-          {
-            label: "OK",
-            type: "green",
-            onClick: () => setIsSuccessModalOpen(false),
-          },
-        ]}
+        isOpen={isSuccessOpen}
+        onClose={() => setIsSuccessOpen(false)}
+        title="Payment Submitted"
+        body="Your payment has been submitted successfully. The table will refresh shortly."
+        buttons={[{ label: "OK", type: "green", onClick: () => setIsSuccessOpen(false) }]}
       />
     </div>
   );

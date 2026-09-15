@@ -8,10 +8,11 @@ import {
     FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_REQUEST, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_SUCCESS, FETCH_INSERT_OVER_THE_COUNTER_PAYMENT_FAILURE,
     FETCH_STUDENT_STATUS_REQUEST, FETCH_STUDENT_STATUS_SUCCESS, FETCH_STUDENT_STATUS_FAILURE,
     FETCH_PAYMENT_TRANSACTION_TYPE_REQUEST, FETCH_PAYMENT_TRANSACTION_TYPE_SUCCESS, FETCH_PAYMENT_TRANSACTION_TYPE_FAILURE,
-    FETCH_STUDENT_OR_NUMBER_REQUEST, FETCH_STUDENT_OR_NUMBER_SUCCESS, FETCH_STUDENT_OR_NUMBER_FAILURE,
+    // FETCH_STUDENT_OR_NUMBER_REQUEST, FETCH_STUDENT_OR_NUMBER_SUCCESS, FETCH_STUDENT_OR_NUMBER_FAILURE,
     FETCH_INSERT_PAYMENT_REQUEST, FETCH_INSERT_PAYMENT_SUCCESS, FETCH_INSERT_PAYMENT_FAILURE,
     FETCH_PARENT_TRANSACTION_HISTORY_REQUEST, FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS,FETCH_PARENT_TRANSACTION_HISTORY_FAILURE,
-    FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
+    FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
+    FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -31,10 +32,11 @@ const initialGeneralState = {
     insertOverCounterState: { ...initialState },
     studentStatusState: { ...initialState },
     transactionTypeState: { ...initialState },
-    studentOrNumber: { ...initialState },
+    // studentOrNumber: { ...initialState },
     insertPaymentState: { ...initialState },
     parentTransactionHistoryState: { ...initialState },
-    studentAssementState: { ...initialState },
+    studentPendingTransactionState: { ...initialState },
+    siSeriesState: { ...initialState },
 };
 
 const parentReducer = (state = initialGeneralState, action) => {
@@ -111,12 +113,12 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, transactionTypeState: { loading: false, data: [], error: action.payload } };
 
         //Or Number
-        case FETCH_STUDENT_OR_NUMBER_REQUEST:
-            return { ...state, studentOrNumber: { loading: true, data: [], error: '' } };
-        case FETCH_STUDENT_OR_NUMBER_SUCCESS:
-            return { ...state, studentOrNumber: { loading: false, data: action.payload, error: '' } };
-        case FETCH_STUDENT_OR_NUMBER_FAILURE:
-            return { ...state, studentOrNumber: { loading: false, data: [], error: action.payload } };   
+        // case FETCH_STUDENT_OR_NUMBER_REQUEST:
+        //     return { ...state, studentOrNumber: { loading: true, data: [], error: '' } };
+        // case FETCH_STUDENT_OR_NUMBER_SUCCESS:
+        //     return { ...state, studentOrNumber: { loading: false, data: action.payload, error: '' } };
+        // case FETCH_STUDENT_OR_NUMBER_FAILURE:
+        //     return { ...state, studentOrNumber: { loading: false, data: [], error: action.payload } };   
 
         //Insert Payment 
         case FETCH_INSERT_PAYMENT_REQUEST:
@@ -134,15 +136,20 @@ const parentReducer = (state = initialGeneralState, action) => {
         case FETCH_PARENT_TRANSACTION_HISTORY_FAILURE:
             return { ...state, parentTransactionHistoryState: { loading: false, data: [], error: action.payload } };  
 
-        //Student Assesment
-        case FETCH_STUDENT_APP_ASSESSMENT_REQUEST:
-            return { ...state, studentAssementState: { loading: true, data: [], error: '' } };
-        case FETCH_STUDENT_APP_ASSESSMENT_SUCCESS:
-            return { ...state, studentAssementState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_STUDENT_APP_ASSESSMENT_FAILURE:
-            return { ...state, studentAssementState: { loading: false, data: [], error: action.payload } };  
+        // Student Pending Transaction
+        case FETCH_STUDENT_PENDING_TRANSACTION_REQUEST:
+            return { ...state, studentPendingTransactionState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS:
+            return { ...state, studentPendingTransactionState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_PENDING_TRANSACTION_FAILURE:
+            return { ...state, studentPendingTransactionState: { loading: false, data: [], error: action.payload } };  
 
-
+        case FETCH_SI_SERIES_REQUEST:
+            return { ...state, siSeriesState: { loading: true, data: [], error: '' } };
+        case FETCH_SI_SERIES_SUCCESS:
+            return { ...state, siSeriesState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SI_SERIES_FAILURE:
+            return { ...state, siSeriesState: { loading: false, data: [], error: action.payload } };  
 
         default:
             return state;

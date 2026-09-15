@@ -4,6 +4,7 @@ import {
     FETCH_INSERTORSERIES_REQUEST, FETCH_INSERTORSERIES_SUCCESS, FETCH_INSERTORSERIES_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_REQUEST, FETCH_INSERT_TABLE_OF_FEES_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_FAILURE,
     FETCH_INSERT_TUITION_FEE_REQUEST, FETCH_INSERT_TUITION_FEE_SUCCESS, FETCH_INSERT_TUITION_FEE_FAILURE,
+    FETCH_INSERT_MISCELLANEOUS_REQUEST, FETCH_INSERT_MISCELLANEOUS_SUCCESS, FETCH_INSERT_MISCELLANEOUS_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -19,6 +20,7 @@ const initialGeneralState = {
     insertOrSeriesState: { ...initialState },
     insertFeesState: { ...initialState },
     tuitionFeeState: { ...initialState },
+    miscellaneousStateInsertState: { ...initialState },
 }
 
 const financeReducer = (state = initialGeneralState, action) => {
@@ -61,6 +63,13 @@ const financeReducer = (state = initialGeneralState, action) => {
             return { ...state, tuitionFeeState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_TUITION_FEE_FAILURE:
             return { ...state, tuitionFeeState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_MISCELLANEOUS_REQUEST:
+            return { ...state, miscellaneousStateInsertState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_MISCELLANEOUS_SUCCESS:
+            return { ...state, miscellaneousStateInsertState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_MISCELLANEOUS_FAILURE:
+            return { ...state, miscellaneousStateInsertState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;
