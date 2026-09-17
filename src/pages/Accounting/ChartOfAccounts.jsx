@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import CoaDataTable from "../../components/AccountingComponents/CoaDataTable";
 
 const ChartOfAccounts = () => {
     useEffect(() => {
-        document.title = 'Cashier Payment';
+        document.title = 'Chart of Accounts';
     }, []);
 
     const breadcrumbItems = [
