@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Printer, Trash2 } from "lucide-react";
+import { Printer, Trash2, Receipt, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchTransactionTypeData,
@@ -11,156 +11,304 @@ import {
     fetchPrintReceiptData,
     fetchInsertSubmitPaymentData,
     fetchStudentAppAssessmentData,
+    fetchGetCashierMiscBreakdownData,
+    fetchCashierPendingTransactionData,
 } from "../../states/CashierState/Action";
 import SearchBoxAppNo from "../ButtonsComponents/SearchBoxAppNo";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 
+// ─── helpers ─────────────────────────────────────────────────────────────────
+const fmt = (n) =>
+    Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const READONLY =
+    "w-full px-3 py-2.5 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600 cursor-not-allowed select-none focus:outline-none";
+
+const INPUT =
+    "w-full px-3 py-2.5 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-400 transition bg-white text-gray-800";
+
+// ─── Transaction card with collapsible misc ───────────────────────────────────
+const TransactionCard = ({ t, onRemove }) => {
+    const [showMisc, setShowMisc] = useState(false);
+    const hasMisc = Array.isArray(t.miscBreakdown) && t.miscBreakdown.length > 0;
+    const miscTotal = hasMisc ? t.miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0) : 0;
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm shadow-sm">
+            <div className="flex items-start justify-between">
+                <div className="flex-1">
+                    <p className="font-semibold text-gray-800">
+                        {t.transType === "Assessment Plan" ? `${t.transType} — ${t.planName}` : t.transType}
+                    </p>
+                    <p className="text-xs text-gray-400">{t.referenceNumber} · {t.fullName}</p>
+                    <p className="text-xs text-gray-400">{t.paymentMode?.label}{t.checkNumber ? ` · ${t.checkNumber}` : ""}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-800">₱{fmt(t.price)}</span>
+                    <button onClick={() => onRemove(t.id)} className="text-red-400 hover:text-red-600 transition">
+                        <Trash2 size={15} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Misc breakdown toggle */}
+            {hasMisc && (
+                <div className="mt-2 pt-2 border-t border-gray-100">
+                    <button
+                        onClick={() => setShowMisc(!showMisc)}
+                        className="w-full flex items-center justify-between text-xs font-medium text-blue-600 hover:text-blue-700 transition"
+                    >
+                        <span>Miscellaneous Fees</span>
+                        <div className="flex items-center gap-2">
+                            <span>₱{fmt(miscTotal)}</span>
+                            {showMisc ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                        </div>
+                    </button>
+                    {showMisc && (
+                        <div className="mt-2 space-y-1 pl-2 border-l-2 border-blue-200">
+                            {t.miscBreakdown.map((item, i) => (
+                                <div key={i} className="flex justify-between text-[11px] text-gray-500">
+                                    <span className="truncate max-w-[70%]">{item.FeeName}</span>
+                                    <span>₱{fmt(item.Amount)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ─── Drawer balance card ──────────────────────────────────────────────────────
+const DrawerCard = ({ label, amount, color = "gray" }) => {
+    const colorMap = {
+        gray:  "bg-gray-50  border-gray-200  text-gray-700",
+        green: "bg-green-50 border-green-200 text-green-700",
+    };
+    return (
+        <div className={`border rounded-xl px-4 py-3 flex flex-col gap-0.5 ${colorMap[color].split(" ").slice(0, 2).join(" ")}`}>
+            <p className="text-xs text-gray-400 font-medium">{label}</p>
+            <p className={`text-base font-bold ${colorMap[color].split(" ")[2]}`}>₱{fmt(amount)}</p>
+        </div>
+    );
+};
+
+// ─── Receipt panel ────────────────────────────────────────────────────────────
+const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, amountToPay, change, paymentMode, checkNumber, miscBreakdown }) => {
+    const total = transactions.reduce((s, t) => s + Number(t.price || 0), 0);
+    const [showMisc, setShowMisc] = useState(false);
+    const miscTotal = Array.isArray(miscBreakdown) ? miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0) : 0;
+
+    return (
+        <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-5 font-mono text-sm sticky top-0 space-y-4">
+            {/* Header */}
+            <div className="text-center">
+                <Receipt className="mx-auto mb-1 text-green-600" size={28} />
+                <p className="font-bold text-base text-gray-800 uppercase tracking-widest">Cashier Payment</p>
+                <p className="text-xs text-gray-400">Receipt Preview</p>
+            </div>
+
+            {/* Drawer balances - moved to top */}
+            <div className="border-t border-b border-dashed border-gray-200 py-3 space-y-2">
+                {/* Starting Drawer Balance - Blue Box */}
+                <div className="border-2 border-blue-400 rounded-lg px-3 py-2 bg-blue-50">
+                    <p className="text-[10px] text-blue-600 font-medium mb-0.5">Starting Drawer Balance</p>
+                    <p className="text-lg font-bold text-blue-700">₱{fmt(dailyBalance?.Amount)}</p>
+                </div>
+                
+                {/* Current Drawer Balance - Green Box */}
+                <div className="border-2 border-green-400 rounded-lg px-3 py-2 bg-green-50">
+                    <p className="text-[10px] text-green-600 font-medium mb-0.5">Current Drawer Balance</p>
+                    <p className="text-lg font-bold text-green-700">₱{fmt(realtimeBalance?.Amount)}</p>
+                </div>
+            </div>
+
+            {/* OR number + date */}
+            <div className="border-b border-dashed border-gray-200 pb-3 space-y-1 text-xs text-gray-600">
+                <div className="flex justify-between">
+                    <span className="text-gray-400">OR No.</span>
+                    <span className="font-semibold">{orNumber || "—"}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-gray-400">Date</span>
+                    <span className="font-semibold">{new Date().toLocaleDateString("en-PH")}</span>
+                </div>
+            </div>
+
+            {/* Transaction lines */}
+            {transactions.length === 0 ? (
+                <p className="text-center text-xs text-gray-300 py-4 italic">No transactions added yet</p>
+            ) : (
+                <div className="space-y-2">
+                    {transactions.map((t) => (
+                        <div key={t.id} className="flex justify-between items-start text-xs">
+                            <div className="max-w-[65%]">
+                                <p className="font-semibold text-gray-700">
+                                    {t.transType === "Assessment Plan" ? `${t.transType} — ${t.planName}` : t.transType}
+                                </p>
+                                <p className="text-gray-400 truncate">{t.referenceNumber} · {t.fullName}</p>
+                            </div>
+                            <span className="font-semibold text-gray-800">₱{fmt(t.price)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            {/* Miscellaneous breakdown (collapsible) */}
+            {miscTotal > 0 && (
+                <div className="border-t border-dashed border-gray-200 pt-3">
+                    <button
+                        onClick={() => setShowMisc(!showMisc)}
+                        className="w-full flex items-center justify-between text-xs font-semibold text-blue-600 hover:text-blue-700 transition"
+                    >
+                        <span>Miscellaneous Fees</span>
+                        <div className="flex items-center gap-2">
+                            <span>₱{fmt(miscTotal)}</span>
+                            {showMisc ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </div>
+                    </button>
+                    {showMisc && (
+                        <div className="mt-2 space-y-1 pl-2 border-l-2 border-blue-200">
+                            {miscBreakdown.map((item, i) => (
+                                <div key={i} className="flex justify-between text-[10px] text-gray-500">
+                                    <span className="truncate max-w-[60%]">{item.FeeName}</span>
+                                    <span>₱{fmt(item.Amount)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Totals */}
+            <div className="border-t border-dashed border-gray-200 pt-3 space-y-1.5 text-xs">
+                <div className="flex justify-between text-gray-500">
+                    <span>Amount Tendered</span>
+                    <span className="font-medium text-gray-800">₱{fmt(amountToPay)}</span>
+                </div>
+                <div className="flex justify-between text-gray-500">
+                    <span>Change</span>
+                    <span className={`font-medium ${Number(change) > 0 ? "text-green-600" : "text-gray-800"}`}>₱{fmt(change)}</span>
+                </div>
+                {paymentMode && (
+                    <div className="flex justify-between text-gray-500">
+                        <span>Mode</span>
+                        <span className="font-medium text-gray-800">{paymentMode.label}</span>
+                    </div>
+                )}
+                {paymentMode?.value === "Check" && checkNumber && (
+                    <div className="flex justify-between text-gray-500">
+                        <span>Check No.</span>
+                        <span className="font-medium text-gray-800">{checkNumber}</span>
+                    </div>
+                )}
+            </div>
+
+            <div className="border-t border-dashed border-gray-200 pt-3">
+                <div className="flex justify-between text-sm font-bold text-gray-900">
+                    <span>TOTAL</span>
+                    <span className="text-green-700">₱{fmt(total)}</span>
+                </div>
+            </div>
+
+            <p className="text-center text-[10px] text-gray-300 italic mt-3">
+                This is a preview — not an official receipt.
+            </p>
+        </div>
+    );
+};
+
+// ─── Main component ───────────────────────────────────────────────────────────
 const PaymentComponent = () => {
     const dispatch = useDispatch();
-    const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem("userData");
-        return savedUser ? JSON.parse(savedUser) : null;
+    const [user] = useState(() => {
+        const saved = localStorage.getItem("userData");
+        return saved ? JSON.parse(saved) : null;
     });
     const userId = user.UserId;
 
-    const transactionTypeState = useSelector((state) => state.cashier.transactionTypeState || {});
-    const transData = transactionTypeState.data || [];
-    const studentAppState = useSelector((state) => state.cashier.studentAppState || {});
-    const studentApp = studentAppState.data || [];
-    const assessmentData = useSelector((state) => state.cashier.studentAppAssessmentState.data || []);
-    const orNumberState = useSelector((state) => state.cashier.orNumberState || {});
-    const orNumberData = orNumberState.data || [];
-    const dailyBalanceState = useSelector((state) => state.cashier.dailyBalanceState || {});
-    const dailyBalance = dailyBalanceState.data || [];
-    const realtimeBalanceState = useSelector((state) => state.cashier.realtimeBalanceState || {});
-    const realtimeBalance = realtimeBalanceState.data || [];
-    const printReceiptState = useSelector((state) => state.cashier.printReceiptState || {});
-    const receiptData = printReceiptState.data || [];
-    const receiptLoading = printReceiptState.loading;
+    // ── selectors ─────────────────────────────────────────────────────────────
+    const transData      = useSelector((s) => s.cashier.transactionTypeState.data || []);
+    const studentApp     = useSelector((s) => s.cashier.studentAppState.data || []);
+    const assessmentData = useSelector((s) => s.cashier.studentAppAssessmentState.data || []);
+    const orNumberData   = useSelector((s) => s.cashier.orNumberState.data || {});
+    const dailyBalance   = useSelector((s) => s.cashier.dailyBalanceState.data || {});
+    const realtimeBalance= useSelector((s) => s.cashier.realtimeBalanceState.data || {});
+    const receiptData    = useSelector((s) => s.cashier.printReceiptState.data || {});
+    const receiptLoading = useSelector((s) => s.cashier.printReceiptState.loading);
+    const miscBreakdown  = useSelector((s) => s.cashier.cashierMiscBreakdownState?.data || []);
+    const miscLoading    = useSelector((s) => s.cashier.cashierMiscBreakdownState?.loading || false);
+    const pendingTxData  = useSelector((s) => s.cashier.cashierPendingTransactionState?.data || []);
+    const pendingTxLoading = useSelector((s) => s.cashier.cashierPendingTransactionState?.loading || false);
 
-    const [transList, setTransList] = useState([]);
-    const [transType, setIsTransType] = useState("");
-    const [transDropdown, setTransDropdown] = useState(null);
-    const [amountValue, setAmountValue] = useState(0);
-    const [studentId, setStudentId] = useState(0);
-    const [fullName, setFullname] = useState("");
-    const [referenceNumber, setReferenceNumber] = useState("");
-    const [planAmount, setPlanAmount] = useState(0);
+    // ── transaction type dropdown ─────────────────────────────────────────────
+    const transList = transData.map((item) => ({
+        value: item.FeeChildId,
+        label: item.TransType,
+        amount: item.Value,
+    }));
+
+    // ── form state ────────────────────────────────────────────────────────────
+    const [transType,       setIsTransType]   = useState("");
+    const [transDropdown,   setTransDropdown] = useState(null);
+    const [amountValue,     setAmountValue]   = useState(0);
+    const [studentId,       setStudentId]     = useState(0);
+    const [fullName,        setFullname]      = useState("");
+    const [referenceNumber, setRefNumber]     = useState("");
+    const [planAmount,      setPlanAmount]    = useState(0);
     const [selectedStudent, setSelectedStudent] = useState(null);
-    const [paymentMode, setPaymentMode] = useState(null);
-    const [tuitionChildId, setTuitionChildId] = useState(0);
-    const [planId, setPlanId] = useState(0);
+    const [paymentMode,     setPaymentMode]   = useState(null);
+    const [tuitionChildId,  setTuitionChildId]= useState(0);
+    const [planId,          setPlanId]        = useState(0);
+    const [selectedPlan,    setSelectedPlan]  = useState(null);
+    const [installmentRows, setInstallmentRows] = useState([]);
+    const [amountToPay,     setAmountToPay]   = useState(0);
+    const [change,          setChange]        = useState(0);
+    const [totalAmount,     setTotalAmount]   = useState(0);
+    const [checkNumber,     setCheckNumber]   = useState("");
 
-    // NEW: holds the list of transactions added before final submit
+    // validation
+    const [errors,          setErrors]        = useState(false);
+    const [errorMessage,    setErrorMessage]  = useState("");
+    const [isAmount,        setIsAmount]      = useState(false);
+    const [amountError,     setAmountError]   = useState("");
+    const [isCheckError,    setIsCheckError]  = useState(false);
+    const [checkError,      setCheckError]    = useState("");
+
+    // cart
     const [transactions, setTransactions] = useState([]);
 
+    // modals
+    const [isPreviewModal,  setIsPreviewModal]  = useState(false);
+    const [isConfirmModal,  setIsConfirmModal]  = useState(false);
+
+    // ── payment options ───────────────────────────────────────────────────────
     const paymentOptions = [
-        { value: "Cash", label: "Cash" },
+        { value: "Cash",  label: "Cash"  },
         { value: "Check", label: "Check" },
     ];
 
+    // ── computed ──────────────────────────────────────────────────────────────
+    const priceToUse       = transType === "Assessment Plan"
+        ? (installmentRows[0]?.Amount ? Number(installmentRows[0].Amount) : Number(planAmount || 0))
+        : Number(amountValue || 0);
+    const transactionsTotal= transactions.reduce((s, t) => s + Number(t.price || 0), 0);
+    const grandTotal       = transactionsTotal + (totalAmount || 0);
+
+    // ── init ──────────────────────────────────────────────────────────────────
     useEffect(() => {
         dispatch(fetchTransactionTypeData());
         dispatch(fetchGetDailyBalanceData(userId));
         dispatch(fetchGetRealtimeDailyBalanceData(userId));
+        dispatch(fetchOrNumberData(userId));
     }, [dispatch, userId]);
 
-    useEffect(() => {
-        const mappedOptions = transData.map((item) => ({
-            value: item.FeeChildId,
-            label: item.TransType,
-            amount: item.Value,
-        }));
-        setTransList(mappedOptions);
-    }, [transData]);
-
-    const setTransType = (data) => {
-        resetForm();
-        setAmountValue(data.amount);
-        setIsTransType(data.label);
-        setTransDropdown(data);
-
-        let status = "";
-        switch (data.label) {
-            case "Test Permit":
-                status = "O-EXAMINATION-CASHIER";
-                dispatch(fetchStudentAppData(status));
-                break;
-            case "Enlistment Fee":
-                status = "O-RESERVATION";
-                dispatch(fetchStudentAppData(status));
-                break;
-            case "Assessment Plan":
-                status = "O-RESERVED";
-                dispatch(fetchStudentAppData(status));
-                break;
-            case "Tuition Fee":
-                status = "Y";
-                dispatch(fetchStudentAppData(status));
-        }
-    };
-
-    const handleStudentSelect = (student) => {
-        if (transType == "Tuition Fee") {
-            setReferenceNumber(student.StudentNumber);
-        } else {
-            setReferenceNumber(student.AppNumber);
-        }
-        setStudentId(student.StudentId);
-        setFullname(student.Fname + " " + student?.Mname + " " + student.Lname);
-        dispatch(fetchStudentAppAssessmentData(student.AppId));
-    };
-
-    useEffect(() => {
-        if (!assessmentData) return;
-        setPlanAmount(assessmentData[0]?.Amount);
-        setTuitionChildId(assessmentData[0]?.TuitionChildId);
-        setPlanId(assessmentData[0]?.PlanId);
-    }, [assessmentData]);
-
-    useEffect(() => {
-        dispatch(fetchOrNumberData(userId));
-    }, [userId, dispatch]);
-
-    const [isOpenModal, setIsOpenModal] = useState(false);
-    const [isWarningModal, setIsWarningModal] = useState(false);
-    const [errors, setErrors] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
-
-    const [amountToPay, setAmountToPay] = useState(0);
-    const [amountError, setAmountError] = useState("");
-    const [isAmount, setIsAmount] = useState(false);
-    const [change, setChange] = useState(0);
-    const [totalAmount, setTotalAmount] = useState(0);
-    const [checkNumber, setCheckNumber] = useState("");
-    const [checkNumberError, setCheckNumberError] = useState("");
-    const [isCheckNumberError, setIsCheckNumberError] = useState(false);
-
-    const priceToUse =
-        transType === "Assessment Plan"
-            ? Number(planAmount || 0)
-            : Number(amountValue || 0);
-
-    // Running total = already-added transactions + whatever is currently in the form
-    const transactionsTotal = transactions.reduce((sum, t) => sum + Number(t.price || 0), 0);
-    const grandTotal = transactionsTotal + (totalAmount || 0);
-
-    const handleChangeAmountToPay = (value) => {
-        const cash = Number(value || 0);
-        const price = priceToUse;
-
-        setAmountToPay(value);
-
-        const computedChange = cash - price;
-        setChange(Number(computedChange.toFixed(2)));
-
-        setTotalAmount(price);
-    };
-
+    // ── handlers ──────────────────────────────────────────────────────────────
     const resetForm = () => {
         setStudentId(0);
         setFullname("");
-        setReferenceNumber("");
+        setRefNumber("");
         setPlanAmount(0);
         setAmountValue(0);
         setAmountToPay(0);
@@ -172,11 +320,12 @@ const PaymentComponent = () => {
         setErrorMessage("");
         setSelectedStudent(null);
         setCheckNumber("");
-        setIsCheckNumberError(false);
-        setCheckNumberError("");
+        setIsCheckError(false);
+        setCheckError("");
+        setSelectedPlan(null);
+        setInstallmentRows([]);
     };
 
-    // Fully clears the transaction type too (used after adding to list)
     const resetFormAndType = () => {
         resetForm();
         setTransDropdown(null);
@@ -186,504 +335,493 @@ const PaymentComponent = () => {
         setPlanId(0);
     };
 
-    // NEW: validate current form entry and push it into the transactions list
-    const addTransaction = () => {
-        if (!transType) {
-            setErrors(true);
-            setErrorMessage("Please select a transaction type.");
-            return;
-        }
+    const handleSelectTransType = (data) => {
+        resetForm();
+        setAmountValue(data.amount);
+        setIsTransType(data.label);
+        setTransDropdown(data);
 
-        if (!referenceNumber) {
-            setErrors(true);
-            setErrorMessage(
-                transType === "Tuition Fee"
-                    ? "Please enter student number."
-                    : "Please enter application number."
-            );
-            return;
-        }
-
-        if (!amountToPay || Number(amountToPay) === 0) {
-            setIsAmount(true);
-            setAmountError("Please enter amount before you proceed.");
-            return;
-        }
-
-        if (paymentMode?.value === "Check" && !checkNumber) {
-            setIsCheckNumberError(true);
-            setCheckNumberError("Please enter the check number.");
-            return;
-        }
-
-        const newTransaction = {
-            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            transType,
-            studentId,
-            fullName,
-            referenceNumber,
-            price: priceToUse,
-            amountToPay: Number(amountToPay),
-            change,
-            paymentMode,
-            checkNumber,
-            tuitionChildId,
-            planId,
-            orChildId: orNumberData.OrChildId,
-            orNumberUsed: orNumberData.LatestOrAvailable,
-            planName: assessmentData[0]?.PlanName ?? "",
+        const statusMap = {
+            "Test Permit":    "O-EXAMINATION-CASHIER",
+            "Enlistment Fee": "O-RESERVATION",
+            "Assessment Plan":"O-RESERVED",
+            "Tuition Fee":    "Y",
         };
+        const status = statusMap[data.label];
+        if (status) dispatch(fetchStudentAppData(status));
+    };
 
-        setTransactions((prev) => [...prev, newTransaction]);
+    const handleStudentSelect = (student) => {
+        setRefNumber(transType === "Tuition Fee" ? student.StudentNumber : student.AppNumber);
+        setStudentId(student.StudentId);
+        setFullname(`${student.Fname} ${student?.Mname || ""} ${student.Lname}`.replace(/\s+/g, " ").trim());
+        dispatch(fetchStudentAppAssessmentData(student.AppId));
+        if (transType === "Assessment Plan") {
+            // Fetch full plan list with installment schedule (same as parent portal)
+            dispatch(fetchCashierPendingTransactionData(student.AppId));
+            // Also fetch misc breakdown for this level
+            if (student.LevelId) dispatch(fetchGetCashierMiscBreakdownData(student.LevelId));
+            // Reset plan selection when a new student is picked
+            setSelectedPlan(null);
+            setInstallmentRows([]);
+            setPlanAmount(0);
+            setTuitionChildId(0);
+            setPlanId(0);
+        }
+    };
+
+    // When cashier picks a plan from the dropdown
+    const handlePlanSelect = (plan) => {
+        setSelectedPlan(plan);
+        const pendingList = Array.isArray(pendingTxData) ? pendingTxData : [];
+        const rows = pendingList.filter((t) => t.TuitionChildId === plan.value);
+        setInstallmentRows(rows);
+        // Pre-fill with first installment amount
+        const firstAmount = rows[0]?.Amount || 0;
+        setPlanAmount(Number(firstAmount));
+        setTuitionChildId(plan.value);
+        setPlanId(rows[0]?.PlanId || 0);
+        // Reset amount fields when plan changes
+        setAmountToPay(0);
+        setChange(0);
+        setTotalAmount(0);
+    };
+
+    const handleAmountChange = (value) => {
+        const cash  = Number(value || 0);
+        const price = priceToUse;
+        setAmountToPay(value);
+        setChange(Number((cash - price).toFixed(2)));
+        setTotalAmount(price);
+    };
+
+    const addTransaction = () => {
+        if (!transType)        { setErrors(true); setErrorMessage("Please select a transaction type."); return; }
+        if (!referenceNumber)  { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
+        if (!amountToPay || Number(amountToPay) === 0) { setIsAmount(true); setAmountError("Please enter the amount."); return; }
+        if (paymentMode?.value === "Check" && !checkNumber) { setIsCheckError(true); setCheckError("Please enter the check number."); return; }
+
+        setTransactions((prev) => [...prev, {
+            id:            `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            transType, studentId, fullName, referenceNumber,
+            price:         priceToUse,
+            amountToPay:   Number(amountToPay),
+            change, paymentMode, checkNumber,
+            tuitionChildId, planId,
+            orChildId:     orNumberData.OrChildId,
+            orNumberUsed:  orNumberData.LatestOrAvailable,
+            planName:      selectedPlan?.label ?? assessmentData[0]?.PlanName ?? "",
+            miscBreakdown: transType === "Assessment Plan" ? (Array.isArray(miscBreakdown) ? miscBreakdown : []) : [],
+        }]);
         resetFormAndType();
     };
 
-    // NEW: remove a transaction from the list before submitting
-    const removeTransaction = (id) => {
+    const removeTransaction = (id) =>
         setTransactions((prev) => prev.filter((t) => t.id !== id));
-    };
 
     const handlePrint = async () => {
-        // If nothing has been added yet, validate + treat current form as the only transaction
         if (transactions.length === 0) {
-            if (!referenceNumber) {
-                setErrors(true);
-                setErrorMessage(
-                    transType === "Tuition Fee"
-                        ? "Please enter student number."
-                        : "Please enter application number."
-                );
-                return;
-            }
-
-            if (!amountToPay || amountToPay === 0) {
-                setIsAmount(true);
-                setAmountError("Please enter amount before you proceed.");
-                return;
-            }
-
-            if (paymentMode?.value == "Check" && (!checkNumber || checkNumber === "")) {
-                setIsCheckNumberError(true);
-                setCheckNumberError("Please enter the check number.");
-                return;
-            }
+            if (!referenceNumber) { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
+            if (!amountToPay || amountToPay === 0) { setIsAmount(true); setAmountError("Please enter the amount."); return; }
+            if (paymentMode?.value === "Check" && !checkNumber) { setIsCheckError(true); setCheckError("Please enter the check number."); return; }
         }
 
-        const allTransactions =
-            transactions.length > 0
-                ? transactions
-                : [
-                      {
-                          transType,
-                          price: priceToUse,
-                          orChildId: orNumberData.OrChildId,
-                          orNumberUsed: orNumberData.LatestOrAvailable,
-                      },
-                  ];
+        const all = transactions.length > 0 ? transactions : [{
+            transType, price: priceToUse,
+            orChildId: orNumberData.OrChildId,
+            orNumberUsed: orNumberData.LatestOrAvailable,
+        }];
 
-        const payload = {
-            UserId: studentId,
-            ReferenceId: "",
-            TransType: orNumberData.OrType,
-            OrId: orNumberData.OrId,
-            CreatedByUserId: userId,
-            TuitionChildId: 0,
-            TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
-            OrChildDtos: allTransactions.map((t) => ({
-                OrChildId: t.orChildId,
+        await dispatch(fetchPrintReceiptData({
+            UserId:            studentId,
+            ReferenceId:       "",
+            TransType:         orNumberData.OrType,
+            OrId:              orNumberData.OrId,
+            CreatedByUserId:   userId,
+            TuitionChildId:    0,
+            TypeOfTransaction: all.map((t) => t.transType).join(", "),
+            OrChildDtos:       all.map((t) => ({
+                OrChildId:    t.orChildId,
                 OrNumberUsed: t.orNumberUsed,
-                Amount: t.price.toString(),
+                Amount:       t.price.toString(),
             })),
-        };
-
-        await dispatch(fetchPrintReceiptData(payload));
-        setIsOpenModal(true);
+        }));
+        setIsPreviewModal(true);
     };
 
-    const handleSubmitOrNumber = () => {
-        // Combine any added transactions with whatever is currently in the form
-        const allTransactions =
-            transactions.length > 0
-                ? transactions
-                : [
-                      {
-                          transType,
-                          studentId,
-                          referenceNumber,
-                          price: priceToUse,
-                          amountToPay,
-                          paymentMode,
-                          tuitionChildId,
-                          planId,
-                          orChildId: orNumberData.OrChildId,
-                          orNumberUsed: orNumberData.LatestOrAvailable,
-                      },
-                  ];
-        console.log(allTransactions);
-        const payload = {
-            UserId: allTransactions[0].studentId,
-            ReferenceId: allTransactions[0].referenceNumber,
-            TransType: orNumberData.OrType,
-            OrId: orNumberData.OrId,
-            CreatedByUserId: userId,
-            TuitionChildId: allTransactions[0].tuitionChildId,
-            TypeOfTransaction: allTransactions.map((t) => t.transType).join(", "),
-            OrChildDtos: allTransactions.map((t) => ({
-                BalId: dailyBalance.BalId,
-                OrChildId: t.orChildId,
-                PlanId: t.planId,
-                OrNumberUsed: t.orNumberUsed,
-                Amount: t.price.toString(),
-                AmountPaid: t.amountToPay.toString(),
-                ModeOfPayment: t.paymentMode?.value,
+    const handleSubmitAndPrint = () => {
+        const all = transactions.length > 0 ? transactions : [{
+            transType, studentId, referenceNumber,
+            price: priceToUse, amountToPay, paymentMode,
+            tuitionChildId, planId,
+            orChildId:    orNumberData.OrChildId,
+            orNumberUsed: orNumberData.LatestOrAvailable,
+        }];
+
+        dispatch(fetchInsertSubmitPaymentData({
+            UserId:            all[0].studentId,
+            ReferenceId:       all[0].referenceNumber,
+            TransType:         orNumberData.OrType,
+            OrId:              orNumberData.OrId,
+            CreatedByUserId:   userId,
+            TuitionChildId:    all[0].tuitionChildId,
+            TypeOfTransaction: all.map((t) => t.transType).join(", "),
+            OrChildDtos:       all.map((t) => ({
+                BalId:           dailyBalance.BalId,
+                OrChildId:       t.orChildId,
+                PlanId:          t.planId,
+                OrNumberUsed:    t.orNumberUsed,
+                Amount:          t.price.toString(),
+                AmountPaid:      t.amountToPay.toString(),
+                ModeOfPayment:   t.paymentMode?.value,
                 FromTransaction: t.transType,
             })),
-        };
-        console.log(payload);
-        dispatch(fetchInsertSubmitPaymentData(payload));
-        setIsOpenModal(true);
-        setIsWarningModal(false);
+        }));
+
+        if (receiptData?.PdfBase64) {
+            const iframe = document.createElement("iframe");
+            iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:none;";
+            iframe.src = `data:application/pdf;base64,${receiptData.PdfBase64}`;
+            document.body.appendChild(iframe);
+            iframe.onload = () => {
+                setTimeout(() => {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                    setTimeout(() => document.body.removeChild(iframe), 1000);
+                }, 300);
+            };
+        }
+
+        setIsPreviewModal(false);
+        setIsConfirmModal(false);
         setTransactions([]);
         resetFormAndType();
     };
 
-    const printSilently = (base64Pdf) => {
-        const iframe = document.createElement("iframe");
-        iframe.style.position = "fixed";
-        iframe.style.right = "0";
-        iframe.style.bottom = "0";
-        iframe.style.width = "0";
-        iframe.style.height = "0";
-        iframe.style.border = "none";
-        iframe.src = `data:application/pdf;base64,${base64Pdf}`;
-        document.body.appendChild(iframe);
-        iframe.onload = () => {
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                setTimeout(() => document.body.removeChild(iframe), 1000);
-            }, 300);
-        };
-    };
+    const canPrint = transactions.length > 0 || (transType && referenceNumber);
 
+    // ─────────────────────────────────────────────────────────────────────────
     return (
-        <div className="bg-white p-4">
-            <div className="md:max-w-5xl max-w-xl mx-auto">
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {/* Payment Section */}
-                    <div className="lg:col-span-2 max-md:order-1">
-                        <h2 className="text-3xl font-semibold text-slate-900">
-                            Payment Form
-                        </h2>
+        <div className="bg-white p-4 min-h-screen">
+            <div className="max-w-6xl mx-auto">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-                        <div className="mt-8 max-w-lg">
-                            <div className="mt-12">
-                                <div className="grid gap-4">
-                                    {/* Dropdown for transaction type */}
-                                    <div className="flex flex-col gap-2 w-full">
-                                        <SearchableSelect
-                                            options={transList}
-                                            value={transDropdown}
-                                            onChange={(selected) => setTransType(selected)}
-                                            placeholder="-- Select Transaction Type --"
-                                            label="Select Transaction Type"
-                                        />
-                                    </div>
-                                    {transType && (
-                                        <div>
-                                            <hr className="mt-4" />
-                                            <h2 className="mt-2 my-2 font-semibold text-slate-900">
-                                                {transType}
-                                            </h2>
-                                            <div className="relative w-full">
-                                                <div className="flex flex-col gap-2 w-full">
-                                                    <label
-                                                        htmlFor="appNumber"
-                                                        className="text-sm font-medium text-gray-700"
-                                                    >
-                                                        {transType === "Tuition Fee" ? (
-                                                            <>Student Number</>
-                                                        ) : (
-                                                            <>Application Number</>
-                                                        )}
-                                                    </label>
-                                                    <SearchBoxAppNo
-                                                        label="Search Student"
-                                                        placeholder={
-                                                            transType === "Tuition Fee"
-                                                                ? "Search by student number or fullname..."
-                                                                : "Search by application number or fullname..."
-                                                        }
-                                                        required
-                                                        options={studentApp}
-                                                        value={selectedStudent}
-                                                        onSelect={(student) => {
-                                                            handleStudentSelect(student);
-                                                            setSelectedStudent(student);
-                                                        }}
-                                                    />
-                                                    {errors && (
-                                                        <p className="text-red-500 text-sm">{errorMessage}</p>
-                                                    )}
-                                                </div>
-                                            </div>
+                    {/* ── LEFT: Payment form ───────────────────────────────── */}
+                    <div className="lg:col-span-3 space-y-5">
+                        <h2 className="text-2xl font-bold text-gray-900">Payment Form</h2>
 
-                                            <div className="flex flex-col gap-2 w-full">
-                                                <label
-                                                    htmlFor="officialReceipt"
-                                                    className="text-sm font-medium text-gray-700"
-                                                >
-                                                    Official Receipt
-                                                </label>
-                                                <input
-                                                    id="officialReceipt"
-                                                    type="text"
-                                                    className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
-                                                    value={orNumberData.LatestOrAvailable}
-                                                    readOnly
-                                                />
-                                                <p className="text-xs text-gray-500">
-                                                    Required for payment verification
-                                                </p>
-                                            </div>
-                                            <div className="flex flex-col gap-2 w-full">
-                                                <label
-                                                    htmlFor="fullName"
-                                                    className="text-sm font-medium text-gray-700"
-                                                >
-                                                    Fullname
-                                                </label>
-                                                <input
-                                                    id="fullName"
-                                                    value={fullName || ""}
-                                                    type="text"
-                                                    className="px-4 py-3.5 bg-gray-100 text-gray-500 w-full text-sm border border-gray-300 rounded-lg outline-none"
-                                                    readOnly
-                                                />
-                                            </div>
-                                            <div className="flex flex-col gap-2 w-full">
-                                                <label
-                                                    htmlFor="price"
-                                                    className="text-sm font-medium text-gray-700"
-                                                >
-                                                    Price
-                                                </label>
-                                                <input
-                                                    id="price"
-                                                    type="number"
-                                                    placeholder="Enter Amount."
-                                                    className="px-4 py-3.5 bg-gray-50 text-slate-900 w-full text-sm border rounded-lg"
-                                                    value={transType === "Assessment Plan" ? planAmount : amountValue}
-                                                    readOnly
-                                                />
-                                            </div>
-                                            <div className="flex flex-col gap-2 w-full">
-                                                <label
-                                                    htmlFor="amount"
-                                                    className="text-sm font-medium text-gray-700"
-                                                >
-                                                    Amount
-                                                </label>
-                                                <input
-                                                    id="amount"
-                                                    type="number"
-                                                    placeholder="Enter Amount."
-                                                    className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
-                                                    ${isAmount ? "border-red-500" : "border-gray-300"}`}
-                                                    value={amountToPay}
-                                                    onChange={(e) => handleChangeAmountToPay(e.target.value)}
-                                                />
-                                                {isAmount && (
-                                                    <p className="text-red-500 text-sm mt-1">{amountError}</p>
-                                                )}
-                                                <div className="flex flex-col gap-2 w-full">
-                                                    <SearchableSelect
-                                                        options={paymentOptions}
-                                                        value={paymentMode}
-                                                        onChange={(selected) => setPaymentMode(selected)}
-                                                        placeholder="-- Select Mode of Payment --"
-                                                        label="Select Mode Of Payment"
-                                                    />
-                                                </div>
-                                                {paymentMode?.value == "Check" && (
-                                                    <div className="flex flex-col gap-2 w-full">
-                                                        <label
-                                                            htmlFor="checkNumber"
-                                                            className="text-sm font-medium text-gray-700"
-                                                        >
-                                                            Check Number
-                                                        </label>
-                                                        <input
-                                                            id="checkNumber"
-                                                            type="text"
-                                                            placeholder="Enter Check Number."
-                                                            className={`px-4 py-3.5 w-full text-sm border rounded-lg outline-none 
-                                                            ${isCheckNumberError ? "border-red-500" : "border-gray-300"}`}
-                                                            value={checkNumber}
-                                                            onChange={(e) => setCheckNumber(e.target.value)}
-                                                        />
-                                                        {isCheckNumberError && (
-                                                            <p className="text-red-500 text-sm mt-1">{checkNumberError}</p>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="mt-8 flex gap-4">
-                                                <button
-                                                    type="button"
-                                                    onClick={addTransaction}
-                                                    className="w-48 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-emerald-500 text-white rounded-md hover:bg-emerald-600 tracking-wide cursor-pointer"
-                                                >
-                                                    + Add Transaction
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Always-visible Print button, enabled once there's something to print */}
-                                    <div className="mt-4 flex gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={handlePrint}
-                                            disabled={transactions.length === 0 && !transType}
-                                            className="w-40 py-3 flex items-center justify-center gap-2 text-[15px] font-medium bg-blue-500 text-white rounded-md hover:bg-blue-600 tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <Printer className="w-5 h-5" />
-                                            Print
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        {/* Transaction type selector */}
+                        <div>
+                            <SearchableSelect
+                                options={transList}
+                                value={transDropdown}
+                                onChange={handleSelectTransType}
+                                placeholder="— Select Transaction Type —"
+                                label="Transaction Type"
+                            />
                         </div>
-                    </div>
 
-                    {/* Order Summary */}
-                    <div className="bg-gray-100 p-6 rounded-md">
-                        <h2 className="text-2xl font-semibold text-slate-900">
-                            Cashier Daily Cash Balance
-                        </h2>
-                        <ul className="text-slate-500 font-medium mt-8 space-y-4">
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                Daily Starting Balance
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(dailyBalance.Amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                                Current Balance
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(realtimeBalance.Amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </li>
-                            <hr />
-                        </ul>
+                        {/* Student search — only shown when a type is selected */}
+                        {transType && (
+                            <div className="space-y-4 border border-gray-200 rounded-xl p-4 bg-gray-50">
+                                <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2">
+                                    {transType}
+                                </h3>
 
-                        <h2 className="text-2xl font-semibold text-slate-900 mt-6">
-                            Payment Information
-                        </h2>
+                                {/* App / Student No search */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                        {transType === "Tuition Fee" ? "Student Number" : "Application Number"}
+                                    </label>
+                                    <SearchBoxAppNo
+                                        label="Search Student"
+                                        placeholder={transType === "Tuition Fee" ? "Search by student number or name..." : "Search by application number or name..."}
+                                        required
+                                        options={studentApp}
+                                        value={selectedStudent}
+                                        onSelect={(student) => { handleStudentSelect(student); setSelectedStudent(student); }}
+                                    />
+                                    {errors && <p className="text-red-500 text-xs mt-1">{errorMessage}</p>}
+                                </div>
 
-                        {/* NEW: list of added transactions */}
-                        {transactions.length > 0 && (
-                            <div className="mt-4 border rounded-md divide-y bg-white overflow-hidden">
-                                {transactions.map((t) => (
-                                    <div
-                                        key={t.id}
-                                        className="flex items-center justify-between text-sm p-3"
-                                    >
+                                {/* OR Number */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 mb-1 block">Official Receipt No.</label>
+                                    <input readOnly className={READONLY} value={orNumberData.LatestOrAvailable || ""} />
+                                </div>
+
+                                {/* Full name */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 mb-1 block">Full Name</label>
+                                    <input readOnly className={READONLY} value={fullName || ""} />
+                                </div>
+
+                                {/* ── Assessment Plan breakdown ── */}
+                                {transType === "Assessment Plan" && fullName && (
+                                    <>
+                                        {/* Plan picker */}
                                         <div>
-                                            <div className="font-semibold text-slate-900">
-                                                {t.transType === "Assessment Plan"
-                                                    ? `${t.transType} - ${t.planName}`
-                                                    : t.transType}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                {t.referenceNumber} — {t.fullName}
-                                            </div>
+                                            {pendingTxLoading ? (
+                                                <div className="h-12 bg-gray-100 animate-pulse rounded-lg" />
+                                            ) : (
+                                                <SearchableSelect
+                                                    options={(() => {
+                                                        const pendingList = Array.isArray(pendingTxData) ? pendingTxData : [];
+                                                        const uniquePlans = new Map();
+                                                        pendingList.forEach((t) => {
+                                                            if (!uniquePlans.has(t.TuitionChildId)) {
+                                                                uniquePlans.set(t.TuitionChildId, {
+                                                                    value: t.TuitionChildId,
+                                                                    label: t.PlanName || "Unnamed Plan",
+                                                                });
+                                                            }
+                                                        });
+                                                        return Array.from(uniquePlans.values());
+                                                    })()}
+                                                    value={selectedPlan}
+                                                    onChange={handlePlanSelect}
+                                                    placeholder="— Select Payment Plan —"
+                                                    label="Choose Assessment Plan"
+                                                />
+                                            )}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-semibold text-slate-900">
-                                                ₱{Number(t.price).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => removeTransaction(t.id)}
-                                                className="text-red-500 hover:text-red-600"
-                                                title="Remove"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+
+                                        {/* Installment schedule for selected plan */}
+                                        {selectedPlan && installmentRows.length > 0 && (
+                                            <div className="border border-green-200 rounded-xl overflow-hidden">
+                                                <div className="bg-green-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-green-700 border-b border-green-200">
+                                                    {selectedPlan.label} — Payment Schedule
+                                                </div>
+                                                <table className="w-full text-xs">
+                                                    <thead className="bg-gray-50">
+                                                        <tr>
+                                                            {["Payment", "Amount", "Due Date", "Status"].map((h) => (
+                                                                <th key={h} className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">{h}</th>
+                                                            ))}
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {installmentRows.map((row, i) => {
+                                                            const isPaid = row.Status === "Paid";
+                                                            return (
+                                                                <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/60"}>
+                                                                    <td className="px-3 py-2 text-gray-700">{row.NumberOfPayment || "—"}</td>
+                                                                    <td className={`px-3 py-2 font-medium ${isPaid ? "text-gray-400 line-through" : "text-gray-800"}`}>
+                                                                        ₱{fmt(row.Amount)}
+                                                                    </td>
+                                                                    <td className="px-3 py-2 text-gray-500">
+                                                                        {row.DateOfPayment ? new Date(row.DateOfPayment).toLocaleDateString("en-US", {
+                                                                            month: "short", day: "numeric", year: "numeric"
+                                                                        }) : "—"}
+                                                                    </td>
+                                                                    <td className="px-3 py-2">
+                                                                        {isPaid ? (
+                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                                                                                Paid
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+                                                                                Pending
+                                                                            </span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+
+                                        {/* Miscellaneous breakdown */}
+                                        <div className="border border-blue-200 rounded-xl overflow-hidden">
+                                            <div className="bg-blue-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-700 border-b border-blue-200">
+                                                Miscellaneous Fees Breakdown
+                                            </div>
+                                            {miscLoading ? (
+                                                <div className="space-y-1 p-3">
+                                                    {[...Array(3)].map((_, i) => (
+                                                        <div key={i} className="h-6 bg-gray-100 animate-pulse rounded" />
+                                                    ))}
+                                                </div>
+                                            ) : Array.isArray(miscBreakdown) && miscBreakdown.length > 0 ? (
+                                                <table className="w-full text-xs">
+                                                    <thead className="bg-gray-50">
+                                                        <tr>
+                                                            <th className="px-3 py-2 text-left font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Fee Item</th>
+                                                            <th className="px-3 py-2 text-right font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-200">Amount</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {miscBreakdown.map((row, i) => (
+                                                            <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/60"}>
+                                                                <td className="px-3 py-2 text-gray-700">{row.FeeName || "—"}</td>
+                                                                <td className="px-3 py-2 text-right font-medium text-gray-800">₱{fmt(row.Amount)}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                    <tfoot className="border-t border-gray-200 bg-blue-50">
+                                                        <tr>
+                                                            <td className="px-3 py-2 text-right font-bold text-blue-700 text-xs">Misc Total</td>
+                                                            <td className="px-3 py-2 text-right font-bold text-blue-700 text-xs">
+                                                                ₱{fmt(miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0))}
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            ) : (
+                                                <p className="text-xs text-gray-400 italic px-3 py-3">No miscellaneous fees found for this level.</p>
+                                            )}
                                         </div>
+                                    </>
+                                )}
+
+                                {/* Price */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                        {transType === "Assessment Plan" ? "Amount Due (First Installment)" : "Price"}
+                                    </label>
+                                    <input
+                                        readOnly
+                                        className={READONLY}
+                                        value={transType === "Assessment Plan" ? (installmentRows[0]?.Amount || planAmount || "") : (amountValue || "")}
+                                    />
+                                </div>
+
+                                {/* Amount tendered */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                        Amount Tendered <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Enter amount"
+                                        className={`${INPUT} ${isAmount ? "border-red-500" : ""}`}
+                                        value={amountToPay}
+                                        onChange={(e) => handleAmountChange(e.target.value)}
+                                    />
+                                    {isAmount && <p className="text-red-500 text-xs mt-1">{amountError}</p>}
+                                    {Number(amountToPay) > 0 && priceToUse > 0 && (
+                                        <p className={`text-xs mt-1 font-medium ${Number(change) >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                                            {Number(change) >= 0 ? `Change: ₱${fmt(change)}` : `Short by ₱${fmt(Math.abs(change))}`}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {/* Mode of payment */}
+                                <div>
+                                    <SearchableSelect
+                                        options={paymentOptions}
+                                        value={paymentMode}
+                                        onChange={setPaymentMode}
+                                        placeholder="— Mode of Payment —"
+                                        label="Mode of Payment"
+                                    />
+                                </div>
+
+                                {/* Check number */}
+                                {paymentMode?.value === "Check" && (
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-500 mb-1 block">
+                                            Check Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter check number"
+                                            className={`${INPUT} ${isCheckError ? "border-red-500" : ""}`}
+                                            value={checkNumber}
+                                            onChange={(e) => setCheckNumber(e.target.value)}
+                                        />
+                                        {isCheckError && <p className="text-red-500 text-xs mt-1">{checkError}</p>}
                                     </div>
-                                ))}
+                                )}
+
+                                {/* Add Transaction button */}
+                                <button
+                                    type="button"
+                                    onClick={addTransaction}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg transition w-full justify-center"
+                                >
+                                    <Plus size={16} /> Add Transaction
+                                </button>
                             </div>
                         )}
 
-                        <ul className="text-slate-500 font-medium mt-4 space-y-4">
-                            {transactions.length === 0 && (
-                                <li className="flex flex-wrap gap-4 text-sm">
-                                    <strong>
-                                        {transType === "Assessment Plan"
-                                            ? `${transType} - ${assessmentData[0]?.PlanName ?? ""}`
-                                            : transType || "No transaction added yet"}
-                                    </strong>
-                                </li>
-                            )}
+                        {/* Added transactions list */}
+                        {transactions.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-gray-700 border-b pb-2 mb-3">
+                                    Receipt Items ({transactions.length})
+                                </h3>
+                                <div className="space-y-2">
+                                    {transactions.map((t) => (
+                                        <TransactionCard key={t.id} t={t} onRemove={removeTransaction} />
+                                    ))}
+                                </div>
 
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                Current Entry Amount{" "}
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(amountToPay || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </li>
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                Change{" "}
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{Number(change || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </li>
-                            <li className="flex flex-wrap gap-4 text-sm">
-                                Mode of payment{" "}
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    {paymentMode ? paymentMode.label : "-"}
-                                </span>
-                            </li>
-                            {paymentMode?.value === "Check" && (
-                                <li className="flex flex-wrap gap-4 text-sm">
-                                    Check Number{" "}
-                                    <span className="ml-auto font-semibold text-slate-900">
-                                        {checkNumber}
-                                    </span>
-                                </li>
-                            )}
-                            <li className="flex flex-wrap gap-4 text-sm border-t border-gray-300 pt-4">
-                                Added Transactions Subtotal{" "}
-                                <span className="ml-auto font-semibold text-slate-900">
-                                    ₱{transactionsTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </span>
-                            </li>
-                            <li className="flex flex-wrap gap-4 text-[15px] font-semibold text-slate-900 border-t border-gray-300 pt-4">
-                                Total{" "}
-                                <span className="ml-auto">₱{grandTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            </li>
-                        </ul>
+                                {/* Running total */}
+                                <div className="mt-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 space-y-1.5 text-sm">
+                                    <div className="flex justify-between text-gray-600">
+                                        <span>Subtotal</span>
+                                        <span className="font-medium">₱{fmt(transactionsTotal)}</span>
+                                    </div>
+                                    {totalAmount > 0 && (
+                                        <div className="flex justify-between text-gray-600">
+                                            <span>Current Entry</span>
+                                            <span className="font-medium">₱{fmt(totalAmount)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between font-bold text-gray-900 border-t border-gray-200 pt-1.5">
+                                        <span>Grand Total</span>
+                                        <span className="text-green-700">₱{fmt(grandTotal)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Print button */}
+                        <button
+                            type="button"
+                            onClick={handlePrint}
+                            disabled={!canPrint}
+                            className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Printer size={17} /> Print Receipt
+                        </button>
+                    </div>
+
+                    {/* ── RIGHT: Receipt preview panel ─────────────────────── */}
+                    <div className="lg:col-span-2">
+                        <ReceiptPanel
+                            orNumber={orNumberData.LatestOrAvailable}
+                            transactions={transactions}
+                            dailyBalance={dailyBalance}
+                            realtimeBalance={realtimeBalance}
+                            amountToPay={amountToPay}
+                            change={change}
+                            paymentMode={paymentMode}
+                            checkNumber={checkNumber}
+                            miscBreakdown={miscBreakdown}
+                        />
                     </div>
                 </div>
             </div>
 
+            {/* ── Preview Modal ─────────────────────────────────────────────── */}
             <ModalComponent
-                isOpen={isOpenModal}
-                onClose={() => setIsOpenModal(false)}
-                title="Sale Invoice Preview"
+                isOpen={isPreviewModal}
+                onClose={() => setIsPreviewModal(false)}
+                title="Receipt Preview"
+                size="w-[900px]"
+                maxHeight="100vh"
                 body={
-                    <div className="max-h-[80vh] w-full p-6 flex justify-center items-center">
-                        <div className="w-3/4 flex flex-col gap-2">
-                            <label className="text-sm font-medium text-gray-600 text-center">
-                                Preview
-                            </label>
+                    <div className="flex justify-center items-center p-4">
+                        <div className="w-full flex flex-col gap-2">
                             <div className="border rounded-lg shadow overflow-hidden flex justify-center items-center">
                                 {receiptLoading ? (
-                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
-                                        Loading preview...
-                                    </div>
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">Loading preview...</div>
                                 ) : receiptData?.PdfBase64 ? (
                                     <iframe
                                         src={`data:application/pdf;base64,${receiptData.PdfBase64}`}
@@ -691,52 +829,47 @@ const PaymentComponent = () => {
                                         title="Receipt Preview"
                                     />
                                 ) : (
-                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">
-                                        No preview available
-                                    </div>
+                                    <div className="flex items-center justify-center h-[60vh] text-gray-400">No preview available</div>
                                 )}
                             </div>
                         </div>
                     </div>
                 }
                 buttons={[
-                    {
-                        label: "Print",
-                        type: "green",
-                        onClick: () => setIsWarningModal(true),
-                    },
-                    {
-                        label: "Close",
-                        type: "red",
-                        onClick: () => setIsOpenModal(false),
-                    },
+                    { label: "Submit & Print", type: "green", closeOnClick: false, onClick: () => { setIsPreviewModal(false); setIsConfirmModal(true); } },
+                    { label: "Close",          type: "red",   onClick: () => setIsPreviewModal(false) },
                 ]}
-                size="w-[1000px]"
-                maxHeight="100vh"
             />
+
+            {/* ── Confirm Modal ──────────────────────────────────────────────── */}
             <ModalComponent
-                isOpen={isWarningModal}
-                onClose={() => setIsWarningModal(false)}
-                title="Warning"
-                body={"Are you sure you want to print?"}
+                isOpen={isConfirmModal}
+                onClose={() => setIsConfirmModal(false)}
+                title={<span className="font-bold text-lg text-red-700">Confirm Payment</span>}
+                body={
+                    <div className="space-y-2 text-sm text-gray-700">
+                        <p>Are you sure you want to submit and print this receipt?</p>
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 space-y-1 text-xs">
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Transactions</span>
+                                <span className="font-semibold">{transactions.length || 1}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">Total Amount</span>
+                                <span className="font-semibold text-green-700">₱{fmt(grandTotal || priceToUse)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-400">OR No.</span>
+                                <span className="font-semibold">{orNumberData.LatestOrAvailable || "—"}</span>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-400">This action cannot be undone.</p>
+                    </div>
+                }
                 buttons={[
-                    {
-                        label: "Submit & Print",
-                        type: "green",
-                        onClick: async () => {
-                            if (receiptData?.PdfBase64) {
-                                handleSubmitOrNumber();
-                                printSilently(receiptData.PdfBase64);
-                            }
-                        },
-                    },
-                    {
-                        label: "Close",
-                        type: "red",
-                        onClick: () => setIsOpenModal(false),
-                    },
+                    { label: "Yes, Submit & Print", type: "green", closeOnClick: false, onClick: handleSubmitAndPrint },
+                    { label: "Cancel",              type: "red",   onClick: () => setIsConfirmModal(false) },
                 ]}
-                maxHeight="100vh"
             />
         </div>
     );

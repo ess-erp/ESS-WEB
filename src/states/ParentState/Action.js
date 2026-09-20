@@ -12,6 +12,7 @@ import {
     FETCH_INSERT_PAYMENT_REQUEST, FETCH_INSERT_PAYMENT_SUCCESS, FETCH_INSERT_PAYMENT_FAILURE,
     FETCH_PARENT_TRANSACTION_HISTORY_REQUEST, FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS,FETCH_PARENT_TRANSACTION_HISTORY_FAILURE,
     FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
+    FETCH_GET_MISC_BREAKDOWN_REQUEST, FETCH_GET_MISC_BREAKDOWN_SUCCESS, FETCH_GET_MISC_BREAKDOWN_FAILURE,
     FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
 } from "./ActionType";
 
@@ -447,6 +448,28 @@ export const fetchSISeriesData = (userId) => async (dispatch) => {
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchSISeriesFailure(error.message));
+        return { ok: false, error };
+    }
+};
+// Miscellaneous Breakdown
+export const fetchGetMiscBreakdownRequest = () => ({ type: FETCH_GET_MISC_BREAKDOWN_REQUEST });
+export const fetchGetMiscBreakdownSuccess = (data) => ({ type: FETCH_GET_MISC_BREAKDOWN_SUCCESS, payload: data });
+export const fetchGetMiscBreakdownFailure = (error) => ({ type: FETCH_GET_MISC_BREAKDOWN_FAILURE, payload: error });
+
+export const fetchGetMiscBreakdownData = (levelId) => async (dispatch) => {
+    dispatch(fetchGetMiscBreakdownRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/parent/get-misc-breakdown?levelId=${levelId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        });
+        const res = await response.json();
+        dispatch(fetchGetMiscBreakdownSuccess(res));
+        return { ok: true, data: res };
+    } catch (error) {
+        dispatch(fetchGetMiscBreakdownFailure(error.message));
         return { ok: false, error };
     }
 };

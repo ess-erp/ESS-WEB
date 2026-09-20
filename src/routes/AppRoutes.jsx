@@ -65,7 +65,13 @@ import Profile from "../pages/SharedPages/Profile";
 import Ticketing from "../pages/SharedPages/Ticketing";
 import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
 import CurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
+import AccountingDashboard from "../pages/Accounting/Dashboard";
 import AccountingChartOfAccounts from "../pages/Accounting/ChartOfAccounts";
+import AccountingAddCoaCashier from "../pages/Accounting/AddCoaCashier";
+import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
+import AccountingSiSeries from "../pages/Accounting/SiSeries";
+// import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
+
 
 
 
@@ -555,13 +561,72 @@ const AppRoutes = () => (
 
         {/*  */}
 
+
+        {/* start of accounting module */}
+
+         <Route
+          path="/accounting/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingDashboard />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/chartofaccounts"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingChartOfAccounts />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/addcoacashier"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingAddCoaCashier />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/journalentry"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingJournalEntry />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/journalentry"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingJournalEntry />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/siseries"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingSiSeries />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* end of accounting module */}
+
         {/* shared components */}
 
 
         <Route
           path="/notification"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}>
               <Notification />
             </ProtectedRoutes>
           }
@@ -569,7 +634,7 @@ const AppRoutes = () => (
         <Route
           path="/ticketing"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 , 18]}>
               <Ticketing />
             </ProtectedRoutes>
           }
@@ -577,19 +642,12 @@ const AppRoutes = () => (
         <Route
           path="/profile"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}>
               <Profile />
             </ProtectedRoutes>
           }
         />
-        <Route
-          path="/accounting/chartofaccounts"
-          element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]}>
-              <AccountingChartOfAccounts />
-            </ProtectedRoutes>
-          }
-        />
+
       </Route>
 
       {/* end of shared components */}

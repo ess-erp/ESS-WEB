@@ -12,6 +12,7 @@ import {
     FETCH_INSERT_PAYMENT_REQUEST, FETCH_INSERT_PAYMENT_SUCCESS, FETCH_INSERT_PAYMENT_FAILURE,
     FETCH_PARENT_TRANSACTION_HISTORY_REQUEST, FETCH_PARENT_TRANSACTION_HISTORY_SUCCESS,FETCH_PARENT_TRANSACTION_HISTORY_FAILURE,
     FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
+    FETCH_GET_MISC_BREAKDOWN_REQUEST, FETCH_GET_MISC_BREAKDOWN_SUCCESS, FETCH_GET_MISC_BREAKDOWN_FAILURE,
     FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
 } from "./ActionType";
 
@@ -36,6 +37,7 @@ const initialGeneralState = {
     insertPaymentState: { ...initialState },
     parentTransactionHistoryState: { ...initialState },
     studentPendingTransactionState: { ...initialState },
+    miscBreakdownState: { ...initialState },
     siSeriesState: { ...initialState },
 };
 
@@ -142,7 +144,15 @@ const parentReducer = (state = initialGeneralState, action) => {
         case FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS:
             return { ...state, studentPendingTransactionState: { loading: false, data: action.payload, error: '' } };
         case FETCH_STUDENT_PENDING_TRANSACTION_FAILURE:
-            return { ...state, studentPendingTransactionState: { loading: false, data: [], error: action.payload } };  
+            return { ...state, studentPendingTransactionState: { loading: false, data: [], error: action.payload } };
+
+        // Miscellaneous Breakdown
+        case FETCH_GET_MISC_BREAKDOWN_REQUEST:
+            return { ...state, miscBreakdownState: { loading: true, data: [], error: '' } };
+        case FETCH_GET_MISC_BREAKDOWN_SUCCESS:
+            return { ...state, miscBreakdownState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_GET_MISC_BREAKDOWN_FAILURE:
+            return { ...state, miscBreakdownState: { loading: false, data: [], error: action.payload } };
 
         case FETCH_SI_SERIES_REQUEST:
             return { ...state, siSeriesState: { loading: true, data: [], error: '' } };

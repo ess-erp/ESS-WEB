@@ -80,11 +80,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: Bell,
       path: "/notification",
     },
-    {
-      name: "Chart of Accounts",
-      icon: Bell,
-      path: "/accounting/chartofaccounts",
-    },
     // Dynamic Ticket Visibility
     ...(!shouldHideTickets(user?.UserRoleId)
       ? [
@@ -400,6 +395,34 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     },
     ...sharedMenu,
   ];
+  const accountingMenu = [
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/accounting/dashboard",
+    },
+    {
+      name: "Chart of Account",
+      icon: DocumentIcon,
+      path: "/accounting/chartofaccounts",
+    },
+    {
+      name: "Add Coa to Cashier Account",
+      icon: BookPlus,
+      path: "/accounting/addcoacashier",
+    },
+    {
+      name: "Journal Entry",
+      icon: ScrollText,
+      path: "/accounting/journalentry",
+    },
+    {
+      name: "SI / OR Series",
+      icon: CreditCardIcon,
+      path: "/accounting/siseries",
+    },
+    ...sharedMenu,
+  ];
 
 
 
@@ -423,6 +446,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     14: adviserMenu,
     15: adviserMenu,
     17: parentMenu,
+    18: accountingMenu,
   };
 
 
