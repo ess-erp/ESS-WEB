@@ -194,12 +194,13 @@ export const fetchGetCoaCashierData = (page, pageSize, search) => async (dispatc
     dispatch(fetchGetCoaCashierRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-coa-cashier?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`, {
+        const res = await fetch(`${baseUrl}/accounting/get-coa-cashier-list?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`, {
             method: 'POST', headers: authHeaders(token),
         });
-        const data = await res.json();
-        dispatch(fetchGetCoaCashierSuccess(data));
-        return { ok: true, data: data.data, totalRecords: data.totalRecords };
+        const response = await res.json();
+        console.log(response);
+        dispatch(fetchGetCoaCashierSuccess(response));
+        return { ok: true, data: response.data, totalRecords: response.totalRecords };
     } catch (err) {
         dispatch(fetchGetCoaCashierFailure(err.message));
         return { ok: false, err };
@@ -424,8 +425,9 @@ export const fetchGetSiSeriesData = (page, pageSize, search) => async (dispatch)
             method: 'POST', headers: authHeaders(token),
         });
         const data = await res.json();
+        console.log(data);
         dispatch(fetchGetSiSeriesSuccess(data));
-        return { ok: true, data: data.data, totalRecords: data.totalRecords };
+        return { ok: true, data: data.Data, totalRecords: data.TotalRecords };
     } catch (err) {
         dispatch(fetchGetSiSeriesFailure(err.message));
         return { ok: false, err };
@@ -468,6 +470,7 @@ export const fetchGetRobotCashierData = () => async (dispatch) => {
             method: 'POST', headers: authHeaders(token),
         });
         const data = await res.json();
+        console.log(data);
         dispatch(fetchGetRobotCashierSuccess(data));
         return { ok: true, data };
     } catch (err) {

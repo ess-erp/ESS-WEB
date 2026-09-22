@@ -83,7 +83,7 @@ const TransactionCard = ({ t, onRemove }) => {
 // ─── Drawer balance card ──────────────────────────────────────────────────────
 const DrawerCard = ({ label, amount, color = "gray" }) => {
     const colorMap = {
-        gray:  "bg-gray-50  border-gray-200  text-gray-700",
+        gray: "bg-gray-50  border-gray-200  text-gray-700",
         green: "bg-green-50 border-green-200 text-green-700",
     };
     return (
@@ -95,10 +95,16 @@ const DrawerCard = ({ label, amount, color = "gray" }) => {
 };
 
 // ─── Receipt panel ────────────────────────────────────────────────────────────
-const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, amountToPay, change, paymentMode, checkNumber, miscBreakdown }) => {
+const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, amountToPay, change, paymentMode, checkNumber }) => {
     const total = transactions.reduce((s, t) => s + Number(t.price || 0), 0);
-    const [showMisc, setShowMisc] = useState(false);
-    const miscTotal = Array.isArray(miscBreakdown) ? miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0) : 0;
+    const [expandedTxMisc, setExpandedTxMisc] = useState({}); // Track which transaction misc is expanded
+
+    const toggleTxMisc = (txId) => {
+        setExpandedTxMisc(prev => ({ ...prev, [txId]: !prev[txId] }));
+    };
+
+    // Check if there are any Assessment Plan transactions
+    const hasAssessmentPlan = transactions.some(t => t.transType === "Assessment Plan");
 
     return (
         <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-5 font-mono text-sm sticky top-0 space-y-4">
@@ -116,7 +122,7 @@ const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, a
                     <p className="text-[10px] text-blue-600 font-medium mb-0.5">Starting Drawer Balance</p>
                     <p className="text-lg font-bold text-blue-700">₱{fmt(dailyBalance?.Amount)}</p>
                 </div>
-                
+
                 {/* Current Drawer Balance - Green Box */}
                 <div className="border-2 border-green-400 rounded-lg px-3 py-2 bg-green-50">
                     <p className="text-[10px] text-green-600 font-medium mb-0.5">Current Drawer Balance</p>
@@ -127,7 +133,7 @@ const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, a
             {/* OR number + date */}
             <div className="border-b border-dashed border-gray-200 pb-3 space-y-1 text-xs text-gray-600">
                 <div className="flex justify-between">
-                    <span className="text-gray-400">OR No.</span>
+                    <span className="text-gray-400">SI No.</span>
                     <span className="font-semibold">{orNumber || "—"}</span>
                 </div>
                 <div className="flex justify-between">
@@ -136,48 +142,79 @@ const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, a
                 </div>
             </div>
 
-            {/* Transaction lines */}
+            {/* Transaction lines with detailed breakdown */}
             {transactions.length === 0 ? (
                 <p className="text-center text-xs text-gray-300 py-4 italic">No transactions added yet</p>
             ) : (
-                <div className="space-y-2">
-                    {transactions.map((t) => (
-                        <div key={t.id} className="flex justify-between items-start text-xs">
-                            <div className="max-w-[65%]">
-                                <p className="font-semibold text-gray-700">
-                                    {t.transType === "Assessment Plan" ? `${t.transType} — ${t.planName}` : t.transType}
-                                </p>
-                                <p className="text-gray-400 truncate">{t.referenceNumber} · {t.fullName}</p>
-                            </div>
-                            <span className="font-semibold text-gray-800">₱{fmt(t.price)}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+                <div className="space-y-3">
+                    {transactions.map((t) => {
+                        const hasMisc = Array.isArray(t.miscBreakdown) && t.miscBreakdown.length > 0;
+                        const tMiscTotal = hasMisc ? t.miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0) : 0;
+                        const installmentAmount = t.advancePaymentAmount || (t.price - tMiscTotal);
 
-            {/* Miscellaneous breakdown (collapsible) */}
-            {miscTotal > 0 && (
-                <div className="border-t border-dashed border-gray-200 pt-3">
-                    <button
-                        onClick={() => setShowMisc(!showMisc)}
-                        className="w-full flex items-center justify-between text-xs font-semibold text-blue-600 hover:text-blue-700 transition"
-                    >
-                        <span>Miscellaneous Fees</span>
-                        <div className="flex items-center gap-2">
-                            <span>₱{fmt(miscTotal)}</span>
-                            {showMisc ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                        </div>
-                    </button>
-                    {showMisc && (
-                        <div className="mt-2 space-y-1 pl-2 border-l-2 border-blue-200">
-                            {miscBreakdown.map((item, i) => (
-                                <div key={i} className="flex justify-between text-[10px] text-gray-500">
-                                    <span className="truncate max-w-[60%]">{item.FeeName}</span>
-                                    <span>₱{fmt(item.Amount)}</span>
+                        return (
+                            <div key={t.id} className="border-b border-dashed border-gray-100 pb-3 last:border-0">
+                                {/* Transaction header */}
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="max-w-[65%]">
+                                        <p className="font-semibold text-gray-700 text-xs">
+                                            {t.transType === "Assessment Plan" ? `${t.transType} — ${t.planName}` : t.transType}
+                                        </p>
+                                        <p className="text-[10px] text-gray-400 truncate">{t.referenceNumber} · {t.fullName}</p>
+                                    </div>
+                                    <span className="font-bold text-gray-800 text-xs">₱{fmt(t.price)}</span>
                                 </div>
-                            ))}
-                        </div>
-                    )}
+
+                                {/* Breakdown details */}
+                                {t.transType === "Assessment Plan" && (
+                                    <div className="space-y-0.5 text-[10px] pl-2 border-l-2 border-green-200 bg-green-50 p-2 rounded-r">
+                                        {t.numInstallmentsPaid > 1 && (
+                                            <div className="flex justify-between text-purple-700 font-semibold">
+                                                <span>📝 {t.numInstallmentsPaid} Installment(s)</span>
+                                                <span>₱{fmt(installmentAmount)}</span>
+                                            </div>
+                                        )}
+                                        {!t.numInstallmentsPaid || t.numInstallmentsPaid === 1 ? (
+                                            <div className="flex justify-between text-green-700">
+                                                <span>Installment Payment</span>
+                                                <span>₱{fmt(installmentAmount)}</span>
+                                            </div>
+                                        ) : null}
+                                        {hasMisc && (
+                                            <>
+                                                <button
+                                                    onClick={() => toggleTxMisc(t.id)}
+                                                    className="w-full flex justify-between text-blue-700 font-medium hover:text-blue-800 transition"
+                                                >
+                                                    <span className="flex items-center gap-1">
+                                                        Miscellaneous Fees
+                                                        {expandedTxMisc[t.id] ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                                    </span>
+                                                    <span>₱{fmt(tMiscTotal)}</span>
+                                                </button>
+                                                {expandedTxMisc[t.id] && (
+                                                    <div className="mt-1 space-y-0.5 pl-3 border-l-2 border-blue-200">
+                                                        {t.miscBreakdown.map((item, i) => (
+                                                            <div key={i} className="flex justify-between text-gray-600">
+                                                                <span className="truncate max-w-[60%]">• {item.FeeName}</span>
+                                                                <span>₱{fmt(item.Amount)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        {t.overpaymentCredit > 0 && (
+                                            <div className="flex justify-between text-blue-700 font-semibold pt-1 border-t border-blue-200">
+                                                <span>💰 Credit Stored</span>
+                                                <span>₱{fmt(t.overpaymentCredit)}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 
@@ -229,17 +266,17 @@ const PaymentComponent = () => {
     const userId = user.UserId;
 
     // ── selectors ─────────────────────────────────────────────────────────────
-    const transData      = useSelector((s) => s.cashier.transactionTypeState.data || []);
-    const studentApp     = useSelector((s) => s.cashier.studentAppState.data || []);
+    const transData = useSelector((s) => s.cashier.transactionTypeState.data || []);
+    const studentApp = useSelector((s) => s.cashier.studentAppState.data || []);
     const assessmentData = useSelector((s) => s.cashier.studentAppAssessmentState.data || []);
-    const orNumberData   = useSelector((s) => s.cashier.orNumberState.data || {});
-    const dailyBalance   = useSelector((s) => s.cashier.dailyBalanceState.data || {});
-    const realtimeBalance= useSelector((s) => s.cashier.realtimeBalanceState.data || {});
-    const receiptData    = useSelector((s) => s.cashier.printReceiptState.data || {});
+    const orNumberData = useSelector((s) => s.cashier.orNumberState.data || {});
+    const dailyBalance = useSelector((s) => s.cashier.dailyBalanceState.data || {});
+    const realtimeBalance = useSelector((s) => s.cashier.realtimeBalanceState.data || {});
+    const receiptData = useSelector((s) => s.cashier.printReceiptState.data || {});
     const receiptLoading = useSelector((s) => s.cashier.printReceiptState.loading);
-    const miscBreakdown  = useSelector((s) => s.cashier.cashierMiscBreakdownState?.data || []);
-    const miscLoading    = useSelector((s) => s.cashier.cashierMiscBreakdownState?.loading || false);
-    const pendingTxData  = useSelector((s) => s.cashier.cashierPendingTransactionState?.data || []);
+    const miscBreakdown = useSelector((s) => s.cashier.cashierMiscBreakdownState?.data || []);
+    const miscLoading = useSelector((s) => s.cashier.cashierMiscBreakdownState?.loading || false);
+    const pendingTxData = useSelector((s) => s.cashier.cashierPendingTransactionState?.data || []);
     const pendingTxLoading = useSelector((s) => s.cashier.cashierPendingTransactionState?.loading || false);
 
     // ── transaction type dropdown ─────────────────────────────────────────────
@@ -250,51 +287,74 @@ const PaymentComponent = () => {
     }));
 
     // ── form state ────────────────────────────────────────────────────────────
-    const [transType,       setIsTransType]   = useState("");
-    const [transDropdown,   setTransDropdown] = useState(null);
-    const [amountValue,     setAmountValue]   = useState(0);
-    const [studentId,       setStudentId]     = useState(0);
-    const [fullName,        setFullname]      = useState("");
-    const [referenceNumber, setRefNumber]     = useState("");
-    const [planAmount,      setPlanAmount]    = useState(0);
+    const [transType, setIsTransType] = useState("");
+    const [transDropdown, setTransDropdown] = useState(null);
+    const [amountValue, setAmountValue] = useState(0);
+    // const [studentId, setStudentId] = useState(0);
+    const [userFormId, setUserFormId] = useState(0);
+    const [fullName, setFullname] = useState("");
+    const [referenceNumber, setRefNumber] = useState("");
+    const [planAmount, setPlanAmount] = useState(0);
     const [selectedStudent, setSelectedStudent] = useState(null);
-    const [paymentMode,     setPaymentMode]   = useState(null);
-    const [tuitionChildId,  setTuitionChildId]= useState(0);
-    const [planId,          setPlanId]        = useState(0);
-    const [selectedPlan,    setSelectedPlan]  = useState(null);
+    const [paymentMode, setPaymentMode] = useState(null);
+    const [tuitionChildId, setTuitionChildId] = useState(0);
+    const [planId, setPlanId] = useState(0);
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const [installmentRows, setInstallmentRows] = useState([]);
-    const [amountToPay,     setAmountToPay]   = useState(0);
-    const [change,          setChange]        = useState(0);
-    const [totalAmount,     setTotalAmount]   = useState(0);
-    const [checkNumber,     setCheckNumber]   = useState("");
+    const [numInstallmentsToPay, setNumInstallmentsToPay] = useState(1); // Number of installments to pay
+    const [advancePaymentAmount, setAdvancePaymentAmount] = useState(0); // Total for advance payments
+    const [overpaymentCredit, setOverpaymentCredit] = useState(0); // Credit from overpayment
+    const [amountToPay, setAmountToPay] = useState(0);
+    const [change, setChange] = useState(0);
+    const [totalAmount, setTotalAmount] = useState(0);
+    const [checkNumber, setCheckNumber] = useState("");
 
     // validation
-    const [errors,          setErrors]        = useState(false);
-    const [errorMessage,    setErrorMessage]  = useState("");
-    const [isAmount,        setIsAmount]      = useState(false);
-    const [amountError,     setAmountError]   = useState("");
-    const [isCheckError,    setIsCheckError]  = useState(false);
-    const [checkError,      setCheckError]    = useState("");
+    const [errors, setErrors] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [isAmount, setIsAmount] = useState(false);
+    const [amountError, setAmountError] = useState("");
+    const [isCheckError, setIsCheckError] = useState(false);
+    const [checkError, setCheckError] = useState("");
 
     // cart
     const [transactions, setTransactions] = useState([]);
 
     // modals
-    const [isPreviewModal,  setIsPreviewModal]  = useState(false);
-    const [isConfirmModal,  setIsConfirmModal]  = useState(false);
+    const [isPreviewModal, setIsPreviewModal] = useState(false);
+    const [isConfirmModal, setIsConfirmModal] = useState(false);
 
     // ── payment options ───────────────────────────────────────────────────────
     const paymentOptions = [
-        { value: "Cash",  label: "Cash"  },
+        { value: "Cash", label: "Cash" },
         { value: "Check", label: "Check" },
     ];
 
     // ── computed ──────────────────────────────────────────────────────────────
-    const priceToUse       = transType === "Assessment Plan"
-        ? (installmentRows[0]?.Amount ? Number(installmentRows[0].Amount) : Number(planAmount || 0))
+    // Calculate misc total - only for display, not included in baseTotal
+    const miscTotal = Array.isArray(miscBreakdown)
+        ? miscBreakdown.reduce((s, r) => s + Number(r.Amount || 0), 0)
+        : 0;
+
+    // For Assessment Plan: calculate advance payment amount based on number of installments
+    const unpaidInstallments = installmentRows.filter(row => row.Status !== "Paid");
+    const maxInstallmentsCanPay = Math.min(numInstallmentsToPay, unpaidInstallments.length);
+    const calculatedAdvanceAmount = unpaidInstallments
+        .slice(0, maxInstallmentsCanPay)
+        .reduce((sum, row) => sum + Number(row.Amount || 0), 0);
+
+    // Price calculation
+    const priceToUse = transType === "Assessment Plan"
+        ? calculatedAdvanceAmount || Number(planAmount || 0)
         : Number(amountValue || 0);
-    const transactionsTotal= transactions.reduce((s, t) => s + Number(t.price || 0), 0);
-    const grandTotal       = transactionsTotal + (totalAmount || 0);
+
+    // Total for current form - Assessment Plan uses only installment amount (misc not included until added)
+    const baseTotal = transType === "Assessment Plan"
+        ? calculatedAdvanceAmount
+        : Number(amountValue || 0);
+
+    const transactionsTotal = transactions.reduce((s, t) => s + Number(t.price || 0), 0);
+    const grandTotal = transactionsTotal + baseTotal;
 
     // ── init ──────────────────────────────────────────────────────────────────
     useEffect(() => {
@@ -306,7 +366,8 @@ const PaymentComponent = () => {
 
     // ── handlers ──────────────────────────────────────────────────────────────
     const resetForm = () => {
-        setStudentId(0);
+        // setStudentId(0);
+        setUserFormId(0);
         setFullname("");
         setRefNumber("");
         setPlanAmount(0);
@@ -324,6 +385,9 @@ const PaymentComponent = () => {
         setCheckError("");
         setSelectedPlan(null);
         setInstallmentRows([]);
+        setNumInstallmentsToPay(1);
+        setOverpaymentCredit(0);
+        setAdvancePaymentAmount(0);
     };
 
     const resetFormAndType = () => {
@@ -342,22 +406,26 @@ const PaymentComponent = () => {
         setTransDropdown(data);
 
         const statusMap = {
-            "Test Permit":    "O-EXAMINATION-CASHIER",
+            "Test Permit": "O-EXAMINATION-CASHIER",
             "Enlistment Fee": "O-RESERVATION",
-            "Assessment Plan":"O-RESERVED",
-            "Tuition Fee":    "Y",
+            "Assessment Plan": "O-RESERVED",
+            "Tuition Fee": "Y",
         };
         const status = statusMap[data.label];
         if (status) dispatch(fetchStudentAppData(status));
     };
 
     const handleStudentSelect = (student) => {
+        console.log(student);
         setRefNumber(transType === "Tuition Fee" ? student.StudentNumber : student.AppNumber);
-        setStudentId(student.StudentId);
+        // setStudentId(student.StudentId);
+        // setUserFormId(student.StudentId);
         setFullname(`${student.Fname} ${student?.Mname || ""} ${student.Lname}`.replace(/\s+/g, " ").trim());
         dispatch(fetchStudentAppAssessmentData(student.AppId));
         if (transType === "Assessment Plan") {
             // Fetch full plan list with installment schedule (same as parent portal)
+            setUserFormId(student.AppId);
+            console.log(userFormId);
             dispatch(fetchCashierPendingTransactionData(student.AppId));
             // Also fetch misc breakdown for this level
             if (student.LevelId) dispatch(fetchGetCashierMiscBreakdownData(student.LevelId));
@@ -367,6 +435,9 @@ const PaymentComponent = () => {
             setPlanAmount(0);
             setTuitionChildId(0);
             setPlanId(0);
+        }
+        else if (transType === "Tuition Fee") {
+            setUserFormId(student.StudentId);
         }
     };
 
@@ -388,32 +459,58 @@ const PaymentComponent = () => {
     };
 
     const handleAmountChange = (value) => {
-        const cash  = Number(value || 0);
-        const price = priceToUse;
+        const cash = Number(value || 0);
+        const price = baseTotal; // Use baseTotal which includes misc fees
         setAmountToPay(value);
-        setChange(Number((cash - price).toFixed(2)));
+
+        // Calculate change or overpayment credit
+        const difference = cash - price;
+        if (difference >= 0) {
+            setChange(Number(difference.toFixed(2)));
+            // If overpayment is significant (>0), store as credit
+            if (difference > 0) {
+                setOverpaymentCredit(Number(difference.toFixed(2)));
+            } else {
+                setOverpaymentCredit(0);
+            }
+        } else {
+            setChange(0);
+            setOverpaymentCredit(0);
+        }
+
         setTotalAmount(price);
     };
 
     const addTransaction = () => {
-        if (!transType)        { setErrors(true); setErrorMessage("Please select a transaction type."); return; }
-        if (!referenceNumber)  { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
+        if (!transType) { setErrors(true); setErrorMessage("Please select a transaction type."); return; }
+        if (!referenceNumber) { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
         if (!amountToPay || Number(amountToPay) === 0) { setIsAmount(true); setAmountError("Please enter the amount."); return; }
         if (paymentMode?.value === "Check" && !checkNumber) { setIsCheckError(true); setCheckError("Please enter the check number."); return; }
 
         setTransactions((prev) => [...prev, {
-            id:            `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            transType, studentId, fullName, referenceNumber,
-            price:         priceToUse,
-            amountToPay:   Number(amountToPay),
-            change, paymentMode, checkNumber,
-            tuitionChildId, planId,
-            orChildId:     orNumberData.OrChildId,
-            orNumberUsed:  orNumberData.LatestOrAvailable,
-            planName:      selectedPlan?.label ?? assessmentData[0]?.PlanName ?? "",
-            miscBreakdown: transType === "Assessment Plan" ? (Array.isArray(miscBreakdown) ? miscBreakdown : []) : [],
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            transType,
+            userFormId,
+            fullName,
+            referenceNumber,
+            price: baseTotal + miscTotal, // Always include misc if present
+            amountToPay: Number(amountToPay),
+            change,
+            overpaymentCredit,
+            paymentMode,
+            checkNumber,
+            tuitionChildId: tuitionChildId || 0,
+            planId: planId || 0,
+            orChildId: orNumberData.OrChildId,
+            orNumberUsed: orNumberData.LatestOrAvailable,
+            planName: selectedPlan?.label ?? assessmentData[0]?.PlanName ?? "",
+            miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
+            numInstallmentsPaid: numInstallmentsToPay || 1,
+            advancePaymentAmount: calculatedAdvanceAmount || 0,
         }]);
         resetFormAndType();
+        setNumInstallmentsToPay(1); // Reset to 1 installment
+        setOverpaymentCredit(0);
     };
 
     const removeTransaction = (id) =>
@@ -427,54 +524,98 @@ const PaymentComponent = () => {
         }
 
         const all = transactions.length > 0 ? transactions : [{
-            transType, price: priceToUse,
+            transType,
+            userFormId, // Include userFormId from state
+            price: priceToUse,
             orChildId: orNumberData.OrChildId,
             orNumberUsed: orNumberData.LatestOrAvailable,
+            tuitionChildId: tuitionChildId || 0,
+            planId: planId || 0,
+            numInstallmentsPaid: numInstallmentsToPay || 1,
+            overpaymentCredit: overpaymentCredit || 0,
+            miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
+            advancePaymentAmount: calculatedAdvanceAmount || 0,
         }];
-
-        await dispatch(fetchPrintReceiptData({
-            UserId:            studentId,
-            ReferenceId:       "",
-            TransType:         orNumberData.OrType,
-            OrId:              orNumberData.OrId,
-            CreatedByUserId:   userId,
-            TuitionChildId:    0,
+        const payload = {
+            UserId: all[0].userFormId || userFormId, // Use from transaction or current state
+            ReferenceId: referenceNumber || "",
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            TuitionChildId: all[0].tuitionChildId || 0,
             TypeOfTransaction: all.map((t) => t.transType).join(", "),
-            OrChildDtos:       all.map((t) => ({
-                OrChildId:    t.orChildId,
+            PaymentFormChildDtos: all.map((t) => ({
+                OrChildId: t.orChildId,
                 OrNumberUsed: t.orNumberUsed,
-                Amount:       t.price.toString(),
+                Amount: t.price.toString(),
+                PlanId: t.planId || 0,
+                NumInstallmentsPaid: t.numInstallmentsPaid || 1,
+                OverpaymentCredit: t.overpaymentCredit || 0,
+                AdvancePaymentAmount: t.advancePaymentAmount || 0,
+                MiscIds: (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
             })),
-        }));
-        setIsPreviewModal(true);
+        };
+
+        console.log(payload);
+        // await dispatch(fetchPrintReceiptData({
+        //     UserId:            studentId,
+        //     ReferenceId:       referenceNumber || "",
+        //     TransType:         orNumberData.OrType,
+        //     OrId:              orNumberData.OrId,
+        //     CreatedByUserId:   userId,
+        //     TuitionChildId:    all[0].tuitionChildId || 0,
+        //     TypeOfTransaction: all.map((t) => t.transType).join(", "),
+        //     OrChildDtos:       all.map((t) => ({
+        //         OrChildId:           t.orChildId,
+        //         OrNumberUsed:        t.orNumberUsed,
+        //         Amount:              t.price.toString(),
+        //         PlanId:              t.planId || 0,
+        //         NumInstallmentsPaid: t.numInstallmentsPaid || 1,
+        //         OverpaymentCredit:   t.overpaymentCredit || 0,
+        //         AdvancePaymentAmount: t.advancePaymentAmount || 0,
+        //         MiscIds:             (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
+        //     })),
+        // }));
+        // setIsPreviewModal(true);
     };
 
     const handleSubmitAndPrint = () => {
         const all = transactions.length > 0 ? transactions : [{
-            transType, studentId, referenceNumber,
-            price: priceToUse, amountToPay, paymentMode,
-            tuitionChildId, planId,
-            orChildId:    orNumberData.OrChildId,
+            transType,
+            userFormId,
+            referenceNumber,
+            price: priceToUse,
+            amountToPay,
+            paymentMode,
+            tuitionChildId: tuitionChildId || 0,
+            planId: planId || 0,
+            orChildId: orNumberData.OrChildId,
             orNumberUsed: orNumberData.LatestOrAvailable,
+            numInstallmentsPaid: numInstallmentsToPay || 1,
+            miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
+            overpaymentCredit: overpaymentCredit || 0,
         }];
 
         dispatch(fetchInsertSubmitPaymentData({
-            UserId:            all[0].studentId,
-            ReferenceId:       all[0].referenceNumber,
-            TransType:         orNumberData.OrType,
-            OrId:              orNumberData.OrId,
-            CreatedByUserId:   userId,
-            TuitionChildId:    all[0].tuitionChildId,
+            UserId: all[0].userFormId,
+            ReferenceId: all[0].referenceNumber,
+            TransType: orNumberData.OrType,
+            OrId: orNumberData.OrId,
+            CreatedByUserId: userId,
+            TuitionChildId: all[0].tuitionChildId || 0,
             TypeOfTransaction: all.map((t) => t.transType).join(", "),
-            OrChildDtos:       all.map((t) => ({
-                BalId:           dailyBalance.BalId,
-                OrChildId:       t.orChildId,
-                PlanId:          t.planId,
-                OrNumberUsed:    t.orNumberUsed,
-                Amount:          t.price.toString(),
-                AmountPaid:      t.amountToPay.toString(),
-                ModeOfPayment:   t.paymentMode?.value,
+            PaymentFormChildDtos: all.map((t) => ({
+                BalId: dailyBalance.BalId,
+                OrChildId: t.orChildId,
+                PlanId: t.planId || 0,
+                OrNumberUsed: t.orNumberUsed,
+                Amount: t.price.toString(),
+                AmountPaid: t.amountToPay?.toString() || t.price.toString(),
+                ModeOfPayment: t.paymentMode?.value || "Cash",
                 FromTransaction: t.transType,
+                NumInstallmentsPaid: t.numInstallmentsPaid || 1,
+                OverpaymentCredit: t.overpaymentCredit || 0,
+                MiscIds: (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
             })),
         }));
 
@@ -633,6 +774,45 @@ const PaymentComponent = () => {
                                             </div>
                                         )}
 
+                                        {/* Number of installments to pay (for advance payment) */}
+                                        {selectedPlan && unpaidInstallments.length > 0 && (
+                                            <div className="border border-purple-200 rounded-xl p-4 bg-purple-50">
+                                                <label className="block text-sm font-semibold text-purple-900 mb-2">
+                                                    Number of Installments to Pay
+                                                </label>
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max={unpaidInstallments.length}
+                                                        value={numInstallmentsToPay}
+                                                        onChange={(e) => {
+                                                            const val = Math.max(1, Math.min(unpaidInstallments.length, Number(e.target.value)));
+                                                            setNumInstallmentsToPay(val);
+                                                        }}
+                                                        className="w-24 px-3 py-2 text-sm rounded-lg border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                    />
+                                                    <span className="text-sm text-purple-700">
+                                                        of {unpaidInstallments.length} unpaid installment(s)
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 p-3 bg-white rounded-lg border border-purple-200">
+                                                    <div className="flex justify-between text-sm mb-1">
+                                                        <span className="text-gray-600">Installment Total:</span>
+                                                        <span className="font-semibold text-gray-800">₱{fmt(calculatedAdvanceAmount)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm mb-1">
+                                                        <span className="text-gray-600">Misc Fees:</span>
+                                                        <span className="font-semibold text-gray-800">₱{fmt(miscTotal)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-base font-bold pt-2 border-t border-purple-200">
+                                                        <span className="text-purple-900">Total Amount Due:</span>
+                                                        <span className="text-purple-700">₱{fmt(baseTotal)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {/* Miscellaneous breakdown */}
                                         <div className="border border-blue-200 rounded-xl overflow-hidden">
                                             <div className="bg-blue-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-700 border-b border-blue-200">
@@ -703,10 +883,22 @@ const PaymentComponent = () => {
                                         onChange={(e) => handleAmountChange(e.target.value)}
                                     />
                                     {isAmount && <p className="text-red-500 text-xs mt-1">{amountError}</p>}
-                                    {Number(amountToPay) > 0 && priceToUse > 0 && (
-                                        <p className={`text-xs mt-1 font-medium ${Number(change) >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                                            {Number(change) >= 0 ? `Change: ₱${fmt(change)}` : `Short by ₱${fmt(Math.abs(change))}`}
-                                        </p>
+                                    {Number(amountToPay) > 0 && baseTotal > 0 && (
+                                        <div className="mt-1 space-y-1">
+                                            <p className={`text-xs font-medium ${Number(change) >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                                                {Number(change) >= 0 ? `Change: ₱${fmt(change)}` : `Short by ₱${fmt(Math.abs(change))}`}
+                                            </p>
+                                            {overpaymentCredit > 0 && (
+                                                <p className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                                    💰 Overpayment Credit: ₱{fmt(overpaymentCredit)} will be stored in the system
+                                                </p>
+                                            )}
+                                            {transType === "Assessment Plan" && numInstallmentsToPay > 1 && (
+                                                <p className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                                                    📝 Paying {numInstallmentsToPay} installment(s) in advance
+                                                </p>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
@@ -803,7 +995,6 @@ const PaymentComponent = () => {
                             change={change}
                             paymentMode={paymentMode}
                             checkNumber={checkNumber}
-                            miscBreakdown={miscBreakdown}
                         />
                     </div>
                 </div>
@@ -837,7 +1028,7 @@ const PaymentComponent = () => {
                 }
                 buttons={[
                     { label: "Submit & Print", type: "green", closeOnClick: false, onClick: () => { setIsPreviewModal(false); setIsConfirmModal(true); } },
-                    { label: "Close",          type: "red",   onClick: () => setIsPreviewModal(false) },
+                    { label: "Close", type: "red", onClick: () => setIsPreviewModal(false) },
                 ]}
             />
 
@@ -868,7 +1059,7 @@ const PaymentComponent = () => {
                 }
                 buttons={[
                     { label: "Yes, Submit & Print", type: "green", closeOnClick: false, onClick: handleSubmitAndPrint },
-                    { label: "Cancel",              type: "red",   onClick: () => setIsConfirmModal(false) },
+                    { label: "Cancel", type: "red", onClick: () => setIsConfirmModal(false) },
                 ]}
             />
         </div>

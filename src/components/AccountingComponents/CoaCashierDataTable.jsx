@@ -1,14 +1,12 @@
 ﻿import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
-import { Eye } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchGetCoaCashierData,
     fetchInsertCoaCashierData,
-    fetchGetCoaHeaderData,
-    fetchGetCoaGroupData,
-    fetchGetCoaAccountData,
+    fetchGetCoaFlatData,
     fetchGetCashierListData,
 } from "../../states/AccountingState/Action";
 
@@ -19,57 +17,65 @@ const CoaCashierDataTable = () => {
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
-    const [table,        setTable]        = useState([]);
+    const [table, setTable] = useState([]);
     const [totalRecords, setTotalRecords] = useState(0);
-    const [loading,      setLoading]      = useState(false);
-    const [page,         setPage]         = useState(1);
-    const [pageSize,     setPageSize]     = useState(10);
-    const [search,       setSearch]       = useState("");
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
 
-    const [isAssignModal,  setIsAssignModal]  = useState(false);
+    const [isAssignModal, setIsAssignModal] = useState(false);
     const [isConfirmModal, setIsConfirmModal] = useState(false);
     const [isSuccessModal, setIsSuccessModal] = useState(false);
-    const [isErrorModal,   setIsErrorModal]   = useState(false);
+    const [isErrorModal, setIsErrorModal] = useState(false);
     const [isLoadingModal, setIsLoadingModal] = useState(false);
 
     const [selectedCashier, setSelectedCashier] = useState("");
-    const [selectedHeader,  setSelectedHeader]  = useState("");
-    const [selectedGroup,   setSelectedGroup]   = useState("");
     const [selectedAccount, setSelectedAccount] = useState("");
-    const [errors,          setErrors]          = useState({});
+    const [errors, setErrors] = useState({});
 
     const cashierList = useSelector((s) => s.accounting.cashierListState.data || []);
-    const coaHeaders  = useSelector((s) => s.accounting.coaHeaderState.data   || []);
-    const coaGroups   = useSelector((s) => s.accounting.coaGroupState.data    || []);
-    const coaAccounts = useSelector((s) => s.accounting.coaAccountState.data  || []);
+    const coaFlatList = useSelector((s) => s.accounting.coaFlatState.data || []);
 
     const columns = [
-        { name: "Cashier",       selector: (r) => r.CashierName   || "—", sortable: true },
-        { name: "Account Code",  selector: (r) => r.AccountCode   || "—", sortable: true },
-        { name: "Account Name",  selector: (r) => r.AccountName   || "—", sortable: true, wrap: true },
-        { name: "Account Group", selector: (r) => r.AccountGroup  || "—", sortable: true },
-        { name: "Header",        selector: (r) => r.HeaderName    || "—", sortable: true },
-        { name: "Normal Balance",selector: (r) => r.NormalBalance || "—", sortable: true },
+        {
+            name: "Cashier",
+            selector: (r) => [r.Fname, r.Mname, r.Lname].filter(Boolean).join(" ") || "—",
+            sortable: true,
+            wrap: true,
+        },
+        { name: "Email", selector: (r) => r.Email || "—", sortable: true, wrap: true },
+        { name: "Account Code", selector: (r) => r.AccountCode || "—", sortable: true, width: "120px" },
+        { name: "Account Name", selector: (r) => r.AccountName || "—", sortable: true, wrap: true },
+        { name: "Account Group", selector: (r) => r.AccountGroup || "—", sortable: true },
+        { name: "Normal Balance", selector: (r) => r.NormalBalance || "—", sortable: true, width: "130px" },
         {
             name: "Date Assigned",
-            selector: (r) => r.DateCreated ? new Date(r.DateCreated).toLocaleDateString() : "—",
+            selector: (r) => r.DateCreated ? new Date(r.DateCreated).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—",
             sortable: true,
+            width: "120px",
         },
         {
-            name: "Actions",
+            name: "Action",
             cell: (row) => (
-                <button className="p-1 text-blue-600 hover:text-blue-800" onClick={() => console.log("view", row)}>
-                    <Eye size={18} />
+                <button 
+                    className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition" 
+                    onClick={() => handleEdit(row)}
+                    title="Edit Assignment"
+                >
+                    <Edit2 size={16} />
                 </button>
             ),
             ignoreRowClick: true,
             width: "80px",
+            center: true,
         },
     ];
 
     const fetchTable = async () => {
         setLoading(true);
         const res = await dispatch(fetchGetCoaCashierData(page, pageSize, search));
+        console.log(res);
         if (res.ok) {
             setTable(res.data || []);
             setTotalRecords(res.totalRecords || 0);
@@ -82,30 +88,27 @@ const CoaCashierDataTable = () => {
     }, [page, pageSize, search]);
 
     const handleOpenAssign = () => {
-        setSelectedCashier(""); setSelectedHeader("");
-        setSelectedGroup("");   setSelectedAccount("");
+        setSelectedCashier("");
+        setSelectedAccount("");
         setErrors({});
         dispatch(fetchGetCashierListData());
-        dispatch(fetchGetCoaHeaderData());
+        dispatch(fetchGetCoaFlatData());
         setIsAssignModal(true);
     };
 
-    const handleHeaderChange = (id) => {
-        setSelectedHeader(id); setSelectedGroup(""); setSelectedAccount("");
-        if (id) dispatch(fetchGetCoaGroupData(id));
-    };
-
-    const handleGroupChange = (id) => {
-        setSelectedGroup(id); setSelectedAccount("");
-        if (id) dispatch(fetchGetCoaAccountData(id));
+    const handleEdit = (row) => {
+        setSelectedCashier(row.UserId || "");
+        setSelectedAccount(row.CoaChildId || "");
+        setErrors({});
+        dispatch(fetchGetCashierListData());
+        dispatch(fetchGetCoaFlatData());
+        setIsAssignModal(true);
     };
 
     const validate = () => {
         const e = {};
         if (!selectedCashier) e.cashier = "Please select a cashier.";
-        if (!selectedHeader)  e.header  = "Please select a COA header.";
-        if (!selectedGroup)   e.group   = "Please select a COA group.";
-        if (!selectedAccount) e.account = "Please select an account name.";
+        if (!selectedAccount) e.account = "Please select a COA account.";
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -120,8 +123,8 @@ const CoaCashierDataTable = () => {
         setIsConfirmModal(false);
         setIsLoadingModal(true);
         const payload = {
-            UserId:          selectedCashier,
-            CoaId:           selectedAccount,
+            UserId: selectedCashier,
+            CoaChildId: selectedAccount,  // Using CoaChildId since we're selecting from CoaChildTable
             CreatedByUserId: user?.UserId,
         };
         const res = await dispatch(fetchInsertCoaCashierData(payload));
@@ -167,65 +170,56 @@ const CoaCashierDataTable = () => {
                 isOpen={isAssignModal}
                 onClose={() => setIsAssignModal(false)}
                 title="Assign COA to Cashier"
-                size="w-[520px]"
-                maxHeight="100vh"
+                size="w-[600px]"
                 body={
-                    <div className="space-y-5 py-1">
+                    <div className="space-y-4">
+                        {/* Cashier dropdown */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Cashier <span className="text-red-500">*</span>
                             </label>
-                            <select value={selectedCashier} onChange={(e) => setSelectedCashier(e.target.value)} className={sel(errors.cashier)}>
+                            <select
+                                value={selectedCashier}
+                                onChange={(e) => setSelectedCashier(e.target.value)}
+                                className={sel(errors.cashier)}
+                            >
                                 <option value="">— Select Cashier —</option>
-                                {Array.isArray(cashierList) && cashierList.map((c) => (
+                                {cashierList.map((c) => (
                                     <option key={c.UserId} value={c.UserId}>
-                                        {`${c.Fname || ""} ${c.Mname || ""} ${c.Lname || ""}`.replace(/\s+/g, " ").trim()}
+                                        {c.Fname} {c.Mname} {c.Lname}
                                     </option>
                                 ))}
                             </select>
                             {errors.cashier && <p className="text-red-500 text-xs mt-1">{errors.cashier}</p>}
                         </div>
+
+                        {/* COA Account dropdown (flat list) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                COA Header <span className="text-red-500">*</span>
+                                Chart of Account <span className="text-red-500">*</span>
                             </label>
-                            <select value={selectedHeader} onChange={(e) => handleHeaderChange(e.target.value)} className={sel(errors.header)}>
-                                <option value="">— Select Header —</option>
-                                {Array.isArray(coaHeaders) && coaHeaders.map((h) => (
-                                    <option key={h.CoaId} value={h.CoaId}>{h.AccountName}</option>
-                                ))}
-                            </select>
-                            {errors.header && <p className="text-red-500 text-xs mt-1">{errors.header}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Account Group <span className="text-red-500">*</span>
-                            </label>
-                            <select value={selectedGroup} onChange={(e) => handleGroupChange(e.target.value)} disabled={!selectedHeader} className={sel(errors.group)}>
-                                <option value="">— Select Group —</option>
-                                {Array.isArray(coaGroups) && coaGroups.map((g) => (
-                                    <option key={g.CoaId} value={g.CoaId}>{g.AccountName}</option>
-                                ))}
-                            </select>
-                            {errors.group && <p className="text-red-500 text-xs mt-1">{errors.group}</p>}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Account Name <span className="text-red-500">*</span>
-                            </label>
-                            <select value={selectedAccount} onChange={(e) => setSelectedAccount(e.target.value)} disabled={!selectedGroup} className={sel(errors.account)}>
-                                <option value="">— Select Account Name —</option>
-                                {Array.isArray(coaAccounts) && coaAccounts.map((a) => (
-                                    <option key={a.CoaId} value={a.CoaId}>{a.AccountCode} — {a.AccountName}</option>
+                            <select
+                                value={selectedAccount}
+                                onChange={(e) => setSelectedAccount(e.target.value)}
+                                className={sel(errors.account)}
+                            >
+                                <option value="">— Select Account —</option>
+                                {coaFlatList.map((coa) => (
+                                    <option key={coa.CoaChildId} value={coa.CoaChildId}>
+                                        {coa.AccountCode} - {coa.AccountName} ({coa.AccountGroup})
+                                    </option>
                                 ))}
                             </select>
                             {errors.account && <p className="text-red-500 text-xs mt-1">{errors.account}</p>}
+                            <p className="text-xs text-gray-500 mt-1">
+                                Select the account that will be used for this cashier's transactions.
+                            </p>
                         </div>
                     </div>
                 }
                 buttons={[
-                    { label: "Assign", type: "green", closeOnClick: false, onClick: handleSubmitAssign },
-                    { label: "Cancel", type: "red",   onClick: () => setIsAssignModal(false) },
+                    { label: "Assign", type: "green", onClick: handleSubmitAssign },
+                    { label: "Cancel", type: "red", onClick: () => setIsAssignModal(false) },
                 ]}
             />
 
@@ -237,14 +231,14 @@ const CoaCashierDataTable = () => {
                 body="Are you sure you want to assign this COA to the selected cashier?"
                 buttons={[
                     { label: "Yes, Assign", type: "green", closeOnClick: false, onClick: handleConfirm },
-                    { label: "Cancel",      type: "red",   onClick: () => setIsConfirmModal(false) },
+                    { label: "Cancel", type: "red", onClick: () => setIsConfirmModal(false) },
                 ]}
             />
 
             {/* Loading Modal */}
             <ModalComponent
                 isOpen={isLoadingModal}
-                onClose={() => {}}
+                onClose={() => { }}
                 title={<span className="font-bold text-lg text-blue-700">Processing</span>}
                 body={
                     <div className="flex flex-col items-center justify-center gap-3 py-2">

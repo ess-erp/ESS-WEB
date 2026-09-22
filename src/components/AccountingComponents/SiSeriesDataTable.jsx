@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
-import { Eye, Bot } from "lucide-react";
+import { Edit2, Bot } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchGetSiSeriesData,
@@ -64,6 +64,7 @@ const SiSeriesDataTable = () => {
     const robotCashierState = useSelector((s) => s.accounting.robotCashierState);
     const robotData = robotCashierState.data;
     const robotLoading = robotCashierState.loading;
+    console.log(robotData);
 
     // ── Cashier list ──────────────────────────────────────────────────────────
     const cashierList = useSelector((s) => s.accounting.cashierListState.data || []);
@@ -78,31 +79,32 @@ const SiSeriesDataTable = () => {
     // ── columns ───────────────────────────────────────────────────────────────
     const columns = [
         {
-            name: "Cashier",
-            selector: (r) => r.CashierName || "—",
+            name: "Cashier Name",
+            selector: (r) => [r.Fname, r.Mname, r.Lname].filter(Boolean).join(" ") || "—",
             sortable: true,
+            wrap: true,
         },
         {
             name: "Start No.",
             selector: (r) => r.StartNo || "—",
             sortable: true,
-            width: "120px",
+            width: "110px",
         },
         {
             name: "End No.",
             selector: (r) => r.EndNo || "—",
             sortable: true,
-            width: "120px",
+            width: "110px",
         },
         {
             name: "Latest Used",
             selector: (r) => r.LatestOrAvailable || "—",
             sortable: true,
-            width: "130px",
+            width: "110px",
         },
         {
             name: "Remarks",
-            selector: (r) => r.Remarks || "—",
+            selector: (r) => r.Remarks || "No remarks",
             sortable: true,
             wrap: true,
         },
@@ -114,22 +116,28 @@ const SiSeriesDataTable = () => {
                 </span>
             ),
             width: "90px",
+            center: true,
         },
         {
             name: "Date Created",
-            selector: (r) => r.DateCreated ? new Date(r.DateCreated).toLocaleDateString() : "—",
+            selector: (r) => r.DateCreated ? new Date(r.DateCreated).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—",
             sortable: true,
-            width: "130px",
+            width: "120px",
         },
         {
-            name: "Actions",
+            name: "Action",
             cell: (r) => (
-                <button className="p-1 text-blue-600 hover:text-blue-800" title="View" onClick={() => console.log("view", r)}>
-                    <Eye size={17} />
+                <button 
+                    className="p-1.5 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition" 
+                    title="Edit Series" 
+                    onClick={() => handleEdit(r)}
+                >
+                    <Edit2 size={16} />
                 </button>
             ),
             ignoreRowClick: true,
-            width: "70px",
+            width: "80px",
+            center: true,
         },
     ];
 
@@ -137,6 +145,7 @@ const SiSeriesDataTable = () => {
     const fetchTable = async () => {
         setLoading(true);
         const res = await dispatch(fetchGetSiSeriesData(page, pageSize, search));
+        console.log(res);
         if (res.ok) {
             setTable(res.data || []);
             setTotalRecords(res.totalRecords || 0);
@@ -146,8 +155,24 @@ const SiSeriesDataTable = () => {
 
     useEffect(() => { fetchTable(); }, [page, pageSize, search]);
 
+    useEffect(() => {
+        dispatch(fetchGetRobotCashierData());
+    }, [dispatch]);
+
     const handleOpenNew = () => {
         setForm(defaultForm);
+        setErrors({});
+        dispatch(fetchGetCashierListData());
+        setIsNewModal(true);
+    };
+
+    const handleEdit = (row) => {
+        setForm({
+            startNo: row.StartNo || "",
+            endNo: row.EndNo || "",
+            cashierId: row.UserId || "",
+            remarks: row.Remarks || "",
+        });
         setErrors({});
         dispatch(fetchGetCashierListData());
         setIsNewModal(true);
@@ -157,7 +182,6 @@ const SiSeriesDataTable = () => {
         setRobotForm(defaultRobotForm);
         setRobotErrors({});
         dispatch(fetchGetCashierListData());
-        dispatch(fetchGetRobotCashierData());
         setIsRobotModal(true);
     };
 
@@ -267,7 +291,10 @@ const SiSeriesDataTable = () => {
                             <div>
                                 <p className="text-xs text-gray-400 mb-0.5">Assigned Account</p>
                                 <p className="font-semibold text-gray-800">
-                                    {Array.isArray(robotData) ? robotData[0]?.CashierName : robotData?.CashierName || "—"}
+                                    {Array.isArray(robotData) 
+                                        ? `${robotData[0]?.Fname || ""} ${robotData[0]?.Mname || ""} ${robotData[0]?.Lname || ""}`.trim() || "—"
+                                        : `${robotData?.Fname || ""} ${robotData?.Mname || ""} ${robotData?.Lname || ""}`.trim() || "—"
+                                    }
                                 </p>
                             </div>
                             <div>
