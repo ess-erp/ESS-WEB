@@ -31,6 +31,18 @@ import {
     // Cashier Transaction Journal
     FETCH_GET_CASHIER_TRANSACTIONS_REQUEST, FETCH_GET_CASHIER_TRANSACTIONS_SUCCESS, FETCH_GET_CASHIER_TRANSACTIONS_FAILURE,
     FETCH_POST_CASHIER_JOURNAL_REQUEST, FETCH_POST_CASHIER_JOURNAL_SUCCESS, FETCH_POST_CASHIER_JOURNAL_FAILURE,
+    // Templates / Fees (migrated from Finance)
+    FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
+    FETCH_LIST_OF_USER_DATA_REQUEST, FETCH_LIST_OF_USER_DATA_SUCCESS, FETCH_LIST_OF_USER_DATA_FAILURE,
+    FETCH_INSERT_OR_SERIES_DATA_REQUEST, FETCH_INSERT_OR_SERIES_DATA_SUCCESS, FETCH_INSERT_OR_SERIES_DATA_FAILURE,
+    FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST, FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE,
+    FETCH_INSERT_TUITION_FEE_DATA_REQUEST, FETCH_INSERT_TUITION_FEE_DATA_SUCCESS, FETCH_INSERT_TUITION_FEE_DATA_FAILURE,
+    FETCH_INSERT_MISCELLANEOUS_DATA_REQUEST, FETCH_INSERT_MISCELLANEOUS_DATA_SUCCESS, FETCH_INSERT_MISCELLANEOUS_DATA_FAILURE,
+    // Transaction Types / COA Assignment (New)
+    FETCH_GET_TRANSACTION_TYPES_REQUEST, FETCH_GET_TRANSACTION_TYPES_SUCCESS, FETCH_GET_TRANSACTION_TYPES_FAILURE,
+    FETCH_CREATE_TRANSACTION_TYPES_REQUEST, FETCH_CREATE_TRANSACTION_TYPES_SUCCESS, FETCH_CREATE_TRANSACTION_TYPES_FAILURE,
+    FETCH_UPDATE_TRANSACTION_TYPES_REQUEST, FETCH_UPDATE_TRANSACTION_TYPES_SUCCESS, FETCH_UPDATE_TRANSACTION_TYPES_FAILURE,
+    FETCH_DELETE_TRANSACTION_TYPES_REQUEST, FETCH_DELETE_TRANSACTION_TYPES_SUCCESS, FETCH_DELETE_TRANSACTION_TYPES_FAILURE,
 } from './ActionType';
 
 const s = { loading: false, data: [], error: '', success: false };
@@ -65,10 +77,21 @@ const initialState = {
     // Robot Cashier
     robotCashierState: { ...s },
     insertRobotCashierState: { ...s },
-
     // Cashier Transaction Journal
     cashierTransactionsState: { ...s },
     postCashierJournalState: { ...s },
+    // Templates / Fees (migrated from Finance)
+    templateTableState: { ...s },
+    listOfUserState: { ...s },
+    insertOrSeriesState: { ...s },
+    insertFeesState: { ...s },
+    tuitionFeeState: { ...s },
+    miscellaneousStateInsertState: { ...s },
+    // Transaction Types / COA Assignment (New)
+    getTransactionTypesState: { ...s },
+    createTransactionTypesState: { ...s },
+    updateTransactionTypesState: { ...s },
+    deleteTransactionTypesState: { ...s },
 };
 
 const ok = (payload) => ({ loading: false, data: payload, error: '', success: true });
@@ -77,7 +100,6 @@ const req = () => ({ loading: true, data: [], error: '', success: false });
 
 const accountingReducer = (state = initialState, action) => {
     switch (action.type) {
-
         // ── COA ───────────────────────────────────────────────────────────────
         case FETCH_GET_COA_REQUEST: return { ...state, getCoaState: req() };
         case FETCH_GET_COA_SUCCESS: return { ...state, getCoaState: ok(action.payload) };
@@ -152,7 +174,7 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_UPDATE_JOURNAL_SUCCESS: return { ...state, updateJournalState: ok(action.payload) };
         case FETCH_UPDATE_JOURNAL_FAILURE: return { ...state, updateJournalState: err(action.payload) };
 
-        // ── SI Series ──────────────────────────────────────────────────────────
+        // ── SI Series ─────────────────────────────────────────────────────────
         case FETCH_GET_SI_SERIES_REQUEST: return { ...state, siSeriesListState: req() };
         case FETCH_GET_SI_SERIES_SUCCESS: return { ...state, siSeriesListState: ok(action.payload) };
         case FETCH_GET_SI_SERIES_FAILURE: return { ...state, siSeriesListState: err(action.payload) };
@@ -161,7 +183,7 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_INSERT_SI_SERIES_SUCCESS: return { ...state, insertSiSeriesState: ok(action.payload) };
         case FETCH_INSERT_SI_SERIES_FAILURE: return { ...state, insertSiSeriesState: err(action.payload) };
 
-        // ── Robot Cashier ───────────────────────────────────────────────────────
+        // ── Robot Cashier ────────────────────────────────────────────────────
         case FETCH_GET_ROBOT_CASHIER_REQUEST: return { ...state, robotCashierState: req() };
         case FETCH_GET_ROBOT_CASHIER_SUCCESS: return { ...state, robotCashierState: ok(action.payload) };
         case FETCH_GET_ROBOT_CASHIER_FAILURE: return { ...state, robotCashierState: err(action.payload) };
@@ -169,20 +191,82 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_INSERT_ROBOT_CASHIER_REQUEST: return { ...state, insertRobotCashierState: req() };
         case FETCH_INSERT_ROBOT_CASHIER_SUCCESS: return { ...state, insertRobotCashierState: ok(action.payload) };
         case FETCH_INSERT_ROBOT_CASHIER_FAILURE: return { ...state, insertRobotCashierState: err(action.payload) };
-        // Cashier Transaction Journal
-        case FETCH_GET_CASHIER_TRANSACTIONS_REQUEST:
-            return { ...state, cashierTransactionsState: { loading: true, data: [], error: '' } };
-        case FETCH_GET_CASHIER_TRANSACTIONS_SUCCESS:
-            return { ...state, cashierTransactionsState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_GET_CASHIER_TRANSACTIONS_FAILURE:
-            return { ...state, cashierTransactionsState: { loading: false, data: [], error: action.payload } };
 
-        case FETCH_POST_CASHIER_JOURNAL_REQUEST:
-            return { ...state, postCashierJournalState: { loading: true, data: null, error: '' } };
-        case FETCH_POST_CASHIER_JOURNAL_SUCCESS:
-            return { ...state, postCashierJournalState: { loading: false, data: action.payload, error: '' } };
-        case FETCH_POST_CASHIER_JOURNAL_FAILURE:
-            return { ...state, postCashierJournalState: { loading: false, data: null, error: action.payload } };
+        // ── Cashier Transaction Journal ───────────────────────────────────────
+        case FETCH_GET_CASHIER_TRANSACTIONS_REQUEST: return { ...state, cashierTransactionsState: req() };
+        case FETCH_GET_CASHIER_TRANSACTIONS_SUCCESS: return { ...state, cashierTransactionsState: ok(action.payload) };
+        case FETCH_GET_CASHIER_TRANSACTIONS_FAILURE: return { ...state, cashierTransactionsState: err(action.payload) };
+
+        case FETCH_POST_CASHIER_JOURNAL_REQUEST: return { ...state, postCashierJournalState: req() };
+        case FETCH_POST_CASHIER_JOURNAL_SUCCESS: return { ...state, postCashierJournalState: ok(action.payload) };
+        case FETCH_POST_CASHIER_JOURNAL_FAILURE: return { ...state, postCashierJournalState: err(action.payload) };
+
+        // ── Templates / Fees (migrated from Finance) ──────────────────────────
+        case FETCH_TEMPLATE_TABLE_DATA_REQUEST:
+            return { ...state, templateTableState: req() };
+        case FETCH_TEMPLATE_TABLE_DATA_SUCCESS:
+            return { ...state, templateTableState: ok(action.payload) };
+        case FETCH_TEMPLATE_TABLE_DATA_FAILURE:
+            return { ...state, templateTableState: err(action.payload) };
+        case FETCH_LIST_OF_USER_DATA_REQUEST:
+            return { ...state, listOfUserState: req() };
+        case FETCH_LIST_OF_USER_DATA_SUCCESS:
+            return { ...state, listOfUserState: ok(action.payload) };
+        case FETCH_LIST_OF_USER_DATA_FAILURE:
+            return { ...state, listOfUserState: err(action.payload) };
+        case FETCH_INSERT_OR_SERIES_DATA_REQUEST:
+            return { ...state, insertOrSeriesState: req() };
+        case FETCH_INSERT_OR_SERIES_DATA_SUCCESS:
+            return { ...state, insertOrSeriesState: ok(action.payload) };
+        case FETCH_INSERT_OR_SERIES_DATA_FAILURE:
+            return { ...state, insertOrSeriesState: err(action.payload) };
+        case FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST:
+            return { ...state, insertFeesState: req() };
+        case FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS:
+            return { ...state, insertFeesState: ok(action.payload) };
+        case FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE:
+            return { ...state, insertFeesState: err(action.payload) };
+        case FETCH_INSERT_TUITION_FEE_DATA_REQUEST:
+            return { ...state, tuitionFeeState: req() };
+        case FETCH_INSERT_TUITION_FEE_DATA_SUCCESS:
+            return { ...state, tuitionFeeState: ok(action.payload) };
+        case FETCH_INSERT_TUITION_FEE_DATA_FAILURE:
+            return { ...state, tuitionFeeState: err(action.payload) };
+        case FETCH_INSERT_MISCELLANEOUS_DATA_REQUEST:
+            return { ...state, miscellaneousStateInsertState: req() };
+        case FETCH_INSERT_MISCELLANEOUS_DATA_SUCCESS:
+            return { ...state, miscellaneousStateInsertState: ok(action.payload) };
+        case FETCH_INSERT_MISCELLANEOUS_DATA_FAILURE:
+            return { ...state, miscellaneousStateInsertState: err(action.payload) };
+
+        // ── Transaction Types / COA Assignment ────────────────────────────────
+        case FETCH_GET_TRANSACTION_TYPES_REQUEST:
+            return { ...state, getTransactionTypesState: req() };
+        case FETCH_GET_TRANSACTION_TYPES_SUCCESS:
+            return { ...state, getTransactionTypesState: ok(action.payload) };
+        case FETCH_GET_TRANSACTION_TYPES_FAILURE:
+            return { ...state, getTransactionTypesState: err(action.payload) };
+
+        case FETCH_CREATE_TRANSACTION_TYPES_REQUEST:
+            return { ...state, createTransactionTypesState: req() };
+        case FETCH_CREATE_TRANSACTION_TYPES_SUCCESS:
+            return { ...state, createTransactionTypesState: ok(action.payload) };
+        case FETCH_CREATE_TRANSACTION_TYPES_FAILURE:
+            return { ...state, createTransactionTypesState: err(action.payload) };
+
+        case FETCH_UPDATE_TRANSACTION_TYPES_REQUEST:
+            return { ...state, updateTransactionTypesState: req() };
+        case FETCH_UPDATE_TRANSACTION_TYPES_SUCCESS:
+            return { ...state, updateTransactionTypesState: ok(action.payload) };
+        case FETCH_UPDATE_TRANSACTION_TYPES_FAILURE:
+            return { ...state, updateTransactionTypesState: err(action.payload) };
+
+        case FETCH_DELETE_TRANSACTION_TYPES_REQUEST:
+            return { ...state, deleteTransactionTypesState: req() };
+        case FETCH_DELETE_TRANSACTION_TYPES_SUCCESS:
+            return { ...state, deleteTransactionTypesState: ok(action.payload) };
+        case FETCH_DELETE_TRANSACTION_TYPES_FAILURE:
+            return { ...state, deleteTransactionTypesState: err(action.payload) };
 
         default:
             return state;
@@ -190,4 +274,3 @@ const accountingReducer = (state = initialState, action) => {
 };
 
 export default accountingReducer;
-

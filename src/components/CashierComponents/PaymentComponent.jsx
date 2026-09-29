@@ -5,6 +5,7 @@ import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchTransactionTypeData,
     fetchStudentAppData,
+    fetchEnrolledStudentsData,
     fetchOrNumberData,
     fetchGetRealtimeDailyBalanceData,
     fetchGetDailyBalanceData,
@@ -95,7 +96,7 @@ const DrawerCard = ({ label, amount, color = "gray" }) => {
 };
 
 // ─── Receipt panel ────────────────────────────────────────────────────────────
-const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, amountToPay, change, paymentMode, checkNumber }) => {
+const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, summaryAmountToPay, summaryChange, summaryPaymentMode, summaryCheckNumber, summaryOverpayment, advanceChoice }) => {
     const total = transactions.reduce((s, t) => s + Number(t.price || 0), 0);
     const [expandedTxMisc, setExpandedTxMisc] = useState({}); // Track which transaction misc is expanded
 
@@ -220,24 +221,38 @@ const ReceiptPanel = ({ orNumber, transactions, dailyBalance, realtimeBalance, a
 
             {/* Totals */}
             <div className="border-t border-dashed border-gray-200 pt-3 space-y-1.5 text-xs">
-                <div className="flex justify-between text-gray-500">
-                    <span>Amount Tendered</span>
-                    <span className="font-medium text-gray-800">₱{fmt(amountToPay)}</span>
-                </div>
-                <div className="flex justify-between text-gray-500">
-                    <span>Change</span>
-                    <span className={`font-medium ${Number(change) > 0 ? "text-green-600" : "text-gray-800"}`}>₱{fmt(change)}</span>
-                </div>
-                {paymentMode && (
+                {transactions.length > 0 && summaryAmountToPay && (
+                    <>
+                        <div className="flex justify-between text-gray-500">
+                            <span>Amount Tendered</span>
+                            <span className="font-medium text-gray-800">₱{fmt(summaryAmountToPay)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-500">
+                            <span>Change</span>
+                            <span className={`font-medium ${Number(summaryChange) > 0 ? "text-green-600" : "text-gray-800"}`}>
+                                ₱{fmt(advanceChoice === "change" ? summaryChange : Math.max(0, summaryChange - summaryOverpayment))}
+                            </span>
+                        </div>
+                        {summaryOverpayment > 0 && advanceChoice && (
+                            <div className="flex justify-between text-gray-500">
+                                <span>{advanceChoice === "advance" ? "Advance Credit" : "Total Change"}</span>
+                                <span className={`font-medium ${advanceChoice === "advance" ? "text-blue-600" : "text-green-600"}`}>
+                                    ₱{fmt(advanceChoice === "advance" ? summaryOverpayment : summaryChange)}
+                                </span>
+                            </div>
+                        )}
+                    </>
+                )}
+                {transactions.length > 0 && summaryPaymentMode && (
                     <div className="flex justify-between text-gray-500">
                         <span>Mode</span>
-                        <span className="font-medium text-gray-800">{paymentMode.label}</span>
+                        <span className="font-medium text-gray-800">{summaryPaymentMode.label}</span>
                     </div>
                 )}
-                {paymentMode?.value === "Check" && checkNumber && (
+                {transactions.length > 0 && summaryPaymentMode?.value === "Check" && summaryCheckNumber && (
                     <div className="flex justify-between text-gray-500">
                         <span>Check No.</span>
-                        <span className="font-medium text-gray-800">{checkNumber}</span>
+                        <span className="font-medium text-gray-800">{summaryCheckNumber}</span>
                     </div>
                 )}
             </div>
@@ -281,8 +296,10 @@ const PaymentComponent = () => {
 
     // ── transaction type dropdown ─────────────────────────────────────────────
     const transList = transData.map((item) => ({
-        value: item.FeeChildId,
+        value: item.FeesChildId,
         label: item.TransType,
+        transCode: item.TransCode,
+        transGroup: item.TransGroup,
         amount: item.Value,
     }));
 
@@ -290,7 +307,7 @@ const PaymentComponent = () => {
     const [transType, setIsTransType] = useState("");
     const [transDropdown, setTransDropdown] = useState(null);
     const [amountValue, setAmountValue] = useState(0);
-    // const [studentId, setStudentId] = useState(0);
+    const [studentId, setStudentId] = useState(0);
     const [userFormId, setUserFormId] = useState(0);
     const [fullName, setFullname] = useState("");
     const [referenceNumber, setRefNumber] = useState("");
@@ -308,14 +325,22 @@ const PaymentComponent = () => {
     const [change, setChange] = useState(0);
     const [totalAmount, setTotalAmount] = useState(0);
     const [checkNumber, setCheckNumber] = useState("");
-
-    // validation
     const [errors, setErrors] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [isAmount, setIsAmount] = useState(false);
     const [amountError, setAmountError] = useState("");
     const [isCheckError, setIsCheckError] = useState(false);
     const [checkError, setCheckError] = useState("");
+
+    // ── Summary-level payment fields (filled AFTER all transactions are added) ──
+    const [summaryAmountToPay, setSummaryAmountToPay] = useState("");
+    const [summaryPaymentMode, setSummaryPaymentMode] = useState(null);
+    const [summaryCheckNumber, setSummaryCheckNumber] = useState("");
+    const [summaryChange, setSummaryChange] = useState(0);
+    const [summaryOverpayment, setSummaryOverpayment] = useState(0);
+    const [advanceChoice, setAdvanceChoice] = useState(null); // 'change' | 'advance'
+    const [advanceStudentId, setAdvanceStudentId] = useState(null); // Which student gets the advance credit
+    const [summaryErrors, setSummaryErrors] = useState({});
 
     // cart
     const [transactions, setTransactions] = useState([]);
@@ -365,6 +390,23 @@ const PaymentComponent = () => {
     }, [dispatch, userId]);
 
     // ── handlers ──────────────────────────────────────────────────────────────
+    
+    // Helper function to validate if student is enrolled for tuition payments
+    const validateEnrolledStudent = (student) => {
+        return student && student.Status === "Y";
+    };
+
+    // Helper function to get enrolled students count for display
+    const getEnrolledStudentsInfo = () => {
+        if (transType === "Tuition Fee" && Array.isArray(studentApp)) {
+            const enrolledCount = studentApp.filter(student => student.Status === "Y").length;
+            return {
+                total: studentApp.length,
+                enrolled: enrolledCount
+            };
+        }
+        return null;
+    };
     const resetForm = () => {
         // setStudentId(0);
         setUserFormId(0);
@@ -397,6 +439,15 @@ const PaymentComponent = () => {
         setPaymentMode(null);
         setTuitionChildId(0);
         setPlanId(0);
+        // Reset summary-level payment fields
+        setSummaryAmountToPay("");
+        setSummaryPaymentMode(null);
+        setSummaryCheckNumber("");
+        setSummaryChange(0);
+        setSummaryOverpayment(0);
+        setAdvanceChoice(null);
+        setAdvanceStudentId(null);
+        setSummaryErrors({});
     };
 
     const handleSelectTransType = (data) => {
@@ -405,23 +456,42 @@ const PaymentComponent = () => {
         setIsTransType(data.label);
         setTransDropdown(data);
 
-        const statusMap = {
-            "Test Permit": "O-EXAMINATION-CASHIER",
-            "Enlistment Fee": "O-RESERVATION",
-            "Assessment Plan": "O-RESERVED",
-            "Tuition Fee": "Y",
-        };
-        const status = statusMap[data.label];
-        if (status) dispatch(fetchStudentAppData(status));
+        // Special handling for Tuition Fee - only fetch enrolled students (status "Y")
+        if (data.label === "Tuition Fee") {
+            dispatch(fetchEnrolledStudentsData());
+        } else {
+            // Map other TransType labels OR TransGroups to the correct student filter status
+            const statusByLabel = {
+                "Test Permit":    "O-EXAMINATION-CASHIER",
+                "Enlistment Fee": "O-RESERVATION",
+                "Assessment Plan":"O-RESERVED",
+            };
+            const statusByGroup = {
+                "ASSESSMENT": "O-RESERVED",
+                "TUITION":    "Y",
+            };
+
+            const status = statusByLabel[data.label] || statusByGroup[data.transGroup];
+            if (status) dispatch(fetchStudentAppData(status));
+        }
     };
 
     const handleStudentSelect = (student) => {
         console.log(student);
+        
+        // Additional validation for Tuition Fee - ensure student is enrolled (status "Y")
+        if (transType === "Tuition Fee" && student.Status !== "Y") {
+            setErrors(true);
+            setErrorMessage("This student is not enrolled yet. Only enrolled students can make tuition payments.");
+            return;
+        }
+        
         setRefNumber(transType === "Tuition Fee" ? student.StudentNumber : student.AppNumber);
-        // setStudentId(student.StudentId);
+        setStudentId(student.StudentId);
         // setUserFormId(student.StudentId);
         setFullname(`${student.Fname} ${student?.Mname || ""} ${student.Lname}`.replace(/\s+/g, " ").trim());
         dispatch(fetchStudentAppAssessmentData(student.AppId));
+        
         if (transType === "Assessment Plan") {
             // Fetch full plan list with installment schedule (same as parent portal)
             setUserFormId(student.AppId);
@@ -439,6 +509,10 @@ const PaymentComponent = () => {
         else if (transType === "Tuition Fee") {
             setUserFormId(student.StudentId);
         }
+        
+        // Clear any previous errors
+        setErrors(false);
+        setErrorMessage("");
     };
 
     // When cashier picks a plan from the dropdown
@@ -482,23 +556,26 @@ const PaymentComponent = () => {
     };
 
     const addTransaction = () => {
+        // Only validate transaction type + student reference
         if (!transType) { setErrors(true); setErrorMessage("Please select a transaction type."); return; }
         if (!referenceNumber) { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
-        if (!amountToPay || Number(amountToPay) === 0) { setIsAmount(true); setAmountError("Please enter the amount."); return; }
-        if (paymentMode?.value === "Check" && !checkNumber) { setIsCheckError(true); setCheckError("Please enter the check number."); return; }
+        
+        // Additional validation for Tuition Fee - ensure student is enrolled
+        if (transType === "Tuition Fee" && selectedStudent && !validateEnrolledStudent(selectedStudent)) {
+            setErrors(true); 
+            setErrorMessage("Cannot process tuition payment: Student must be enrolled (Status: Y) to make tuition payments."); 
+            return;
+        }
 
         setTransactions((prev) => [...prev, {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             transType,
+            transCode: transDropdown?.transCode || "",
+            transGroup: transDropdown?.transGroup || "",
             userFormId,
             fullName,
             referenceNumber,
-            price: baseTotal + miscTotal, // Always include misc if present
-            amountToPay: Number(amountToPay),
-            change,
-            overpaymentCredit,
-            paymentMode,
-            checkNumber,
+            price: baseTotal + miscTotal, // Total for THIS transaction
             tuitionChildId: tuitionChildId || 0,
             planId: planId || 0,
             orChildId: orNumberData.OrChildId,
@@ -507,115 +584,163 @@ const PaymentComponent = () => {
             miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
             numInstallmentsPaid: numInstallmentsToPay || 1,
             advancePaymentAmount: calculatedAdvanceAmount || 0,
+            studentStatus: selectedStudent?.Status || "", // Store student status for audit trail
         }]);
         resetFormAndType();
-        setNumInstallmentsToPay(1); // Reset to 1 installment
-        setOverpaymentCredit(0);
+        setNumInstallmentsToPay(1);
     };
 
     const removeTransaction = (id) =>
         setTransactions((prev) => prev.filter((t) => t.id !== id));
 
     const handlePrint = async () => {
-        if (transactions.length === 0) {
-            if (!referenceNumber) { setErrors(true); setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); return; }
-            if (!amountToPay || amountToPay === 0) { setIsAmount(true); setAmountError("Please enter the amount."); return; }
-            if (paymentMode?.value === "Check" && !checkNumber) { setIsCheckError(true); setCheckError("Please enter the check number."); return; }
+        // Validation logic depends on whether we have a cart or single transaction
+        if (transactions.length > 0) {
+            // Cart mode: validate summary-level payment
+            let hasError = false;
+            const newErrors = {};
+
+            if (!summaryAmountToPay || Number(summaryAmountToPay) === 0) {
+                newErrors.amount = true;
+                newErrors.amountMsg = "Please enter the amount tendered.";
+                hasError = true;
+            }
+
+            if (!summaryPaymentMode) {
+                newErrors.mode = true;
+                newErrors.modeMsg = "Please select a payment mode.";
+                hasError = true;
+            }
+
+            if (summaryPaymentMode?.value === "Check" && !summaryCheckNumber) {
+                newErrors.check = true;
+                newErrors.checkMsg = "Please enter the check number.";
+                hasError = true;
+            }
+
+            // NEW: Validate overpayment choice when there's overpayment
+            if (summaryOverpayment > 0 && !advanceChoice) {
+                newErrors.advance = true;
+                newErrors.advanceMsg = "Please choose how to handle the overpayment.";
+                hasError = true;
+            }
+
+            // NEW: Validate student selection when advance payment is chosen
+            if (summaryOverpayment > 0 && advanceChoice === "advance" && !advanceStudentId) {
+                newErrors.advanceStudent = true;
+                newErrors.advanceStudentMsg = "Please select which student should receive the advance credit.";
+                hasError = true;
+            }
+
+            if (hasError) {
+                setSummaryErrors(newErrors);
+                return;
+            }
+
+            // Use summary-level payment data for the cart
+            const payload = {
+                TransType: orNumberData.OrType,
+                OrId: orNumberData.OrId,
+                CreatedByUserId: userId,
+                MiscId: transactions[0]?.miscBreakdown?.[0]?.MiscId || transactions[0]?.miscBreakdown?.[0]?.FeeChildId || null,
+                ModeOfPayment: summaryPaymentMode.value,
+                CheckNumber: summaryCheckNumber || "",
+                PaymentFormChildDtos: transactions.map((t) => ({
+                    UserId: t.userFormId,
+                    ReferenceId: t.userFormId,
+                    ReferenceNo: t.referenceNumber,
+                    TuitionChildId: t.tuitionChildId || 0,
+                    TypeOfTransaction: t.transType,
+                    OrChildId: t.orChildId,
+                    OrNumberUsed: t.orNumberUsed,
+                    Amount: t.price.toString(),
+                    PlanId: t.planId || 0,
+                    NumInstallmentsPaid: t.numInstallmentsPaid || 1,
+                    // Only assign advance credit to the selected student
+                    OverpaymentCredit: (advanceChoice === "advance" && t.userFormId === advanceStudentId) ? summaryOverpayment : 0,
+                    AdvancePaymentAmount: t.advancePaymentAmount || 0,
+                })),
+            };
+
+            console.log("Cart payload:", payload);
+            await dispatch(fetchPrintReceiptData(payload));
+            setIsPreviewModal(true);
+        } else {
+            // Single transaction mode: validate inline fields
+            if (!referenceNumber) { 
+                setErrors(true); 
+                setErrorMessage(transType === "Tuition Fee" ? "Please enter student number." : "Please enter application number."); 
+                return; 
+            }
+
+            const payload = {
+                TransType: orNumberData.OrType,
+                OrId: orNumberData.OrId,
+                CreatedByUserId: userId,
+                MiscId: miscBreakdown[0]?.MiscId || miscBreakdown[0]?.FeeChildId || null,
+                ModeOfPayment: null,
+                CheckNumber: "",
+                PaymentFormChildDtos: [{
+                    UserId: userFormId,
+                    ReferenceId: userFormId,
+                    ReferenceNo: referenceNumber,
+                    TuitionChildId: tuitionChildId || 0,
+                    TypeOfTransaction: transType,
+                    OrChildId: orNumberData.OrChildId,
+                    OrNumberUsed: orNumberData.LatestOrAvailable,
+                    Amount: priceToUse.toString(),
+                    PlanId: planId || 0,
+                    NumInstallmentsPaid: numInstallmentsToPay || 1,
+                    OverpaymentCredit: 0,
+                    AdvancePaymentAmount: calculatedAdvanceAmount || 0,
+                }],
+            };
+
+            console.log("Single transaction payload:", payload);
+            await dispatch(fetchPrintReceiptData(payload));
+            setIsPreviewModal(true);
         }
-
-        const all = transactions.length > 0 ? transactions : [{
-            transType,
-            userFormId, // Include userFormId from state
-            price: priceToUse,
-            orChildId: orNumberData.OrChildId,
-            orNumberUsed: orNumberData.LatestOrAvailable,
-            tuitionChildId: tuitionChildId || 0,
-            planId: planId || 0,
-            numInstallmentsPaid: numInstallmentsToPay || 1,
-            overpaymentCredit: overpaymentCredit || 0,
-            miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
-            advancePaymentAmount: calculatedAdvanceAmount || 0,
-        }];
-        const payload = {
-            UserId: all[0].userFormId || userFormId, // Use from transaction or current state
-            ReferenceId: referenceNumber || "",
-            TransType: orNumberData.OrType,
-            OrId: orNumberData.OrId,
-            CreatedByUserId: userId,
-            TuitionChildId: all[0].tuitionChildId || 0,
-            TypeOfTransaction: all.map((t) => t.transType).join(", "),
-            PaymentFormChildDtos: all.map((t) => ({
-                OrChildId: t.orChildId,
-                OrNumberUsed: t.orNumberUsed,
-                Amount: t.price.toString(),
-                PlanId: t.planId || 0,
-                NumInstallmentsPaid: t.numInstallmentsPaid || 1,
-                OverpaymentCredit: t.overpaymentCredit || 0,
-                AdvancePaymentAmount: t.advancePaymentAmount || 0,
-                MiscIds: (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
-            })),
-        };
-
-        console.log(payload);
-        // await dispatch(fetchPrintReceiptData({
-        //     UserId:            studentId,
-        //     ReferenceId:       referenceNumber || "",
-        //     TransType:         orNumberData.OrType,
-        //     OrId:              orNumberData.OrId,
-        //     CreatedByUserId:   userId,
-        //     TuitionChildId:    all[0].tuitionChildId || 0,
-        //     TypeOfTransaction: all.map((t) => t.transType).join(", "),
-        //     OrChildDtos:       all.map((t) => ({
-        //         OrChildId:           t.orChildId,
-        //         OrNumberUsed:        t.orNumberUsed,
-        //         Amount:              t.price.toString(),
-        //         PlanId:              t.planId || 0,
-        //         NumInstallmentsPaid: t.numInstallmentsPaid || 1,
-        //         OverpaymentCredit:   t.overpaymentCredit || 0,
-        //         AdvancePaymentAmount: t.advancePaymentAmount || 0,
-        //         MiscIds:             (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
-        //     })),
-        // }));
-        // setIsPreviewModal(true);
     };
 
     const handleSubmitAndPrint = () => {
+        // Use summary-level payment when cart has items
         const all = transactions.length > 0 ? transactions : [{
             transType,
             userFormId,
             referenceNumber,
             price: priceToUse,
-            amountToPay,
-            paymentMode,
             tuitionChildId: tuitionChildId || 0,
             planId: planId || 0,
             orChildId: orNumberData.OrChildId,
             orNumberUsed: orNumberData.LatestOrAvailable,
             numInstallmentsPaid: numInstallmentsToPay || 1,
             miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
-            overpaymentCredit: overpaymentCredit || 0,
+            advancePaymentAmount: calculatedAdvanceAmount || 0,
         }];
 
         dispatch(fetchInsertSubmitPaymentData({
-            UserId: all[0].userFormId,
-            ReferenceId: all[0].referenceNumber,
             TransType: orNumberData.OrType,
             OrId: orNumberData.OrId,
             CreatedByUserId: userId,
-            TuitionChildId: all[0].tuitionChildId || 0,
-            TypeOfTransaction: all.map((t) => t.transType).join(", "),
+            MiscId: all[0].miscBreakdown?.[0]?.MiscId || all[0].miscBreakdown?.[0]?.FeeChildId || null,
+            ModeOfPayment: transactions.length > 0 ? summaryPaymentMode?.value : null,
+            CheckNumber: transactions.length > 0 ? summaryCheckNumber : "",
             PaymentFormChildDtos: all.map((t) => ({
-                BalId: dailyBalance.BalId,
+                UserId: t.userFormId || userFormId,
+                ReferenceId: t.userFormId || userFormId,
+                ReferenceNo: t.referenceNumber || referenceNumber,
+                TuitionChildId: t.tuitionChildId || 0,
+                TypeOfTransaction: t.transType,
                 OrChildId: t.orChildId,
-                PlanId: t.planId || 0,
                 OrNumberUsed: t.orNumberUsed,
-                Amount: t.price.toString(),
-                AmountPaid: t.amountToPay?.toString() || t.price.toString(),
-                ModeOfPayment: t.paymentMode?.value || "Cash",
-                FromTransaction: t.transType,
+                Amount: t.price?.toString(),
+                PlanId: t.planId || 0,
                 NumInstallmentsPaid: t.numInstallmentsPaid || 1,
-                OverpaymentCredit: t.overpaymentCredit || 0,
-                MiscIds: (t.miscBreakdown || []).map(m => m.FeeChildId || m.MiscId || m.Id).filter(Boolean),
+                // Only assign advance credit to the selected student
+                OverpaymentCredit: transactions.length > 0 
+                    ? (advanceChoice === "advance" && t.userFormId === advanceStudentId ? summaryOverpayment : 0)
+                    : 0,
+                AdvancePaymentAmount: t.advancePaymentAmount || 0,
             })),
         }));
 
@@ -673,16 +798,36 @@ const PaymentComponent = () => {
                                 <div>
                                     <label className="text-xs font-medium text-gray-500 mb-1 block">
                                         {transType === "Tuition Fee" ? "Student Number" : "Application Number"}
+                                        {transType === "Tuition Fee" && (
+                                            <span className="ml-1 text-blue-600 font-normal">(Enrolled Students Only)</span>
+                                        )}
                                     </label>
                                     <SearchBoxAppNo
                                         label="Search Student"
-                                        placeholder={transType === "Tuition Fee" ? "Search by student number or name..." : "Search by application number or name..."}
+                                        placeholder={
+                                            transType === "Tuition Fee" 
+                                                ? "Search enrolled students by student number or name..." 
+                                                : "Search by application number or name..."
+                                        }
                                         required
                                         options={studentApp}
                                         value={selectedStudent}
                                         onSelect={(student) => { handleStudentSelect(student); setSelectedStudent(student); }}
                                     />
                                     {errors && <p className="text-red-500 text-xs mt-1">{errorMessage}</p>}
+                                    
+                                    {/* Enrolled students info for Tuition Fee */}
+                                    {transType === "Tuition Fee" && Array.isArray(studentApp) && studentApp.length > 0 && (
+                                        <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-blue-600">ℹ️</span>
+                                                <p className="text-xs text-blue-700">
+                                                    <strong>{studentApp.length}</strong> enrolled student{studentApp.length !== 1 ? 's' : ''} found.
+                                                    {studentApp.length === 0 && " No enrolled students available for tuition payments."}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* OR Number */}
@@ -774,46 +919,7 @@ const PaymentComponent = () => {
                                             </div>
                                         )}
 
-                                        {/* Number of installments to pay (for advance payment) */}
-                                        {selectedPlan && unpaidInstallments.length > 0 && (
-                                            <div className="border border-purple-200 rounded-xl p-4 bg-purple-50">
-                                                <label className="block text-sm font-semibold text-purple-900 mb-2">
-                                                    Number of Installments to Pay
-                                                </label>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        max={unpaidInstallments.length}
-                                                        value={numInstallmentsToPay}
-                                                        onChange={(e) => {
-                                                            const val = Math.max(1, Math.min(unpaidInstallments.length, Number(e.target.value)));
-                                                            setNumInstallmentsToPay(val);
-                                                        }}
-                                                        className="w-24 px-3 py-2 text-sm rounded-lg border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                                                    />
-                                                    <span className="text-sm text-purple-700">
-                                                        of {unpaidInstallments.length} unpaid installment(s)
-                                                    </span>
-                                                </div>
-                                                <div className="mt-3 p-3 bg-white rounded-lg border border-purple-200">
-                                                    <div className="flex justify-between text-sm mb-1">
-                                                        <span className="text-gray-600">Installment Total:</span>
-                                                        <span className="font-semibold text-gray-800">₱{fmt(calculatedAdvanceAmount)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm mb-1">
-                                                        <span className="text-gray-600">Misc Fees:</span>
-                                                        <span className="font-semibold text-gray-800">₱{fmt(miscTotal)}</span>
-                                                    </div>
-                                                    <div className="flex justify-between text-base font-bold pt-2 border-t border-purple-200">
-                                                        <span className="text-purple-900">Total Amount Due:</span>
-                                                        <span className="text-purple-700">₱{fmt(baseTotal)}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Miscellaneous breakdown */}
+                                        {/* Miscellaneous breakdown - MOVED UP */}
                                         <div className="border border-blue-200 rounded-xl overflow-hidden">
                                             <div className="bg-blue-50 px-3 py-2 text-xs font-bold uppercase tracking-wide text-blue-700 border-b border-blue-200">
                                                 Miscellaneous Fees Breakdown
@@ -853,6 +959,45 @@ const PaymentComponent = () => {
                                                 <p className="text-xs text-gray-400 italic px-3 py-3">No miscellaneous fees found for this level.</p>
                                             )}
                                         </div>
+
+                                        {/* Number of installments to pay (for advance payment) - MOVED DOWN */}
+                                        {selectedPlan && unpaidInstallments.length > 0 && (
+                                            <div className="border border-purple-200 rounded-xl p-4 bg-purple-50">
+                                                <label className="block text-sm font-semibold text-purple-900 mb-2">
+                                                    Number of Installments to Pay
+                                                </label>
+                                                <div className="flex items-center gap-3">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max={unpaidInstallments.length}
+                                                        value={numInstallmentsToPay}
+                                                        onChange={(e) => {
+                                                            const val = Math.max(1, Math.min(unpaidInstallments.length, Number(e.target.value)));
+                                                            setNumInstallmentsToPay(val);
+                                                        }}
+                                                        className="w-24 px-3 py-2 text-sm rounded-lg border border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                                                    />
+                                                    <span className="text-sm text-purple-700">
+                                                        of {unpaidInstallments.length} unpaid installment(s)
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 p-3 bg-white rounded-lg border border-purple-200">
+                                                    <div className="flex justify-between text-sm mb-1">
+                                                        <span className="text-gray-600">Installment Total:</span>
+                                                        <span className="font-semibold text-gray-800">₱{fmt(calculatedAdvanceAmount)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm mb-1">
+                                                        <span className="text-gray-600">Misc Fees:</span>
+                                                        <span className="font-semibold text-gray-800">₱{fmt(miscTotal)}</span>
+                                                    </div>
+                                                    <div className="flex justify-between text-base font-bold pt-2 border-t border-purple-200">
+                                                        <span className="text-purple-900">Total Amount Due:</span>
+                                                        <span className="text-purple-700">₱{fmt(calculatedAdvanceAmount + miscTotal)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </>
                                 )}
 
@@ -867,68 +1012,6 @@ const PaymentComponent = () => {
                                         value={transType === "Assessment Plan" ? (installmentRows[0]?.Amount || planAmount || "") : (amountValue || "")}
                                     />
                                 </div>
-
-                                {/* Amount tendered */}
-                                <div>
-                                    <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                        Amount Tendered <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        step="0.01"
-                                        placeholder="Enter amount"
-                                        className={`${INPUT} ${isAmount ? "border-red-500" : ""}`}
-                                        value={amountToPay}
-                                        onChange={(e) => handleAmountChange(e.target.value)}
-                                    />
-                                    {isAmount && <p className="text-red-500 text-xs mt-1">{amountError}</p>}
-                                    {Number(amountToPay) > 0 && baseTotal > 0 && (
-                                        <div className="mt-1 space-y-1">
-                                            <p className={`text-xs font-medium ${Number(change) >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
-                                                {Number(change) >= 0 ? `Change: ₱${fmt(change)}` : `Short by ₱${fmt(Math.abs(change))}`}
-                                            </p>
-                                            {overpaymentCredit > 0 && (
-                                                <p className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded">
-                                                    💰 Overpayment Credit: ₱{fmt(overpaymentCredit)} will be stored in the system
-                                                </p>
-                                            )}
-                                            {transType === "Assessment Plan" && numInstallmentsToPay > 1 && (
-                                                <p className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded">
-                                                    📝 Paying {numInstallmentsToPay} installment(s) in advance
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Mode of payment */}
-                                <div>
-                                    <SearchableSelect
-                                        options={paymentOptions}
-                                        value={paymentMode}
-                                        onChange={setPaymentMode}
-                                        placeholder="— Mode of Payment —"
-                                        label="Mode of Payment"
-                                    />
-                                </div>
-
-                                {/* Check number */}
-                                {paymentMode?.value === "Check" && (
-                                    <div>
-                                        <label className="text-xs font-medium text-gray-500 mb-1 block">
-                                            Check Number <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter check number"
-                                            className={`${INPUT} ${isCheckError ? "border-red-500" : ""}`}
-                                            value={checkNumber}
-                                            onChange={(e) => setCheckNumber(e.target.value)}
-                                        />
-                                        {isCheckError && <p className="text-red-500 text-xs mt-1">{checkError}</p>}
-                                    </div>
-                                )}
 
                                 {/* Add Transaction button */}
                                 <button
@@ -973,6 +1056,212 @@ const PaymentComponent = () => {
                             </div>
                         )}
 
+                        {/* ── Summary-level payment section (shown when cart has items) ── */}
+                        {transactions.length > 0 && (
+                            <div className="border border-blue-300 rounded-xl p-4 bg-blue-50 space-y-4">
+                                <h3 className="text-sm font-bold text-blue-900 border-b border-blue-200 pb-2">
+                                    💳 Payment Details
+                                </h3>
+
+                                {/* Amount tendered */}
+                                <div>
+                                    <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                        Amount Tendered <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Enter total amount tendered"
+                                        className={`${INPUT} ${summaryErrors.amount ? "border-red-500" : ""}`}
+                                        value={summaryAmountToPay}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setSummaryAmountToPay(val);
+                                            const cash = Number(val || 0);
+                                            const diff = cash - transactionsTotal;
+                                            setSummaryChange(diff >= 0 ? diff : 0);
+                                            setSummaryOverpayment(diff > 0 ? diff : 0);
+                                            setSummaryErrors(prev => ({ ...prev, amount: false }));
+                                            // Reset advance choice when amount changes
+                                            if (advanceChoice && diff <= 0) {
+                                                setAdvanceChoice(null);
+                                            }
+                                        }}
+                                    />
+                                    {summaryErrors.amount && (
+                                        <p className="text-red-500 text-xs mt-1">{summaryErrors.amountMsg}</p>
+                                    )}
+                                    {Number(summaryAmountToPay) > 0 && (
+                                        <div className="mt-2 space-y-2">
+                                            <p className={`text-xs font-medium ${summaryChange >= 0 ? "text-emerald-600" : "text-amber-600"}`}>
+                                                {summaryChange >= 0 
+                                                    ? `Change: ₱${fmt(summaryChange)}` 
+                                                    : `Short by ₱${fmt(Math.abs(summaryChange))}`}
+                                            </p>
+                                            
+                                            {/* Overpayment choice section */}
+                                            {summaryOverpayment > 0 && (
+                                                <div className="border border-orange-300 rounded-lg p-3 bg-orange-50 space-y-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-lg">💰</span>
+                                                        <p className="text-sm font-semibold text-orange-800">
+                                                            Overpayment: ₱{fmt(summaryOverpayment)}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        <p className="text-xs text-orange-700 font-medium">
+                                                            How would you like to handle the overpayment?
+                                                        </p>
+                                                        
+                                                        <div className="space-y-2">
+                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="overpaymentChoice"
+                                                                    value="change"
+                                                                    checked={advanceChoice === "change"}
+                                                                    onChange={(e) => {
+                                                                        setAdvanceChoice(e.target.value);
+                                                                        setAdvanceStudentId(null); // Reset student selection
+                                                                    }}
+                                                                    className="w-4 h-4 text-green-600 focus:ring-green-500"
+                                                                />
+                                                                <span className="text-sm text-gray-700">
+                                                                    💵 Give as <strong>Change</strong> (Cash back to customer)
+                                                                </span>
+                                                            </label>
+                                                            
+                                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                                <input
+                                                                    type="radio"
+                                                                    name="overpaymentChoice"
+                                                                    value="advance"
+                                                                    checked={advanceChoice === "advance"}
+                                                                    onChange={(e) => setAdvanceChoice(e.target.value)}
+                                                                    className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                                                />
+                                                                <span className="text-sm text-gray-700">
+                                                                    🏦 Keep as <strong>Advance Payment</strong> (Credit stored in system)
+                                                                </span>
+                                                            </label>
+                                                        </div>
+                                                        
+                                                        {/* Student selector for advance payment (when advance is chosen) */}
+                                                        {advanceChoice === "advance" && (
+                                                            <div className="mt-3 p-3 bg-blue-50 border border-blue-300 rounded-lg space-y-2">
+                                                                <label className="text-xs font-semibold text-blue-900 block">
+                                                                    Which student should receive the ₱{fmt(summaryOverpayment)} advance credit? <span className="text-red-500">*</span>
+                                                                </label>
+                                                                <select
+                                                                    value={advanceStudentId || ""}
+                                                                    onChange={(e) => {
+                                                                        setAdvanceStudentId(Number(e.target.value));
+                                                                        setSummaryErrors(prev => ({ ...prev, advanceStudent: false }));
+                                                                    }}
+                                                                    className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                                                        summaryErrors.advanceStudent ? "border-red-500" : "border-blue-300"
+                                                                    }`}
+                                                                >
+                                                                    <option value="">-- Select Student --</option>
+                                                                    {(() => {
+                                                                        // Get unique students from transactions
+                                                                        const uniqueStudents = new Map();
+                                                                        transactions.forEach(t => {
+                                                                            if (!uniqueStudents.has(t.userFormId)) {
+                                                                                uniqueStudents.set(t.userFormId, {
+                                                                                    id: t.userFormId,
+                                                                                    name: t.fullName,
+                                                                                    reference: t.referenceNumber
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                        return Array.from(uniqueStudents.values()).map(student => (
+                                                                            <option key={student.id} value={student.id}>
+                                                                                {student.name} ({student.reference})
+                                                                            </option>
+                                                                        ));
+                                                                    })()}
+                                                                </select>
+                                                                {summaryErrors.advanceStudent && (
+                                                                    <p className="text-red-500 text-xs">{summaryErrors.advanceStudentMsg}</p>
+                                                                )}
+                                                                <p className="text-xs text-blue-700 italic">
+                                                                    💡 The selected student will have ₱{fmt(summaryOverpayment)} added to their account as advance payment credit.
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {advanceChoice && (
+                                                            <div className={`mt-2 p-2 rounded text-xs font-medium ${
+                                                                advanceChoice === "change" 
+                                                                    ? "bg-green-100 text-green-700 border border-green-300" 
+                                                                    : "bg-blue-100 text-blue-700 border border-blue-300"
+                                                            }`}>
+                                                                {advanceChoice === "change" 
+                                                                    ? `✅ Customer will receive ₱${fmt(summaryOverpayment)} as cash change`
+                                                                    : advanceStudentId 
+                                                                        ? `✅ ₱${fmt(summaryOverpayment)} will be stored as advance payment credit for ${transactions.find(t => t.userFormId === advanceStudentId)?.fullName || 'selected student'}`
+                                                                        : `⚠️ Please select which student should receive the advance credit`
+                                                                }
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Error message for overpayment choice */}
+                                                        {summaryErrors.advance && (
+                                                            <p className="text-red-500 text-xs mt-1">
+                                                                {summaryErrors.advanceMsg}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Mode of payment */}
+                                <div>
+                                    <SearchableSelect
+                                        options={paymentOptions}
+                                        value={summaryPaymentMode}
+                                        onChange={(mode) => {
+                                            setSummaryPaymentMode(mode);
+                                            setSummaryErrors(prev => ({ ...prev, mode: false }));
+                                        }}
+                                        placeholder="— Select Payment Mode —"
+                                        label="Mode of Payment"
+                                    />
+                                    {summaryErrors.mode && (
+                                        <p className="text-red-500 text-xs mt-1">{summaryErrors.modeMsg}</p>
+                                    )}
+                                </div>
+
+                                {/* Check number (conditional) */}
+                                {summaryPaymentMode?.value === "Check" && (
+                                    <div>
+                                        <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                            Check Number <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter check number"
+                                            className={`${INPUT} ${summaryErrors.check ? "border-red-500" : ""}`}
+                                            value={summaryCheckNumber}
+                                            onChange={(e) => {
+                                                setSummaryCheckNumber(e.target.value);
+                                                setSummaryErrors(prev => ({ ...prev, check: false }));
+                                            }}
+                                        />
+                                        {summaryErrors.check && (
+                                            <p className="text-red-500 text-xs mt-1">{summaryErrors.checkMsg}</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Print button */}
                         <button
                             type="button"
@@ -991,10 +1280,12 @@ const PaymentComponent = () => {
                             transactions={transactions}
                             dailyBalance={dailyBalance}
                             realtimeBalance={realtimeBalance}
-                            amountToPay={amountToPay}
-                            change={change}
-                            paymentMode={paymentMode}
-                            checkNumber={checkNumber}
+                            summaryAmountToPay={summaryAmountToPay}
+                            summaryChange={summaryChange}
+                            summaryPaymentMode={summaryPaymentMode}
+                            summaryCheckNumber={summaryCheckNumber}
+                            summaryOverpayment={summaryOverpayment}
+                            advanceChoice={advanceChoice}
                         />
                     </div>
                 </div>

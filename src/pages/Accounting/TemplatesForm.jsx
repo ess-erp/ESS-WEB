@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useRef } from "react";
 import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import { motion, AnimatePresence } from 'framer-motion';
-import TemplateDataTable from '../../components/FinanceComponents/TemplateDataTable';
+import TemplateDataTable from '../../components/AccountingComponents/TemplateDataTable';
 
 const TemplatesForm = () => {
 
     useEffect(() => {
-        document.title = 'Templates';
+        document.title = 'Templates - Accounting';
     }, []);
 
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/finance/dashboard' },
-        { label: 'Templates', href: '/finance/templates' },
+        { label: 'Dashboard', href: '/accounting/dashboard' },
+        { label: 'Templates', href: '/accounting/templates' },
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -38,18 +36,9 @@ const TemplatesForm = () => {
                         </div>
                         <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
                             <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">This is the list of all templates in CFW.</span>
+                            <span className="block sm:inline">This is the list of all templates for table of fees management.</span>
                         </div>
-                        {/* <hr className="border-t-1 border-solid border-gray-400 my-6" /> */}
-                        {/* <div className="flex justify-center">
-                                        <h2 className="text-2xl font-bold text-black mt-2">
-                                            Online Application Status
-                                        </h2>
-                                    </div>
-                                    <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
-                                        <strong className="font-bold">Note: </strong>
-                                        <span className="block sm:inline">This is the status of on-going enrollment of student.</span>
-                                    </div> */}
+                        
                         <div className="flex justify-center items-center my-4">
                             <div className="inline-flex rounded-lg shadow-sm" role="group">
                                 <button
@@ -58,7 +47,7 @@ const TemplatesForm = () => {
                                     className={`px-6 py-2 text-sm font-semibold border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400
                                         ${selectedStatus === "active"
                                             ? "bg-blue-600 text-white border-blue-600"
-                                            : "bg-white text-white-700 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
+                                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:text-gray-900"
                                         } rounded-l-lg`}
                                 >
                                     Active
@@ -77,12 +66,10 @@ const TemplatesForm = () => {
                             </div>
                         </div>
 
-
                         <div className="overflow-x-auto">
                             <AnimatePresence mode="wait">
-
                                 <motion.div
-                                    key={selectedStatus} // re-render animation on toggle
+                                    key={selectedStatus}
                                     initial={{ opacity: 0, y: 15 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -15 }}
@@ -98,4 +85,5 @@ const TemplatesForm = () => {
         </div>
     );
 };
+
 export default TemplatesForm;

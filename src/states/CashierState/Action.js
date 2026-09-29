@@ -37,7 +37,7 @@ export const fetchTransactionTypeData = () => async (dispatch) => {
 
         const res = await response.json();
         dispatch(fetchTransactionTypeSuccess(res));
-        return { ok: true, data: res.data };
+        return { ok: true, data: res };
     }
     catch(error){
         dispatch(fetchTransactionTypeFailure(error.message));
@@ -67,6 +67,40 @@ export const fetchStudentAppData = (status) => async (dispatch) => {
         const res = await response.json();
         dispatch(fetchStudentAppSuccess(res));
         return { ok: true, data: res.data };
+    }
+    catch(error){
+        dispatch(fetchStudentAppFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// New function specifically for fetching enrolled students (status "Y")
+export const fetchEnrolledStudentsData = () => async (dispatch) => {
+    dispatch(fetchStudentAppRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cashier/get-student-dropdown?status=Y`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+        
+        // Additional validation: ensure only students with status "Y" are returned
+        const enrolledStudents = res.data?.filter(student => student.Status === "Y") || [];
+        
+        const validatedResponse = {
+            ...res,
+            data: enrolledStudents
+        };
+        
+        dispatch(fetchStudentAppSuccess(validatedResponse));
+        return { ok: true, data: enrolledStudents };
     }
     catch(error){
         dispatch(fetchStudentAppFailure(error.message));

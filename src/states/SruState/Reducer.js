@@ -15,6 +15,8 @@ import {
     FETCH_SCHOOL_CALENDAR_TABLE_REQUEST, FETCH_SCHOOL_CALENDAR_TABLE_SUCCESS, FETCH_SCHOOL_CALENDAR_TABLE_FAILURE,
     FETCH_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
     FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE,
+    FETCH_UPDATE_SCHOOL_CALENDAR_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_FAILURE,
+    FETCH_DELETE_SCHOOL_CALENDAR_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_FAILURE,
     FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST, FETCH_ENROLLMENT_HISTORY_TABLE_SUCCESS, FETCH_ENROLLMENT_HISTORY_TABLE_FAILURE,
     FETCH_INSERT_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_INSERT_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_INSERT_GRADE_REPORT_TEMPLATE_FAILURE,
     FETCH_GRADE_REPORT_TEMPLATE_REQUEST, FETCH_GRADE_REPORT_TEMPLATE_SUCCESS, FETCH_GRADE_REPORT_TEMPLATE_FAILURE,
@@ -48,6 +50,8 @@ const initialGeneralState = {
     schoolCalendarTableState: { ...initialState },
     schoolCalendarActivityState: { ...initialState },
     insertActivityState: { ...initialState },
+    updateCalendarState: { ...initialState },
+    deleteCalendarState: { ...initialState },
     enrollmentHistoryTableState: { ...initialState },
     insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
@@ -171,6 +175,20 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, insertActivityState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_SCHOOL_CALENDAR_ACTIVITY_FAILURE:
             return { ...state, insertActivityState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_UPDATE_SCHOOL_CALENDAR_REQUEST:
+            return { ...state, updateCalendarState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATE_SCHOOL_CALENDAR_SUCCESS:
+            return { ...state, updateCalendarState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATE_SCHOOL_CALENDAR_FAILURE:
+            return { ...state, updateCalendarState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_DELETE_SCHOOL_CALENDAR_REQUEST:
+            return { ...state, deleteCalendarState: { loading: true, data: [], error: '' } };
+        case FETCH_DELETE_SCHOOL_CALENDAR_SUCCESS:
+            return { ...state, deleteCalendarState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_DELETE_SCHOOL_CALENDAR_FAILURE:
+            return { ...state, deleteCalendarState: { loading: false, data: [], error: action.payload } };
 
         case FETCH_ENROLLMENT_HISTORY_TABLE_REQUEST:
             return { ...state, enrollmentHistoryTableState: { loading: true, data: [], error: '' } };

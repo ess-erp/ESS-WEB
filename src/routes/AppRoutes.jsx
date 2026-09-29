@@ -21,8 +21,6 @@ import CashierDashboard from "../pages/Cashier/Dashboard";
 //import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
 import CashierTransactionHistory from "../pages/Cashier/TransactionHistory";
-import FinanceDashboard from "../pages/Finance/Dashboard";
-import FinanceTemplatesForm from "../pages/Finance/TemplatesForm";
 import SruDashboard from "../pages/SRU/Dashboard";
 import SruOnlineApplication from "../pages/SRU/StudentOnlineApplication";
 import StudentMasterFile from "../pages/SRU/StudentMasterFile";
@@ -67,10 +65,10 @@ import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
 import CurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
 import AccountingDashboard from "../pages/Accounting/Dashboard";
 import AccountingChartOfAccounts from "../pages/Accounting/ChartOfAccounts";
-import AccountingAddCoaCashier from "../pages/Accounting/AddCoaCashier";
+import AccountingAddCoaTransaction from "../pages/Accounting/AddCoaTransaction";
 import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
 import AccountingSiSeries from "../pages/Accounting/SiSeries";
-// import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
+import AccountingTemplatesForm from "../pages/Accounting/TemplatesForm";
 
 
 
@@ -206,26 +204,6 @@ const AppRoutes = () => (
 
         {/* End of Cashier modules */}
 
-
-        {/* Start of finance module */}
-
-        <Route
-          path="/finance/dashboard"
-          element={
-            <ProtectedRoutes allowedRoles={[4]}>
-              <FinanceDashboard />
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/finance/templates"
-          element={
-            <ProtectedRoutes allowedRoles={[4]}>
-              <FinanceTemplatesForm />
-            </ProtectedRoutes>
-          }
-        />
-        {/* End of finance module */}
 
         {/* SRU Modules */}
         <Route
@@ -583,19 +561,10 @@ const AppRoutes = () => (
         />
 
         <Route
-          path="/accounting/addcoacashier"
+          path="/accounting/addcoatransaction"
           element={
             <ProtectedRoutes allowedRoles={[18]}>
-              <AccountingAddCoaCashier />
-            </ProtectedRoutes>
-          }
-        />
-
-        <Route
-          path="/accounting/journalentry"
-          element={
-            <ProtectedRoutes allowedRoles={[18]}>
-              <AccountingJournalEntry />
+              <AccountingAddCoaTransaction />
             </ProtectedRoutes>
           }
         />
@@ -614,6 +583,15 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[18]}>
               <AccountingSiSeries />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/templates"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingTemplatesForm />
             </ProtectedRoutes>
           }
         />

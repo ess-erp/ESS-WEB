@@ -77,7 +77,7 @@ const SearchableSelect = ({
                     isDisabled={isDisabled}
                     placeholder={placeholder}
                     classNamePrefix="react-select"
-
+                    closeMenuOnSelect={!isMulti}
                     menuPortalTarget={document.body}
                     menuPosition="fixed"
 
@@ -90,7 +90,25 @@ const SearchableSelect = ({
                         }),
                         menuPortal: (base) => ({
                             ...base,
-                            zIndex: 9999, // 🔥 VERY IMPORTANT
+                            zIndex: 99999,
+                        }),
+                        menu: (base) => ({
+                            ...base,
+                            minWidth: "350px",
+                            width: "auto",
+                            maxHeight: "300px",
+                        }),
+                        menuList: (base) => ({
+                            ...base,
+                            maxHeight: "300px",
+                        }),
+                        option: (base, state) => ({
+                            ...base,
+                            padding: "10px 12px",
+                            fontSize: "14px",
+                            backgroundColor: state.isSelected ? "#2563eb" : state.isFocused ? "#dbeafe" : "white",
+                            color: state.isSelected ? "white" : "#000000",
+                            cursor: "pointer",
                         }),
                     }}
                 />

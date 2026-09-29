@@ -31,7 +31,10 @@ const ProtectedRoutes = ({ children, allowedRoles }) => {
         return;
       }
 
-      setUser(decoded); // store decoded JWT payload
+      // Merge decoded JWT with userData to preserve UserRoleId
+      const savedUser = localStorage.getItem("userData");
+      const userData = savedUser ? JSON.parse(savedUser) : {};
+      setUser({ ...userData, ...decoded }); // Keep userData fields, but allow JWT to override
       setIsValid(true);
     } catch (err) {
       // Invalid token

@@ -546,3 +546,274 @@ export const fetchPostCashierJournalData = (formData) => async (dispatch) => {
         return { ok: false, err };
     }
 };
+
+// ============================================================================
+// Templates / Fees (migrated from Finance)
+// ============================================================================
+import {
+    FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
+    FETCH_LIST_OF_USER_DATA_REQUEST, FETCH_LIST_OF_USER_DATA_SUCCESS, FETCH_LIST_OF_USER_DATA_FAILURE,
+    FETCH_INSERT_OR_SERIES_DATA_REQUEST, FETCH_INSERT_OR_SERIES_DATA_SUCCESS, FETCH_INSERT_OR_SERIES_DATA_FAILURE,
+    FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST, FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE,
+    FETCH_INSERT_TUITION_FEE_DATA_REQUEST, FETCH_INSERT_TUITION_FEE_DATA_SUCCESS, FETCH_INSERT_TUITION_FEE_DATA_FAILURE,
+    FETCH_INSERT_MISCELLANEOUS_DATA_REQUEST, FETCH_INSERT_MISCELLANEOUS_DATA_SUCCESS, FETCH_INSERT_MISCELLANEOUS_DATA_FAILURE,
+} from './ActionType';
+
+// ── Template Table Data ──────────────────────────────────────────────────────
+
+export const fetchTemplateTableDataRequest = () => ({ type: FETCH_TEMPLATE_TABLE_DATA_REQUEST });
+export const fetchTemplateTableDataSuccess = (data) => ({ type: FETCH_TEMPLATE_TABLE_DATA_SUCCESS, payload: data });
+export const fetchTemplateTableDataFailure = (error) => ({ type: FETCH_TEMPLATE_TABLE_DATA_FAILURE, payload: error });
+
+export const fetchTemplateTableData = (selectedStatus, page = 1, pageSize = 10, search = '') => async (dispatch) => {
+    dispatch(fetchTemplateTableDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/get-templates?status=${selectedStatus}&page=${page}&pageSize=${pageSize}&search=${search}`, {
+            method: 'POST',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchTemplateTableDataSuccess(data));
+        return { ok: true, data: data.data || data, totalRecords: data.totalRecords || data.length };
+    } catch (err) {
+        dispatch(fetchTemplateTableDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── List of Users ────────────────────────────────────────────────────────────
+
+export const fetchListOfUserDataRequest = () => ({ type: FETCH_LIST_OF_USER_DATA_REQUEST });
+export const fetchListOfUserDataSuccess = (data) => ({ type: FETCH_LIST_OF_USER_DATA_SUCCESS, payload: data });
+export const fetchListOfUserDataFailure = (error) => ({ type: FETCH_LIST_OF_USER_DATA_FAILURE, payload: error });
+
+export const fetchListOfUserData = () => async (dispatch) => {
+    dispatch(fetchListOfUserDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/get-users`, {
+            method: 'POST',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchListOfUserDataSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchListOfUserDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Insert OR Series ─────────────────────────────────────────────────────────
+
+export const fetchInsertOrSeriesDataRequest = () => ({ type: FETCH_INSERT_OR_SERIES_DATA_REQUEST });
+export const fetchInsertOrSeriesDataSuccess = (data) => ({ type: FETCH_INSERT_OR_SERIES_DATA_SUCCESS, payload: data });
+export const fetchInsertOrSeriesDataFailure = (error) => ({ type: FETCH_INSERT_OR_SERIES_DATA_FAILURE, payload: error });
+
+export const fetchInsertOrSeriesData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertOrSeriesDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/insert-or-series`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchInsertOrSeriesDataSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchInsertOrSeriesDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Insert Table of Fees ─────────────────────────────────────────────────────
+
+export const fetchInsertTableOfFeesDataRequest = () => ({ type: FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST });
+export const fetchInsertTableOfFeesDataSuccess = (data) => ({ type: FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS, payload: data });
+export const fetchInsertTableOfFeesDataFailure = (error) => ({ type: FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE, payload: error });
+
+export const fetchInsertTableOfFeesData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertTableOfFeesDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/insert-table-of-fees`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchInsertTableOfFeesDataSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchInsertTableOfFeesDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Insert Tuition Fee ───────────────────────────────────────────────────────
+
+export const fetchInsertTuitionFeeDataRequest = () => ({ type: FETCH_INSERT_TUITION_FEE_DATA_REQUEST });
+export const fetchInsertTuitionFeeDataSuccess = (data) => ({ type: FETCH_INSERT_TUITION_FEE_DATA_SUCCESS, payload: data });
+export const fetchInsertTuitionFeeDataFailure = (error) => ({ type: FETCH_INSERT_TUITION_FEE_DATA_FAILURE, payload: error });
+
+export const fetchInsertTuitionFeeData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertTuitionFeeDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/insert-tuition-fee`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchInsertTuitionFeeDataSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchInsertTuitionFeeDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Insert Miscellaneous Fee ─────────────────────────────────────────────────
+
+export const fetchInsertMiscellaneousDataRequest = () => ({ type: FETCH_INSERT_MISCELLANEOUS_DATA_REQUEST });
+export const fetchInsertMiscellaneousDataSuccess = (data) => ({ type: FETCH_INSERT_MISCELLANEOUS_DATA_SUCCESS, payload: data });
+export const fetchInsertMiscellaneousDataFailure = (error) => ({ type: FETCH_INSERT_MISCELLANEOUS_DATA_FAILURE, payload: error });
+
+export const fetchInsertMiscellaneousData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertMiscellaneousDataRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/finance/insert-miscellaneous`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchInsertMiscellaneousDataSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchInsertMiscellaneousDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+
+// ============================================================================
+// Transaction Types / COA Assignment (New)
+// ============================================================================
+import {
+    FETCH_GET_TRANSACTION_TYPES_REQUEST, FETCH_GET_TRANSACTION_TYPES_SUCCESS, FETCH_GET_TRANSACTION_TYPES_FAILURE,
+    FETCH_CREATE_TRANSACTION_TYPES_REQUEST, FETCH_CREATE_TRANSACTION_TYPES_SUCCESS, FETCH_CREATE_TRANSACTION_TYPES_FAILURE,
+    FETCH_UPDATE_TRANSACTION_TYPES_REQUEST, FETCH_UPDATE_TRANSACTION_TYPES_SUCCESS, FETCH_UPDATE_TRANSACTION_TYPES_FAILURE,
+    FETCH_DELETE_TRANSACTION_TYPES_REQUEST, FETCH_DELETE_TRANSACTION_TYPES_SUCCESS, FETCH_DELETE_TRANSACTION_TYPES_FAILURE,
+} from './ActionType';
+
+// ── Get Transaction Types ────────────────────────────────────────────────────
+
+export const fetchGetTransactionTypesRequest = () => ({ type: FETCH_GET_TRANSACTION_TYPES_REQUEST });
+export const fetchGetTransactionTypesSuccess = (data) => ({ type: FETCH_GET_TRANSACTION_TYPES_SUCCESS, payload: data });
+export const fetchGetTransactionTypesFailure = (error) => ({ type: FETCH_GET_TRANSACTION_TYPES_FAILURE, payload: error });
+
+export const fetchGetTransactionTypes = (page = 1, pageSize = 10, schoolYear = '', campusId = null) => async (dispatch) => {
+    dispatch(fetchGetTransactionTypesRequest());
+    try {
+        const token = getToken();
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            pageSize: pageSize.toString(),
+            schoolYear: schoolYear,
+        });
+        
+        if (campusId !== null && campusId !== undefined) {
+            queryParams.append('campusId', campusId.toString());
+        }
+        
+        const res = await fetch(`${baseUrl}/accounting/get-transaction-types?${queryParams}`, {
+            method: 'POST',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchGetTransactionTypesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchGetTransactionTypesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Create Transaction Types ─────────────────────────────────────────────────
+
+export const fetchCreateTransactionTypesRequest = () => ({ type: FETCH_CREATE_TRANSACTION_TYPES_REQUEST });
+export const fetchCreateTransactionTypesSuccess = (data) => ({ type: FETCH_CREATE_TRANSACTION_TYPES_SUCCESS, payload: data });
+export const fetchCreateTransactionTypesFailure = (error) => ({ type: FETCH_CREATE_TRANSACTION_TYPES_FAILURE, payload: error });
+
+export const fetchCreateTransactionTypes = (payload) => async (dispatch) => {
+    dispatch(fetchCreateTransactionTypesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/create-transaction-types`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(fetchCreateTransactionTypesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchCreateTransactionTypesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Update Transaction Types ─────────────────────────────────────────────────
+
+export const fetchUpdateTransactionTypesRequest = () => ({ type: FETCH_UPDATE_TRANSACTION_TYPES_REQUEST });
+export const fetchUpdateTransactionTypesSuccess = (data) => ({ type: FETCH_UPDATE_TRANSACTION_TYPES_SUCCESS, payload: data });
+export const fetchUpdateTransactionTypesFailure = (error) => ({ type: FETCH_UPDATE_TRANSACTION_TYPES_FAILURE, payload: error });
+
+export const fetchUpdateTransactionTypes = (id, payload) => async (dispatch) => {
+    dispatch(fetchUpdateTransactionTypesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/update-transaction-types/${id}`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(fetchUpdateTransactionTypesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchUpdateTransactionTypesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Delete Transaction Types ─────────────────────────────────────────────────
+
+export const fetchDeleteTransactionTypesRequest = () => ({ type: FETCH_DELETE_TRANSACTION_TYPES_REQUEST });
+export const fetchDeleteTransactionTypesSuccess = (data) => ({ type: FETCH_DELETE_TRANSACTION_TYPES_SUCCESS, payload: data });
+export const fetchDeleteTransactionTypesFailure = (error) => ({ type: FETCH_DELETE_TRANSACTION_TYPES_FAILURE, payload: error });
+
+export const fetchDeleteTransactionTypes = (id) => async (dispatch) => {
+    dispatch(fetchDeleteTransactionTypesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/delete-transaction-types/${id}`, {
+            method: 'DELETE',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchDeleteTransactionTypesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchDeleteTransactionTypesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+

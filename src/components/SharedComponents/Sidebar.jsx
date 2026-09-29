@@ -175,19 +175,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     ...sharedMenu,
   ];
 
-  const financeMenu = [
-    {
-      name: "Finance Dashboard",
-      icon: DashboardIcon,
-      path: "/finance/dashboard",
-    },
-    {
-      name: "Templates",
-      icon: DocumentIcon,
-      path: "/finance/templates",
-    },
-    ...sharedMenu,
-  ];
   const sruMenu = [
     {
       name: "Dashboard",
@@ -407,9 +394,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/accounting/chartofaccounts",
     },
     {
-      name: "Add Coa to Cashier Account",
+      name: "Transaction Types",
       icon: BookPlus,
-      path: "/accounting/addcoacashier",
+      path: "/accounting/addcoatransaction",
     },
     {
       name: "Journal Entry",
@@ -420,6 +407,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "SI / OR Series",
       icon: CreditCardIcon,
       path: "/accounting/siseries",
+    },
+    {
+      name: "Templates",
+      icon: FileText,
+      path: "/accounting/templates",
     },
     ...sharedMenu,
   ];
@@ -434,7 +426,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     1: admissionMenu,
     2: cfwMenu,
     3: cashierMenu,
-    4: financeMenu,
     5: sruMenu,
     6: academicMenu,
     7: hrMenu,

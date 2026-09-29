@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
-import CoaCashierDataTable from "../../components/AccountingComponents/CoaCashierDataTable";
+import TransactionCoaDataTable from "../../components/AccountingComponents/TransactionCoaDataTable";
 
-const AddCoaCashier = () => {
+const AddCoaTransaction = () => {
     useEffect(() => {
-        document.title = "COA Cashier Assignment | Accounting";
+        document.title = "Transaction Types & COA Assignment | Accounting";
     }, []);
 
     const breadcrumbItems = [
         { label: "Dashboard", href: "/accounting/dashboard" },
-        { label: "Chart of Accounts", href: "/accounting/chartofaccounts" },
-        { label: "COA Cashier Assignment", href: "/accounting/addcoacashier" },
+        { label: "Accounting", href: "/accounting/dashboard" },
+        { label: "Transaction Types", href: "/accounting/addcoatransaction" },
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -22,7 +22,7 @@ const AddCoaCashier = () => {
             <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
-                    <h2 className="text-sm font-bold text-black mt-2">COA Cashier Assignment</h2>
+                    <h2 className="text-sm font-bold text-black mt-2">Transaction Types & COA Assignment</h2>
                 </div>
 
                 <section className="flex items-center justify-center h-[calc(100%-5rem)]">
@@ -30,14 +30,14 @@ const AddCoaCashier = () => {
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
                         <div className="flex justify-center">
                             <h2 className="text-2xl font-bold text-green-500 mt-2">
-                                COA Cashier Assignment
+                                Assign COA to Transaction Types
                             </h2>
                         </div>
-                        <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+                        <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
                             <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">Assign chart of accounts to cashier accounts.</span>
+                            <span className="block sm:inline">Create transaction types and assign chart of accounts to each transaction.</span>
                         </div>
-                        <CoaCashierDataTable />
+                        <TransactionCoaDataTable />
                     </div>
                 </section>
             </div>
@@ -45,4 +45,4 @@ const AddCoaCashier = () => {
     );
 };
 
-export default AddCoaCashier;
+export default AddCoaTransaction;

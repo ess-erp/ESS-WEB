@@ -74,7 +74,7 @@ const TicketingComponent = () => {
                                 <option value="" disabled>Select a department...</option>
                                 <option value="IT">IT & Software Support</option>
                                 <option value="HR">Human Resources</option>
-                                <option value="Payroll">Payroll & Finance</option>
+                                <option value="Payroll">Payroll & Accounting</option>
                                 <option value="Maintenance">Facilities & Maintenance</option>
                             </select>
                         </div>
