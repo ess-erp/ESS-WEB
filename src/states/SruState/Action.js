@@ -24,6 +24,12 @@ import {
     FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
     FETCH_GENERATE_SUMMARY_SHEET_REQUEST, FETCH_GENERATE_SUMMARY_SHEET_SUCCESS, FETCH_GENERATE_SUMMARY_SHEET_FAILURE,
     FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST, FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS, FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE,
+    FETCH_SCHOOL_CALENDAR_MASTER_REQUEST, FETCH_SCHOOL_CALENDAR_MASTER_SUCCESS, FETCH_SCHOOL_CALENDAR_MASTER_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_MASTER_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_FAILURE,
+    FETCH_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -759,6 +765,194 @@ export const fetchDeleteSchoolCalendarData = (calendarId) => async (dispatch) =>
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchDeleteSchoolCalendarFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCHOOL CALENDAR MASTER (School Year Management)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── GET SCHOOL CALENDAR MASTER (School Year List) ────────────────────────────
+export const fetchSchoolCalendarMasterRequest = () => ({ type: FETCH_SCHOOL_CALENDAR_MASTER_REQUEST });
+export const fetchSchoolCalendarMasterSuccess = (data) => ({ type: FETCH_SCHOOL_CALENDAR_MASTER_SUCCESS, payload: data });
+export const fetchSchoolCalendarMasterFailure = (error) => ({ type: FETCH_SCHOOL_CALENDAR_MASTER_FAILURE, payload: error });
+
+export const fetchSchoolCalendarMasterData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchSchoolCalendarMasterRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-school-calendar-table?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchSchoolCalendarMasterSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchSchoolCalendarMasterFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// ── INSERT SCHOOL CALENDAR MASTER (Create School Year Only) ──────────────────
+export const fetchInsertSchoolCalendarMasterRequest = () => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_MASTER_REQUEST });
+export const fetchInsertSchoolCalendarMasterSuccess = (data) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_MASTER_SUCCESS, payload: data });
+export const fetchInsertSchoolCalendarMasterFailure = (error) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_MASTER_FAILURE, payload: error });
+
+export const fetchInsertSchoolCalendarMasterData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertSchoolCalendarMasterRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-school-calendar-school-year`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertSchoolCalendarMasterSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertSchoolCalendarMasterFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SCHOOL CALENDAR CHILD (Activities per School Year)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── GET SCHOOL CALENDAR CHILD (Activities for specific SY) ───────────────────
+export const fetchSchoolCalendarChildRequest = () => ({ type: FETCH_SCHOOL_CALENDAR_CHILD_REQUEST });
+export const fetchSchoolCalendarChildSuccess = (data) => ({ type: FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS, payload: data });
+export const fetchSchoolCalendarChildFailure = (error) => ({ type: FETCH_SCHOOL_CALENDAR_CHILD_FAILURE, payload: error });
+
+export const fetchSchoolCalendarChildData = (calendarId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchSchoolCalendarChildRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-row-school-calendar-table?calendarId=${calendarId}&page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchSchoolCalendarChildSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchSchoolCalendarChildFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// ── INSERT SCHOOL CALENDAR CHILD (Create Activity) ───────────────────────────
+export const fetchInsertSchoolCalendarChildRequest = () => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST });
+export const fetchInsertSchoolCalendarChildSuccess = (data) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, payload: data });
+export const fetchInsertSchoolCalendarChildFailure = (error) => ({ type: FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE, payload: error });
+
+export const fetchInsertSchoolCalendarChildData = (formData) => async (dispatch) => {
+    dispatch(fetchInsertSchoolCalendarChildRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/insert-school-calendary-activity`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchInsertSchoolCalendarChildSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchInsertSchoolCalendarChildFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// ── UPDATE SCHOOL CALENDAR CHILD (Update Activity) ───────────────────────────
+export const fetchUpdateSchoolCalendarChildRequest = () => ({ type: FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST });
+export const fetchUpdateSchoolCalendarChildSuccess = (data) => ({ type: FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, payload: data });
+export const fetchUpdateSchoolCalendarChildFailure = (error) => ({ type: FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE, payload: error });
+
+export const fetchUpdateSchoolCalendarChildData = (calendarChildId, formData) => async (dispatch) => {
+    dispatch(fetchUpdateSchoolCalendarChildRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/update-school-calendar-activity/${calendarChildId}`;
+
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+        });
+
+        const res = await response.json();
+        dispatch(fetchUpdateSchoolCalendarChildSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchUpdateSchoolCalendarChildFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// ── DELETE SCHOOL CALENDAR CHILD (Delete Activity) ───────────────────────────
+export const fetchDeleteSchoolCalendarChildRequest = () => ({ type: FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST });
+export const fetchDeleteSchoolCalendarChildSuccess = (data) => ({ type: FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, payload: data });
+export const fetchDeleteSchoolCalendarChildFailure = (error) => ({ type: FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE, payload: error });
+
+export const fetchDeleteSchoolCalendarChildData = (calendarChildId, userId) => async (dispatch) => {
+    dispatch(fetchDeleteSchoolCalendarChildRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/delete-school-calendar-activity?calendarChildId=${calendarChildId}&userId=${userId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        const res = await response.json();
+        dispatch(fetchDeleteSchoolCalendarChildSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchDeleteSchoolCalendarChildFailure(error.message));
         return { ok: false, error };
     }
 };

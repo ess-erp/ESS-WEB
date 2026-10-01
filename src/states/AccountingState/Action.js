@@ -145,11 +145,15 @@ export const fetchGetCoaAccountRequest = () => ({ type: FETCH_GET_COA_ACCOUNT_RE
 export const fetchGetCoaAccountSuccess = (data) => ({ type: FETCH_GET_COA_ACCOUNT_SUCCESS, payload: data });
 export const fetchGetCoaAccountFailure = (error) => ({ type: FETCH_GET_COA_ACCOUNT_FAILURE, payload: error });
 
-export const fetchGetCoaAccountData = (groupId) => async (dispatch) => {
+export const fetchGetCoaAccountData = (groupId, normalBalance = null) => async (dispatch) => {
     dispatch(fetchGetCoaAccountRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-coa-account?groupId=${groupId}`, {
+        let url = `${baseUrl}/accounting/get-coa-account?groupId=${groupId}`;
+        if (normalBalance) {
+            url += `&normalBalance=${normalBalance}`;
+        }
+        const res = await fetch(url, {
             method: 'POST', headers: authHeaders(token),
         });
         const data = await res.json();

@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Printer, Trash2, Receipt, Plus, ChevronDown, ChevronUp } from "lucide-react";
+import { Printer, Trash2, Receipt, Plus, ChevronDown, ChevronUp, DollarSign, Lock, LogOut } from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
     fetchTransactionTypeData,
@@ -9,6 +9,7 @@ import {
     fetchOrNumberData,
     fetchGetRealtimeDailyBalanceData,
     fetchGetDailyBalanceData,
+    fetchInsertDailyBalanceData,
     fetchPrintReceiptData,
     fetchInsertSubmitPaymentData,
     fetchStudentAppAssessmentData,
@@ -349,6 +350,16 @@ const PaymentComponent = () => {
     const [isPreviewModal, setIsPreviewModal] = useState(false);
     const [isConfirmModal, setIsConfirmModal] = useState(false);
 
+    // ── Drawer balance modals ─────────────────────────────────────────────────
+    const [isStartBalanceModal, setIsStartBalanceModal] = useState(false);
+    const [isCloseDrawerModal, setIsCloseDrawerModal] = useState(false);
+    const [isCloseDrawerConfirmModal, setIsCloseDrawerConfirmModal] = useState(false);
+    const [startingBalance, setStartingBalance] = useState("");
+    const [startBalanceError, setStartBalanceError] = useState("");
+    const [closingAmount, setClosingAmount] = useState("");
+    const [closingRemarks, setClosingRemarks] = useState("");
+    const [closeDrawerErrors, setCloseDrawerErrors] = useState({});
+
     // ── payment options ───────────────────────────────────────────────────────
     const paymentOptions = [
         { value: "Cash", label: "Cash" },
@@ -567,6 +578,20 @@ const PaymentComponent = () => {
             return;
         }
 
+        // NEW: Validation for Assessment Plan with misc fees but no plan selected
+        if (transType === "Assessment Plan" && miscTotal > 0 && !selectedPlan) {
+            setErrors(true);
+            setErrorMessage("Please select an assessment plan before adding this transaction. Miscellaneous fees require a plan selection.");
+            return;
+        }
+
+        // NEW: Validation for Assessment Plan - must select a plan if available
+        if (transType === "Assessment Plan" && !selectedPlan && installmentRows.length === 0) {
+            setErrors(true);
+            setErrorMessage("Please select an assessment plan before adding this transaction.");
+            return;
+        }
+
         setTransactions((prev) => [...prev, {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             transType,
@@ -702,48 +727,73 @@ const PaymentComponent = () => {
         }
     };
 
-    const handleSubmitAndPrint = () => {
-        // Use summary-level payment when cart has items
-        const all = transactions.length > 0 ? transactions : [{
-            transType,
-            userFormId,
-            referenceNumber,
-            price: priceToUse,
-            tuitionChildId: tuitionChildId || 0,
-            planId: planId || 0,
-            orChildId: orNumberData.OrChildId,
-            orNumberUsed: orNumberData.LatestOrAvailable,
-            numInstallmentsPaid: numInstallmentsToPay || 1,
-            miscBreakdown: Array.isArray(miscBreakdown) ? miscBreakdown : [],
-            advancePaymentAmount: calculatedAdvanceAmount || 0,
-        }];
+    const handleSubmitAndPrint = async () => {
+        // Build payload using same structure as handlePrint
+        let payload;
 
-        dispatch(fetchInsertSubmitPaymentData({
-            TransType: orNumberData.OrType,
-            OrId: orNumberData.OrId,
-            CreatedByUserId: userId,
-            MiscId: all[0].miscBreakdown?.[0]?.MiscId || all[0].miscBreakdown?.[0]?.FeeChildId || null,
-            ModeOfPayment: transactions.length > 0 ? summaryPaymentMode?.value : null,
-            CheckNumber: transactions.length > 0 ? summaryCheckNumber : "",
-            PaymentFormChildDtos: all.map((t) => ({
-                UserId: t.userFormId || userFormId,
-                ReferenceId: t.userFormId || userFormId,
-                ReferenceNo: t.referenceNumber || referenceNumber,
-                TuitionChildId: t.tuitionChildId || 0,
-                TypeOfTransaction: t.transType,
-                OrChildId: t.orChildId,
-                OrNumberUsed: t.orNumberUsed,
-                Amount: t.price?.toString(),
-                PlanId: t.planId || 0,
-                NumInstallmentsPaid: t.numInstallmentsPaid || 1,
-                // Only assign advance credit to the selected student
-                OverpaymentCredit: transactions.length > 0 
-                    ? (advanceChoice === "advance" && t.userFormId === advanceStudentId ? summaryOverpayment : 0)
-                    : 0,
-                AdvancePaymentAmount: t.advancePaymentAmount || 0,
-            })),
-        }));
+        if (transactions.length > 0) {
+            // Cart mode: use summary-level payment data
+            payload = {
+                TransType: orNumberData.OrType,
+                OrId: orNumberData.OrId,
+                CreatedByUserId: userId,
+                ModeOfPayment: summaryPaymentMode.value,
+                CheckNumber: summaryCheckNumber || "",
+                AdvanceChoice: advanceChoice || null,
+                AdvanceStudentId: advanceStudentId || null,
+                PaymentFormChildDtos: transactions.map((t) => ({
+                    UserId: t.userFormId,
+                    ReferenceId: t.userFormId,
+                    ReferenceNo: t.referenceNumber,
+                    FeesChildId: t.miscBreakdown?.[0]?.FeeChildId || null,
+                    MiscId: t.miscBreakdown?.[0]?.MiscId || null,
+                    TuitionChildId: t.tuitionChildId || 0,
+                    TypeOfTransaction: t.transType,
+                    OrChildId: t.orChildId,
+                    OrNumberUsed: t.orNumberUsed,
+                    Amount: t.price.toString(),
+                    PlanId: t.planId || 0,
+                    NumInstallmentsPaid: t.numInstallmentsPaid || 1,
+                    // Only assign advance credit to the selected student
+                    OverpaymentCredit: (advanceChoice === "advance" && t.userFormId === advanceStudentId) ? summaryOverpayment : 0,
+                    AdvancePaymentAmount: t.advancePaymentAmount || 0,
+                })),
+            };
+        } else {
+            // Single transaction mode
+            payload = {
+                TransType: orNumberData.OrType,
+                OrId: orNumberData.OrId,
+                CreatedByUserId: userId,
+                ModeOfPayment: null,
+                CheckNumber: "",
+                AdvanceChoice: null,
+                AdvanceStudentId: null,
+                PaymentFormChildDtos: [{
+                    UserId: userFormId,
+                    ReferenceId: userFormId,
+                    ReferenceNo: referenceNumber,
+                    FeesChildId: miscBreakdown[0]?.FeeChildId || null,
+                    MiscId: miscBreakdown[0]?.MiscId || null,
+                    TuitionChildId: tuitionChildId || 0,
+                    TypeOfTransaction: transType,
+                    OrChildId: orNumberData.OrChildId,
+                    OrNumberUsed: orNumberData.LatestOrAvailable,
+                    Amount: priceToUse.toString(),
+                    PlanId: planId || 0,
+                    NumInstallmentsPaid: numInstallmentsToPay || 1,
+                    OverpaymentCredit: 0,
+                    AdvancePaymentAmount: calculatedAdvanceAmount || 0,
+                }],
+            };
+        }
 
+        console.log("Submit & Print payload:", payload);
+
+        // Submit the transaction
+        const result = await dispatch(fetchInsertSubmitPaymentData(payload));
+
+        // Print the receipt if PDF is available
         if (receiptData?.PdfBase64) {
             const iframe = document.createElement("iframe");
             iframe.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:none;";
@@ -758,6 +808,12 @@ const PaymentComponent = () => {
             };
         }
 
+        // Refresh OR number and balances
+        dispatch(fetchOrNumberData(userId));
+        dispatch(fetchGetDailyBalanceData(userId));
+        dispatch(fetchGetRealtimeDailyBalanceData(userId));
+
+        // Close modals and reset
         setIsPreviewModal(false);
         setIsConfirmModal(false);
         setTransactions([]);
@@ -766,16 +822,114 @@ const PaymentComponent = () => {
 
     const canPrint = transactions.length > 0 || (transType && referenceNumber);
 
+    // ── Drawer balance handlers ───────────────────────────────────────────────
+    const handleOpenStartBalanceModal = () => {
+        setStartingBalance("");
+        setStartBalanceError("");
+        setIsStartBalanceModal(true);
+    };
+
+    const handleSubmitStartBalance = () => {
+        const amount = Number(startingBalance);
+        if (!startingBalance || amount <= 0) {
+            setStartBalanceError("Please enter a valid starting balance amount.");
+            return;
+        }
+
+        // Call backend to insert starting balance
+        dispatch(fetchInsertDailyBalanceData(userId, amount))
+            .then(() => {
+                // Refresh balances
+                dispatch(fetchGetDailyBalanceData(userId));
+                dispatch(fetchGetRealtimeDailyBalanceData(userId));
+                setIsStartBalanceModal(false);
+                setStartingBalance("");
+            })
+            .catch(err => {
+                setStartBalanceError("Failed to set starting balance. Please try again.");
+            });
+    };
+
+    const handleOpenCloseDrawerModal = () => {
+        setClosingAmount(realtimeBalance?.Amount || "");
+        setClosingRemarks("");
+        setCloseDrawerErrors({});
+        setIsCloseDrawerModal(true);
+    };
+
+    const handleCloseDrawerConfirm = () => {
+        const amount = Number(closingAmount);
+        const errors = {};
+
+        if (!closingAmount || amount < 0) {
+            errors.amount = "Please enter the closing cash amount.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setCloseDrawerErrors(errors);
+            return;
+        }
+
+        setIsCloseDrawerModal(false);
+        setIsCloseDrawerConfirmModal(true);
+    };
+
+    const handleFinalCloseDrawer = () => {
+        const amount = Number(closingAmount);
+        
+        // For now, just log and close - backend endpoint can be added later
+        console.log("Closing drawer:", {
+            userId,
+            closingAmount: amount,
+            expectedAmount: realtimeBalance?.Amount || 0,
+            remarks: closingRemarks,
+            discrepancy: amount - (realtimeBalance?.Amount || 0)
+        });
+
+        // TODO: Call backend endpoint when ready
+        // dispatch(fetchCloseDrawerData({ ... }))
+
+        alert(`Drawer closed successfully!\nClosing amount: ₱${fmt(amount)}\nExpected: ₱${fmt(realtimeBalance?.Amount || 0)}`);
+        
+        setIsCloseDrawerConfirmModal(false);
+        setIsCloseDrawerModal(false);
+    };
+
     // ─────────────────────────────────────────────────────────────────────────
     return (
         <div className="bg-white p-4 min-h-screen">
             <div className="max-w-6xl mx-auto">
+                {/* ── Top Action Bar ───────────────────────────────────────────── */}
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                    <h2 className="text-2xl font-bold text-gray-900">Payment Form</h2>
+                    
+                    <div className="flex gap-2">
+                        {/* Starting Balance Button */}
+                        {(!dailyBalance || !dailyBalance.Amount || dailyBalance.Amount === 0) && (
+                            <button
+                                onClick={handleOpenStartBalanceModal}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                            >
+                                <DollarSign size={16} />
+                                Set Starting Balance
+                            </button>
+                        )}
+                        
+                        {/* Close Drawer Button */}
+                        <button
+                            onClick={handleOpenCloseDrawerModal}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                        >
+                            <LogOut size={16} />
+                            Close Drawer
+                        </button>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
                     {/* ── LEFT: Payment form ───────────────────────────────── */}
                     <div className="lg:col-span-3 space-y-5">
-                        <h2 className="text-2xl font-bold text-gray-900">Payment Form</h2>
-
                         {/* Transaction type selector */}
                         <div>
                             <SearchableSelect
@@ -1351,6 +1505,189 @@ const PaymentComponent = () => {
                 buttons={[
                     { label: "Yes, Submit & Print", type: "green", closeOnClick: false, onClick: handleSubmitAndPrint },
                     { label: "Cancel", type: "red", onClick: () => setIsConfirmModal(false) },
+                ]}
+            />
+
+            {/* ── Starting Balance Modal ────────────────────────────────────── */}
+            <ModalComponent
+                isOpen={isStartBalanceModal}
+                onClose={() => setIsStartBalanceModal(false)}
+                title="Set Starting Drawer Balance"
+                size="md"
+                body={
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            Enter the starting cash amount for your drawer at the beginning of your shift.
+                        </p>
+                        <div>
+                            <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Starting Balance Amount <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-500 font-semibold">₱</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    className={`${INPUT} pl-8 ${startBalanceError ? 'border-red-500' : ''}`}
+                                    value={startingBalance}
+                                    onChange={(e) => {
+                                        setStartingBalance(e.target.value);
+                                        setStartBalanceError("");
+                                    }}
+                                />
+                            </div>
+                            {startBalanceError && (
+                                <p className="text-red-500 text-xs mt-1">{startBalanceError}</p>
+                            )}
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+                            💡 This amount will be used to track your cash drawer throughout the day.
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    { label: "Set Balance", type: "green", closeOnClick: false, onClick: handleSubmitStartBalance },
+                    { label: "Cancel", type: "gray", onClick: () => setIsStartBalanceModal(false) },
+                ]}
+            />
+
+            {/* ── Close Drawer Modal ────────────────────────────────────────── */}
+            <ModalComponent
+                isOpen={isCloseDrawerModal}
+                onClose={() => setIsCloseDrawerModal(false)}
+                title="Close Cash Drawer"
+                size="md"
+                body={
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            Count your cash and enter the closing amount. The system will calculate any discrepancies.
+                        </p>
+                        
+                        {/* Expected vs Actual */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                <p className="text-xs text-blue-600 font-medium mb-1">Expected Amount</p>
+                                <p className="text-lg font-bold text-blue-700">₱{fmt(realtimeBalance?.Amount || 0)}</p>
+                            </div>
+                            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <p className="text-xs text-green-600 font-medium mb-1">Starting Balance</p>
+                                <p className="text-lg font-bold text-green-700">₱{fmt(dailyBalance?.Amount || 0)}</p>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Actual Cash Count <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-2.5 text-gray-500 font-semibold">₱</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    className={`${INPUT} pl-8 ${closeDrawerErrors.amount ? 'border-red-500' : ''}`}
+                                    value={closingAmount}
+                                    onChange={(e) => {
+                                        setClosingAmount(e.target.value);
+                                        setCloseDrawerErrors({});
+                                    }}
+                                />
+                            </div>
+                            {closeDrawerErrors.amount && (
+                                <p className="text-red-500 text-xs mt-1">{closeDrawerErrors.amount}</p>
+                            )}
+                        </div>
+
+                        {/* Discrepancy warning */}
+                        {closingAmount && Number(closingAmount) !== Number(realtimeBalance?.Amount || 0) && (
+                            <div className={`border rounded-lg p-3 text-sm ${
+                                Number(closingAmount) > Number(realtimeBalance?.Amount || 0) 
+                                    ? 'bg-amber-50 border-amber-200 text-amber-700' 
+                                    : 'bg-red-50 border-red-200 text-red-700'
+                            }`}>
+                                <p className="font-semibold mb-1">
+                                    {Number(closingAmount) > Number(realtimeBalance?.Amount || 0) ? '⚠️ Overage Detected' : '⚠️ Shortage Detected'}
+                                </p>
+                                <p>
+                                    Difference: ₱{fmt(Math.abs(Number(closingAmount) - Number(realtimeBalance?.Amount || 0)))}
+                                </p>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="text-xs font-medium text-gray-700 mb-1 block">
+                                Remarks (Optional)
+                            </label>
+                            <textarea
+                                rows={3}
+                                placeholder="Enter any notes or explanations..."
+                                className={INPUT}
+                                value={closingRemarks}
+                                onChange={(e) => setClosingRemarks(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    { label: "Close Drawer", type: "red", closeOnClick: false, onClick: handleCloseDrawerConfirm },
+                    { label: "Cancel", type: "gray", onClick: () => setIsCloseDrawerModal(false) },
+                ]}
+            />
+
+            {/* ── Close Drawer Confirmation Modal ───────────────────────────── */}
+            <ModalComponent
+                isOpen={isCloseDrawerConfirmModal}
+                onClose={() => setIsCloseDrawerConfirmModal(false)}
+                title="Confirm Close Drawer"
+                size="md"
+                body={
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            You are about to close your cash drawer. Please review the details:
+                        </p>
+                        
+                        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-600">Starting Balance:</span>
+                                <span className="font-semibold">₱{fmt(dailyBalance?.Amount || 0)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-600">Expected Amount:</span>
+                                <span className="font-semibold">₱{fmt(realtimeBalance?.Amount || 0)}</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2">
+                                <span className="text-gray-600">Actual Cash Count:</span>
+                                <span className="font-bold text-lg">₱{fmt(closingAmount)}</span>
+                            </div>
+                            {Number(closingAmount) !== Number(realtimeBalance?.Amount || 0) && (
+                                <div className={`flex justify-between border-t pt-2 ${
+                                    Number(closingAmount) > Number(realtimeBalance?.Amount || 0) 
+                                        ? 'text-amber-600' 
+                                        : 'text-red-600'
+                                }`}>
+                                    <span className="font-semibold">
+                                        {Number(closingAmount) > Number(realtimeBalance?.Amount || 0) ? 'Overage:' : 'Shortage:'}
+                                    </span>
+                                    <span className="font-bold">₱{fmt(Math.abs(Number(closingAmount) - Number(realtimeBalance?.Amount || 0)))}</span>
+                                </div>
+                            )}
+                            {closingRemarks && (
+                                <div className="border-t pt-2">
+                                    <p className="text-gray-600 text-xs mb-1">Remarks:</p>
+                                    <p className="text-gray-800">{closingRemarks}</p>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+                            🔒 <strong>Warning:</strong> This action cannot be undone. Make sure all transactions are completed.
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    { label: "Confirm & Close", type: "red", closeOnClick: false, onClick: handleFinalCloseDrawer },
+                    { label: "Cancel", type: "gray", onClick: () => setIsCloseDrawerConfirmModal(false) },
                 ]}
             />
         </div>

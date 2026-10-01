@@ -4,9 +4,11 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
+import DebitCoaDropdown from "./DebitCoaDropdown";
+import CreditCoaDropdown from "./CreditCoaDropdown";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { 
-    fetchGetCoaFlatData, 
+    fetchGetCoaFlatData,
     fetchGetTransactionTypes,
     fetchCreateTransactionTypes,
     fetchUpdateTransactionTypes
@@ -23,7 +25,15 @@ const TransactionCoaDataTable = () => {
     const [selectedSY, setSelectedSY] = useState("2024-2025");
     const [selectedCampus, setSelectedCampus] = useState(null);
     const [formRows, setFormRows] = useState([
-        { transactionCode: "", transactionType: "", transactionGroup: "Enrollment", coaOption: null, feeAmount: "", remarks: "" },
+        { 
+            transactionCode: "", 
+            transactionType: "", 
+            transactionGroup: "Enrollment", 
+            debitCoa: null, 
+            creditCoa: null, 
+            feeAmount: "", 
+            remarks: "" 
+        },
     ]);
 
     const [errors, setErrors] = useState({});
@@ -101,8 +111,15 @@ const TransactionCoaDataTable = () => {
             width: "150px",
         },
         {
-            name: "Assigned COA",
-            selector: (row) => row.AccountCode && row.AccountName ? `${row.AccountCode} - ${row.AccountName}` : "—",
+            name: "Debit COA",
+            selector: (row) => row.DebitAccountCode && row.DebitAccountName ? `${row.DebitAccountCode} - ${row.DebitAccountName}` : "—",
+            sortable: true,
+            wrap: true,
+            width: "250px",
+        },
+        {
+            name: "Credit COA",
+            selector: (row) => row.CreditAccountCode && row.CreditAccountName ? `${row.CreditAccountCode} - ${row.CreditAccountName}` : "—",
             sortable: true,
             wrap: true,
             width: "250px",
@@ -149,7 +166,15 @@ const TransactionCoaDataTable = () => {
         setSelectedSY("2024-2025");
         setSelectedCampus(null);
         setFormRows([
-            { transactionCode: "", transactionType: "", transactionGroup: "Enrollment", coaOption: null, feeAmount: "", remarks: "" },
+            { 
+                transactionCode: "", 
+                transactionType: "", 
+                transactionGroup: "Enrollment", 
+                debitCoa: null, 
+                creditCoa: null, 
+                feeAmount: "", 
+                remarks: "" 
+            },
         ]);
         setErrors({});
         setShowConfirm(false);
@@ -163,7 +188,14 @@ const TransactionCoaDataTable = () => {
                 transactionCode: row.TransactionCode,
                 transactionType: row.TransactionType,
                 transactionGroup: row.TransactionGroup,
-                coaOption: row.CoaChildId ? coaOptions.find(opt => opt.value === row.CoaChildId) || null : null,
+                debitCoa: row.DebitCoaChildId ? {
+                    value: row.DebitCoaChildId,
+                    label: `${row.DebitAccountCode} - ${row.DebitAccountName}`
+                } : null,
+                creditCoa: row.CreditCoaChildId ? {
+                    value: row.CreditCoaChildId,
+                    label: `${row.CreditAccountCode} - ${row.CreditAccountName}`
+                } : null,
                 feeAmount: row.Amount || "",
                 remarks: row.Remarks || "",
             },
@@ -196,7 +228,15 @@ const TransactionCoaDataTable = () => {
     const handleAddRow = () => {
         setFormRows([
             ...formRows,
-            { transactionCode: "", transactionType: "", transactionGroup: "Enrollment", coaOption: null, feeAmount: "", remarks: "" },
+            { 
+                transactionCode: "", 
+                transactionType: "", 
+                transactionGroup: "Enrollment", 
+                debitCoa: null, 
+                creditCoa: null, 
+                feeAmount: "", 
+                remarks: "" 
+            },
         ]);
     };
 
@@ -222,8 +262,11 @@ const TransactionCoaDataTable = () => {
             if (!row.transactionType.trim()) {
                 newErrors[`${i}-transactionType`] = "Type required";
             }
-            if (!row.coaOption) {
-                newErrors[`${i}-coaOption`] = "COA required";
+            if (!row.debitCoa) {
+                newErrors[`${i}-debitCoa`] = "Debit COA required";
+            }
+            if (!row.creditCoa) {
+                newErrors[`${i}-creditCoa`] = "Credit COA required";
             }
             if (!row.feeAmount || parseFloat(row.feeAmount) <= 0) {
                 if (row.transactionType.trim().toLowerCase() !== "assessment plan") {
@@ -254,7 +297,8 @@ const TransactionCoaDataTable = () => {
                 TransactionCode: row.transactionCode,
                 TransactionType: row.transactionType,
                 TransactionGroup: row.transactionGroup,
-                CoaChildId: row.coaOption ? row.coaOption.value : null,
+                DebitCoaChildId: row.debitCoa ? row.debitCoa.value : null,
+                CreditCoaChildId: row.creditCoa ? row.creditCoa.value : null,
                 FeeAmount: parseFloat(row.feeAmount),
                 Remarks: row.remarks,
             })),
@@ -274,7 +318,15 @@ const TransactionCoaDataTable = () => {
 
         setIsModalOpen(false);
         setShowConfirm(false);
-        setFormRows([{ transactionCode: "", transactionType: "", transactionGroup: "Enrollment", coaOption: null, feeAmount: "", remarks: "" }]);
+        setFormRows([{ 
+            transactionCode: "", 
+            transactionType: "", 
+            transactionGroup: "Enrollment", 
+            debitCoa: null, 
+            creditCoa: null, 
+            feeAmount: "", 
+            remarks: "" 
+        }]);
         setErrors({});
     };
 
@@ -358,7 +410,7 @@ const TransactionCoaDataTable = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title={editingId ? "Edit Transaction Type" : "Add New Transaction Type"}
-                size="w-[900px]"
+                size="w-[95vw] max-w-[1400px]"
                 maxHeight="100vh"
                 buttons={[
                     {
@@ -376,7 +428,7 @@ const TransactionCoaDataTable = () => {
                 ]}
                 body={
                     <div className="space-y-4">
-                        {/* Header with SY and Campus - Single Row */}
+                        {/* Header with SY and Campus - 2 Columns */}
                         <div className="border-b pb-4">
                             <div className="grid grid-cols-2 gap-6 items-center">
                                 {/* School Year */}
@@ -417,157 +469,195 @@ const TransactionCoaDataTable = () => {
                             </div>
                         </div>
 
-                        {/* Column Headers */}
-                        <div className="grid grid-cols-12 gap-2 mb-2 border-b pb-2">
-                            <div className="col-span-1 text-xs font-medium text-gray-700">
-                                #
-                            </div>
-                            <div className="col-span-2 text-xs font-medium text-gray-700">
-                                Transaction Code
-                            </div>
-                            <div className="col-span-2 text-xs font-medium text-gray-700">
-                                Transaction Name
-                            </div>
-                            <div className="col-span-2 text-xs font-medium text-gray-700">
-                                Transaction Group
-                            </div>
-                            <div className="col-span-3 text-xs font-medium text-gray-700">
-                                Chart Of Accounts
-                            </div>
-                            <div className="col-span-1 text-xs font-medium text-gray-700">
-                                Amount
-                            </div>
-                            <div className="col-span-1 text-xs font-medium text-gray-700 text-right">
-                                Action
-                            </div>
-                        </div>
+                        {/* Table Container with Single Horizontal Scroll */}
+                        <div className="border rounded-lg">
+                            {/* Table Wrapper */}
+                            <div className="overflow-x-auto">
+                                <div className="inline-block min-w-full align-middle">
+                                    <div className="overflow-hidden">
+                                        {/* Column Headers */}
+                                        <div className="flex border-b bg-gray-50">
+                                            {/* Frozen Left Headers */}
+                                            <div className="flex-shrink-0 flex border-r-2 border-gray-300 bg-gray-50 sticky left-0 z-30">
+                                                <div className="w-12 px-2 py-2 text-xs font-semibold text-gray-700 border-r border-gray-200">
+                                                    #
+                                                </div>
+                                                <div className="w-40 px-2 py-2 text-xs font-semibold text-gray-700 border-r border-gray-200">
+                                                    Transaction Code *
+                                                </div>
+                                                <div className="w-48 px-2 py-2 text-xs font-semibold text-gray-700">
+                                                    Transaction Name *
+                                                </div>
+                                            </div>
 
-                        {/* Transaction Rows - with separate scroll */}
-                        <div className="border-b pb-3">
-                            <div className="max-h-[50vh] overflow-y-auto space-y-3 pr-2">
-                            {formRows.map((row, index) => (
-                                <div key={index} className="grid grid-cols-12 gap-2 items-end border-b pb-3">
-                                    {/* Row Number */}
-                                    <div className="col-span-1">
-                                        <div className="text-xs font-medium text-gray-700 bg-gray-100 rounded px-2 py-2 text-center">
-                                            {index + 1}
+                                            {/* Scrollable Right Headers */}
+                                            <div className="flex">
+                                                <div className="w-32 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">
+                                                    Group
+                                                </div>
+                                                <div className="w-72 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">
+                                                    Debit COA *
+                                                </div>
+                                                <div className="w-72 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">
+                                                    Credit COA *
+                                                </div>
+                                                <div className="w-32 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">
+                                                    Amount
+                                                </div>
+                                                <div className="w-20 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 text-center">
+                                                    Action
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Transaction Rows - Vertical Scroll Only */}
+                                        <div className="max-h-[55vh] overflow-y-auto">
+                                            {formRows.map((row, index) => (
+                                                <div key={index} className="flex border-b last:border-b-0 group">
+                                                    {/* Frozen Left Section */}
+                                                    <div className="flex-shrink-0 flex border-r-2 border-gray-300 bg-white group-hover:bg-gray-50 sticky left-0 z-10">
+                                                        {/* Row Number */}
+                                                        <div className="w-12 px-2 py-2 flex items-center justify-center border-r border-gray-200">
+                                                            <div className="text-xs font-medium text-gray-700 bg-gray-100 rounded px-2 py-1">
+                                                                {index + 1}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Transaction Code */}
+                                                        <div className="w-40 px-2 py-2 border-r border-gray-200">
+                                                            <input
+                                                                type="text"
+                                                                value={row.transactionCode}
+                                                                onChange={(e) =>
+                                                                    handleRowChange(index, "transactionCode", e.target.value)
+                                                                }
+                                                                placeholder="TUI001"
+                                                                className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                                                    errors[`${index}-transactionCode`]
+                                                                        ? "border-red-500 focus:ring-red-500"
+                                                                        : "border-gray-300 focus:ring-blue-500"
+                                                                }`}
+                                                            />
+                                                            {errors[`${index}-transactionCode`] && (
+                                                                <p className="text-red-500 text-xs mt-0.5">
+                                                                    {errors[`${index}-transactionCode`]}
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Transaction Name */}
+                                                        <div className="w-48 px-2 py-2">
+                                                            <input
+                                                                type="text"
+                                                                value={row.transactionType}
+                                                                onChange={(e) =>
+                                                                    handleRowChange(index, "transactionType", e.target.value)
+                                                                }
+                                                                placeholder="Tuition Payment"
+                                                                className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                                                    errors[`${index}-transactionType`]
+                                                                        ? "border-red-500 focus:ring-red-500"
+                                                                        : "border-gray-300 focus:ring-blue-500"
+                                                                }`}
+                                                            />
+                                                            {errors[`${index}-transactionType`] && (
+                                                                <p className="text-red-500 text-xs mt-0.5">
+                                                                    {errors[`${index}-transactionType`]}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Scrollable Right Section */}
+                                                    <div className="flex group-hover:bg-gray-50">
+                                                        {/* Transaction Group */}
+                                                        <div className="w-32 px-2 py-2 border-r border-gray-200">
+                                                            <select
+                                                                value={row.transactionGroup}
+                                                                onChange={(e) =>
+                                                                    handleRowChange(index, "transactionGroup", e.target.value)
+                                                                }
+                                                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                            >
+                                                                <option value="Enrollment">Enrollment</option>
+                                                                <option value="Other Fees">Other Fees</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Debit COA */}
+                                                        <div className="w-72 px-2 py-2 border-r border-gray-200">
+                                                            <DebitCoaDropdown
+                                                                groupId={null}
+                                                                value={row.debitCoa}
+                                                                onChange={(option) => {
+                                                                    handleRowChange(index, "debitCoa", option);
+                                                                }}
+                                                                placeholder="Select Debit COA..."
+                                                                errors={!!errors[`${index}-debitCoa`]}
+                                                                errorMessage={errors[`${index}-debitCoa`] || ""}
+                                                                width="100%"
+                                                            />
+                                                        </div>
+
+                                                        {/* Credit COA */}
+                                                        <div className="w-72 px-2 py-2 border-r border-gray-200">
+                                                            <CreditCoaDropdown
+                                                                groupId={null}
+                                                                value={row.creditCoa}
+                                                                onChange={(option) => {
+                                                                    handleRowChange(index, "creditCoa", option);
+                                                                }}
+                                                                placeholder="Select Credit COA..."
+                                                                errors={!!errors[`${index}-creditCoa`]}
+                                                                errorMessage={errors[`${index}-creditCoa`] || ""}
+                                                                width="100%"
+                                                            />
+                                                        </div>
+
+                                                        {/* Fee Amount */}
+                                                        <div className="w-32 px-2 py-2 border-r border-gray-200">
+                                                            <input
+                                                                type="number"
+                                                                value={row.feeAmount}
+                                                                onChange={(e) =>
+                                                                    handleRowChange(index, "feeAmount", e.target.value)
+                                                                }
+                                                                placeholder={row.transactionType.trim().toLowerCase() === "assessment plan" ? "N/A" : "0.00"}
+                                                                step="0.01"
+                                                                disabled={row.transactionType.trim().toLowerCase() === "assessment plan"}
+                                                                className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 ${
+                                                                    row.transactionType.trim().toLowerCase() === "assessment plan"
+                                                                        ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                        : errors[`${index}-feeAmount`]
+                                                                        ? "border-red-500 focus:ring-red-500"
+                                                                        : "border-gray-300 focus:ring-blue-500"
+                                                                }`}
+                                                            />
+                                                            {errors[`${index}-feeAmount`] && (
+                                                                <p className="text-red-500 text-xs mt-0.5">
+                                                                    {errors[`${index}-feeAmount`]}
+                                                                </p>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Delete Button */}
+                                                        <div className="w-20 px-2 py-2 flex justify-center items-start">
+                                                            {formRows.length > 1 && (
+                                                                <button
+                                                                    onClick={() => handleRemoveRow(index)}
+                                                                    className="p-1.5 text-red-600 hover:bg-red-100 rounded"
+                                                                    title="Delete Row"
+                                                                >
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    {/* Transaction Code */}
-                                    <div className="col-span-2">
-                                        <input
-                                            type="text"
-                                            value={row.transactionCode}
-                                            onChange={(e) =>
-                                                handleRowChange(index, "transactionCode", e.target.value)
-                                            }
-                                            placeholder="TUI001"
-                                            className={`w-full px-2 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
-                                                errors[`${index}-transactionCode`]
-                                                    ? "border-red-500 focus:ring-red-500"
-                                                    : "border-gray-300 focus:ring-blue-500"
-                                            }`}
-                                        />
-                                        {errors[`${index}-transactionCode`] && (
-                                            <p className="text-red-500 text-xs mt-0.5">
-                                                {errors[`${index}-transactionCode`]}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Transaction Type */}
-                                    <div className="col-span-2">
-                                        <input
-                                            type="text"
-                                            value={row.transactionType}
-                                            onChange={(e) =>
-                                                handleRowChange(index, "transactionType", e.target.value)
-                                            }
-                                            placeholder="Tuition Payment"
-                                            className={`w-full px-2 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
-                                                errors[`${index}-transactionType`]
-                                                    ? "border-red-500 focus:ring-red-500"
-                                                    : "border-gray-300 focus:ring-blue-500"
-                                            }`}
-                                        />
-                                        {errors[`${index}-transactionType`] && (
-                                            <p className="text-red-500 text-xs mt-0.5">
-                                                {errors[`${index}-transactionType`]}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Transaction Group */}
-                                    <div className="col-span-2">
-                                        <select
-                                            value={row.transactionGroup}
-                                            onChange={(e) =>
-                                                handleRowChange(index, "transactionGroup", e.target.value)
-                                            }
-                                            className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            <option value="Enrollment">Enrollment</option>
-                                            <option value="Other Fees">Other Fees</option>
-                                        </select>
-                                    </div>
-
-                                    {/* COA Per Row */}
-                                    <div className="col-span-3">
-                                        <SearchableSelect
-                                            options={coaOptions}
-                                            value={row.coaOption}
-                                            onChange={(option) => {
-                                                handleRowChange(index, "coaOption", option);
-                                            }}
-                                            placeholder="Search COA..."
-                                            showSearchIcon={true}
-                                            errors={!!errors[`${index}-coaOption`]}
-                                            errorMessage={errors[`${index}-coaOption`] || ""}
-                                            width="100%"
-                                        />
-                                    </div>
-
-                                    {/* Fee Amount */}
-                                    <div className="col-span-1">
-                                        <input
-                                            type="number"
-                                            value={row.feeAmount}
-                                            onChange={(e) =>
-                                                handleRowChange(index, "feeAmount", e.target.value)
-                                            }
-                                            placeholder={row.transactionType.trim().toLowerCase() === "assessment plan" ? "N/A" : "0.00"}
-                                            step="0.01"
-                                            disabled={row.transactionType.trim().toLowerCase() === "assessment plan"}
-                                            className={`w-full px-2 py-2 text-sm border rounded focus:outline-none focus:ring-2 ${
-                                                row.transactionType.trim().toLowerCase() === "assessment plan"
-                                                    ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                    : errors[`${index}-feeAmount`]
-                                                    ? "border-red-500 focus:ring-red-500"
-                                                    : "border-gray-300 focus:ring-blue-500"
-                                            }`}
-                                        />
-                                        {errors[`${index}-feeAmount`] && (
-                                            <p className="text-red-500 text-xs mt-0.5">
-                                                {errors[`${index}-feeAmount`]}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* Delete Button */}
-                                    <div className="col-span-1 flex justify-end">
-                                        {formRows.length > 1 && (
-                                            <button
-                                                onClick={() => handleRemoveRow(index)}
-                                                className="p-2 text-red-600 hover:bg-red-100 rounded"
-                                                title="Delete Row"
-                                            >
-                                                <Trash2 size={18} />
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
-                            ))}
                             </div>
                         </div>
 

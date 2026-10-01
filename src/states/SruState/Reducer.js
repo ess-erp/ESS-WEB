@@ -24,6 +24,12 @@ import {
     FETCH_SUMMARY_SHEET_TABLE_REQUEST, FETCH_SUMMARY_SHEET_TABLE_SUCCESS, FETCH_SUMMARY_SHEET_TABLE_FAILURE,
     FETCH_GENERATE_SUMMARY_SHEET_REQUEST, FETCH_GENERATE_SUMMARY_SHEET_SUCCESS, FETCH_GENERATE_SUMMARY_SHEET_FAILURE,
     FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST, FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS, FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE,
+    FETCH_SCHOOL_CALENDAR_MASTER_REQUEST, FETCH_SCHOOL_CALENDAR_MASTER_SUCCESS, FETCH_SCHOOL_CALENDAR_MASTER_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_MASTER_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_FAILURE,
+    FETCH_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -59,6 +65,12 @@ const initialGeneralState = {
     summarySheetTableState: { ...initialState },
     generateSummarySheetState: { ...initialState },
     sectionLevelState: { ...initialState },
+    schoolCalendarMasterState: { ...initialState },
+    insertSchoolCalendarMasterState: { ...initialState },
+    schoolCalendarChildState: { ...initialState },
+    insertSchoolCalendarChildState: { ...initialState },
+    updateSchoolCalendarChildState: { ...initialState },
+    deleteSchoolCalendarChildState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -233,14 +245,59 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, generateSummarySheetState: { loading: false, data: [], error: action.payload } };
 
         case FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST:
-            return { ...state, generateSummsectionLevelStatearySheetState: { loading: true, data: [], error: '' } };
+            return { ...state, sectionLevelState: { loading: true, data: [], error: '' } };
         case FETCH_SECTION_LIST_BY_LEVEL_ID_SUCCESS:
             return { ...state, sectionLevelState: { loading: false, data: action.payload, error: '' } };
         case FETCH_SECTION_LIST_BY_LEVEL_ID_FAILURE:
             return { ...state, sectionLevelState: { loading: false, data: [], error: action.payload } };
 
+        // School Calendar Master (School Year)
+        case FETCH_SCHOOL_CALENDAR_MASTER_REQUEST:
+            return { ...state, schoolCalendarMasterState: { loading: true, data: [], error: '' } };
+        case FETCH_SCHOOL_CALENDAR_MASTER_SUCCESS:
+            return { ...state, schoolCalendarMasterState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SCHOOL_CALENDAR_MASTER_FAILURE:
+            return { ...state, schoolCalendarMasterState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_SCHOOL_CALENDAR_MASTER_REQUEST:
+            return { ...state, insertSchoolCalendarMasterState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_MASTER_SUCCESS:
+            return { ...state, insertSchoolCalendarMasterState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_MASTER_FAILURE:
+            return { ...state, insertSchoolCalendarMasterState: { loading: false, data: [], error: action.payload } };
+
+        // School Calendar Child (Activities)
+        case FETCH_SCHOOL_CALENDAR_CHILD_REQUEST:
+            return { ...state, schoolCalendarChildState: { loading: true, data: [], error: '' } };
+        case FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS:
+            return { ...state, schoolCalendarChildState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SCHOOL_CALENDAR_CHILD_FAILURE:
+            return { ...state, schoolCalendarChildState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST:
+            return { ...state, insertSchoolCalendarChildState: { loading: true, data: [], error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS:
+            return { ...state, insertSchoolCalendarChildState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE:
+            return { ...state, insertSchoolCalendarChildState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST:
+            return { ...state, updateSchoolCalendarChildState: { loading: true, data: [], error: '' } };
+        case FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS:
+            return { ...state, updateSchoolCalendarChildState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE:
+            return { ...state, updateSchoolCalendarChildState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST:
+            return { ...state, deleteSchoolCalendarChildState: { loading: true, data: [], error: '' } };
+        case FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS:
+            return { ...state, deleteSchoolCalendarChildState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE:
+            return { ...state, deleteSchoolCalendarChildState: { loading: false, data: [], error: action.payload } };
+
         default:
             return state;
     }
-}
+};
+
 export default sruReducer;
