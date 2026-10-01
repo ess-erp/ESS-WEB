@@ -21,6 +21,14 @@ const StudentDataTable = () => {
     { label: "Enrolled", action: "enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
   ];
 
+  const schoolYears = [
+    { value: "", label: "All School Years" },
+    { value: "2023-2024", label: "SY 2023-2024" },
+    { value: "2024-2025", label: "SY 2024-2025" },
+    { value: "2025-2026", label: "SY 2025-2026" },
+    { value: "2026-2027", label: "SY 2026-2027" },
+  ];
+
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [tempStartDate, setTempStartDate] = useState('');
@@ -30,6 +38,7 @@ const StudentDataTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
   const columns = [
     { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
@@ -53,13 +62,14 @@ const StudentDataTable = () => {
       selectedStatus,
       currentPage,
       rowsPerPage,
-      filterText
+      filterText,
+      selectedSchoolYear
     ));
   };
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
+  }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, selectedSchoolYear, dispatch]);
 
   const handleButtonClick = (row) => {
     const url = `/admission/studentappform?AppId=${row.AppId}`;
@@ -116,6 +126,20 @@ const StudentDataTable = () => {
 
             <div className="flex items-center gap-2">
               <OutlineBlueBtn label="Date Range" onClick={() => setIsModalOpen(true)} />
+              <select
+                className="px-3 py-2 border border-gray-300 rounded"
+                value={selectedSchoolYear}
+                onChange={(e) => {
+                  setSelectedSchoolYear(e.target.value);
+                  setCurrentPage(1);
+                }}
+              >
+                {schoolYears.map((sy) => (
+                  <option key={sy.value} value={sy.value}>
+                    {sy.label}
+                  </option>
+                ))}
+              </select>
               <input
                 type="text"
                 placeholder="Search..."

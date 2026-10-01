@@ -44,15 +44,24 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
 
 
 
+    const schoolYears = [
+        { value: "", label: "All School Years" },
+        { value: "2023-2024", label: "SY 2023-2024" },
+        { value: "2024-2025", label: "SY 2024-2025" },
+        { value: "2025-2026", label: "SY 2025-2026" },
+        { value: "2026-2027", label: "SY 2026-2027" },
+    ];
+
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState("");
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
 
 
-    const fetchTemplates = async (selectedStatus, page = 1, pageSize = 10, search) => {
+    const fetchTemplates = async (selectedStatus, page = 1, pageSize = 10, search, schoolYear = "") => {
         setLoadingTable(true);
 
-        const result = await dispatch(fetchTemplateTableData(selectedStatus, page, pageSize, search));
+        const result = await dispatch(fetchTemplateTableData(selectedStatus, page, pageSize, search, schoolYear));
 
         if (result.ok) {
             const docsWithActive = (result.data || []).map(doc => ({
@@ -70,8 +79,8 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
     };
 
     useEffect(() => {
-        fetchTemplates(selectedStatus, page, pageSize, search);
-    }, [selectedStatus, page, pageSize, dispatch]);
+        fetchTemplates(selectedStatus, page, pageSize, search, selectedSchoolYear);
+    }, [selectedStatus, page, pageSize, search, selectedSchoolYear, dispatch]);
 
     const handlePageChange = (newPage) => {
         setPage(newPage);
@@ -300,6 +309,20 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
                     >
                         <Plus size={16} className="mr-1" />
                     </OutlineBlueBtn>
+                    <select
+                        className="px-3 py-2 border border-gray-300 rounded"
+                        value={selectedSchoolYear}
+                        onChange={(e) => {
+                            setSelectedSchoolYear(e.target.value);
+                            setPage(1);
+                        }}
+                    >
+                        {schoolYears.map((sy) => (
+                            <option key={sy.value} value={sy.value}>
+                                {sy.label}
+                            </option>
+                        ))}
+                    </select>
                     <input
                         type="text"
                         placeholder="Search..."

@@ -400,7 +400,37 @@ const PaymentComponent = () => {
         dispatch(fetchOrNumberData(userId));
     }, [dispatch, userId]);
 
+    // Check if starting balance needs to be entered
+    useEffect(() => {
+        if (dailyBalance && dailyBalance.success === false) {
+            setIsStartBalanceModal(true);
+        } else {
+            setIsStartBalanceModal(false);
+        }
+    }, [dailyBalance]);
+
     // ── handlers ──────────────────────────────────────────────────────────────
+    
+    // Handle starting balance submission
+    const handleStartBalanceSubmit = async () => {
+        if (!startingBalance || startingBalance === "0" || startingBalance === "") {
+            setStartBalanceError("Please enter your starting balance amount.");
+            return;
+        }
+
+        const res = await dispatch(fetchInsertDailyBalanceData(userId, startingBalance));
+        
+        if (res.ok) {
+            setIsStartBalanceModal(false);
+            setStartingBalance("");
+            setStartBalanceError("");
+            // Refresh daily balance data
+            dispatch(fetchGetDailyBalanceData(userId));
+            dispatch(fetchGetRealtimeDailyBalanceData(userId));
+        } else {
+            setStartBalanceError(res.error || "Failed to save starting balance.");
+        }
+    };
     
     // Helper function to validate if student is enrolled for tuition payments
     const validateEnrolledStudent = (student) => {
@@ -1511,14 +1541,17 @@ const PaymentComponent = () => {
             {/* ── Starting Balance Modal ────────────────────────────────────── */}
             <ModalComponent
                 isOpen={isStartBalanceModal}
-                onClose={() => setIsStartBalanceModal(false)}
-                title="Set Starting Drawer Balance"
+                onClose={() => {}} // Prevent closing by clicking outside
+                title={<span className="font-bold text-lg text-red-700">⚠️ Starting Balance Required</span>}
                 size="md"
+                showCloseButton={false} // Don't show X button
                 body={
                     <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
-                            Enter the starting cash amount for your drawer at the beginning of your shift.
-                        </p>
+                        <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg">
+                            <p className="text-sm">
+                                <strong className="font-bold">Note:</strong> You must enter your starting drawer balance before proceeding with transactions.
+                            </p>
+                        </div>
                         <div>
                             <label className="text-xs font-medium text-gray-700 mb-1 block">
                                 Starting Balance Amount <span className="text-red-500">*</span>
@@ -1535,6 +1568,11 @@ const PaymentComponent = () => {
                                         setStartingBalance(e.target.value);
                                         setStartBalanceError("");
                                     }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleStartBalanceSubmit();
+                                        }
+                                    }}
                                 />
                             </div>
                             {startBalanceError && (
@@ -1542,13 +1580,12 @@ const PaymentComponent = () => {
                             )}
                         </div>
                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-                            💡 This amount will be used to track your cash drawer throughout the day.
+                            💡 This amount represents the cash in your drawer at the start of your shift.
                         </div>
                     </div>
                 }
                 buttons={[
-                    { label: "Set Balance", type: "green", closeOnClick: false, onClick: handleSubmitStartBalance },
-                    { label: "Cancel", type: "gray", onClick: () => setIsStartBalanceModal(false) },
+                    { label: "Submit", type: "green", closeOnClick: false, onClick: handleStartBalanceSubmit },
                 ]}
             />
 
