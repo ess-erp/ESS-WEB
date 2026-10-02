@@ -38,7 +38,7 @@ const StudentDataTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState('all');
 
   const columns = [
     { name: 'Application Number', selector: row => row.AppNumber, sortable: true },

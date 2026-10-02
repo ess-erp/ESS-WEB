@@ -37,11 +37,11 @@ export const fetchEnrollmentTableRequest = () => ({ type: FETCH_ENROLLMENTTABLE_
 export const fetchEnrollmentTableSuccess = (data) => ({ type: FETCH_ENROLLMENTTABLE_SUCCESS, payload: data });
 export const fetchEnrollmentTableFailure = (error) => ({ type: FETCH_ENROLLMENTTABLE_FAILURE, payload: error });
 
-export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pageSize, search) => async (dispatch) => {
+export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pageSize, search,schoolYear) => async (dispatch) => {
     dispatch(fetchEnrollmentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/enrollment-table?startDate=${StartDate}&endDate=${EndDate}&TableType=${TableType}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/admission/enrollment-table?startDate=${StartDate}&endDate=${EndDate}&TableType=${TableType}&page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
