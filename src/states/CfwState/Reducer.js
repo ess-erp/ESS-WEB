@@ -20,6 +20,8 @@ import {
     FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_REQUEST, FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_SUCCESS, FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_FAILURE,
     FETCH_EXAM_RAW_SCORE_TABLE_REQUEST, FETCH_EXAM_RAW_SCORE_TABLE_SUCCESS, FETCH_EXAM_RAW_SCORE_TABLE_FAILURE,
     FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_REQUEST, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_SUCCESS, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_FAILURE,
+    FETCH_CFW_ENROLLMENT_COUNTS_REQUEST, FETCH_CFW_ENROLLMENT_COUNTS_SUCCESS, FETCH_CFW_ENROLLMENT_COUNTS_FAILURE,
+    UPDATE_CFW_ENROLLMENT_COUNT_REALTIME
     // FETCH_RAW_SCORE_BY_STUDENT_REQUEST, FETCH_RAW_SCORE_BY_STUDENT_SUCCESS, FETCH_RAW_SCORE_BY_STUDENT_FAILURE,
     // FETCH_SUBJECTLIST_REQUEST, FETCH_SUBJECTLIST_SUCCESS, FETCH_SUBJECTLIST_FAILURE,
 } from "./ActionType";
@@ -52,6 +54,11 @@ const initialGeneralState = {
     insertStudentExamCodeSettingsState: { ...initialState },
     rawScoreTableState: { ...initialState },
     insertRawScoreStudentIdState: { ...initialState },
+    enrollmentCountsState: { 
+        loading: false, 
+        data: { ongoing: 0, enrolled: 0 }, 
+        error: '' 
+    },
     // rawScoreStudentState: { ...initialState },
     // subjectListState: { ...initialState },
 }
@@ -228,6 +235,51 @@ const cfwReducer = (state = initialGeneralState, action) => {
         //     return { ...state, subjectListState: { loading: false, data: [], error: action.payload } };
 
 
+
+
+        // ====================================
+        // REAL-TIME CFW ENROLLMENT STATUS COUNTS
+        // ====================================
+        case FETCH_CFW_ENROLLMENT_COUNTS_REQUEST:
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    loading: true,
+                },
+            };
+
+        case FETCH_CFW_ENROLLMENT_COUNTS_SUCCESS:
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    loading: false,
+                    data: action.payload,
+                    error: '',
+                },
+            };
+
+        case FETCH_CFW_ENROLLMENT_COUNTS_FAILURE:
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    loading: false,
+                    error: action.payload,
+                },
+            };
+
+        case UPDATE_CFW_ENROLLMENT_COUNT_REALTIME:
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    data: {
+                        ...state.enrollmentCountsState.data,
+                        ...action.payload,
+                    },
+                },
+            };
 
         default:
             return state;

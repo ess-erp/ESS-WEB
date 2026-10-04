@@ -294,6 +294,7 @@ import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 import InputField from "../ButtonsComponents/InputField";
+import SchoolYearDropdown from "../ButtonsComponents/SchoolYearDropdown";
 import { Pencil, Eye, Trash2, Plus } from "lucide-react";
 import {
     fetchInsertGeneralOfferedSubjectsData,
@@ -443,10 +444,16 @@ const SubjectLoadEntryComponent = () => {
     const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
     const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
     const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
     useEffect(() => {
-        dispatch(fetchGeneralOfferedSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
-    }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, dispatch]);
+        dispatch(fetchGeneralOfferedSubjectData(
+            generalOfferedCurrentPage, 
+            generalOfferedRowsPerPage, 
+            generalOfferedFilterText,
+            selectedSchoolYear
+        ));
+    }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, selectedSchoolYear, dispatch]);
 
     useEffect(() => {
         if (generealOfferedTable.length == 0) return;
@@ -454,11 +461,12 @@ const SubjectLoadEntryComponent = () => {
     }, [generealOfferedTable]);
 
     const subjectColumns = [
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
-        { name: 'Unit', selector: row => row.SubjectUnit, sortable: true },
-        { name: 'Created By', selector: row => row.Fullname, sortable: true },
-        { name: 'Date Created', selector: row => row.DateCreated, sortable: true },
+        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true, grow: 2 },
+        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true, grow: 3 },
+        { name: 'Unit', selector: row => row.SubjectUnit, sortable: true, grow: 1 },
+        { name: 'School Year', selector: row => row.SchoolYear, sortable: true, grow: 2 },
+        { name: 'Created By', selector: row => row.Fullname, sortable: true, grow: 2 },
+        { name: 'Date Created', selector: row => row.DateCreated, sortable: true, grow: 2 },
         {
             name: "Action",
             cell: row => (
@@ -468,9 +476,40 @@ const SubjectLoadEntryComponent = () => {
                     </button>
                     <RowToggleComponent row={row} />
                 </div>
-            )
+            ),
+            grow: 1
         }
     ];
+
+    // Expandable component for sub-subjects
+    const ExpandedSubjectComponent = ({ data }) => {
+        if (!data.SubSubjects || data.SubSubjects.length === 0) {
+            return null;
+        }
+
+        return (
+            <div className="p-4 bg-gray-50 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Sub-Subjects:</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {data.SubSubjects.map((sub, index) => (
+                        <div 
+                            key={index} 
+                            className="flex items-center justify-between bg-white p-3 rounded border border-gray-200"
+                        >
+                            <div className="flex gap-4">
+                                <span className="text-sm text-gray-600 font-medium min-w-[200px]">
+                                    {sub.SubjectName}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    Unit: {sub.SubjectUnit}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div>
@@ -483,6 +522,15 @@ const SubjectLoadEntryComponent = () => {
 
                     <div className="flex items-center gap-3">
                         <OutlineBlueBtn label="Add new" onClick={openAddNewModal} />
+                        
+                        <SchoolYearDropdown
+                            value={selectedSchoolYear}
+                            onChange={(e) => {
+                                setSelectedSchoolYear(e.target.value);
+                                setGeneralOfferedCurrentPage(1);
+                            }}
+                        />
+
                         <input
                             type="text"
                             placeholder="Search..."
@@ -510,6 +558,9 @@ const SubjectLoadEntryComponent = () => {
                             setGeneralOfferedRowsPerPage(newPerPage);
                             setGeneralOfferedCurrentPage(page);
                         }}
+                        expandableRows
+                        expandableRowsComponent={ExpandedSubjectComponent}
+                        expandableRowDisabled={row => !row.SubSubjects || !Array.isArray(row.SubSubjects) || row.SubSubjects.length === 0}
                         highlightOnHover
                         responsive
                     />

@@ -15,129 +15,188 @@ import {
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 
 const ExaminationSettingsComponent = ({ AppId, levelId }) => {
-    console.log(AppId);
     const dispatch = useDispatch();
     const formatDate = getFormatDate;
     const formatToAMPM = getFormatToAMPM;
 
-    const user = useState(() => {
+    // ============================================================================
+    // USER DATA FROM LOCAL STORAGE
+    // ============================================================================
+    const [user] = useState(() => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
-    console.log(user);
+    // ============================================================================
+    // REDUX SELECTORS - Dropdown Options
+    // ============================================================================
+    const examSettingsCodeData = useSelector((state) => state.cfw.examSettingsCodeState?.data || []);
+    const examScheduleCreatedData = useSelector((state) => state.cfw.examScheduleCreatedState?.data || []);
+    const allUserData = useSelector((state) => state.cfw.allUserByUserRoleState?.data || []);
 
-    const examSettingsCodeState = useSelector((state) => state.cfw.examSettingsCodeState || {});
-    const examSettingsCodeData = examSettingsCodeState.data || [];
+    // ============================================================================
+    // REDUX SELECTOR - Student's Existing Exam Settings Data
+    // ============================================================================
+    const studentExamData = useSelector((state) => state.cfw.examSettingsCodeByStudentIdState?.data);
 
-    const examScheduleCreatedState = useSelector((state) => state.cfw.examScheduleCreatedState || {});
-    const examScheduleCreatedData = examScheduleCreatedState.data || [];
+    // ============================================================================
+    // FORM STATE
+    // ============================================================================
+    const [isEditable, setIsEditable] = useState(false);
+    const [examCodeVal, setExamCodeVal] = useState(null);
+    const [effectiveDate, setEffectiveDate] = useState('');
+    const [examSchedVal, setExamSchedVal] = useState(null);
+    const [selectedInterviewer, setSelectedInterviewer] = useState(null);
+    const [selectedRemark, setSelectedRemark] = useState('');
+    const [generalRemarks, setGeneralRemarks] = useState('');
+    const [listOfSubjects, setListOfSubjects] = useState([]);
 
-    const examSettingsCodeByStudentIdState = useSelector((state) => state.cfw.examSettingsCodeByStudentIdState || {});
-    const examSettingsCodeByStudentIdData = examSettingsCodeByStudentIdState.data || [];
+    // ============================================================================
+    // MODAL STATE
+    // ============================================================================
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 
-    const allUserByUserRoleState = useSelector((state) => state.cfw.allUserByUserRoleState || {});
-    const allUserData = allUserByUserRoleState.data || [];
-
+    // Interview Remarks Options
     const InterviewRemarksOptions = [
         "Recommended",
         "Recommended With Reservation",
         "Not recommended",
     ];
-    const [selectedRemark, setSelectedRemark] = useState(null);
 
-    console.log(examSettingsCodeByStudentIdData);
-
-    console.log(examScheduleCreatedData);
-
-    console.log(examSettingsCodeData);
-
-    console.log(allUserData);
-
+    // ============================================================================
+    // INITIAL DATA FETCH - Runs once on mount
+    // ============================================================================
     useEffect(() => {
+        console.log('🔄 Initial fetch with AppId:', AppId, 'levelId:', levelId);
+        
+        // Fetch dropdown options
         dispatch(fetchExamSettingsCodeData(levelId));
         dispatch(fetchExamScheduleCreatedData(levelId));
-        dispatch(fetchAllUserByUserRoleData(2));
-    }, [dispatch, levelId]);
-
-    useEffect(() => {
-        dispatch(fetchExamSettingsCodeByStudentIdData(AppId));
+        dispatch(fetchAllUserByUserRoleData(2)); // UserRoleId = 2 for interviewers
         
-    }, [dispatch, AppId]);
+        // Fetch student's existing exam settings
+        dispatch(fetchExamSettingsCodeByStudentIdData(AppId));
+    }, [dispatch, AppId, levelId]);
 
-    const [isEditable, setIsEditable] = useState(false);
-    const [examCodeVal, setExamCodeVal] = useState(null);
-    const [effectiveDate, setSelectedEffectiveDate] = useState(null);
-
-    const [examSchedVal, setExamSchedVal] = useState(null);
-
-    const [selectedInterviewer, setSelectInterviewer] = useState(0);
-
-    const [generalRemarks, setGeneralRemarks] = useState("");
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
-    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-    const [listOfSubjects, setListOfSubjects] = useState([]);
-    // const [examDate, setExamDate] = useState(null);
-    // const [startTime, setStartTime] = useState("-");
-    // const [endTime, setEndTime] = useState("-");
-    // const [numberOfSlot, setNumberOfSlot] = useState("-");
-
-
+    // ============================================================================
+    // POPULATE FORM WHEN STUDENT DATA LOADS
+    // ============================================================================
     useEffect(() => {
-        if(examSettingsCodeByStudentIdData){
-            setListOfSubjects(examSettingsCodeByStudentIdData?.ListOfSubjectDtos || []);
+        console.log('📦 Student Exam Data:', studentExamData);
+        
+        if (studentExamData && studentExamData.AppId) {
+            console.log('✅ Found existing student exam data, populating form...');
+            
+            // Set subjects list
+            if (studentExamData.ListOfSubjectDtos && Array.isArray(studentExamData.ListOfSubjectDtos)) {
+                console.log('📝 Setting subjects:', studentExamData.ListOfSubjectDtos);
+                setListOfSubjects(studentExamData.ListOfSubjectDtos);
+            }
+            
+            // Set date (remove time part)
+            if (studentExamData.DateExamTaken) {
+                const dateOnly = studentExamData.DateExamTaken.split('T')[0];
+                setEffectiveDate(dateOnly);
+            }
+            
+            // Set remarks
+            setSelectedRemark(studentExamData.InterviewRemarks || '');
+            setGeneralRemarks(studentExamData.GeneralRemarks || '');
+        } else {
+            console.log('❌ No existing student exam data');
+        }
+    }, [studentExamData]);
+
+    // ============================================================================
+    // MATCH AND SELECT DROPDOWN OPTIONS WHEN DATA IS AVAILABLE
+    // ============================================================================
+    useEffect(() => {
+        if (!studentExamData || !studentExamData.AppId) return;
+        
+        // Match Exam Code from dropdown options
+        if (examSettingsCodeData.length > 0 && studentExamData.CfwExamId) {
+            const matchingCode = examSettingsCodeData.find(code => code.CfwExamId === studentExamData.CfwExamId);
+            if (matchingCode) {
+                console.log('🔍 Matched Exam Code:', matchingCode);
+                setExamCodeVal(matchingCode);
+            }
         }
         
+        // Match Exam Schedule from dropdown options
+        if (examScheduleCreatedData.length > 0 && studentExamData.SchedId) {
+            const matchingSched = examScheduleCreatedData.find(sched => sched.SchedId === studentExamData.SchedId);
+            if (matchingSched) {
+                console.log('📆 Matched Schedule:', matchingSched);
+                setExamSchedVal(matchingSched);
+            }
+        }
         
-    }, [examSettingsCodeByStudentIdData?.ListOfSubjectDtos]);
+        // Match Interviewer from dropdown options
+        if (allUserData.length > 0 && studentExamData.InterviewerId) {
+            const matchingInterviewer = allUserData.find(u => u.UserId === studentExamData.InterviewerId);
+            if (matchingInterviewer) {
+                console.log('👤 Matched Interviewer:', matchingInterviewer);
+                setSelectedInterviewer(matchingInterviewer);
+            }
+        }
+    }, [studentExamData, examSettingsCodeData, examScheduleCreatedData, allUserData]);
 
-    const handleChangeListOfSubjects = (val) => {
-        console.log(val);
-        setListOfSubjects(val.ExamSettingsCodeChildDtos);
+    // ============================================================================
+    // HANDLE EXAM CODE CHANGE - Update Subjects List
+    // ============================================================================
+    const handleExamCodeChange = (selectedCode) => {
+        console.log('📋 Exam code selected:', selectedCode);
+        setExamCodeVal(selectedCode);
+        
+        if (selectedCode && selectedCode.ExamSettingsCodeChildDtos) {
+            console.log('📝 Updating subjects from dropdown:', selectedCode.ExamSettingsCodeChildDtos);
+            setListOfSubjects(selectedCode.ExamSettingsCodeChildDtos);
+        }
     };
 
-
-    console.log(examCodeVal);
-    console.log(examSchedVal);
+    // ============================================================================
+    // HANDLE FORM SUBMISSION
+    // ============================================================================
     const handleOpenModal = () => {
-        console.log("TEST");
         setIsModalOpen(true);
     };
 
     const handleSubmit = async () => {
-        // alert("Test");
+        setIsModalOpen(false);
         setIsLoadingModalOpen(true);
+
         const payload = {
             AppId: AppId,
-            CfwExamId: examCodeVal.CfwExamId,
-            SchedId: examSchedVal.SchedId,
+            CfwExamId: examCodeVal?.CfwExamId,
+            SchedId: examSchedVal?.SchedId,
             DateExamTaken: effectiveDate,
-            EvaluatorId: user[0].UserId,
-            InterviewerId: selectedInterviewer.UserId,
+            EvaluatorId: user?.UserId,
+            InterviewerId: selectedInterviewer?.UserId,
             InterviewRemarks: selectedRemark,
             GeneralRemarks: generalRemarks,
-            CreatedByUserId: user[0].UserId,
-        }
-        console.log(payload);
-        const res = await dispatch(fetchInsertStudentExamCodeSettingsData(payload));
-        if (res.ok) {
-            setIsLoadingModalOpen(false);
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
+            CreatedByUserId: user?.UserId,
+        };
 
-        }
-        else {
-            setIsLoadingModalOpen(false);
+        console.log('💾 Submitting payload:', payload);
+
+        const res = await dispatch(fetchInsertStudentExamCodeSettingsData(payload));
+        
+        setIsLoadingModalOpen(false);
+        
+        if (res.ok) {
+            setIsSuccessModalOpen(true);
+            setTimeout(() => window.location.reload(), 3000);
+        } else {
             setIsErrorModalOpen(true);
         }
-
     };
 
+    // ============================================================================
+    // RENDER
+    // ============================================================================
     return (
         <div className="mb-10">
             <div className="flex items-center justify-between mb-6">
@@ -155,6 +214,7 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* LEFT SIDE - Information Display */}
                 <div className="bg-yellow-50 border border-yellow-300 rounded-2xl p-6 shadow">
                     <h3 className="text-lg font-semibold text-green-700 mb-3">
                         Examination Settings Information
@@ -162,99 +222,69 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                     <ul className="space-y-2 text-gray-700 text-sm">
                         <li>
                             <strong>Exam Code: </strong>
-                            {examSettingsCodeByStudentIdData.length !== 0
-                                ? examSettingsCodeByStudentIdData.ExamCode
-                                : examCodeVal
-                                    ? `${examCodeVal.TempName}-${examCodeVal.ExamCode}`
-                                    : "—"}
+                            {studentExamData?.ExamCode || (examCodeVal ? `${examCodeVal.TempName}-${examCodeVal.ExamCode}` : "—")}
                         </li>
                         <li>
                             <strong>Date Exam Taken: </strong>
-                            {
-                                examSettingsCodeByStudentIdData.length !== 0
-                                    ? formatDate(examSettingsCodeByStudentIdData.DateExamTaken) || "-"
-                                    : effectiveDate || "-"
-                            }
+                            {studentExamData?.DateExamTaken ? formatDate(studentExamData.DateExamTaken) : (effectiveDate || "—")}
                         </li>
                         <li>
                             <strong>Exam Settings Validation From-To: </strong>
-                            {
-                                examSettingsCodeByStudentIdData.length !== 0
-                                    ? `${formatDate(examSettingsCodeByStudentIdData.StartDate)} - ${formatDate(examSettingsCodeByStudentIdData.EndDate)}`
-                                    : `${formatDate(examSchedVal?.StartDate)} - ${formatDate(examSchedVal?.EndDate)}` || "-"
-                            }
-
+                            {studentExamData?.StartDate && studentExamData?.EndDate
+                                ? `${formatDate(studentExamData.StartDate)} - ${formatDate(studentExamData.EndDate)}`
+                                : (examSchedVal?.StartDate && examSchedVal?.EndDate
+                                    ? `${formatDate(examSchedVal.StartDate)} - ${formatDate(examSchedVal.EndDate)}`
+                                    : "—")}
                         </li>
                         <li>
                             <strong>Exam Start Time: </strong>
-                            {
-                                examSettingsCodeByStudentIdData.length !== 0
-                                    ? `${formatToAMPM(examSettingsCodeByStudentIdData.StartTime)}`
-                                    : `${formatToAMPM(examSchedVal?.StartTime)}` || "-"
-                            }
+                            {studentExamData?.StartTime ? formatToAMPM(studentExamData.StartTime) : (examSchedVal?.StartTime ? formatToAMPM(examSchedVal.StartTime) : "—")}
                         </li>
                         <li>
                             <strong>Exam End Time: </strong>
-                            {
-                                examSettingsCodeByStudentIdData.length !== 0
-                                    ? `${formatToAMPM(examSettingsCodeByStudentIdData.EndTime)}`
-                                    : `${formatToAMPM(examSchedVal?.EndTime)}` || "-"
-                            }
+                            {studentExamData?.EndTime ? formatToAMPM(studentExamData.EndTime) : (examSchedVal?.EndTime ? formatToAMPM(examSchedVal.EndTime) : "—")}
                         </li>
                         <li>
                             <strong>Number of slot: </strong>
-                            {
-                                examSettingsCodeByStudentIdData.length !== 0
-                                    ? examSettingsCodeByStudentIdData.NoOfSlot
-                                    : examSchedVal?.NoOfSlot || "-"
-                            }
+                            {studentExamData?.NoOfSlot || examSchedVal?.NoOfSlot || "—"}
                         </li>
                     </ul>
-                    < hr className="mt-4 mb-2" />
+                    
+                    <hr className="mt-4 mb-2" />
+                    
                     <h4 className="text-md font-bold text-black-700 mb-3">
                         List of Subjects Offered
                     </h4>
-                    <ul className="mt-3 space-y-2 text-gray-700 text-sm">
-                        {listOfSubjects.map(child => (
-                            <li key={child.GenSubChildId} className="mb-2">
-                                <strong>Subject: </strong>
-                                {child.SubjectCode || "-"} - {child.SubjectName || "-"} <br />
-                                <strong>Number of Item: </strong>
-                                {child.NumberOfItems || "-"}
-                            </li>
-                        ))}
-                    </ul>
-                    {/* {
-                        examSettingsCodeByStudentIdData ? (
-                           
-                        ) : examCodeVal?.ExamSettingsCodeChildDtos?.length != 0 ? (
-                            <ul className="mt-3 space-y-2 text-gray-700 text-sm">
-                                {examCodeVal.ExamSettingsCodeChildDtos.map(child => (
-                                    <li key={child.GenSubChildId} className="mb-2">
-                                        <strong>Subject: </strong>
-                                        {child.SubjectCode || "-"} - {child.SubjectName || "-"} <br />
-                                        <strong>Number of Item: </strong>
-                                        {child.NumberOfItem || "-"}
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <div className="mt-3 text-gray-500 text-sm">
-                                No subjects found for this exam.
-                            </div>
-                        )
-                    } */}
+                    
+                    {listOfSubjects && listOfSubjects.length > 0 ? (
+                        <ul className="mt-3 space-y-2 text-gray-700 text-sm">
+                            {listOfSubjects.map((subject, index) => (
+                                <li key={subject.GenSubChildId || index} className="mb-2">
+                                    <strong>Subject: </strong>
+                                    {subject.SubjectCode || "—"} - {subject.SubjectName || "—"} <br />
+                                    <strong>Number of Items: </strong>
+                                    {subject.NumberOfItems || "—"}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="mt-3 text-gray-500 text-sm italic">
+                            {isEditable 
+                                ? "Please select an examination code to see the subjects."
+                                : "No subjects found for this exam."}
+                        </div>
+                    )}
                 </div>
 
-                {/* Right side - Form */}
+                {/* RIGHT SIDE - Form */}
                 <div>
                     <form className="space-y-4">
-                        {/* Exam Location / Room */}
+                        {/* Examination Code */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Examination Code
                             </label>
-                            <Listbox value={examCodeVal} onChange={(val) => { setExamCodeVal(val); handleChangeListOfSubjects(val);}} disabled={!isEditable}>
+                            <Listbox value={examCodeVal} onChange={handleExamCodeChange} disabled={!isEditable}>
                                 <div className="relative">
                                     <Listbox.Button className="w-full border rounded-md px-3 py-2 text-left bg-white shadow-xs disabled:bg-gray-100">
                                         {examCodeVal
@@ -264,15 +294,15 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                     {isEditable && (
                                         <Listbox.Options className="absolute mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto z-50">
                                             {examSettingsCodeData.length > 0 ? (
-                                                examSettingsCodeData.map((examCode) => (
+                                                examSettingsCodeData.map((code) => (
                                                     <Listbox.Option
-                                                        key={examCode.CfwExamId}
-                                                        value={examCode}
+                                                        key={code.CfwExamId}
+                                                        value={code}
                                                         className={({ active }) =>
                                                             `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""}`
                                                         }
                                                     >
-                                                        {examCode.TempName}-{examCode.ExamCode} : {examCode.DateCreated}
+                                                        {code.TempName}-{code.ExamCode} : {code.DateCreated}
                                                     </Listbox.Option>
                                                 ))
                                             ) : (
@@ -284,7 +314,7 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                             </Listbox>
                         </div>
 
-                        {/* Examination Date */}
+                        {/* Date Exam Taken */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Date Exam Taken
@@ -292,15 +322,15 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                             <input
                                 type="date"
                                 name="effectiveDate"
-                                // value={formData.examDate}
-                                // onChange={handleChange}
-                                onChange={(e) => setSelectedEffectiveDate(e.target.value)}
+                                value={effectiveDate}
+                                onChange={(e) => setEffectiveDate(e.target.value)}
                                 className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                                 required
                                 disabled={!isEditable}
                             />
                         </div>
 
+                        {/* Exam Schedule */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Exam Schedule
@@ -315,15 +345,15 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                     {isEditable && (
                                         <Listbox.Options className="absolute mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto z-50">
                                             {examScheduleCreatedData.length > 0 ? (
-                                                examScheduleCreatedData.map((examSched) => (
+                                                examScheduleCreatedData.map((sched) => (
                                                     <Listbox.Option
-                                                        key={examSched.SchedId}
-                                                        value={examSched}
+                                                        key={sched.SchedId}
+                                                        value={sched}
                                                         className={({ active }) =>
                                                             `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""}`
                                                         }
                                                     >
-                                                        {examSched.Description} : {examSched.DateCreated}
+                                                        {sched.Description} : {sched.DateCreated}
                                                     </Listbox.Option>
                                                 ))
                                             ) : (
@@ -334,6 +364,8 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                 </div>
                             </Listbox>
                         </div>
+
+                        {/* Evaluator */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Evaluator
@@ -341,38 +373,37 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                             <input
                                 type="text"
                                 name="evaluator"
-                                value={`${user[0]?.Fname || ""} ${user[0]?.Mname || ""} ${user[0]?.Lname || ""}`.trim()}
-                                // value={formData.examDate}
-                                // onChange={handleChange}
+                                value={`${user?.Fname || ""} ${user?.Mname || ""} ${user?.Lname || ""}`.trim()}
                                 className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                                 required
-                                disabled={!isEditable}
+                                disabled={true}
                             />
                         </div>
 
+                        {/* Interview By */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Interview By
                             </label>
-                            <Listbox value={selectedInterviewer} onChange={setSelectInterviewer} disabled={!isEditable}>
+                            <Listbox value={selectedInterviewer} onChange={setSelectedInterviewer} disabled={!isEditable}>
                                 <div className="relative">
                                     <Listbox.Button className="w-full border rounded-md px-3 py-2 text-left bg-white shadow-xs disabled:bg-gray-100">
                                         {selectedInterviewer
-                                            ? `${selectedInterviewer.Fname} ${selectedInterviewer?.Mname || ""}  ${selectedInterviewer.Lname}`
+                                            ? `${selectedInterviewer.Fname} ${selectedInterviewer.Mname || ""} ${selectedInterviewer.Lname}`
                                             : "Select an interviewer"}
                                     </Listbox.Button>
                                     {isEditable && (
                                         <Listbox.Options className="absolute mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto z-50">
                                             {allUserData.length > 0 ? (
-                                                allUserData.map((allUser) => (
+                                                allUserData.map((interviewer) => (
                                                     <Listbox.Option
-                                                        key={allUser.UserId}
-                                                        value={allUser}
+                                                        key={interviewer.UserId}
+                                                        value={interviewer}
                                                         className={({ active }) =>
                                                             `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""}`
                                                         }
                                                     >
-                                                        {allUser.Fname} {allUser?.Mname || ""} {allUser.Lname}
+                                                        {interviewer.Fname} {interviewer.Mname || ""} {interviewer.Lname}
                                                     </Listbox.Option>
                                                 ))
                                             ) : (
@@ -383,17 +414,17 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                 </div>
                             </Listbox>
                         </div>
+
+                        {/* Interview Remarks */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Interview Remarks
                             </label>
-
                             <Listbox value={selectedRemark} onChange={setSelectedRemark} disabled={!isEditable}>
                                 <div className="relative">
                                     <Listbox.Button className="w-full border rounded-lg p-2 text-left bg-white shadow-xs disabled:bg-gray-100">
-                                        {selectedRemark ? selectedRemark : "Select interview remarks"}
+                                        {selectedRemark || "Select interview remarks"}
                                     </Listbox.Button>
-
                                     {isEditable && (
                                         <Listbox.Options className="absolute mt-1 w-full border rounded-md bg-white shadow-lg max-h-60 overflow-auto z-50">
                                             {InterviewRemarksOptions.map((option, idx) => (
@@ -401,8 +432,7 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                                     key={idx}
                                                     value={option}
                                                     className={({ active }) =>
-                                                        `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""
-                                                        }`
+                                                        `px-3 py-2 cursor-pointer ${active ? "bg-green-100 text-green-900" : ""}`
                                                     }
                                                 >
                                                     {option}
@@ -413,6 +443,8 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                 </div>
                             </Listbox>
                         </div>
+
+                        {/* General Evaluation/Remarks */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 General Evaluation/ Remarks
@@ -428,6 +460,8 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                 placeholder="Enter general evaluation or remarks"
                             />
                         </div>
+
+                        {/* Save Button */}
                         {isEditable && (
                             <div className="flex justify-end mt-4">
                                 <GreenBtn label="Save" onClick={handleOpenModal} />
@@ -443,14 +477,14 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                         body="Are you sure you want to submit?"
                         buttons={[
                             { label: "Yes", type: "green", onClick: handleSubmit },
-                            { label: "No", type: "red" },
+                            { label: "No", type: "red", onClick: () => setIsModalOpen(false) },
                         ]}
                     />
                     <ModalComponent
                         isOpen={isSuccessModalOpen}
                         onClose={() => setIsSuccessModalOpen(false)}
                         title={<span className="font-bold text-lg text-green-700">Success</span>}
-                        body="Exam schedule has been successfully submit! Test permit was sent to parent emails."
+                        body="Exam schedule has been successfully submitted! Test permit was sent to parent emails."
                         buttons={[
                             { label: "OK", type: "green", onClick: () => setIsSuccessModalOpen(false) }
                         ]}
@@ -466,7 +500,7 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                     />
                     <ModalComponent
                         isOpen={isLoadingModalOpen}
-                        onClose={() => { }} // prevent closing while loading
+                        onClose={() => { }}
                         title={<span className="font-bold text-lg text-blue-700">Processing</span>}
                         body={
                             <div className="flex flex-col items-center justify-center gap-3">
@@ -475,7 +509,7 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
                                 </svg>
                                 <span className="text-gray-600">Saving examination settings.</span>
-                                <span className="text-gray-600">Please wait don't close this window.</span>
+                                <span className="text-gray-600">Please wait, don't close this window.</span>
                             </div>
                         }
                         buttons={[]}

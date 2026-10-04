@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
 import { fetchEnrollmentTableData } from "../../states/SruState/Action";
 
 const StudentDataTable = () => {
     const dispatch = useDispatch();
-    const tableState = useSelector((state) => state.admission.tableState || {});
+    const tableState = useSelector((state) => state.sru.tableState || {});
     const table = tableState.data.data || [];
     const totalRows = tableState.data.totalRecords || 0;
     const loading = tableState.loading || false;
@@ -22,9 +23,10 @@ const StudentDataTable = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
     const columns = [
-        { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
+        { name: 'Student Number', selector: row => row.StudentNumber, sortable: true },
         { name: 'Fullname', selector: row => `${row.Lname}, ${row.Fname} ${row.Mname || ''}`, sortable: true },
         { name: 'Campus', selector: row => row.CampusName, sortable: true },
         { name: 'Level', selector: row => row.LevelName, sortable: true },
@@ -45,21 +47,17 @@ const StudentDataTable = () => {
     ];
 
     // Fetch server data whenever dependencies change
-    const fetchData = () => {
+    useEffect(() => {
         dispatch(fetchEnrollmentTableData(
             startDate,
             endDate,
             //   selectedStatus,
             currentPage,
             rowsPerPage,
-            filterText
+            filterText,
+            selectedSchoolYear
         ));
-    };
-
-    useEffect(() => {
-        fetchData();
-        //   }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
-    }, [startDate, endDate, currentPage, rowsPerPage, filterText, dispatch]);
+    }, [startDate, endDate, currentPage, rowsPerPage, filterText, selectedSchoolYear, dispatch]);
 
     const handleButtonClick = (row) => {
         const url = `/sru/StudentMasterFile?StudentId=${row.StudentId}`;
@@ -114,6 +112,13 @@ const StudentDataTable = () => {
 
                         <div className="flex items-center gap-2">
                             <OutlineBlueBtn label="Date Range" onClick={() => setIsModalOpen(true)} />
+                            <SchoolYearDropdown
+                                value={selectedSchoolYear}
+                                onChange={(e) => {
+                                    setSelectedSchoolYear(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                            />
                             <input
                                 type="text"
                                 placeholder="Search..."

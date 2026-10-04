@@ -51,7 +51,7 @@ const EmployeeOnlineDataTable = () => {
   ];
 
   // Fetch server data whenever dependencies change
-  const fetchData = () => {
+  useEffect(() => {
     dispatch(fetchEmployeeOnlineAppData(
       startDate,
       endDate,
@@ -61,11 +61,7 @@ const EmployeeOnlineDataTable = () => {
       rowsPerPage,
       filterText
     ));
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [startDate, endDate, user[0]?.UserRoleId,selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
+  }, [startDate, endDate, user[0]?.UserRoleId, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
   console.log(selectedStatus);
   const handleButtonClick = (row) => {
     console.log(row);

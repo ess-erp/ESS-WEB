@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
+import SchoolYearDropdown from "../ButtonsComponents/SchoolYearDropdown";
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
     fetchCurriculumAndNonCurriculumSubjectData,
@@ -40,10 +41,16 @@ const CurriculumComponent = () => {
     const [subjectScheduleFilterText, setSubjectSchedulelFilterText] = useState('');
     const [subjectScheduleCurrentPage, setSubjectScheduleCurrentPage] = useState(1);
     const [subjectScheduleRowsPerPage, setSubjectScheduleRowsPerPage] = useState(10);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
     useEffect(() => {
-        dispatch(fetchCurriculumPerLevelData(subjectScheduleCurrentPage, subjectScheduleRowsPerPage, subjectScheduleFilterText));
-    }, [subjectScheduleCurrentPage, subjectScheduleRowsPerPage, subjectScheduleFilterText, dispatch]);
+        dispatch(fetchCurriculumPerLevelData(
+            subjectScheduleCurrentPage, 
+            subjectScheduleRowsPerPage, 
+            subjectScheduleFilterText,
+            selectedSchoolYear
+        ));
+    }, [subjectScheduleCurrentPage, subjectScheduleRowsPerPage, subjectScheduleFilterText, selectedSchoolYear, dispatch]);
 
     useEffect(() => {
         if (subjectScheduleTable.length === 0) return;
@@ -57,6 +64,7 @@ const CurriculumComponent = () => {
         { name: 'Name of Template', selector: row => row.TempName, sortable: true },
         { name: 'Year Level', selector: row => row.LevelName, sortable: true },
         { name: 'Campus', selector: row => row.CampusName, sortable: true },
+        { name: 'School Year', selector: row => row.SchoolYear, sortable: true },
         { name: 'Number of Subjects', selector: row => row.NumberOfSubjects, sortable: true },
         { name: 'Date Created', selector: row => row.DateCreated, sortable: true },
         {
@@ -167,10 +175,10 @@ const CurriculumComponent = () => {
     }, [levelData, campusData]);
 
     const subjectColumns = [
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
-        { name: 'Subject Type', selector: row => row.SubjectType, sortable: true },
-        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true },
+        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true, grow: 2 },
+        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true, grow: 3 },
+        { name: 'Subject Type', selector: row => row.SubjectType, sortable: true, grow: 2 },
+        { name: 'Subject Unit', selector: row => row.SubjectUnit, sortable: true, grow: 1 },
         {
             name: "Action",
             cell: row => (
@@ -180,9 +188,72 @@ const CurriculumComponent = () => {
                 >
                     <Plus size={16} />
                 </button>
-            )
+            ),
+            grow: 1
         }
     ];
+
+    // Expandable component for sub-subjects
+    const ExpandedSubjectComponent = ({ data }) => {
+        if (!data.SubSubjects || data.SubSubjects.length === 0) {
+            return null;
+        }
+
+        return (
+            <div className="p-4 bg-gray-50 border-t border-gray-200">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Sub-Subjects:</h4>
+                <div className="grid grid-cols-1 gap-2">
+                    {data.SubSubjects.map((sub, index) => (
+                        <div 
+                            key={index} 
+                            className="flex items-center justify-between bg-white p-3 rounded border border-gray-200"
+                        >
+                            <div className="flex gap-4">
+                                <span className="text-sm text-gray-600 font-medium min-w-[120px]">
+                                    {sub.SubjectName}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    Unit: {sub.SubjectUnit}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => handleAddSubSubject(data, sub)}
+                                className="bg-green-500 text-white px-2 py-1 rounded text-xs"
+                            >
+                                <Plus size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const handleAddSubSubject = (parentRow, subSubject) => {
+        // Check if this sub-subject is already added
+        const exists = addedSubjects.some(
+            s => s.SubSubjectId === subSubject.SubSubjectId && s.ParentSubjectId === parentRow.SubjectId
+        );
+        if (exists) return;
+
+        setAddedSubjects(prev => [
+            ...prev,
+            {
+                RowId: parentRow.RowId,
+                SubjectId: parentRow.SubjectId,
+                SubSubjectId: subSubject.SubSubjectId,
+                SubjectCode: parentRow.SubjectCode,
+                SubjectName: `${parentRow.SubjectName} - ${subSubject.SubjectName}`,
+                SubjectType: parentRow.SubjectType,
+                SubjectUnit: subSubject.SubjectUnit,
+                ParentSubjectId: parentRow.SubjectId,
+                IsSubSubject: true,
+                term1: true,
+                term2: true,
+                term3: true,
+            }
+        ]);
+    };
 
     const [addedSubjects, setAddedSubjects] = useState([]);
 
@@ -477,6 +548,14 @@ const CurriculumComponent = () => {
                             onClick={openAddNewModal}
                         />
 
+                        <SchoolYearDropdown
+                            value={selectedSchoolYear}
+                            onChange={(e) => {
+                                setSelectedSchoolYear(e.target.value);
+                                setSubjectScheduleCurrentPage(1);
+                            }}
+                        />
+
                         <input
                             type="text"
                             placeholder="Search..."
@@ -548,6 +627,10 @@ const CurriculumComponent = () => {
                                         setGeneralOfferedRowsPerPage(newPerPage);
                                         setGeneralOfferedCurrentPage(page);
                                     }}
+                                    expandableRows
+                                    expandableRowsComponent={ExpandedSubjectComponent}
+                                    expandableRowExpanded={row => row.SubSubjects && row.SubSubjects.length > 0}
+                                    expandableRowsHideExpander={row => !row.SubSubjects || row.SubSubjects.length === 0}
                                     highlightOnHover
                                     responsive
                                 />

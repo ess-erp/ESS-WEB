@@ -18,7 +18,7 @@ const NotificationPanel = ({ userId }) => {
 
     // Local pagination state
     const [pageNumber, setPageNumber] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(20); // Increased from 10 to 20 to show more notifications per page
 
     // Local data state (from API response)
     const [notifications, setNotifications] = useState([]);
@@ -76,9 +76,16 @@ const NotificationPanel = ({ userId }) => {
             <div className="p-3 border-b flex justify-between items-center">
                 <h2 className="font-semibold text-green-600">Notifications</h2>
 
-                <span className="text-xs text-gray-500">
-                    Total: {totalCount}
-                </span>
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500">
+                        Showing {notifications.length} of {totalCount} total
+                    </span>
+                    {notifications.filter(n => n.ActiveStatus === "P").length > 0 && (
+                        <span className="text-xs text-blue-600 font-semibold">
+                            {notifications.filter(n => n.ActiveStatus === "P").length} unread
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* LIST */}

@@ -6,6 +6,7 @@ import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 import InputField from "../ButtonsComponents/InputField";
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
     fetchInsertNonCurriculumSubjectData,
@@ -105,10 +106,16 @@ const NonCurriculumLoadEntryComponent = () => {
     const [generalOfferedFilterText, setGeneralOfferedFilterText] = useState('');
     const [generalOfferedCurrentPage, setGeneralOfferedCurrentPage] = useState(1);
     const [generalOfferedRowsPerPage, setGeneralOfferedRowsPerPage] = useState(10);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
     useEffect(() => {
-        dispatch(fetchNonCurriculumSubjectData(generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText));
-    }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, dispatch]);
+        dispatch(fetchNonCurriculumSubjectData(
+            generalOfferedCurrentPage, 
+            generalOfferedRowsPerPage, 
+            generalOfferedFilterText,
+            selectedSchoolYear
+        ));
+    }, [generalOfferedCurrentPage, generalOfferedRowsPerPage, generalOfferedFilterText, selectedSchoolYear, dispatch]);
     useEffect(() => {
         if (generealOfferedTable.length == 0) return;
         setInactiveGeneralOfferedSubject(generealOfferedTable);
@@ -117,6 +124,7 @@ const NonCurriculumLoadEntryComponent = () => {
     const subjectColumns = [
         { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
         { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
+        { name: 'School Year', selector: row => row.SchoolYear, sortable: true },
         { name: 'Created By', selector: row => row.Fullname, sortable: true },
         { name: 'Date Created', selector: row => row.DateCreated, sortable: true },
         {
@@ -161,6 +169,14 @@ const NonCurriculumLoadEntryComponent = () => {
                         <OutlineBlueBtn
                             label="Add new"
                             onClick={openAddNewModal}
+                        />
+
+                        <SchoolYearDropdown
+                            value={selectedSchoolYear}
+                            onChange={(e) => {
+                                setSelectedSchoolYear(e.target.value);
+                                setGeneralOfferedCurrentPage(1);
+                            }}
                         />
 
                         <input

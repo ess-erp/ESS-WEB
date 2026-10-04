@@ -13,7 +13,7 @@
 //     useEffect(() => {
 
 //         connection = new signalR.HubConnectionBuilder()
-//             .withUrl(import.meta.env.VITE_NOTIFICATION_URL, {
+//             .withUrl(import.meta.env.VITE_REALTIME_URL, {
 //                 accessTokenFactory: () => localStorage.getItem("token"),
 //             })
 //             .withAutomaticReconnect()
@@ -80,7 +80,7 @@
 //         if (connection) return;
 
 //         connection = new signalR.HubConnectionBuilder()
-//             .withUrl(import.meta.env.VITE_NOTIFICATION_URL, {
+//             .withUrl(import.meta.env.VITE_REALTIME_URL, {
 //                 accessTokenFactory: () => localStorage.getItem("token"),
 //             })
 //             .withAutomaticReconnect()
@@ -124,6 +124,22 @@
 
 // export default NotificationListener;
 
+/**
+ * SignalRListener.jsx
+ * 
+ * Global SignalR Hub Connection Manager
+ * 
+ * This component establishes and maintains a single SignalR connection
+ * for the entire application. It listens to multiple real-time events:
+ * 
+ * 1. ReceiveNotification - General notifications
+ * 2. UpdateEnrollmentCount - Real-time enrollment status counts
+ * 
+ * All real-time events are dispatched to Redux for state management.
+ * 
+ * Usage: Include this component once at the app root level.
+ */
+
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import * as signalR from "@microsoft/signalr";
@@ -132,10 +148,12 @@ import {
     showToast,
     receiveSignalRNotification
 } from "../states/NotificationState/Action";
+import { updateEnrollmentCountRealtime } from "../states/AdmissionState/Action";
+import { updateCfwEnrollmentCountRealtime } from "../states/CfwState/Action";
 
 let connection = null;
 
-const NotificationListener = ({ userId }) => {
+const SignalRListener = ({ userId }) => {
     console.log(userId);
     const dispatch = useDispatch();
 
@@ -145,7 +163,7 @@ const NotificationListener = ({ userId }) => {
         // Prevent duplicate connection creation
         if (!connection) {
             connection = new signalR.HubConnectionBuilder()
-                .withUrl(import.meta.env.VITE_NOTIFICATION_URL, {
+                .withUrl(import.meta.env.VITE_REALTIME_URL, {
                     accessTokenFactory: () => localStorage.getItem("token"),
                 })
                 .withAutomaticReconnect()
@@ -162,6 +180,12 @@ const NotificationListener = ({ userId }) => {
                 //     "New notification";
 
                 dispatch(showToast(data));
+            });
+
+            // Listen for real-time enrollment count updates
+            connection.on("UpdateEnrollmentCount", (countData) => {
+                console.log("📊 Enrollment Count Update:", countData);
+                dispatch(updateEnrollmentCountRealtime(countData));
             });
             // CONNECTION EVENTS
             connection.onclose(() => {
@@ -216,4 +240,4 @@ const NotificationListener = ({ userId }) => {
     return null;
 };
 
-export default NotificationListener;
+export default SignalRListener;

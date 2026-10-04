@@ -945,3 +945,52 @@ export const fetchSendAcademicWaiverData = (formData) => async (dispatch) => {
         return ({ ok: false, error });
     }
 };
+
+
+// ====================================
+// REAL-TIME ENROLLMENT STATUS COUNTS
+// ====================================
+
+import {
+    FETCH_ENROLLMENT_COUNTS_REQUEST,
+    FETCH_ENROLLMENT_COUNTS_SUCCESS,
+    FETCH_ENROLLMENT_COUNTS_FAILURE,
+    UPDATE_ENROLLMENT_COUNT_REALTIME
+} from './ActionType';
+
+export const fetchEnrollmentCountsRequest = () => ({ type: FETCH_ENROLLMENT_COUNTS_REQUEST });
+export const fetchEnrollmentCountsSuccess = (data) => ({ type: FETCH_ENROLLMENT_COUNTS_SUCCESS, payload: data });
+export const fetchEnrollmentCountsFailure = (error) => ({ type: FETCH_ENROLLMENT_COUNTS_FAILURE, payload: error });
+export const updateEnrollmentCountRealtime = (data) => ({ type: UPDATE_ENROLLMENT_COUNT_REALTIME, payload: data });
+
+// Fetch initial counts
+export const fetchEnrollmentCounts = (schoolYear = '') => async (dispatch) => {
+    console.log('📡 API Call: fetchEnrollmentCounts started with schoolYear:', schoolYear);
+    dispatch(fetchEnrollmentCountsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/shared/enrollment-counts?schoolYear=${schoolYear}`;
+        
+        console.log('📡 Calling:', url);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('📡 Response:', { ok: response.ok, status: response.status, data });
+
+        if (response.ok) {
+            dispatch(fetchEnrollmentCountsSuccess(data));
+        } else {
+            dispatch(fetchEnrollmentCountsFailure(data.message || 'Failed to fetch counts'));
+        }
+    } catch (error) {
+        console.error('❌ Error fetching enrollment counts:', error);
+        dispatch(fetchEnrollmentCountsFailure(error.message));
+    }
+};

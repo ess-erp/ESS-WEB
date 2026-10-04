@@ -30,6 +30,9 @@ import {
     FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_STUDENTS_IN_SECTION_REQUEST, FETCH_STUDENTS_IN_SECTION_SUCCESS, FETCH_STUDENTS_IN_SECTION_FAILURE,
+    DELETE_SECTION_REQUEST, DELETE_SECTION_SUCCESS, DELETE_SECTION_FAILURE,
+    DELETE_INACTIVE_SECTION_REQUEST, DELETE_INACTIVE_SECTION_SUCCESS, DELETE_INACTIVE_SECTION_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -39,11 +42,11 @@ export const fetchEnrollmentTableRequest = () => ({ type: FETCH_ENROLLMENTTABLE_
 export const fetchEnrollmentTableSuccess = (data) => ({ type: FETCH_ENROLLMENTTABLE_SUCCESS, payload: data });
 export const fetchEnrollmentTableFailure = (error) => ({ type: FETCH_ENROLLMENTTABLE_FAILURE, payload: error });
 
-export const fetchEnrollmentTableData = (StartDate, EndDate, page, pageSize, search) => async (dispatch) => {
+export const fetchEnrollmentTableData = (StartDate, EndDate, page, pageSize, search, schoolYear) => async (dispatch) => {
     dispatch(fetchEnrollmentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/student-master-table?startDate=${StartDate}&endDate=${EndDate}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/sru/student-master-table?startDate=${StartDate}&endDate=${EndDate}&page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -159,11 +162,11 @@ export const fetchGetSectionNameRequest = () => ({ type: FETCH_GET_SECTION_NAME_
 export const fetchGetSectionNameSuccess = (data) => ({ type: FETCH_GET_SECTION_NAME_SUCCESS, payload: data });
 export const fetchGetSectionNameFailure = (error) => ({ type: FETCH_GET_SECTION_NAME_FAILURE, payload: error });
 
-export const fetchGetSectionNameData = (page, pageSize, search) => async (dispatch) => {
+export const fetchGetSectionNameData = (page, pageSize, search, schoolYear = '') => async (dispatch) => {
     dispatch(fetchGetSectionNameRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-section-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/sru/get-section-list?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -248,11 +251,11 @@ export const fetchGetStudentSectionListRequest = () => ({ type: FETCH_GET_STUDEN
 export const fetchGetStudentSectionListSuccess = (data) => ({ type: FETCH_GET_STUDENT_SECTION_LIST_SUCCESS, payload: data });
 export const fetchGetStudentSectionListFailure = (error) => ({ type: FETCH_GET_STUDENT_SECTION_LIST_FAILURE, payload: error });
 
-export const fetchGetStudentSectionListData = (page, pageSize, search) => async (dispatch) => {
+export const fetchGetStudentSectionListData = (page, pageSize, search, schoolYear = '') => async (dispatch) => {
     dispatch(fetchGetStudentSectionListRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-section-student-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/sru/get-section-student-list?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -955,4 +958,98 @@ export const fetchDeleteSchoolCalendarChildData = (calendarChildId, userId) => a
         dispatch(fetchDeleteSchoolCalendarChildFailure(error.message));
         return { ok: false, error };
     }
+};
+
+
+// ── Fetch Students in Section ───────────────────────────────────────────────
+export const fetchStudentsInSectionRequest = () => ({ type: FETCH_STUDENTS_IN_SECTION_REQUEST });
+export const fetchStudentsInSectionSuccess = (data) => ({ type: FETCH_STUDENTS_IN_SECTION_SUCCESS, payload: data });
+export const fetchStudentsInSectionFailure = (error) => ({ type: FETCH_STUDENTS_IN_SECTION_FAILURE, payload: error });
+
+export const fetchStudentsInSection = (sectionId) => async (dispatch) => {
+    dispatch(fetchStudentsInSectionRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-students-in-section?sectionId=${sectionId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchStudentsInSectionSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchStudentsInSectionFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+// ── Delete Section ───────────────────────────────────────────────────────────
+export const deleteSectionRequest = () => ({ type: DELETE_SECTION_REQUEST });
+export const deleteSectionSuccess = (data) => ({ type: DELETE_SECTION_SUCCESS, payload: data });
+export const deleteSectionFailure = (error) => ({ type: DELETE_SECTION_FAILURE, payload: error });
+
+export const deleteSection = (sectionId, userId) => async (dispatch) => {
+    dispatch(deleteSectionRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/delete-section`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ sectionId, userId }),
+        });
+
+        const res = await response.json();
+
+        dispatch(deleteSectionSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(deleteSectionFailure(error.message));
+        return { ok: false, error };
+    };
+};
+
+
+// ── Delete Inactive Section ──────────────────────────────────────────────────
+export const deleteInactiveSectionRequest = () => ({ type: DELETE_INACTIVE_SECTION_REQUEST });
+export const deleteInactiveSectionSuccess = (data) => ({ type: DELETE_INACTIVE_SECTION_SUCCESS, payload: data });
+export const deleteInactiveSectionFailure = (error) => ({ type: DELETE_INACTIVE_SECTION_FAILURE, payload: error });
+
+export const deleteInactiveSection = (sectionId, userId) => async (dispatch) => {
+    dispatch(deleteInactiveSectionRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/delete-inactive-section`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ sectionId, userId }),
+        });
+
+        const res = await response.json();
+
+        dispatch(deleteInactiveSectionSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(deleteInactiveSectionFailure(error.message));
+        return { ok: false, error };
+    };
 };

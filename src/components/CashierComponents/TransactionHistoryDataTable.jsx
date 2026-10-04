@@ -46,7 +46,7 @@ const TransactionHistoryDataTable = () => {
     // };
 
     // Fetch server data whenever dependencies change
-    const fetchData = () => {
+    useEffect(() => {
         dispatch(fetchTransactionHistoryData(
             startDate,
             endDate,
@@ -54,10 +54,6 @@ const TransactionHistoryDataTable = () => {
             rowsPerPage,
             filterText
         ));
-    };
-
-    useEffect(() => {
-        fetchData();
     }, [startDate, endDate, currentPage, rowsPerPage, filterText, dispatch]);
 
     // const handleButtonClick = (row) => {

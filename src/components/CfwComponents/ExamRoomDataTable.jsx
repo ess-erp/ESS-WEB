@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import RowToggleComponent from '../../components/ButtonsComponents/RowToggleComponent';
 import {
@@ -42,21 +43,10 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
         dispatch(fetchLevelData());
     }, [dispatch]);
 
-
-
-    const schoolYears = [
-        { value: "", label: "All School Years" },
-        { value: "2023-2024", label: "SY 2023-2024" },
-        { value: "2024-2025", label: "SY 2024-2025" },
-        { value: "2025-2026", label: "SY 2025-2026" },
-        { value: "2026-2027", label: "SY 2026-2027" },
-    ];
-
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState("");
     const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
-
 
     const fetchTemplates = async (selectedStatus, page = 1, pageSize = 10, search, schoolYear = "") => {
         setLoadingTable(true);
@@ -309,20 +299,13 @@ const ExamRoomDataTable = ({ selectedStatus }) => {
                     >
                         <Plus size={16} className="mr-1" />
                     </OutlineBlueBtn>
-                    <select
-                        className="px-3 py-2 border border-gray-300 rounded"
+                    <SchoolYearDropdown
                         value={selectedSchoolYear}
                         onChange={(e) => {
                             setSelectedSchoolYear(e.target.value);
                             setPage(1);
                         }}
-                    >
-                        {schoolYears.map((sy) => (
-                            <option key={sy.value} value={sy.value}>
-                                {sy.label}
-                            </option>
-                        ))}
-                    </select>
+                    />
                     <input
                         type="text"
                         placeholder="Search..."

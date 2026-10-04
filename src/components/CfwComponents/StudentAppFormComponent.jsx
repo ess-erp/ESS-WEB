@@ -121,8 +121,14 @@ const StudentAppFormComponent = () => {
 
 
     useEffect(() => {
-        setFormData(studentData);
-    }, [studentData]);
+        // Only update formData if studentData actually has content and is different
+        if (studentData && typeof studentData === 'object' && Object.keys(studentData).length > 0) {
+            // Check if studentData.AppId exists and is different from current formData.AppId
+            if (!formData || studentData.AppId !== formData.AppId) {
+                setFormData(studentData);
+            }
+        }
+    }, [studentData?.AppId]); // Only trigger when the AppId changes, not the whole object
 
     // const handleChange = (e) => {
     //     const { id, value } = e.target;

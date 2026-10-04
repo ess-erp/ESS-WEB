@@ -4,6 +4,7 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
 import {
     fetchLevelData,
 } from "../../states/AdmissionState/Action";
@@ -13,6 +14,7 @@ import {
 import {
     fetchGetSectionNameData,
     fetchInsertSectionNameData,
+    deleteInactiveSection,
 } from "../../states/SruState/Action";
 
 const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
@@ -33,6 +35,10 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
 
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [modalSuccessBody, setModalSuccessBody] = useState("");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [modalErrorBody, setModalErrorBody] = useState("");
+    const [sectionToDelete, setSectionToDelete] = useState(null);
     useEffect(() => {
         setLevelList(
             (level || []).map(item => ({
@@ -84,10 +90,16 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
     const [filterSectionText, setSectionFilterText] = useState('');
     const [sectionCurrentPage, setSectionCurrentPage] = useState(1);
     const [sectionRowsPerPage, setSectionRowsPerPage] = useState(10);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
     useEffect(() => {
-        dispatch(fetchGetSectionNameData(sectionCurrentPage, sectionRowsPerPage, filterSectionText));
-    }, [sectionCurrentPage, sectionRowsPerPage, filterSectionText, dispatch]);
+        dispatch(fetchGetSectionNameData(
+            sectionCurrentPage, 
+            sectionRowsPerPage, 
+            filterSectionText,
+            selectedSchoolYear
+        ));
+    }, [sectionCurrentPage, sectionRowsPerPage, filterSectionText, selectedSchoolYear, dispatch]);
     useEffect(() => {
         if (sectionTable.length == 0) return;
         setInactiveSections(sectionTable);
@@ -98,21 +110,24 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
         { name: 'Section', selector: row => row.SectionName, sortable: true },
         { name: 'Level', selector: row => row.LevelName, sortable: true },
         { name: 'Campus', selector: row => row.CampusName, sortable: true },
+        { name: 'School Year', selector: row => row.SchoolYear, sortable: true },
         {
             name: "Action",
             cell: row => (
-                // <button
-                //     onClick={() => handleActivate(row)}
-                //     className="bg-green-500 text-white px-3 py-1 rounded text-sm"
-                // >
-                //     Activate
-                // </button>
-                <button
-                    onClick={() => handleSelectSection(row)}
-                    className="bg-green-500 text-white px-2 py-0.5 rounded text-xs"
-                >
-                    Activate
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => handleSelectSection(row)}
+                        className="bg-green-500 text-white px-2 py-0.5 rounded text-xs"
+                    >
+                        Add Student
+                    </button>
+                    <button
+                        onClick={() => handleDeleteSection(row)}
+                        className="bg-red-500 text-white px-2 py-0.5 rounded text-xs"
+                    >
+                        Delete
+                    </button>
+                </div>
             )
         }
     ];
@@ -128,6 +143,37 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
         setLevel(row);
         setSelection(true);
     };
+
+    const handleDeleteSection = async (row) => {
+        setSectionToDelete(row);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDeleteSection = async () => {
+        if (!sectionToDelete) return;
+
+        const res = await dispatch(deleteInactiveSection(sectionToDelete.SectionId, userId));
+
+        setIsDeleteModalOpen(false);
+
+        if (res.ok) {
+            setModalSuccessBody("Section deleted successfully!");
+            setIsSuccessModalOpen(true);
+            // Refresh the table
+            dispatch(fetchGetSectionNameData(
+                sectionCurrentPage,
+                sectionRowsPerPage,
+                filterSectionText,
+                selectedSchoolYear
+            ));
+        } else {
+            setModalErrorBody("Failed to delete section. Please try again.");
+            setIsErrorModalOpen(true);
+        }
+
+        setSectionToDelete(null);
+    };
+
     const handleDeactivate = (row) => {
         setActiveSections(prev =>
             prev.filter(s => s.SectionId !== row.SectionId)
@@ -182,6 +228,14 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
                             <OutlineBlueBtn
                                 label="Add new"
                                 onClick={openAddNewModal}
+                            />
+
+                            <SchoolYearDropdown
+                                value={selectedSchoolYear}
+                                onChange={(e) => {
+                                    setSelectedSchoolYear(e.target.value);
+                                    setSectionCurrentPage(1);
+                                }}
                             />
 
                             <input
@@ -299,6 +353,42 @@ const InactiveAndActiveDataTable = ({ userId, setLevel, setSelection }) => {
                     onClose={() => setIsSuccessModalOpen(false)}
                     title={<span className="font-bold text-lg text-green-700">Success</span>}
                     body={<p>{modalSuccessBody}</p>}
+                />
+
+                <ModalComponent
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setSectionToDelete(null);
+                    }}
+                    title={<span className="font-bold text-lg text-red-700">Delete Confirmation</span>}
+                    body={
+                        <div className="space-y-3">
+                            <p className="text-gray-700">
+                                Are you sure you want to delete section <span className="font-semibold">"{sectionToDelete?.SectionName}"</span>?
+                            </p>
+                            <p className="text-sm text-red-600">
+                                This action cannot be undone.
+                            </p>
+                        </div>
+                    }
+                    buttons={[
+                        { label: "Delete", type: "red", onClick: confirmDeleteSection },
+                        { label: "Cancel", type: "outline-red", onClick: () => {
+                            setIsDeleteModalOpen(false);
+                            setSectionToDelete(null);
+                        }},
+                    ]}
+                />
+
+                <ModalComponent
+                    isOpen={isErrorModalOpen}
+                    onClose={() => setIsErrorModalOpen(false)}
+                    title={<span className="font-bold text-lg text-red-700">Error</span>}
+                    body={<p>{modalErrorBody}</p>}
+                    buttons={[
+                        { label: "OK", type: "red", onClick: () => setIsErrorModalOpen(false) },
+                    ]}
                 />
             </div>
         </>

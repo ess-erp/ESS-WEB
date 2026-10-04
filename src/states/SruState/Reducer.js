@@ -30,6 +30,9 @@ import {
     FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_STUDENTS_IN_SECTION_REQUEST, FETCH_STUDENTS_IN_SECTION_SUCCESS, FETCH_STUDENTS_IN_SECTION_FAILURE,
+    DELETE_SECTION_REQUEST, DELETE_SECTION_SUCCESS, DELETE_SECTION_FAILURE,
+    DELETE_INACTIVE_SECTION_REQUEST, DELETE_INACTIVE_SECTION_SUCCESS, DELETE_INACTIVE_SECTION_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -71,6 +74,9 @@ const initialGeneralState = {
     insertSchoolCalendarChildState: { ...initialState },
     updateSchoolCalendarChildState: { ...initialState },
     deleteSchoolCalendarChildState: { ...initialState },
+    studentsInSectionState: { ...initialState },
+    deleteSectionState: { ...initialState },
+    deleteInactiveSectionState: { ...initialState },
 };
 const sruReducer = (state = initialGeneralState, action) => {
     switch (action.type) {
@@ -294,6 +300,30 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, deleteSchoolCalendarChildState: { loading: false, data: action.payload, error: '' } };
         case FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE:
             return { ...state, deleteSchoolCalendarChildState: { loading: false, data: [], error: action.payload } };
+
+        // Students in Section
+        case FETCH_STUDENTS_IN_SECTION_REQUEST:
+            return { ...state, studentsInSectionState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENTS_IN_SECTION_SUCCESS:
+            return { ...state, studentsInSectionState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENTS_IN_SECTION_FAILURE:
+            return { ...state, studentsInSectionState: { loading: false, data: [], error: action.payload } };
+
+        // Delete Section
+        case DELETE_SECTION_REQUEST:
+            return { ...state, deleteSectionState: { loading: true, data: [], error: '' } };
+        case DELETE_SECTION_SUCCESS:
+            return { ...state, deleteSectionState: { loading: false, data: action.payload, error: '' } };
+        case DELETE_SECTION_FAILURE:
+            return { ...state, deleteSectionState: { loading: false, data: [], error: action.payload } };
+
+        // Delete Inactive Section
+        case DELETE_INACTIVE_SECTION_REQUEST:
+            return { ...state, deleteInactiveSectionState: { loading: true, data: [], error: '' } };
+        case DELETE_INACTIVE_SECTION_SUCCESS:
+            return { ...state, deleteInactiveSectionState: { loading: false, data: action.payload, error: '' } };
+        case DELETE_INACTIVE_SECTION_FAILURE:
+            return { ...state, deleteInactiveSectionState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

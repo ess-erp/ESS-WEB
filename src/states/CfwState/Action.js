@@ -19,6 +19,8 @@ import {
     FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_REQUEST, FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_SUCCESS, FETCH_INSERT_STUDENT_EXAM_CODE_SETTINGS_FAILURE,
     FETCH_EXAM_RAW_SCORE_TABLE_REQUEST, FETCH_EXAM_RAW_SCORE_TABLE_SUCCESS, FETCH_EXAM_RAW_SCORE_TABLE_FAILURE,
     FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_REQUEST, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_SUCCESS, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_FAILURE,
+    FETCH_CFW_ENROLLMENT_COUNTS_REQUEST, FETCH_CFW_ENROLLMENT_COUNTS_SUCCESS, FETCH_CFW_ENROLLMENT_COUNTS_FAILURE,
+    UPDATE_CFW_ENROLLMENT_COUNT_REALTIME,
     // FETCH_RAW_SCORE_BY_STUDENT_REQUEST, FETCH_RAW_SCORE_BY_STUDENT_SUCCESS, FETCH_RAW_SCORE_BY_STUDENT_FAILURE,
     // FETCH_SUBJECTLIST_REQUEST, FETCH_SUBJECTLIST_SUCCESS, FETCH_SUBJECTLIST_FAILURE,
 } from "./ActionType";
@@ -642,60 +644,105 @@ export const fetchInsertRawScoreByStudentIdData = (formData) => async(dispatch) 
 };
 
 
-// export const fetchRawScoreByStudentRequest = () => ({ type: FETCH_RAW_SCORE_BY_STUDENT_REQUEST });
-// export const fetchRawScoreByStudentSuccess = (data) => ({ type: FETCH_RAW_SCORE_BY_STUDENT_SUCCESS, payload: data });
-// export const fetchRawScoreByStudentFailure = (error) => ({ type: FETCH_RAW_SCORE_BY_STUDENT_FAILURE, payload: error });
+export const fetchRawScoreByStudentRequest = () => ({ type: FETCH_RAW_SCORE_BY_STUDENT_REQUEST });
+export const fetchRawScoreByStudentSuccess = (data) => ({ type: FETCH_RAW_SCORE_BY_STUDENT_SUCCESS, payload: data });
+export const fetchRawScoreByStudentFailure = (error) => ({ type: FETCH_RAW_SCORE_BY_STUDENT_FAILURE, payload: error });
 
-// export const fetchRawScoreByStudentData = (studentId) => async(dispatch) => {
-//     dispatch(fetchRawScoreByStudentRequest());
-//     try {
-//         const token = getToken();
-//         const url = `${baseUrl}/cfw/get-raw-score-student?studentId=${studentId}`;
-//         const response = await fetch(url, {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`,
-//             }
-//         });
+export const fetchRawScoreByStudentData = (studentId) => async(dispatch) => {
+    dispatch(fetchRawScoreByStudentRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cfw/get-raw-score-student?studentId=${studentId}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        });
         
-//         const res = await response.json();
+        const res = await response.json();
 
-//         dispatch(fetchRawScoreByStudentSuccess(res));
-//         return ({ ok: true, data: res.data });
-//     }
-//     catch(error){
-//         dispatch(fetchRawScoreByStudentFailure(error.message));
-//         return ({ ok: false, error });
-//     }
+        dispatch(fetchRawScoreByStudentSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchRawScoreByStudentFailure(error.message));
+        return ({ ok: false, error });
+    }
 
-// };
+};
 
-// export const fetchSubjectListRequest = () => ({ type: FETCH_SUBJECTLIST_REQUEST });
-// export const fetchSubjectListSuccess = (data) => ({ type: FETCH_SUBJECTLIST_SUCCESS, payload: data });
-// export const fetchSubjectListFailure = (error) => ({ type: FETCH_SUBJECTLIST_FAILURE, payload: error });
+export const fetchSubjectListRequest = () => ({ type: FETCH_SUBJECTLIST_REQUEST });
+export const fetchSubjectListSuccess = (data) => ({ type: FETCH_SUBJECTLIST_SUCCESS, payload: data });
+export const fetchSubjectListFailure = (error) => ({ type: FETCH_SUBJECTLIST_FAILURE, payload: error });
 
-// export const fetchSubjectListData = (activeStatus) => async (dispatch) => {
-//     dispatch(fetchSubjectListRequest());
-//     try {
-//         const token = getToken();
-//         const url = `${baseUrl}/cfw/get-subject-table?activeStatus=${activeStatus}`;
-//         const response = await fetch(url, {
-//             method: 'POST',
-//             hearders: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${token}`
-//             },
-//         });
+export const fetchSubjectListData = (activeStatus) => async (dispatch) => {
+    dispatch(fetchSubjectListRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cfw/get-subject-table?activeStatus=${activeStatus}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            hearders: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
 
-//         const res = await response.json();
-//         dispatch(fetchSubjectListSuccess(res));
-//         return ({ ok: true, data: res.data });
-//     }
-//     catch(error){
-//         dispatch(fetchSubjectListFailure(error.message));
-//         return({ ok: false, error });
-//     }
-// };
+        const res = await response.json();
+        dispatch(fetchSubjectListSuccess(res));
+        return ({ ok: true, data: res.data });
+    }
+    catch(error){
+        dispatch(fetchSubjectListFailure(error.message));
+        return({ ok: false, error });
+    }
+};
 
 
+
+
+// ====================================
+// REAL-TIME CFW ENROLLMENT STATUS COUNTS
+// ====================================
+// ============================================================================
+// CFW ENROLLMENT COUNTS (Real-time counting)
+// ============================================================================
+
+export const fetchCfwEnrollmentCountsRequest = () => ({ type: FETCH_CFW_ENROLLMENT_COUNTS_REQUEST });
+export const fetchCfwEnrollmentCountsSuccess = (data) => ({ type: FETCH_CFW_ENROLLMENT_COUNTS_SUCCESS, payload: data });
+export const fetchCfwEnrollmentCountsFailure = (error) => ({ type: FETCH_CFW_ENROLLMENT_COUNTS_FAILURE, payload: error });
+export const updateCfwEnrollmentCountRealtime = (data) => ({ type: UPDATE_CFW_ENROLLMENT_COUNT_REALTIME, payload: data });
+
+// Fetch initial counts for CFW
+export const fetchCfwEnrollmentCounts = (schoolYear = '', userRoleId = '') => async (dispatch) => {
+    console.log('📡 CFW API Call: fetchCfwEnrollmentCounts started with:', { schoolYear, userRoleId });
+    dispatch(fetchCfwEnrollmentCountsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/shared/enrollment-counts?schoolYear=${schoolYear}&userRoleId=${userRoleId}`;
+        
+        console.log('📡 Calling:', url);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('📡 CFW Response:', { ok: response.ok, status: response.status, data });
+
+        if (response.ok) {
+            dispatch(fetchCfwEnrollmentCountsSuccess(data));
+        } else {
+            dispatch(fetchCfwEnrollmentCountsFailure(data.message || 'Failed to fetch CFW counts'));
+        }
+    } catch (error) {
+        console.error('❌ Error fetching CFW enrollment counts:', error);
+        dispatch(fetchCfwEnrollmentCountsFailure(error.message));
+    }
+};

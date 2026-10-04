@@ -63,11 +63,11 @@ export const fetchGeneralOfferedSubjectRequest = () => ({ type: FETCH_GENERAL_OF
 export const fetchGeneralOfferedSubjectSuccess = (data) => ({ type: FETCH_GENERAL_OFFERED_SUBJECTS_SUCCESS, payload: data });
 export const fetchGeneralOfferedSubjectFailure = (error) => ({ type: FETCH_GENERAL_OFFERED_SUBJECTS_FAILURE, payload: error });
 
-export const fetchGeneralOfferedSubjectData = (page, pageSize, search) => async (dispatch) => {
+export const fetchGeneralOfferedSubjectData = (page, pageSize, search, schoolYear = '') => async (dispatch) => {
     dispatch(fetchGeneralOfferedSubjectRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/academic/get-general-offered-subject?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/academic/get-general-offered-subject?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -123,11 +123,11 @@ export const fetchNonCurriculumSubjectRequest = () => ({ type: FETCH_NON_CURRICU
 export const fetchNonCurriculumSubjectSuccess = (data) => ({ type: FETCH_NON_CURRICULUM_SUBJECT_SUCCESS, payload: data });
 export const fetchNonCurriculumSubjectFailure = (error) => ({ type: FETCH_NON_CURRICULUM_SUBJECT_FAILURE, payload: error });
 
-export const fetchNonCurriculumSubjectData = (page, pageSize, search) => async (dispatch) => {
+export const fetchNonCurriculumSubjectData = (page, pageSize, search, schoolYear = '') => async (dispatch) => {
     dispatch(fetchNonCurriculumSubjectRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/academic/get-non-curriculum-subject?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/academic/get-non-curriculum-subject?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -650,11 +650,11 @@ export const fetctCurriculumPerLevelRequest = () => ({ type: FETCH_CURRICULUM_PE
 export const fetchCurriculumPerLevelSuccess = (data) => ({ type: FETCH_CURRICULUM_PER_LEVEL_SUCCESS, payload: data });
 export const fetchCurriculumPerLevelFailure = (error) => ({ type: FETCH_CURRICULUM_PER_LEVEL_FAILURE, payload: error });
 
-export const fetchCurriculumPerLevelData = (page, pageSize, search) => async (dispatch) => {
+export const fetchCurriculumPerLevelData = (page, pageSize, search, schoolYear = '') => async (dispatch) => {
     dispatch(fetctCurriculumPerLevelRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/academic/get-curriculum-per-level?$page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/academic/get-curriculum-per-level?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',

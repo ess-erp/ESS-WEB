@@ -1,11 +1,11 @@
 import AppRoutes from "./routes/AppRoutes";
-import NotificationListener from "./GlobalFunction/NotificaiontListener";
+import SignalRListener from "./GlobalFunction/SignalRListener";
 
 const user = JSON.parse(localStorage.getItem("userData"));
 function App() {
   return (
     <>
-      <NotificationListener userId={user?.UserId} />
+      <SignalRListener userId={user?.UserId} />
       <AppRoutes />
     </>
   );

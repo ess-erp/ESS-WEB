@@ -28,6 +28,8 @@ import {
     FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
     FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE,
     FETCH_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_SEND_ACADEMIC_WAIVER_FAILURE,
+    FETCH_ENROLLMENT_COUNTS_REQUEST, FETCH_ENROLLMENT_COUNTS_SUCCESS, FETCH_ENROLLMENT_COUNTS_FAILURE,
+    UPDATE_ENROLLMENT_COUNT_REALTIME
 } from './ActionType';
 
 const initialState = {
@@ -67,6 +69,11 @@ const initialGeneralState = {
     academicWaiverState: { ...initialState },
     updateAcademicWaiverState: { ...initialState },
     sendAcademicWaiverState: { ...initialState },
+    enrollmentCountsState: { 
+        loading: false, 
+        data: { pending: 0, ongoing: 0, enrolled: 0 }, 
+        error: '' 
+    },
 };
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -294,6 +301,54 @@ const admissionReducer = (state = initialGeneralState, action) => {
         case FETCH_SEND_ACADEMIC_WAIVER_FAILURE:
             return { ...state, sendAcademicWaiverState: { loading: false, data: [], error: action.payload } };
 
+
+        // ====================================
+        // REAL-TIME ENROLLMENT STATUS COUNTS
+        // ====================================
+        case FETCH_ENROLLMENT_COUNTS_REQUEST:
+            console.log('🔄 Reducer: FETCH_ENROLLMENT_COUNTS_REQUEST');
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    loading: true,
+                },
+            };
+
+        case FETCH_ENROLLMENT_COUNTS_SUCCESS:
+            console.log('✅ Reducer: FETCH_ENROLLMENT_COUNTS_SUCCESS', action.payload);
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    loading: false,
+                    data: action.payload,
+                    error: '',
+                },
+            };
+
+        case FETCH_ENROLLMENT_COUNTS_FAILURE:
+            console.log('❌ Reducer: FETCH_ENROLLMENT_COUNTS_FAILURE', action.payload);
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    loading: false,
+                    error: action.payload,
+                },
+            };
+
+        case UPDATE_ENROLLMENT_COUNT_REALTIME:
+            console.log('📊 Reducer: UPDATE_ENROLLMENT_COUNT_REALTIME', action.payload);
+            return {
+                ...state,
+                enrollmentCountsState: {
+                    ...state.enrollmentCountsState,
+                    data: {
+                        ...state.enrollmentCountsState.data,
+                        ...action.payload,
+                    },
+                },
+            };
 
         default:
             return state;

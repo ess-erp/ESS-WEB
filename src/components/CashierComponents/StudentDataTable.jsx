@@ -44,7 +44,7 @@ const StudentDataTable = () => {
   ];
 
   // Fetch server data whenever dependencies change
-  const fetchData = () => {
+  useEffect(() => {
     dispatch(fetchEnrollmentTableData(
       startDate,
       endDate,
@@ -53,10 +53,6 @@ const StudentDataTable = () => {
       rowsPerPage,
       filterText
     ));
-  };
-
-  useEffect(() => {
-    fetchData();
   }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, dispatch]);
 
   const handleButtonClick = (row) => {

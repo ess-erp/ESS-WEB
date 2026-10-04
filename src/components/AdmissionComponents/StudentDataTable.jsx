@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaClock, FaSpinner, FaCheckCircle } from "react-icons/fa";
+import { FaClock, FaSpinner, FaCheckCircle, FaFileExcel, FaFilePdf } from "react-icons/fa";
 import DataTable from 'react-data-table-component';
 import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
-import { fetchEnrollmentTableData } from "../../states/AdmissionState/Action";
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
+import { fetchEnrollmentTableData, fetchEnrollmentCounts } from "../../states/AdmissionState/Action";
 
 const StudentDataTable = () => {
   const dispatch = useDispatch();
@@ -14,19 +15,14 @@ const StudentDataTable = () => {
   const table = tableState.data.data || [];
   const totalRows = tableState.data.totalRecords || 0;
   const loading = tableState.loading || false;
+  
+  // Get real-time enrollment counts
+  const enrollmentCounts = useSelector((state) => state.admission.enrollmentCountsState.data || {});
 
   const statuses = [
-    { label: "Pending", action: "pending",icon: <FaClock className="text-yellow-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
-    { label: "Ongoing", action: "ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" },
-    { label: "Enrolled", action: "enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
-  ];
-
-  const schoolYears = [
-    { value: "", label: "All School Years" },
-    { value: "2023-2024", label: "SY 2023-2024" },
-    { value: "2024-2025", label: "SY 2024-2025" },
-    { value: "2025-2026", label: "SY 2025-2026" },
-    { value: "2026-2027", label: "SY 2026-2027" },
+    { label: "Pending", action: "pending", icon: <FaClock className="text-yellow-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200", count: enrollmentCounts.Pending || 0 },
+    { label: "Ongoing", action: "ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200", count: enrollmentCounts.Ongoing || 0 },
+    { label: "Enrolled", action: "enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200", count: enrollmentCounts.Enrolled || 0 },
   ];
 
   const [startDate, setStartDate] = useState('');
@@ -38,7 +34,7 @@ const StudentDataTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSchoolYear, setSelectedSchoolYear] = useState('all');
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
 
   const columns = [
     { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
@@ -55,7 +51,7 @@ const StudentDataTable = () => {
   ];
 
   // Fetch server data whenever dependencies change
-  const fetchData = () => {
+  useEffect(() => {
     dispatch(fetchEnrollmentTableData(
       startDate,
       endDate,
@@ -65,11 +61,18 @@ const StudentDataTable = () => {
       filterText,
       selectedSchoolYear
     ));
-  };
-
-  useEffect(() => {
-    fetchData();
   }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, selectedSchoolYear, dispatch]);
+
+  // Fetch initial counts on component mount
+  useEffect(() => {
+    console.log('🔄 Fetching enrollment counts for SY:', selectedSchoolYear || 'All');
+    dispatch(fetchEnrollmentCounts(selectedSchoolYear));
+  }, [dispatch, selectedSchoolYear]); // Added selectedSchoolYear dependency
+
+  // Debug: Log enrollment counts when they change
+  useEffect(() => {
+    console.log('📊 Enrollment Counts Updated:', enrollmentCounts);
+  }, [enrollmentCounts]);
 
   const handleButtonClick = (row) => {
     const url = `/admission/studentappform?AppId=${row.AppId}`;
@@ -82,6 +85,18 @@ const StudentDataTable = () => {
     setCurrentPage(1);
     setIsModalOpen(false);
   }
+
+  // Handle Download Function
+  const handleDownload = (fileType) => {
+    console.log('Download Type:', fileType);
+    console.log('Filters:', {
+      startDate,
+      endDate,
+      status: selectedStatus,
+      searchText: filterText,
+      schoolYear: selectedSchoolYear
+    });
+  };
 
   return (
     <div>
@@ -108,7 +123,7 @@ const StudentDataTable = () => {
             {/* text on the right */}
             <div className="text-left">
               <p className="text-sm font-medium">{status.label}</p>
-              <p className="text-lg font-bold">--</p>
+              <p className="text-lg font-bold">{status.count}</p>
             </div>
           </button>
         ))}
@@ -126,20 +141,13 @@ const StudentDataTable = () => {
 
             <div className="flex items-center gap-2">
               <OutlineBlueBtn label="Date Range" onClick={() => setIsModalOpen(true)} />
-              <select
-                className="px-3 py-2 border border-gray-300 rounded"
+              <SchoolYearDropdown
                 value={selectedSchoolYear}
                 onChange={(e) => {
                   setSelectedSchoolYear(e.target.value);
                   setCurrentPage(1);
                 }}
-              >
-                {schoolYears.map((sy) => (
-                  <option key={sy.value} value={sy.value}>
-                    {sy.label}
-                  </option>
-                ))}
-              </select>
+              />
               <input
                 type="text"
                 placeholder="Search..."
@@ -179,6 +187,24 @@ const StudentDataTable = () => {
               />
             </motion.div>
           </AnimatePresence>
+
+          {/* Download Buttons */}
+          <div className="flex justify-center gap-4 mt-4">
+            <button
+              onClick={() => handleDownload('excel')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+            >
+              <FaFileExcel size={18} />
+              <span>Download Excel</span>
+            </button>
+            <button
+              onClick={() => handleDownload('pdf')}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              <FaFilePdf size={18} />
+              <span>Download PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 

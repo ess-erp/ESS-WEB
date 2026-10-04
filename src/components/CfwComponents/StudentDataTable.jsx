@@ -6,25 +6,28 @@ import { motion, AnimatePresence } from 'framer-motion';
 import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
-import { fetchEnrollmentTableData } from "../../states/CfwState/Action";
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
+import { fetchEnrollmentTableData, fetchCfwEnrollmentCounts } from "../../states/CfwState/Action";
 
 const StudentDataTable = () => {
   const dispatch = useDispatch();
-  const tableState = useSelector((state) => state.admission.tableState || {});
+  const tableState = useSelector((state) => state.cfw.tableState || {});
   const table = tableState.data.data || [];
   const totalRows = tableState.data.totalRecords || 0;
   const loading = tableState.loading || false;
 
-  const statuses = [
-    { label: "Ongoing", action: "ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200" }
-  ];
+  // Get user data from localStorage
+  const user = useState(() => {
+    const savedUser = localStorage.getItem("userData");
+    return savedUser ? JSON.parse(savedUser) : null;
+  })[0];
 
-  const schoolYears = [
-    { value: "", label: "All School Years" },
-    { value: "2023-2024", label: "SY 2023-2024" },
-    { value: "2024-2025", label: "SY 2024-2025" },
-    { value: "2025-2026", label: "SY 2025-2026" },
-    { value: "2026-2027", label: "SY 2026-2027" },
+  // Get real-time CFW enrollment counts
+  const enrollmentCounts = useSelector((state) => state.cfw.enrollmentCountsState.data || {});
+
+  const statuses = [
+    { label: "Ongoing", action: "ongoing", icon: <FaSpinner className="text-blue-500 text-xl animate-spin" />, bg: "bg-blue-100", hover: "hover:bg-blue-200", count: enrollmentCounts.Ongoing || 0 },
+    { label: "Enrolled", action: "enrolled", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200", count: enrollmentCounts.Enrolled || 0 }
   ];
 
   const [startDate, setStartDate] = useState('');
@@ -53,7 +56,7 @@ const StudentDataTable = () => {
   ];
 
   // Fetch server data whenever dependencies change
-  const fetchData = () => {
+  useEffect(() => {
     dispatch(fetchEnrollmentTableData(
       startDate,
       endDate,
@@ -63,11 +66,14 @@ const StudentDataTable = () => {
       filterText,
       selectedSchoolYear
     ));
-  };
-
-  useEffect(() => {
-    fetchData();
   }, [startDate, endDate, selectedStatus, currentPage, rowsPerPage, filterText, selectedSchoolYear, dispatch]);
+
+  // Fetch initial counts on component mount and when SY changes
+  useEffect(() => {
+    console.log('🔄 Fetching CFW enrollment counts for SY:', selectedSchoolYear || 'All');
+    const userRoleId = user?.UserRoleId || '';
+    dispatch(fetchCfwEnrollmentCounts(selectedSchoolYear, userRoleId));
+  }, [dispatch, selectedSchoolYear, user?.UserRoleId]);
 
   const handleButtonClick = (row) => {
     const url = `/cfw/studentappform?AppId=${row.AppId}`;
@@ -106,7 +112,7 @@ const StudentDataTable = () => {
             {/* text on the right */}
             <div className="text-left">
               <p className="text-sm font-medium">{status.label}</p>
-              <p className="text-lg font-bold">--</p>
+              <p className="text-lg font-bold">{status.count}</p>
             </div>
           </button>
         ))}
@@ -124,20 +130,13 @@ const StudentDataTable = () => {
 
             <div className="flex items-center gap-2">
               <OutlineBlueBtn label="Date Range" onClick={() => setIsModalOpen(true)} />
-              <select
-                className="px-3 py-2 border border-gray-300 rounded"
+              <SchoolYearDropdown
                 value={selectedSchoolYear}
                 onChange={(e) => {
                   setSelectedSchoolYear(e.target.value);
                   setCurrentPage(1);
                 }}
-              >
-                {schoolYears.map((sy) => (
-                  <option key={sy.value} value={sy.value}>
-                    {sy.label}
-                  </option>
-                ))}
-              </select>
+              />
               <input
                 type="text"
                 placeholder="Search..."
