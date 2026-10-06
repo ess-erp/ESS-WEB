@@ -5,6 +5,7 @@ import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
+import SchoolYearDropdown from "../ButtonsComponents/SchoolYearDropdown";
 import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
 import {
     fetchSectionListData,
@@ -221,10 +222,11 @@ const FacultyEntryComponent = () => {
     const [facultyLoadCurrentPage, setFacultyLoadTableCurrentPage] = useState(1);
     const [facultyLoadRowsPerPage, setFacultyLoadTableRowsPerPage] = useState(10);
     const [facultyLoadTableSearchFilter, setFacultyLoadTableFilterText] = useState("");
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState("");
 
     useEffect(() => {
-        dispatch(fetchFacultyLoadTableData(facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter));
-    }, [facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, dispatch]);
+        dispatch(fetchFacultyLoadTableData(facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, selectedSchoolYear));
+    }, [facultyLoadCurrentPage, facultyLoadRowsPerPage, facultyLoadTableSearchFilter, selectedSchoolYear, dispatch]);
 
     useEffect(() => {
         if (facultyLoadTable.length === 0) return;
@@ -376,11 +378,16 @@ const FacultyEntryComponent = () => {
         <div>
             <div className="bg-white rounded-lg shadow border border-gray-200">
 
-                <div className="px-4 py-3 border-b bg-gray-50 rounded-t-lg flex items-center justify-between">
-                    <div>
-                        <h3 className="text-lg font-bold text-green-600">
-                            Faculty Load Master List
-                        </h3>
+                <div className="px-4 py-3 border-b bg-gray-50 rounded-t-lg">
+                    <div className="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 className="text-lg font-bold text-green-600">
+                                Faculty Load Master List
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-0.5">
+                                List of faculty load for this school year.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -389,10 +396,20 @@ const FacultyEntryComponent = () => {
                             onClick={openAddNewModal}
                         />
 
+                        <SchoolYearDropdown
+                            value={selectedSchoolYear}
+                            onChange={(e) => {
+                                setSelectedSchoolYear(e.target.value);
+                                setFacultyLoadTableCurrentPage(1);
+                            }}
+                            className="px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            includeAll={true}
+                        />
+
                         <input
                             type="text"
                             placeholder="Search..."
-                            className="px-3 py-2 border border-gray-300 rounded w-64"
+                            className="px-3 py-2 border border-gray-300 rounded flex-1 max-w-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                             value={facultyLoadTableSearchFilter}
                             onChange={(e) => {
                                 setFacultyLoadTableFilterText(e.target.value);
@@ -400,7 +417,6 @@ const FacultyEntryComponent = () => {
                             }}
                         />
                     </div>
-
                 </div>
                 <div className="w-full">
                     <DataTable

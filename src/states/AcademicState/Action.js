@@ -533,11 +533,11 @@ export const fetchFacultyLoadTableRequest = () => ({ type: FETCH_FACULTY_LOAD_TA
 export const fetchFacultyLoadTableSuccess = (data) => ({ type: FETCH_FACULTY_LOAD_TABLE_SUCCESS, payload: data });
 export const fetchFacultyLoadTableFailure = (error) => ({ type: FETCH_FACULTY_LOAD_TABLE_FAILURE, payload: error });
 
-export const fetchFacultyLoadTableData = (page, pageSize, search) => async (dispatch) => {
+export const fetchFacultyLoadTableData = (page, pageSize, search, schoolYear = "") => async (dispatch) => {
     dispatch(fetchFacultyLoadTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/academic/get-faculty-load-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/academic/get-faculty-load-table?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
             method: 'POST',
