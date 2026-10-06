@@ -28,6 +28,7 @@ import {
     FETCH_ACADEMIC_WAIVER_REQUEST, FETCH_ACADEMIC_WAIVER_SUCCESS, FETCH_ACADEMIC_WAIVER_FAILURE,
     FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE,
     FETCH_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_SEND_ACADEMIC_WAIVER_FAILURE,
+    FETCH_EXPORT_ENROLLMENT_REQUEST, FETCH_EXPORT_ENROLLMENT_SUCCESS, FETCH_EXPORT_ENROLLMENT_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -992,5 +993,62 @@ export const fetchEnrollmentCounts = (schoolYear = '') => async (dispatch) => {
     } catch (error) {
         console.error('❌ Error fetching enrollment counts:', error);
         dispatch(fetchEnrollmentCountsFailure(error.message));
+    }
+};
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+
+
+// Export Enrollment Table to Excel
+export const fetchExportEnrollmentRequest = () => ({ type: FETCH_EXPORT_ENROLLMENT_REQUEST });
+export const fetchExportEnrollmentSuccess = (data) => ({ type: FETCH_EXPORT_ENROLLMENT_SUCCESS, payload: data });
+export const fetchExportEnrollmentFailure = (error) => ({ type: FETCH_EXPORT_ENROLLMENT_FAILURE, payload: error });
+
+export const fetchExportEnrollmentData = (startDate, endDate, tableType, search, schoolYear) => async (dispatch) => {
+    dispatch(fetchExportEnrollmentRequest());
+    try {
+        const token = getToken();
+        const params = new URLSearchParams({
+            startDate: startDate || '',
+            endDate: endDate || '',
+            tableType: tableType,
+            search: search || '',
+            schoolYear: schoolYear || 'all'
+        });
+
+        const url = `${baseUrl}/admission/export-enrollment-table?${params.toString()}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Get the blob data
+        const blob = await response.blob();
+        
+        // Create download link
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `Enrollment_${tableType}_${schoolYear}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(downloadUrl);
+
+        dispatch(fetchExportEnrollmentSuccess({ success: true }));
+        return { ok: true, message: 'Excel file downloaded successfully' };
+    }
+    catch (error) {
+        console.error('Export error:', error);
+        dispatch(fetchExportEnrollmentFailure(error.message));
+        return { ok: false, error: error.message };
     }
 };

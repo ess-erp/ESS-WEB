@@ -14,17 +14,30 @@ import {
     fetchSectionListByLevelIdData,
 } from "../../states/SruState/Action";
 import {
-    // fetchDivisionData,
+    fetchDivisionData,
     fetchLevelData,
-} from "../../states/AdmissionState/Action";
+} from "../../states/OnlineApplicationState/Action";
 // import {
 //     fetchSectionListData,
 // } from "../../states/AcademicState/Action";
 
+// Pure function to get current school year
+const getCurrentSchoolYear = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // 0-indexed
+    
+    // If current month is June (6) or later, use current year, else use previous year
+    if (currentMonth >= 6) {
+        return `${currentYear}-${currentYear + 1}`;
+    } else {
+        return `${currentYear - 1}-${currentYear}`;
+    }
+};
+
 // Pure function to generate school years from a start year up to the current year
 const generateSchoolYears = (startYear = 2000) => {
     const currentYear = new Date().getFullYear();
-    // const options = [{ value: "ALL", label: "All School Years" }];
     const options = [];
 
     for (let year = currentYear; year >= startYear; year--) {
@@ -45,6 +58,17 @@ const TERM_LIST = [
     { value: "Term2", label: "2nd Term" },
     { value: "Term3", label: "3rd Term" },
     { value: "Final", label: "Final Term" }
+];
+
+const FILTER_BY_GRADES_LIST = [
+    { value: "grades", label: "Grades" },
+    { value: "ecqms", label: "ECQ-Ms" },
+    { value: "all", label: "Select All" }
+];
+
+const GRADE_FORMAT_LIST = [
+    { value: "numeric", label: "Numeric Grade" },
+    { value: "letter", label: "Letter Grade" }
 ];
 
 const SummarySheetDataTable = () => {
@@ -103,36 +127,43 @@ const SummarySheetDataTable = () => {
     // const [reportId, setReportId] = useState(0);
 
     // --- Filter Toggles ---
-    const [enableDivision, setEnableDivision] = useState(false);
+    const [enableDivision, setEnableDivision] = useState(true); // Always enabled by default
     const [enableLevel, setEnableLevel] = useState(false);
     const [enableSection, setEnableSection] = useState(false);
-    const [enableSchoolYear, setEnableSchoolYear] = useState(false);
+    const [enableSchoolYear, setEnableSchoolYear] = useState(true); // Always enabled by default
     const [enableTerm, setEnableTerm] = useState(false);
+    const [enableFilterByGrades, setEnableFilterByGrades] = useState(false);
+    const [enableGradeFormat, setEnableGradeFormat] = useState(false);
 
     // --- Selected Values ---
     const [selectedDivision, setSelectedDivision] = useState(null);
     const [selectedLevel, setSelectedLevel] = useState(null);
     const [selectedSection, setSelectedSection] = useState(null);
-    const [selectedSchoolYear, setSelectedSchoolYear] = useState(null);
+    const [selectedSchoolYear, setSelectedSchoolYear] = useState({ 
+        value: getCurrentSchoolYear(), 
+        label: getCurrentSchoolYear() 
+    }); // Default to current SY
     const [selectedTerm, setSelectedTerm] = useState(null);
+    const [selectedFilterByGrades, setSelectedFilterByGrades] = useState(null);
+    const [selectedGradeFormat, setSelectedGradeFormat] = useState(null);
 
     // Dynamic school year generator (memoized)
     const schoolYearList = useMemo(() => generateSchoolYears(2000), []);
 
     // Selectors
-    // const divisionData = useSelector((state) => state.admission?.divisionState?.data || []);
-    const levelData = useSelector((state) => state.admission?.levelState?.data || []);
-    // const sectionData = useSelector((state) => state.academic?.sectionListState?.data || []);
+    const divisionData = useSelector((state) => state.online?.divisionState?.data || []);
+    const levelData = useSelector((state) => state.online?.levelState?.data || []);
 
     // Option Lists
-    // const divisionList = useMemo(() => {
-    //     if (!divisionData.length) return [];
-    //     return [{ value: "ALL", label: "Select All" }, ...divisionData.map(item => ({ value: item.DivId, label: item.DivName }))];
-    // }, [divisionData]);
+    const divisionList = useMemo(() => {
+        if (!divisionData.length) return [];
+        return divisionData.map(item => ({ value: item.DivId, label: item.DivName }));
+    }, [divisionData]);
 
     const levelList = useMemo(() => {
         if (!levelData.length) return [];
-        return [{ value: "ALL", label: "Select All" }, ...levelData.map(item => ({ value: item.LevelId, label: item.LevelName }))];
+        // Levels are already filtered by Division from the API call
+        return levelData.map(item => ({ value: item.LevelId, label: item.LevelName }));
     }, [levelData]);
 
     // const sectionList = useMemo(() => {
@@ -150,19 +181,19 @@ const SummarySheetDataTable = () => {
 
     const openGenerateModal = () => {
         setViewModal(true);
-        // dispatch(fetchDivisionData());
-        dispatch(fetchLevelData());
-        // dispatch(fetchSectionListData());
+        dispatch(fetchDivisionData());
+        // Don't fetch level data yet - wait for division selection
     };
 
     const handleGenerateTable = async () => {
-
         const payload = {
             divId: selectedDivision?.value ?? 0,
             levelId: selectedLevel?.value ?? 0,
             schoolYear: selectedSchoolYear?.value ?? "",
             term: selectedTerm?.value ?? "",
-            sectionId: selectedSection?.value ?? 0
+            sectionId: selectedSection?.value ?? 0,
+            filterByGrades: selectedFilterByGrades?.value ?? "",
+            gradeFormat: selectedGradeFormat?.value ?? ""
         };
 
         console.log(payload);
@@ -170,17 +201,21 @@ const SummarySheetDataTable = () => {
     };
 
     const handleResetFilters = () => {
-        setEnableDivision(false);
+        setEnableDivision(true);
         setEnableLevel(false);
         setEnableSection(false);
-        setEnableSchoolYear(false);
+        setEnableSchoolYear(true);
         setEnableTerm(false);
+        setEnableFilterByGrades(false);
+        setEnableGradeFormat(false);
 
         setSelectedDivision(null);
         setSelectedLevel(null);
         setSelectedSection(null);
-        setSelectedSchoolYear(null);
+        setSelectedSchoolYear({ value: getCurrentSchoolYear(), label: getCurrentSchoolYear() });
         setSelectedTerm(null);
+        setSelectedFilterByGrades(null);
+        setSelectedGradeFormat(null);
     };
 
     // Helper for placeholder state UI
@@ -212,6 +247,18 @@ const SummarySheetDataTable = () => {
     // useEffect(() => {
     //     set
     // })
+    const handleDivisionChange = async (divisionValue) => {
+        setSelectedDivision(divisionValue);
+        setSelectedLevel(null); // Reset level when division changes
+        setSectionList([]);
+        setSelectedSection(null);
+        
+        if (divisionValue && divisionValue.value) {
+            // Fetch levels for the selected division
+            await dispatch(fetchLevelData(divisionValue.value));
+        }
+    };
+
     const handleLevelChange = async (data) => {
         const levelId = data?.value;
 
@@ -305,53 +352,71 @@ const SummarySheetDataTable = () => {
                 body={
                     <div className="mt-6 relative overflow-hidden max-h-[75vh] overflow-y-auto px-1">
                         <div className="space-y-6 mb-6">
+                            {/* ROW 1: School Year, Division, Level */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-
-                                {/* School Year Filter */}
+                                
+                                {/* School Year Filter - Always enabled, default to current */}
                                 <div className="flex flex-col space-y-2">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
-                                        <input
-                                            type="checkbox"
-                                            checked={enableSchoolYear}
-                                            onChange={(e) => {
-                                                setEnableSchoolYear(e.target.checked);
-                                                if (!e.target.checked) setSelectedSchoolYear(null);
-                                            }}
-                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                        />
-                                        <span>Filter by School Year</span>
+                                    <label className="text-sm font-medium text-gray-700">
+                                        School Year <span className="text-red-500">*</span>
                                     </label>
                                     <SearchableSelect
-                                        options={enableSchoolYear ? schoolYearList : []}
+                                        options={schoolYearList}
                                         value={selectedSchoolYear}
                                         onChange={setSelectedSchoolYear}
-                                        placeholder={getPlaceholder(enableSchoolYear, selectedSchoolYear, "School Year")}
-                                        isDisabled={!enableSchoolYear}
+                                        placeholder="Select School Year"
+                                        isDisabled={false}
                                     />
                                 </div>
 
-                                {/* Term Filter */}
+                                {/* Division Filter - Always enabled */}
+                                <div className="flex flex-col space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Division <span className="text-red-500">*</span>
+                                    </label>
+                                    <SearchableSelect
+                                        options={divisionList}
+                                        value={selectedDivision}
+                                        onChange={handleDivisionChange}
+                                        placeholder="Select Division"
+                                        isDisabled={false}
+                                    />
+                                </div>
+
+                                {/* Level Filter - Populate based on Division */}
                                 <div className="flex flex-col space-y-2">
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
                                         <input
                                             type="checkbox"
-                                            checked={enableTerm}
+                                            checked={enableLevel}
                                             onChange={(e) => {
-                                                setEnableTerm(e.target.checked);
-                                                if (!e.target.checked) setSelectedTerm(null);
+                                                const isChecked = e.target.checked;
+                                                setEnableLevel(isChecked);
+                                                if (!isChecked) {
+                                                    setSelectedLevel(null);
+                                                }
                                             }}
                                             className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                                         />
-                                        <span>Filter by Term</span>
+                                        <span>Filter by Level</span>
                                     </label>
                                     <SearchableSelect
-                                        options={enableTerm ? TERM_LIST : []}
-                                        value={selectedTerm}
-                                        onChange={setSelectedTerm}
-                                        placeholder={getPlaceholder(enableTerm, selectedTerm, "Term")}
-                                        isDisabled={!enableTerm}
+                                        options={enableLevel ? levelList : []}
+                                        value={selectedLevel}
+                                        onChange={(val) => {
+                                            setSelectedLevel(val);
+                                            handleLevelChange(val);
+                                        }}
+                                        placeholder={getPlaceholder(enableLevel, selectedLevel, "Level")}
+                                        isDisabled={!enableLevel || !selectedDivision}
                                     />
                                 </div>
+                            </div>
+
+                            {/* ROW 2: Section, Filter By Grades, Grade Format */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+                                
+                                {/* Section Filter */}
                                 <div className="flex flex-col space-y-2">
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
                                         <input
@@ -363,97 +428,62 @@ const SummarySheetDataTable = () => {
                                             }}
                                             className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                                         />
-                                        <span>Filter by Grades or ECQ-MS</span>
+                                        <span>Filter by Section</span>
                                     </label>
                                     <SearchableSelect
                                         options={enableSection ? sectionList : []}
                                         value={selectedSection}
                                         onChange={setSelectedSection}
                                         placeholder={getPlaceholder(enableSection, selectedSection, "Section")}
-                                        isDisabled={!enableSection}
+                                        isDisabled={!enableSection || !enableLevel}
                                     />
                                 </div>
-                                {/* Division Filter */}
-                                {/* <div className="flex flex-col space-y-2">
+
+                                {/* Filter By Grades or ECQ-Ms */}
+                                <div className="flex flex-col space-y-2">
                                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
                                         <input
                                             type="checkbox"
-                                            checked={enableDivision}
+                                            checked={enableFilterByGrades}
                                             onChange={(e) => {
-                                                setEnableDivision(e.target.checked);
-                                                if (!e.target.checked) setSelectedDivision(null);
+                                                setEnableFilterByGrades(e.target.checked);
+                                                if (!e.target.checked) setSelectedFilterByGrades(null);
                                             }}
                                             className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
                                         />
-                                        <span>Filter by Division</span>
+                                        <span>Filter by Grades or ECQ-Ms</span>
                                     </label>
                                     <SearchableSelect
-                                        options={enableDivision ? divisionList : []}
-                                        value={selectedDivision}
-                                        onChange={setSelectedDivision}
-                                        placeholder={getPlaceholder(enableDivision, selectedDivision, "Division")}
-                                        isDisabled={!enableDivision}
+                                        options={enableFilterByGrades ? FILTER_BY_GRADES_LIST : []}
+                                        value={selectedFilterByGrades}
+                                        onChange={setSelectedFilterByGrades}
+                                        placeholder={getPlaceholder(enableFilterByGrades, selectedFilterByGrades, "Filter Type")}
+                                        isDisabled={!enableFilterByGrades}
                                     />
-                                </div> */}
-
-                                <div className="md:col-span-3 flex flex-col md:flex-row justify-center gap-6">
-
-                                    {/* Level Filter */}
-                                    <div className="flex flex-col space-y-2 w-full md:w-1/3">
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={enableLevel}
-                                                onChange={(e) => {
-                                                    const isChecked = e.target.checked;
-                                                    setEnableLevel(isChecked);
-                                                    if (!isChecked) {
-                                                        setSelectedLevel(null);
-                                                    }
-                                                    // handleChangeSection();
-                                                }}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                            />
-                                            <span>Filter by Level</span>
-                                        </label>
-
-                                        <SearchableSelect
-                                            options={enableLevel ? levelList : []}
-                                            value={selectedLevel}
-                                            onChange={(val) => {
-                                                setSelectedLevel(val);
-                                                handleLevelChange(val); // Pass the selected Level ID to your function
-                                            }}
-                                            placeholder={getPlaceholder(enableLevel, selectedLevel, "Level")}
-                                            isDisabled={!enableLevel}
-                                        />
-                                    </div>
-                                    {/* Section Filter */}
-                                    <div className="flex flex-col space-y-2 w-full md:w-1/3">
-                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={enableSection}
-                                                onChange={(e) => {
-                                                    setEnableSection(e.target.checked);
-                                                    if (!e.target.checked) setSelectedSection(null);
-                                                }}
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
-                                            />
-                                            <span>Filter by Section</span>
-                                        </label>
-                                        <SearchableSelect
-                                            options={enableSection ? sectionList : []}
-                                            value={selectedSection}
-                                            onChange={setSelectedSection}
-                                            placeholder={getPlaceholder(enableSection, selectedSection, "Section")}
-                                            isDisabled={!enableSection}
-                                        />
-                                    </div>
-
-
                                 </div>
 
+                                {/* Grade Format - Numeric or Letter */}
+                                <div className="flex flex-col space-y-2">
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
+                                        <input
+                                            type="checkbox"
+                                            checked={enableGradeFormat}
+                                            onChange={(e) => {
+                                                setEnableGradeFormat(e.target.checked);
+                                                if (!e.target.checked) setSelectedGradeFormat(null);
+                                            }}
+                                            className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                        <span>Filter by Grade Format</span>
+                                    </label>
+                                    <SearchableSelect
+                                        options={enableGradeFormat ? GRADE_FORMAT_LIST : []}
+                                        value={selectedGradeFormat}
+                                        onChange={setSelectedGradeFormat}
+                                        placeholder={getPlaceholder(enableGradeFormat, selectedGradeFormat, "Grade Format")}
+                                        isDisabled={!enableGradeFormat}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>

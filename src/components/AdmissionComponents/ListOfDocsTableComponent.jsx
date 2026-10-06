@@ -85,11 +85,11 @@ const ListOfDocsTableComponent = ({ appId }) => {
         }
 
         const form = {
-            DocId: fixedDocId,
-            StudentId: studentId,
-            DocumentTitle: editDoc.TempDocName,
-            DocumentFile: selectedFile,
-            UploadedByUserId: currentUserId,
+            DocTempId: editDoc.DocTempId,
+            DocTempChildId: editDoc.DocTempChildId,
+            Value: selectedFile,
+            StudentId: editDoc.StudentId,
+            UploaderUserId: currentUserId,
         }
         console.log(form);
         const formData = new FormData();

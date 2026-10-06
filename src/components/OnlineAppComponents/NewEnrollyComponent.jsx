@@ -24,6 +24,7 @@ import {
   fetchCityData,
   fetchBarangayData,
   fetchInsertStudentData,
+  fetchInitialDocumentsData,
 } from "../../states/OnlineApplicationState/Action";
 import { WalletCards } from "lucide-react";
 
@@ -93,11 +94,6 @@ const NewEnrollyComponent = () => {
       BrgyCode: "",
       BrgyName: "",
       HomeStreet: "",
-      TwoByTwo: null,
-      BirthCert: null,
-      Baptismal: null,
-      GoodMoral: null,
-      ReportCard: null,
       StudentType: "New",
     },
   });
@@ -124,6 +120,11 @@ const NewEnrollyComponent = () => {
   const brgyList = useSelector(
     (state) => state.online.barangayState?.data || []
   );
+  const initialDocumentsData = useSelector(
+    (state) => state.online.initialDocumentsState?.data || []
+  );
+
+  const [initialDocuments, setInitialDocuments] = useState([]);
 
   useEffect(() => {
     dispatch(fetchCampusData());
@@ -131,7 +132,15 @@ const NewEnrollyComponent = () => {
     dispatch(fetchNationalityData());
     dispatch(fetchReligionData());
     dispatch(fetchProvinceData());
+    dispatch(fetchInitialDocumentsData());
   }, [dispatch]);
+
+  // Set initial documents when data is fetched
+  useEffect(() => {
+    if (initialDocumentsData && initialDocumentsData.length > 0) {
+      setInitialDocuments(initialDocumentsData);
+    }
+  }, [initialDocumentsData]);
 
   const selectedReligion = watch("Religion");
   const division = watch("Division");
@@ -247,6 +256,17 @@ const NewEnrollyComponent = () => {
   const [goodMoral, setGoodMoral] = useState(null);
   const [reportCard, setReportCard] = useState(null);
 
+  // Dynamic document files storage - keyed by DocTempChildId
+  const [documentFiles, setDocumentFiles] = useState({});
+
+  // Handler for dynamic document file changes
+  const handleDocumentFileChange = (docTempChildId, file) => {
+    setDocumentFiles(prev => ({
+      ...prev,
+      [docTempChildId]: file
+    }));
+  };
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
@@ -257,64 +277,65 @@ const NewEnrollyComponent = () => {
   };
 
   const handleNext = async () => {
-    let fieldsToValidate = [];
-    switch (step) {
-      case 1:
-        fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
-        break;
-      case 2:
-        fieldsToValidate = ["Campus", "Division", "Level"];
-        if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
-        fieldsToValidate.push("Religion", "Nationality");
-        break;
-      case 3:
-        fieldsToValidate = [];
-        break;
-      case 4:
-        fieldsToValidate = [
-          "MothersFname",
-          "MothersLname",
-          "MothersMobilePhoneNo",
-        ];
-        break;
-      case 5:
-        fieldsToValidate = [
-          "PrimaryFname",
-          "PrimaryLname",
-          "PrimaryEmail",
-          "PrimaryPassword",
-          "PrimaryConfirmPassword",
-          "OtpCode",
-        ];
-        break;
-      case 6:
-        fieldsToValidate = [
-          "ContactPerson",
-          "ContactEmail",
-          "ContactMobileNo",
-          "Relationship",
-        ];
-        break;
-      case 7:
-        fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
-        break;
-      case 8:
-        fieldsToValidate = [];
-        break;
-    }
-    const valid = await trigger(fieldsToValidate);
+    // let fieldsToValidate = [];
+    // switch (step) {
+    //   case 1:
+    //     fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
+    //     break;
+    //   case 2:
+    //     fieldsToValidate = ["Campus", "Division", "Level"];
+    //     if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
+    //     fieldsToValidate.push("Religion", "Nationality");
+    //     break;
+    //   case 3:
+    //     fieldsToValidate = [];
+    //     break;
+    //   case 4:
+    //     fieldsToValidate = [
+    //       "MothersFname",
+    //       "MothersLname",
+    //       "MothersMobilePhoneNo",
+    //     ];
+    //     break;
+    //   case 5:
+    //     fieldsToValidate = [
+    //       "PrimaryFname",
+    //       "PrimaryLname",
+    //       "PrimaryEmail",
+    //       "PrimaryPassword",
+    //       "PrimaryConfirmPassword",
+    //       "OtpCode",
+    //     ];
+    //     break;
+    //   case 6:
+    //     fieldsToValidate = [
+    //       "ContactPerson",
+    //       "ContactEmail",
+    //       "ContactMobileNo",
+    //       "Relationship",
+    //     ];
+    //     break;
+    //   case 7:
+    //     fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
+    //     break;
+    //   case 8:
+    //     fieldsToValidate = [];
+    //     break;
+    // }
+    // const valid = await trigger(fieldsToValidate);
 
-    if (step === 5) {
-      if (otpValid !== true) {
-        setIsMessage(true);
-        setIsColor("red");
-        setSuccessMessage("OTP is invalid or not verified.");
-        return; // prevent moving to next step
-      }
-    }
-    if (valid) {
-      setStep(step + 1);
-    }
+    // if (step === 5) {
+    //   if (otpValid !== true) {
+    //     setIsMessage(true);
+    //     setIsColor("red");
+    //     setSuccessMessage("OTP is invalid or not verified.");
+    //     return; // prevent moving to next step
+    //   }
+    // }
+    // if (valid) {
+    //   setStep(step + 1);
+    // }
+    setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -329,6 +350,7 @@ const NewEnrollyComponent = () => {
   const handleConfirmSubmit = async () => {
     if (!formData) return;
     console.log(formData);
+    
     const payload = new FormData();
 
     // Map all scalar fields
@@ -375,10 +397,6 @@ const NewEnrollyComponent = () => {
     payload.append("PrimaryLname", formData.PrimaryLname || "");
     payload.append("PrimaryEmail", formData.PrimaryEmail || "");
     payload.append("PrimaryPassword", formData.PrimaryPassword || "");
-    // payload.append(
-    //   "PrimaryConfirmPassword",
-    //   formData.PrimaryConfirmPassword || ""
-    // );
 
     payload.append("ContactPerson", formData.ContactPerson || "");
     payload.append("ContactEmail", formData.ContactEmail || "");
@@ -394,14 +412,23 @@ const NewEnrollyComponent = () => {
     payload.append("HomeStreet", formData.HomeStreet || "");
 
     payload.append("StudentType", formData.StudentType || "New");
-    payload.append("DocId", formData.DocId || 0);
 
-    // Append files if present
-    if (formData.TwoByTwo) payload.append("TwoByTwo", formData.TwoByTwo);
-    if (formData.BirthCert) payload.append("BirthCert", formData.BirthCert);
-    if (formData.Baptismal) payload.append("Baptismal", formData.Baptismal);
-    if (formData.GoodMoral) payload.append("GoodMoral", formData.GoodMoral);
-    if (formData.ReportCard) payload.append("ReportCard", formData.ReportCard);
+    // Get DocTempId from fetched initial documents (all should have same DocTempId)
+    const docTempId = initialDocuments.length > 0 ? initialDocuments[0].DocTempId : null;
+    if (docTempId) {
+      payload.append("DocTempId", docTempId);
+    }
+
+    // Append documents with their DocTempChildId and uploaded file
+    let docIndex = 0;
+    initialDocuments.forEach((doc) => {
+      const uploadedFile = documentFiles[doc.DocTempChildId];
+      if (uploadedFile) {
+        payload.append(`Documents[${docIndex}].DocTempChildId`, doc.DocTempChildId);
+        payload.append(`Documents[${docIndex}].Value`, uploadedFile);
+        docIndex++;
+      }
+    });
 
     console.log("SUBMIT PAYLOAD:", payload);
 
@@ -1026,56 +1053,25 @@ const NewEnrollyComponent = () => {
                       </span>
                     </div>
                     <div className="max-h-96 overflow-y-auto pr-2 space-y-6 pt-2">
-                      <InputFileField
-                        name="TwoByTwo"
-                        label="Upload 2x2 Picture"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setTwoByTwoFile}
-                        file={twoByTwoFile}
-                        altFileName="2x2 Preview"
-                      />
-                      <InputFileField
-                        name="BirthCert"
-                        label="Upload Birth Certificate"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBirthCertificate}
-                        file={birthCertificate}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="Baptismal"
-                        label="Upload Baptismal"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBaptismal}
-                        file={baptismal}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="GoodMoral"
-                        label="Upload Good Moral"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setGoodMoral}
-                        file={goodMoral}
-                        altFileName="Good Moral Preview"
-                      />
-                      <InputFileField
-                        name="ReportCard"
-                        label="Upload Report Card"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setReportCard}
-                        file={reportCard}
-                        altFileName="Report Card Preview"
-                      />
+                      {initialDocuments.length > 0 ? (
+                        initialDocuments.map((doc) => (
+                          <InputFileField
+                            key={doc.DocTempChildId}
+                            name={`Document_${doc.DocTempChildId}`}
+                            label={`Upload ${doc.DocName}`}
+                            register={register}
+                            isEditing={true}
+                            type="file"
+                            onFileChange={(file) => handleDocumentFileChange(doc.DocTempChildId, file)}
+                            file={documentFiles[doc.DocTempChildId] || null}
+                            altFileName={`${doc.DocName} Preview`}
+                          />
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-gray-500">
+                          Loading documents...
+                        </div>
+                      )}
                     </div>
                     <div className="pt-2">
                       <RedBtn label="← Back" onClick={handleBack} />

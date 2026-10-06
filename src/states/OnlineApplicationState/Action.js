@@ -14,6 +14,7 @@ import {
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
     FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
+    FETCH_INITIAL_DOCUMENTS_REQUEST, FETCH_INITIAL_DOCUMENTS_SUCCESS, FETCH_INITIAL_DOCUMENTS_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -427,5 +428,35 @@ export const fetchAccountActivationData = (userId) => async (dispatch) => {
     catch (error) {
         dispatch(fetchAccountActivationFailure(error.message));
         return ({ ok: false, error });
+    }
+};
+
+
+//Get Initial Documents for Enrollment
+export const fetchInitialDocumentsRequest = () => ({ type: FETCH_INITIAL_DOCUMENTS_REQUEST });
+export const fetchInitialDocumentsSuccess = (data) => ({ type: FETCH_INITIAL_DOCUMENTS_SUCCESS, payload: data });
+export const fetchInitialDocumentsFailure = (error) => ({ type: FETCH_INITIAL_DOCUMENTS_FAILURE, payload: error });
+
+export const fetchInitialDocumentsData = () => async (dispatch) => {
+    dispatch(fetchInitialDocumentsRequest());
+    try {
+        const url = `${baseUrl}/auth/get-initial-documents`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const res = await response.json();
+        const documents = res.data || res;
+        
+        dispatch(fetchInitialDocumentsSuccess(documents));
+        return { ok: true, data: documents };
+    }
+    catch (error) {
+        console.error("Initial Documents Error:", error);
+        dispatch(fetchInitialDocumentsFailure(error.message));
+        return { ok: false, error };
     }
 };

@@ -14,6 +14,7 @@ import {
     FETCH_STUDENTBYID_REQUEST, FETCH_STUDENTBYID_SUCCESS, FETCH_STUDENTBYID_FAILURE,
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
     FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
+    FETCH_INITIAL_DOCUMENTS_REQUEST, FETCH_INITIAL_DOCUMENTS_SUCCESS, FETCH_INITIAL_DOCUMENTS_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -39,6 +40,7 @@ const initialState = {
     studentDataState: { ...initialFormState },
     insertEmployeeState: { ...initialFormState },
     accountActivationState: { ...initialFormState },
+    initialDocumentsState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -160,6 +162,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, accountActivationState: { loading: false, data: action.payload, error: '' } };
         case FETCH_ACCOUNT_ACTIVATION_FAILURE:
             return { ...state, accountActivationState: { loading: false, data: '', error: action.payload } };
+
+        //Get Initial Documents for Enrollment
+        case FETCH_INITIAL_DOCUMENTS_REQUEST:
+            return { ...state, initialDocumentsState: { loading: true, data: [], error: '' } };
+        case FETCH_INITIAL_DOCUMENTS_SUCCESS:
+            return { ...state, initialDocumentsState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_INITIAL_DOCUMENTS_FAILURE:
+            return { ...state, initialDocumentsState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

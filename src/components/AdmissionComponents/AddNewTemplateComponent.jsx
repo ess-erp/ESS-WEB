@@ -38,7 +38,8 @@ const AddNewTemplateComponent = forwardRef(
       if (templateType === "gpa") {
         newRow = { SubjectCode: "", SubjectName: "", DivId: 0, Remarks: "" };
       } else if (templateType === "document") {
-        newRow = { DocumentName: "", DocumentTemplate: "", Remarks: "" };
+        // CHANGED: Removed DocumentTemplate field
+        newRow = { DocumentName: "", Remarks: "" };
       }
       //  else if (templateType === "examroom") {
       //   newRow = { RoomNumber: "", RoomName: "", LevelId: 0, DateAvailable: "", Remarks: "" };
@@ -132,6 +133,7 @@ const AddNewTemplateComponent = forwardRef(
               if (selectedType === "gpa") {
                 setRows([{ SubjectCode: "", SubjectName: "", Remarks: "" }]);
               } else if (selectedType === "document") {
+                // CHANGED: Removed DocumentTemplate from initial row
                 setRows([{ DocumentName: "", Remarks: "" }]);
               } else if (selectedType === "examroom") {
                 setRows([{ RoomNumber: "", RoomName: "", LevelId: "", DateAvailable: "", Remarks: "" }]);
@@ -203,9 +205,9 @@ const AddNewTemplateComponent = forwardRef(
                 key={index}
                 className={
                   templateType === "gpa"
-                    ? "grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4 items-end"
+                    ? "grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end" // CHANGED: Removed one column for GPA (removed DivId column)
                     : templateType === "document"
-                      ? "grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4 items-end"
+                      ? "grid grid-cols-1 md:grid-cols-[2fr_2fr_auto] gap-4 items-end" // CHANGED: Now 2 columns + delete button (Document Name, Remarks)
                       : "grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_1fr_1fr_auto] gap-4 items-end" // examroom
                 }
               >
@@ -278,7 +280,8 @@ const AddNewTemplateComponent = forwardRef(
                 )}
                 {templateType === "document" && (
                   <>
-                    {/* Existing DocumentName input stays */}
+                    {/* CHANGED: Removed "List of Document Template" dropdown */}
+                    {/* Only Document Name and Remarks remain */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Document Name
@@ -300,6 +303,7 @@ const AddNewTemplateComponent = forwardRef(
                       )}
                     </div>
 
+                    {/* REMOVED: List of Document Template dropdown
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
                         List of Document Template
@@ -319,6 +323,7 @@ const AddNewTemplateComponent = forwardRef(
                         <option value="PrevReportCard">Previous Report Card</option>
                       </select>
                     </div>
+                    */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700">

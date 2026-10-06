@@ -6,6 +6,7 @@ import OutlineGreenBtn from "../ButtonsComponents/OutlineGreenBtn";
 import { motion, AnimatePresence } from "framer-motion";
 import StudentInfoComponent from "./StudentInfoComponent";
 import EnrollmentHistoryComponent from "./EnrollmentHistoryComponent";
+import StudentDocumentsTableComponent from "./StudentDocumentsTableComponent";
 
 const StudentMasterFileComponent = () => {
 
@@ -58,7 +59,7 @@ const StudentMasterFileComponent = () => {
             </div>
             <div className="grid grid-cols-2 gap-2 mb-6 pt-4">
                 <OutlineGreenBtn label="Enrollment History" onClick={() => setActive("one")} />
-                <OutlineGreenBtn label="Others" onClick={() => setActive("two")} />
+                <OutlineGreenBtn label="List of Documents" onClick={() => setActive("two")} />
             </div>
             <div className="relative min-h-[150px]"> {/* min-h ensures smooth height */}
                 <AnimatePresence mode="wait">
@@ -77,7 +78,7 @@ const StudentMasterFileComponent = () => {
                         </motion.div>
                     )}
 
-                    {/* {active === "two" && (
+                    {active === "two" && (
                         <motion.div
                             key="two"
                             initial={{ x: 50, opacity: 0 }}
@@ -86,35 +87,9 @@ const StudentMasterFileComponent = () => {
                             transition={{ duration: 0.4 }}
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
-                            <GPATableComponent divId={formData.DivId} studentId={formData.StudentId} />
+                            <StudentDocumentsTableComponent studentId={studentId} />
                         </motion.div>
                     )}
-
-                    {active === "three" && (
-                        <motion.div
-                            key="three"
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -50, opacity: 0 }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute w-full bg-white p-6 shadow rounded-lg"
-                        >
-                            <ExamSchedulerComponent studentId={formData.StudentId} levelId={formData.LevelId} />
-                        </motion.div>
-                    )}
-
-                    {active === "four" && (
-                        <motion.div
-                            key="four"
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -50, opacity: 0 }}
-                            transition={{ duration: 0.4 }}
-                            className="absolute w-full bg-white p-6 shadow rounded-lg"
-                        >
-                            <AppFormOthersComponent studentId={formData.StudentId} />
-                        </motion.div>
-                    )} */}
                 </AnimatePresence>
                 {/* <ModalComponent
                     isOpen={isModalOpen}

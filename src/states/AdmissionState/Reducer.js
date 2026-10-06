@@ -29,7 +29,8 @@ import {
     FETCH_UPDATE_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_UPDATE_SEND_ACADEMIC_WAIVER_FAILURE,
     FETCH_SEND_ACADEMIC_WAIVER_REQUEST, FETCH_SEND_ACADEMIC_WAIVER_SUCCESS, FETCH_SEND_ACADEMIC_WAIVER_FAILURE,
     FETCH_ENROLLMENT_COUNTS_REQUEST, FETCH_ENROLLMENT_COUNTS_SUCCESS, FETCH_ENROLLMENT_COUNTS_FAILURE,
-    UPDATE_ENROLLMENT_COUNT_REALTIME
+    UPDATE_ENROLLMENT_COUNT_REALTIME,
+    FETCH_EXPORT_ENROLLMENT_REQUEST, FETCH_EXPORT_ENROLLMENT_SUCCESS, FETCH_EXPORT_ENROLLMENT_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -74,6 +75,7 @@ const initialGeneralState = {
         data: { pending: 0, ongoing: 0, enrolled: 0 }, 
         error: '' 
     },
+    exportEnrollmentState: { ...initialState },
 };
 
 const admissionReducer = (state = initialGeneralState, action) => {
@@ -349,6 +351,14 @@ const admissionReducer = (state = initialGeneralState, action) => {
                     },
                 },
             };
+
+        // Export Enrollment Table
+        case FETCH_EXPORT_ENROLLMENT_REQUEST:
+            return { ...state, exportEnrollmentState: { loading: true, data: [], error: '' } };
+        case FETCH_EXPORT_ENROLLMENT_SUCCESS:
+            return { ...state, exportEnrollmentState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_EXPORT_ENROLLMENT_FAILURE:
+            return { ...state, exportEnrollmentState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

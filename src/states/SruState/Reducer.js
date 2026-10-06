@@ -33,6 +33,7 @@ import {
     FETCH_STUDENTS_IN_SECTION_REQUEST, FETCH_STUDENTS_IN_SECTION_SUCCESS, FETCH_STUDENTS_IN_SECTION_FAILURE,
     DELETE_SECTION_REQUEST, DELETE_SECTION_SUCCESS, DELETE_SECTION_FAILURE,
     DELETE_INACTIVE_SECTION_REQUEST, DELETE_INACTIVE_SECTION_SUCCESS, DELETE_INACTIVE_SECTION_FAILURE,
+    FETCH_STUDENT_DOCUMENTS_LIST_REQUEST, FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS, FETCH_STUDENT_DOCUMENTS_LIST_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -62,6 +63,7 @@ const initialGeneralState = {
     updateCalendarState: { ...initialState },
     deleteCalendarState: { ...initialState },
     enrollmentHistoryTableState: { ...initialState },
+    studentDocumentsListState: { ...initialState },
     insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
     rowGradeTemplateState: { ...initialState },
@@ -324,6 +326,14 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, deleteInactiveSectionState: { loading: false, data: action.payload, error: '' } };
         case DELETE_INACTIVE_SECTION_FAILURE:
             return { ...state, deleteInactiveSectionState: { loading: false, data: [], error: action.payload } };
+
+        // Student Documents List
+        case FETCH_STUDENT_DOCUMENTS_LIST_REQUEST:
+            return { ...state, studentDocumentsListState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS:
+            return { ...state, studentDocumentsListState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_DOCUMENTS_LIST_FAILURE:
+            return { ...state, studentDocumentsListState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

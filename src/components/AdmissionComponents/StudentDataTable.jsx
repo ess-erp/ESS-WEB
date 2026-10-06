@@ -7,7 +7,7 @@ import OutlineBlueBtn from '../ButtonsComponents/OutlineBlueBtn';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
 import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
-import { fetchEnrollmentTableData, fetchEnrollmentCounts } from "../../states/AdmissionState/Action";
+import { fetchEnrollmentTableData, fetchEnrollmentCounts, fetchExportEnrollmentData } from "../../states/AdmissionState/Action";
 
 const StudentDataTable = () => {
   const dispatch = useDispatch();
@@ -34,7 +34,7 @@ const StudentDataTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSchoolYear, setSelectedSchoolYear] = useState('');
+  const [selectedSchoolYear, setSelectedSchoolYear] = useState('all');
 
   const columns = [
     { name: 'Application Number', selector: row => row.AppNumber, sortable: true },
@@ -87,15 +87,30 @@ const StudentDataTable = () => {
   }
 
   // Handle Download Function
-  const handleDownload = (fileType) => {
-    console.log('Download Type:', fileType);
-    console.log('Filters:', {
-      startDate,
-      endDate,
-      status: selectedStatus,
-      searchText: filterText,
-      schoolYear: selectedSchoolYear
-    });
+  const handleDownload = async (fileType) => {
+    if (fileType !== 'excel') {
+      console.log('PDF download not implemented yet');
+      return;
+    }
+
+    try {
+      const result = await dispatch(fetchExportEnrollmentData(
+        startDate,
+        endDate,
+        selectedStatus,
+        filterText,
+        selectedSchoolYear
+      ));
+
+      if (result.ok) {
+        console.log('Excel file downloaded successfully');
+      } else {
+        alert(`Failed to download Excel file: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Failed to download Excel file. Please try again.');
+    }
   };
 
   return (

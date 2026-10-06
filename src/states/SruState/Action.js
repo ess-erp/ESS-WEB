@@ -28,6 +28,7 @@ import {
     FETCH_INSERT_SCHOOL_CALENDAR_MASTER_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_MASTER_FAILURE,
     FETCH_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
+    FETCH_STUDENT_DOCUMENTS_LIST_REQUEST, FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS, FETCH_STUDENT_DOCUMENTS_LIST_FAILURE,
     FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_STUDENTS_IN_SECTION_REQUEST, FETCH_STUDENTS_IN_SECTION_SUCCESS, FETCH_STUDENTS_IN_SECTION_FAILURE,
@@ -1052,4 +1053,41 @@ export const deleteInactiveSection = (sectionId, userId) => async (dispatch) => 
         dispatch(deleteInactiveSectionFailure(error.message));
         return { ok: false, error };
     };
+};
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Student Documents List
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const fetchStudentDocumentsListRequest = () => ({ type: FETCH_STUDENT_DOCUMENTS_LIST_REQUEST });
+export const fetchStudentDocumentsListSuccess = (data) => ({ type: FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS, payload: data });
+export const fetchStudentDocumentsListFailure = (error) => ({ type: FETCH_STUDENT_DOCUMENTS_LIST_FAILURE, payload: error });
+
+export const fetchStudentDocumentsListData = (studentId, page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchStudentDocumentsListRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-student-documents-list?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        
+        dispatch(fetchStudentDocumentsListSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchStudentDocumentsListFailure(error.message));
+        
+        return { ok: false, error };
+    }
 };

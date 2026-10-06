@@ -126,10 +126,12 @@ const TemplatesForm = () => {
                     break;
 
                 case "document":
+                    // CHANGED: DocumentTemplateChildDtos now only contains DocumentName and Remarks
+                    // Removed DocumentTemplate field from the child rows
                     payload = {
                         ...payload,
                         CreatedByUserId,
-                        DocumentTemplateChildDtos: rows,
+                        DocumentTemplateChildDtos: rows, // rows = [{ DocumentName, Remarks }]
                     };
                     break;
 

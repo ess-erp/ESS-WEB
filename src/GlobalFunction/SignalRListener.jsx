@@ -187,6 +187,35 @@ const SignalRListener = ({ userId }) => {
                 console.log("📊 Enrollment Count Update:", countData);
                 dispatch(updateEnrollmentCountRealtime(countData));
             });
+
+            // Listen for new test permit notifications (for Cashier role)
+            connection.on("NewTestPermit", (data) => {
+                console.log("🎫 New Test Permit Issued:", data);
+                
+                // Show toast notification with action
+                dispatch(showToast({
+                    title: data.title || "New Test Permit Issued",
+                    message: data.message,
+                    type: "info",
+                    action: {
+                        label: "View Payment",
+                        url: `/cashier/paymentform?appNumber=${data.appNumber}`
+                    }
+                }));
+
+                // Store in notification state with navigation info
+                dispatch(receiveSignalRNotification({
+                    title: data.title,
+                    message: data.message,
+                    type: "TEST_PERMIT",
+                    appNumber: data.appNumber,
+                    fullName: data.fullName,
+                    dateCreated: data.dateCreated,
+                    redirectUrl: `/cashier/paymentform?appNumber=${data.appNumber}`,
+                    isRead: false
+                }));
+            });
+
             // CONNECTION EVENTS
             connection.onclose(() => {
                 console.log("SignalR Disconnected");
