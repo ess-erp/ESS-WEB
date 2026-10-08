@@ -29,6 +29,8 @@ import {
     FETCH_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_INSERT_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_INSERT_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_STUDENT_DOCUMENTS_LIST_REQUEST, FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS, FETCH_STUDENT_DOCUMENTS_LIST_FAILURE,
+    FETCH_STUDENT_DOCUMENT_DETAILS_REQUEST, FETCH_STUDENT_DOCUMENT_DETAILS_SUCCESS, FETCH_STUDENT_DOCUMENT_DETAILS_FAILURE,
+    UPLOAD_STUDENT_DOCUMENT_REQUEST, UPLOAD_STUDENT_DOCUMENT_SUCCESS, UPLOAD_STUDENT_DOCUMENT_FAILURE,
     FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_UPDATE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_DELETE_SCHOOL_CALENDAR_CHILD_REQUEST, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_SUCCESS, FETCH_DELETE_SCHOOL_CALENDAR_CHILD_FAILURE,
     FETCH_STUDENTS_IN_SECTION_REQUEST, FETCH_STUDENTS_IN_SECTION_SUCCESS, FETCH_STUDENTS_IN_SECTION_FAILURE,
@@ -1069,7 +1071,7 @@ export const fetchStudentDocumentsListData = (studentId, page, pageSize, search)
     
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-student-documents-list?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const url = `${baseUrl}/sru/get-student-documents-with-template-list?studentId=${studentId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
             method: 'GET',
@@ -1087,6 +1089,78 @@ export const fetchStudentDocumentsListData = (studentId, page, pageSize, search)
     }
     catch (error) {
         dispatch(fetchStudentDocumentsListFailure(error.message));
+        
+        return { ok: false, error };
+    }
+};
+
+// ── Student Document Details (for preview/download) ──────────────────────────
+export const fetchStudentDocumentDetailsRequest = () => ({ type: FETCH_STUDENT_DOCUMENT_DETAILS_REQUEST });
+export const fetchStudentDocumentDetailsSuccess = (data) => ({ type: FETCH_STUDENT_DOCUMENT_DETAILS_SUCCESS, payload: data });
+export const fetchStudentDocumentDetailsFailure = (error) => ({ type: FETCH_STUDENT_DOCUMENT_DETAILS_FAILURE, payload: error });
+
+export const fetchStudentDocumentDetailsData = (rowDocChildId) => async (dispatch) => {
+    dispatch(fetchStudentDocumentDetailsRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/sru/get-student-document-details?rowDocChildId=${rowDocChildId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        
+        dispatch(fetchStudentDocumentDetailsSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchStudentDocumentDetailsFailure(error.message));
+        
+        return { ok: false, error };
+    }
+};
+
+// ── Upload Student Document ──────────────────────────────────────────────────
+export const uploadStudentDocumentRequest = () => ({ type: UPLOAD_STUDENT_DOCUMENT_REQUEST });
+export const uploadStudentDocumentSuccess = (data) => ({ type: UPLOAD_STUDENT_DOCUMENT_SUCCESS, payload: data });
+export const uploadStudentDocumentFailure = (error) => ({ type: UPLOAD_STUDENT_DOCUMENT_FAILURE, payload: error });
+
+export const uploadStudentDocumentData = (docTempChildId, studentId, userId, file) => async (dispatch) => {
+    dispatch(uploadStudentDocumentRequest());
+    
+    try {
+        const token = getToken();
+        const formData = new FormData();
+        formData.append('DocTempChildId', docTempChildId);
+        formData.append('StudentId', studentId);
+        formData.append('UserId', userId);
+        formData.append('file', file);
+
+        const url = `${baseUrl}/sru/upload-student-document`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+
+        const res = await response.json();
+        
+        dispatch(uploadStudentDocumentSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(uploadStudentDocumentFailure(error.message));
         
         return { ok: false, error };
     }

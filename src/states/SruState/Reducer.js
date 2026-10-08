@@ -34,6 +34,8 @@ import {
     DELETE_SECTION_REQUEST, DELETE_SECTION_SUCCESS, DELETE_SECTION_FAILURE,
     DELETE_INACTIVE_SECTION_REQUEST, DELETE_INACTIVE_SECTION_SUCCESS, DELETE_INACTIVE_SECTION_FAILURE,
     FETCH_STUDENT_DOCUMENTS_LIST_REQUEST, FETCH_STUDENT_DOCUMENTS_LIST_SUCCESS, FETCH_STUDENT_DOCUMENTS_LIST_FAILURE,
+    FETCH_STUDENT_DOCUMENT_DETAILS_REQUEST, FETCH_STUDENT_DOCUMENT_DETAILS_SUCCESS, FETCH_STUDENT_DOCUMENT_DETAILS_FAILURE,
+    UPLOAD_STUDENT_DOCUMENT_REQUEST, UPLOAD_STUDENT_DOCUMENT_SUCCESS, UPLOAD_STUDENT_DOCUMENT_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -64,6 +66,8 @@ const initialGeneralState = {
     deleteCalendarState: { ...initialState },
     enrollmentHistoryTableState: { ...initialState },
     studentDocumentsListState: { ...initialState },
+    studentDocumentDetailsState: { ...initialState },
+    uploadStudentDocumentState: { ...initialState },
     insertGradeReportTemplateState: { ...initialState },
     gradeReportTableState: { ...initialState },
     rowGradeTemplateState: { ...initialState },
@@ -334,6 +338,22 @@ const sruReducer = (state = initialGeneralState, action) => {
             return { ...state, studentDocumentsListState: { loading: false, data: action.payload, error: '' } };
         case FETCH_STUDENT_DOCUMENTS_LIST_FAILURE:
             return { ...state, studentDocumentsListState: { loading: false, data: [], error: action.payload } };
+
+        // Student Document Details (for preview/download)
+        case FETCH_STUDENT_DOCUMENT_DETAILS_REQUEST:
+            return { ...state, studentDocumentDetailsState: { loading: true, data: [], error: '' } };
+        case FETCH_STUDENT_DOCUMENT_DETAILS_SUCCESS:
+            return { ...state, studentDocumentDetailsState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_STUDENT_DOCUMENT_DETAILS_FAILURE:
+            return { ...state, studentDocumentDetailsState: { loading: false, data: [], error: action.payload } };
+
+        // Upload Student Document
+        case UPLOAD_STUDENT_DOCUMENT_REQUEST:
+            return { ...state, uploadStudentDocumentState: { loading: true, data: [], error: '', success: false } };
+        case UPLOAD_STUDENT_DOCUMENT_SUCCESS:
+            return { ...state, uploadStudentDocumentState: { loading: false, data: action.payload, error: '', success: true } };
+        case UPLOAD_STUDENT_DOCUMENT_FAILURE:
+            return { ...state, uploadStudentDocumentState: { loading: false, data: [], error: action.payload, success: false } };
 
         default:
             return state;
