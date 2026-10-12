@@ -33,7 +33,7 @@ const NewEnrollyComponent = () => {
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
   const stepTitle = {
-    1: "Personal Information",
+    1: "Student/Learner Information",
     2: "Campus Information",
     3: "Father's Information",
     4: "Mother's Maiden Information",
@@ -277,65 +277,65 @@ const NewEnrollyComponent = () => {
   };
 
   const handleNext = async () => {
-    // let fieldsToValidate = [];
-    // switch (step) {
-    //   case 1:
-    //     fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
-    //     break;
-    //   case 2:
-    //     fieldsToValidate = ["Campus", "Division", "Level"];
-    //     if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
-    //     fieldsToValidate.push("Religion", "Nationality");
-    //     break;
-    //   case 3:
-    //     fieldsToValidate = [];
-    //     break;
-    //   case 4:
-    //     fieldsToValidate = [
-    //       "MothersFname",
-    //       "MothersLname",
-    //       "MothersMobilePhoneNo",
-    //     ];
-    //     break;
-    //   case 5:
-    //     fieldsToValidate = [
-    //       "PrimaryFname",
-    //       "PrimaryLname",
-    //       "PrimaryEmail",
-    //       "PrimaryPassword",
-    //       "PrimaryConfirmPassword",
-    //       "OtpCode",
-    //     ];
-    //     break;
-    //   case 6:
-    //     fieldsToValidate = [
-    //       "ContactPerson",
-    //       "ContactEmail",
-    //       "ContactMobileNo",
-    //       "Relationship",
-    //     ];
-    //     break;
-    //   case 7:
-    //     fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
-    //     break;
-    //   case 8:
-    //     fieldsToValidate = [];
-    //     break;
-    // }
-    // const valid = await trigger(fieldsToValidate);
+    let fieldsToValidate = [];
+    switch (step) {
+      case 1:
+        fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
+        break;
+      case 2:
+        fieldsToValidate = ["Campus", "Division", "Level"];
+        if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
+        fieldsToValidate.push("Religion", "Nationality");
+        break;
+      case 3:
+        fieldsToValidate = [];
+        break;
+      case 4:
+        fieldsToValidate = [
+          "MothersFname",
+          "MothersLname",
+          "MothersMobilePhoneNo",
+        ];
+        break;
+      case 5:
+        fieldsToValidate = [
+          "PrimaryFname",
+          "PrimaryLname",
+          "PrimaryEmail",
+          "PrimaryPassword",
+          "PrimaryConfirmPassword",
+          "OtpCode",
+        ];
+        break;
+      case 6:
+        fieldsToValidate = [
+          "ContactPerson",
+          "ContactEmail",
+          "ContactMobileNo",
+          "Relationship",
+        ];
+        break;
+      case 7:
+        fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
+        break;
+      case 8:
+        fieldsToValidate = [];
+        break;
+    }
+    const valid = await trigger(fieldsToValidate);
 
-    // if (step === 5) {
-    //   if (otpValid !== true) {
-    //     setIsMessage(true);
-    //     setIsColor("red");
-    //     setSuccessMessage("OTP is invalid or not verified.");
-    //     return; // prevent moving to next step
-    //   }
-    // }
-    // if (valid) {
-    //   setStep(step + 1);
-    // }
-    setStep(step + 1);
+    if (step === 5) {
+      if (otpValid !== true) {
+        setIsMessage(true);
+        setIsColor("red");
+        setSuccessMessage("OTP is invalid or not verified.");
+        return; // prevent moving to next step
+      }
+    }
+    if (valid) {
+      setStep(step + 1);
+    }
+    // setStep(step + 1);
   };
 
   const handleBack = () => {

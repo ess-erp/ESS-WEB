@@ -1,8 +1,12 @@
 import {
     FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_REQUEST, FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_SUCCESS, FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_FAILURE,
     FETCH_GENERAL_OFFERED_SUBJECTS_REQUEST, FETCH_GENERAL_OFFERED_SUBJECTS_SUCCESS, FETCH_GENERAL_OFFERED_SUBJECTS_FAILURE,
+    UPDATE_GENERAL_OFFERED_SUBJECT_REQUEST, UPDATE_GENERAL_OFFERED_SUBJECT_SUCCESS, UPDATE_GENERAL_OFFERED_SUBJECT_FAILURE,
+    TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_REQUEST, TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_SUCCESS, TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_FAILURE,
     FETCH_INSERT_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_INSERT_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_INSERT_NON_CURRICULUM_SUBJECT_FAILURE,
     FETCH_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_NON_CURRICULUM_SUBJECT_FAILURE,
+    UPDATE_NON_CURRICULUM_SUBJECT_REQUEST, UPDATE_NON_CURRICULUM_SUBJECT_SUCCESS, UPDATE_NON_CURRICULUM_SUBJECT_FAILURE,
+    TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_REQUEST, TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_SUCCESS, TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_FAILURE,
     // FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
@@ -729,6 +733,164 @@ export const fetchCurriculumTableData = (curId, page, pageSize, search) => async
     }
     catch (error) {
         dispatch(fetchCurriculumTableFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── UPDATE GENERAL OFFERED SUBJECT ───────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+export const updateGeneralOfferedSubjectRequest = () => ({ type: UPDATE_GENERAL_OFFERED_SUBJECT_REQUEST });
+export const updateGeneralOfferedSubjectSuccess = (data) => ({ type: UPDATE_GENERAL_OFFERED_SUBJECT_SUCCESS, payload: data });
+export const updateGeneralOfferedSubjectFailure = (error) => ({ type: UPDATE_GENERAL_OFFERED_SUBJECT_FAILURE, payload: error });
+
+export const updateGeneralOfferedSubjectData = (subjectId, subjectCode, subjectName, subjectUnit, userId) => async (dispatch) => {
+    dispatch(updateGeneralOfferedSubjectRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/update-general-offered-subject`;
+        
+        const payload = {
+            SubjectId: subjectId,
+            SubjectCode: subjectCode,
+            SubjectName: subjectName,
+            SubjectUnit: subjectUnit,
+            UpdatedByUserId: userId
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        
+        dispatch(updateGeneralOfferedSubjectSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(updateGeneralOfferedSubjectFailure(error.message));
+        
+        return { ok: false, error };
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── TOGGLE GENERAL OFFERED SUBJECT STATUS ────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+export const toggleGeneralOfferedSubjectStatusRequest = () => ({ type: TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_REQUEST });
+export const toggleGeneralOfferedSubjectStatusSuccess = (data) => ({ type: TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_SUCCESS, payload: data });
+export const toggleGeneralOfferedSubjectStatusFailure = (error) => ({ type: TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_FAILURE, payload: error });
+
+export const toggleGeneralOfferedSubjectStatusData = (subjectId, activeStatus, userId) => async (dispatch) => {
+    dispatch(toggleGeneralOfferedSubjectStatusRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/toggle-general-offered-subject-status?subjectId=${subjectId}&activeStatus=${activeStatus}&userId=${userId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        
+        dispatch(toggleGeneralOfferedSubjectStatusSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(toggleGeneralOfferedSubjectStatusFailure(error.message));
+        
+        return { ok: false, error };
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── UPDATE NON-CURRICULUM SUBJECT ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+export const updateNonCurriculumSubjectRequest = () => ({ type: UPDATE_NON_CURRICULUM_SUBJECT_REQUEST });
+export const updateNonCurriculumSubjectSuccess = (data) => ({ type: UPDATE_NON_CURRICULUM_SUBJECT_SUCCESS, payload: data });
+export const updateNonCurriculumSubjectFailure = (error) => ({ type: UPDATE_NON_CURRICULUM_SUBJECT_FAILURE, payload: error });
+
+export const updateNonCurriculumSubjectData = (nonCurriculumSubjectId, subjectName, nonCurriculumType, userId) => async (dispatch) => {
+    dispatch(updateNonCurriculumSubjectRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/update-non-curriculum-subject`;
+        
+        const payload = {
+            NonCurriculumSubjectId: nonCurriculumSubjectId,
+            SubjectName: subjectName,
+            NonCurriculumType: nonCurriculumType,
+            UpdatedByUserId: userId
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        
+        dispatch(updateNonCurriculumSubjectSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(updateNonCurriculumSubjectFailure(error.message));
+        
+        return { ok: false, error };
+    }
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── TOGGLE NON-CURRICULUM SUBJECT STATUS ─────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+export const toggleNonCurriculumSubjectStatusRequest = () => ({ type: TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_REQUEST });
+export const toggleNonCurriculumSubjectStatusSuccess = (data) => ({ type: TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_SUCCESS, payload: data });
+export const toggleNonCurriculumSubjectStatusFailure = (error) => ({ type: TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_FAILURE, payload: error });
+
+export const toggleNonCurriculumSubjectStatusData = (nonCurriculumSubjectId, activeStatus, userId) => async (dispatch) => {
+    dispatch(toggleNonCurriculumSubjectStatusRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/toggle-non-curriculum-subject-status?nonCurriculumSubjectId=${nonCurriculumSubjectId}&activeStatus=${activeStatus}&userId=${userId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        
+        dispatch(toggleNonCurriculumSubjectStatusSuccess(res));
+        
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(toggleNonCurriculumSubjectStatusFailure(error.message));
+        
         return { ok: false, error };
     }
 };

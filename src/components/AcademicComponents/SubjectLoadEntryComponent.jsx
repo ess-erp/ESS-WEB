@@ -295,10 +295,14 @@ import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import RowToggleComponent from "../ButtonsComponents/RowToggleComponent";
 import InputField from "../ButtonsComponents/InputField";
 import SchoolYearDropdown from "../ButtonsComponents/SchoolYearDropdown";
+import GreenBtn from "../ButtonsComponents/GreenBtn";
+import OutlineRedBtn from "../ButtonsComponents/OutlineRedBtn";
 import { Pencil, Eye, Trash2, Plus } from "lucide-react";
 import {
     fetchInsertGeneralOfferedSubjectsData,
     fetchGeneralOfferedSubjectData,
+    updateGeneralOfferedSubjectData,
+    toggleGeneralOfferedSubjectStatusData,
 } from "../../states/AcademicState/Action";
 
 const SubjectLoadEntryComponent = () => {
@@ -311,6 +315,13 @@ const SubjectLoadEntryComponent = () => {
     const [addNewModal, setAddNewModal] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [editForm, setEditForm] = useState({
+        subjectCode: '',
+        subjectName: '',
+        subjectUnit: ''
+    });
 
     const {
         register,
@@ -429,10 +440,90 @@ const SubjectLoadEntryComponent = () => {
         const res = await dispatch(fetchInsertGeneralOfferedSubjectsData(payload));
         if (res?.ok) {
             setIsModalOpen(false); 
+            setAddNewModal(false);
             setIsSuccessModalOpen(true);
+            
+            // Refresh the table data instead of reloading the entire page
+            dispatch(fetchGeneralOfferedSubjectData(
+                generalOfferedCurrentPage, 
+                generalOfferedRowsPerPage, 
+                generalOfferedFilterText,
+                selectedSchoolYear
+            ));
+            
             setTimeout(() => {
-                window.location.reload();
+                setIsSuccessModalOpen(false);
             }, 3000);
+        }
+    };
+
+    // Handle Edit Button Click
+    const handleEdit = (row) => {
+        setSelectedSubject(row);
+        setEditForm({
+            subjectCode: row.SubjectCode,
+            subjectName: row.SubjectName,
+            subjectUnit: row.SubjectUnit
+        });
+        setIsEditModalOpen(true);
+    };
+
+    // Handle Edit Form Submit
+    const handleEditSubmit = async () => {
+        if (!selectedSubject) return;
+
+        const result = await dispatch(
+            updateGeneralOfferedSubjectData(
+                selectedSubject.SubjectId,
+                editForm.subjectCode,
+                editForm.subjectName,
+                editForm.subjectUnit,
+                userId
+            )
+        );
+
+        if (result?.ok) {
+            setIsEditModalOpen(false);
+            setIsSuccessModalOpen(true);
+            
+            // Refresh the table
+            dispatch(fetchGeneralOfferedSubjectData(
+                generalOfferedCurrentPage, 
+                generalOfferedRowsPerPage, 
+                generalOfferedFilterText,
+                selectedSchoolYear
+            ));
+
+            setTimeout(() => {
+                setIsSuccessModalOpen(false);
+            }, 3000);
+        } else {
+            alert("Failed to update subject");
+        }
+    };
+
+    // Handle Toggle Status
+    const handleToggleStatus = async (row) => {
+        const newStatus = row.ActiveStatus === 'Y' ? 'DR' : 'Y';
+        
+        const result = await dispatch(
+            toggleGeneralOfferedSubjectStatusData(
+                row.SubjectId,
+                newStatus,
+                userId
+            )
+        );
+
+        if (result?.ok) {
+            // Refresh the table
+            dispatch(fetchGeneralOfferedSubjectData(
+                generalOfferedCurrentPage, 
+                generalOfferedRowsPerPage, 
+                generalOfferedFilterText,
+                selectedSchoolYear
+            ));
+        } else {
+            alert("Failed to toggle status");
         }
     };
 
@@ -471,10 +562,17 @@ const SubjectLoadEntryComponent = () => {
             name: "Action",
             cell: row => (
                 <div className="flex gap-4 items-center">
-                    <button className="bg-yellow-500 text-white px-2 py-1 rounded text-sm">
+                    <button 
+                        className="bg-yellow-500 text-white px-2 py-1 rounded text-sm hover:bg-yellow-600"
+                        onClick={() => handleEdit(row)}
+                        title="Edit Subject"
+                    >
                         <Pencil size={18} />
                     </button>
-                    <RowToggleComponent row={row} />
+                    <RowToggleComponent 
+                        row={row} 
+                        onToggle={() => handleToggleStatus(row)}
+                    />
                 </div>
             ),
             grow: 1
@@ -690,6 +788,58 @@ const SubjectLoadEntryComponent = () => {
                 onClose={() => setIsSuccessModalOpen(false)}
                 title={<span className="font-bold text-lg text-green-700">Success</span>}
                 body={<p>Done creating general offered subjects.</p>}
+            />
+
+            {/* Edit Subject Modal */}
+            <ModalComponent
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                title="Edit Subject"
+                body={
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Subject Code
+                            </label>
+                            <input
+                                type="text"
+                                value={editForm.subjectCode}
+                                onChange={(e) => setEditForm({...editForm, subjectCode: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter subject code"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Subject Name
+                            </label>
+                            <input
+                                type="text"
+                                value={editForm.subjectName}
+                                onChange={(e) => setEditForm({...editForm, subjectName: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter subject name"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Subject Unit
+                            </label>
+                            <input
+                                type="number"
+                                value={editForm.subjectUnit}
+                                onChange={(e) => setEditForm({...editForm, subjectUnit: e.target.value})}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter subject unit"
+                            />
+                        </div>
+                    </div>
+                }
+                size="w-[500px]"
+                buttons={[
+                    { label: "Update", type: "green", onClick: handleEditSubmit },
+                    { label: "Cancel", type: "red", onClick: () => setIsEditModalOpen(false) },
+                ]}
             />
         </div>
     );

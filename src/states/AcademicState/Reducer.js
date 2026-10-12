@@ -1,8 +1,12 @@
 import {
     FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_REQUEST, FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_SUCCESS, FETCH_INSERT_GENERAL_OFFERED_SUBJECTS_FAILURE,
     FETCH_GENERAL_OFFERED_SUBJECTS_REQUEST, FETCH_GENERAL_OFFERED_SUBJECTS_SUCCESS, FETCH_GENERAL_OFFERED_SUBJECTS_FAILURE,
+    UPDATE_GENERAL_OFFERED_SUBJECT_REQUEST, UPDATE_GENERAL_OFFERED_SUBJECT_SUCCESS, UPDATE_GENERAL_OFFERED_SUBJECT_FAILURE,
+    TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_REQUEST, TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_SUCCESS, TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_FAILURE,
     FETCH_INSERT_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_INSERT_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_INSERT_NON_CURRICULUM_SUBJECT_FAILURE,
     FETCH_NON_CURRICULUM_SUBJECT_REQUEST, FETCH_NON_CURRICULUM_SUBJECT_SUCCESS, FETCH_NON_CURRICULUM_SUBJECT_FAILURE,
+    UPDATE_NON_CURRICULUM_SUBJECT_REQUEST, UPDATE_NON_CURRICULUM_SUBJECT_SUCCESS, UPDATE_NON_CURRICULUM_SUBJECT_FAILURE,
+    TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_REQUEST, TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_SUCCESS, TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_FAILURE,
     // FETCH_SUBJECT_SCHEDULE_LOAD_REQUEST, FETCH_SUBJECT_SCHEDULE_LOAD_SUCCESS, FETCH_SUBJECT_SCHEDULE_LOAD_FAILURE,
     FETCH_SECTION_LIST_REQUEST, FETCH_SECTION_LIST_SUCCESS, FETCH_SECTION_LIST_FAILURE,
     FETCH_NON_CURRICULUM_REQUEST, FETCH_NON_CURRICULUM_SUCCESS, FETCH_NON_CURRICULUM_FAILURE,
@@ -35,8 +39,12 @@ const initialDataState = {
 const initialState = {
     insertGeneralOfferedSubjectState: { ...initialDataState },
     generalOfferedSubjectState: { ...initialDataState },
+    updateGeneralOfferedSubjectState: { ...initialDataState },
+    toggleGeneralOfferedSubjectStatusState: { ...initialDataState },
     insertNonCurriculumSubjectState: { ...initialDataState },
     nonCurriculumSubjectState: { ...initialDataState },
+    updateNonCurriculumSubjectState: { ...initialDataState },
+    toggleNonCurriculumSubjectStatusState: { ...initialDataState },
     // subjectScheduleState: { ...initialDataState },
     sectionListState: { ...initialDataState },
     nonCurriculumState: { ...initialDataState },
@@ -230,6 +238,37 @@ const academicReducer = (state = initialState, action) => {
             return { ...state, curriculumTableState: { loading: false, data: action.payload, error: '' } };
         case FETCH_CURRICULUM_TABLE_FAILURE:
             return { ...state, curriculumTableState: { loading: false, data: [], error: action.payload } };
+        // Update General Offered Subject
+        case UPDATE_GENERAL_OFFERED_SUBJECT_REQUEST:
+            return { ...state, updateGeneralOfferedSubjectState: { loading: true, data: [], error: '', success: false } };
+        case UPDATE_GENERAL_OFFERED_SUBJECT_SUCCESS:
+            return { ...state, updateGeneralOfferedSubjectState: { loading: false, data: action.payload, error: '', success: true } };
+        case UPDATE_GENERAL_OFFERED_SUBJECT_FAILURE:
+            return { ...state, updateGeneralOfferedSubjectState: { loading: false, data: [], error: action.payload, success: false } };
+
+        // Toggle General Offered Subject Status
+        case TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_REQUEST:
+            return { ...state, toggleGeneralOfferedSubjectStatusState: { loading: true, data: [], error: '', success: false } };
+        case TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_SUCCESS:
+            return { ...state, toggleGeneralOfferedSubjectStatusState: { loading: false, data: action.payload, error: '', success: true } };
+        case TOGGLE_GENERAL_OFFERED_SUBJECT_STATUS_FAILURE:
+            return { ...state, toggleGeneralOfferedSubjectStatusState: { loading: false, data: [], error: action.payload, success: false } };
+
+        // Update Non-Curriculum Subject
+        case UPDATE_NON_CURRICULUM_SUBJECT_REQUEST:
+            return { ...state, updateNonCurriculumSubjectState: { loading: true, data: [], error: '', success: false } };
+        case UPDATE_NON_CURRICULUM_SUBJECT_SUCCESS:
+            return { ...state, updateNonCurriculumSubjectState: { loading: false, data: action.payload, error: '', success: true } };
+        case UPDATE_NON_CURRICULUM_SUBJECT_FAILURE:
+            return { ...state, updateNonCurriculumSubjectState: { loading: false, data: [], error: action.payload, success: false } };
+
+        // Toggle Non-Curriculum Subject Status
+        case TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_REQUEST:
+            return { ...state, toggleNonCurriculumSubjectStatusState: { loading: true, data: [], error: '', success: false } };
+        case TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_SUCCESS:
+            return { ...state, toggleNonCurriculumSubjectStatusState: { loading: false, data: action.payload, error: '', success: true } };
+        case TOGGLE_NON_CURRICULUM_SUBJECT_STATUS_FAILURE:
+            return { ...state, toggleNonCurriculumSubjectStatusState: { loading: false, data: [], error: action.payload, success: false } };
 
 
         default:
@@ -237,3 +276,6 @@ const academicReducer = (state = initialState, action) => {
     }
 }
 export default academicReducer;
+
+// NOTE: The new reducer cases for UPDATE and TOGGLE actions should be added before the default case in the switch statement above
+
