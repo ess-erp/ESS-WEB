@@ -32,6 +32,23 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate();
   // const dispatch = useDispatch();
 
+  // Sync sidebar state with localStorage
+  useEffect(() => {
+    // Save sidebar state to localStorage whenever it changes
+    localStorage.setItem("sidebarOpen", JSON.stringify(isSidebarOpen));
+  }, [isSidebarOpen]);
+
+  // Initialize sidebar state from localStorage on mount
+  useEffect(() => {
+    const savedSidebarState = localStorage.getItem("sidebarOpen");
+    if (savedSidebarState !== null) {
+      const isOpen = JSON.parse(savedSidebarState);
+      if (isOpen !== isSidebarOpen) {
+        setIsSidebarOpen(isOpen);
+      }
+    }
+  }, []); // Only run once on mount
+
   // useEffect(() => {
   //   if (user && user.UserId) { 
   //     console.log("User logged in, fetching notifications for user ID:", user.UserId);
@@ -75,11 +92,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const sharedMenu = [
     { separator: true },
 
-    {
-      name: "Notification",
-      icon: Bell,
-      path: "/notification",
-    },
     // Dynamic Ticket Visibility
     ...(!shouldHideTickets(user?.UserRoleId)
       ? [
@@ -361,6 +373,12 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "List of Student",
       icon: User,
       path: "/parent/listofstudent",
+    },
+    { separator: true },
+    {
+      name: "Notification",
+      icon: Bell,
+      path: "/notification",
     },
   ];
 

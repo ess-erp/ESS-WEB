@@ -10,7 +10,6 @@ import InputField from "../ButtonsComponents/InputField";
 import InputFileField from "../ButtonsComponents/InputFileField";
 import RadioGroupField from "../ButtonsComponents/RadioGroupField";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   fetchCampusData,
   fetchDivisionData,
@@ -22,21 +21,30 @@ import {
   fetchProvinceData,
   fetchCityData,
   fetchBarangayData,
-  fetchInsertStudentData,
+  fetchInitialDocumentsData,
+  // fetchInsertStudentData,
 } from "../../states/OnlineApplicationState/Action";
+import { fetchParentAddressData } from "../../states/ParentState/Action";
 
 const NewStudentForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
+  
+  // Get logged-in parent user data
+  const [parentUser] = useState(() => {
+    const savedUser = localStorage.getItem("userData");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  // Parent address data
+  const [parentAddress, setParentAddress] = useState(null);
   const stepTitle = {
-    1: "Personal Information",
-    2: "Father's Information ",
-    3: "Address Informationn",
+    1: "Student/Learner Information",
+    2: "Father's & Mother's Information",
+    3: "Address Information",
     4: "Emergency Contact Person Information",
     5: "File Attachment",
-    6: "Address Information",
-    7: "File Attachment",
   };
   const {
     getValues,
@@ -44,6 +52,7 @@ const NewStudentForm = () => {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
     trigger,
   } = useForm({
@@ -60,6 +69,7 @@ const NewStudentForm = () => {
       Level: null,
       Strand: null,
       Nationality: null,
+      DualNationality: null,
       Religion: null,
       OtherReligion: "",
       FathersFname: "",
@@ -180,27 +190,27 @@ const NewStudentForm = () => {
   //         setServerOtp(res.data.OtpCode);
   //     }
   // };
-  useEffect(() => {
-    if (otpCooldown <= 0) {
-      setIsMessage(false);
-      return;
-    }
+  // useEffect(() => {
+  //   if (otpCooldown <= 0) {
+  //     setIsMessage(false);
+  //     return;
+  //   }
 
-    const timer = setInterval(() => {
-      setOtpCooldown((prev) => prev - 1);
-    }, 1000);
+  //   const timer = setInterval(() => {
+  //     setOtpCooldown((prev) => prev - 1);
+  //   }, 1000);
 
-    return () => clearInterval(timer);
-  }, [otpCooldown]);
-  const handleOtpChange = (value) => {
-    if (!serverOtp) return;
+  //   return () => clearInterval(timer);
+  // }, [otpCooldown]);
+  // const handleOtpChange = (value) => {
+  //   if (!serverOtp) return;
 
-    if (value === serverOtp) {
-      setOtpValid(true);
-    } else {
-      setOtpValid(false);
-    }
-  };
+  //   if (value === serverOtp) {
+  //     setOtpValid(true);
+  //   } else {
+  //     setOtpValid(false);
+  //   }
+  // };
 
   const [twoByTwoFile, setTwoByTwoFile] = useState(null);
   const [birthCertificate, setBirthCertificate] = useState(null);
@@ -211,6 +221,80 @@ const NewStudentForm = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
+  const [sameAsParentAddress, setSameAsParentAddress] = useState(false);
+  const [hasDualCitizenship, setHasDualCitizenship] = useState(false);
+
+  // Dynamic documents state
+  const [initialDocuments, setInitialDocuments] = useState([]);
+  const [documentFiles, setDocumentFiles] = useState({});
+
+  // Fetch initial documents
+  useEffect(() => {
+    const loadDocuments = async () => {
+      const response = await dispatch(fetchInitialDocumentsData());
+      if (response.ok && response.data) {
+        setInitialDocuments(response.data);
+      }
+    };
+    loadDocuments();
+  }, [dispatch]);
+
+  // Function to populate parent's address to form fields
+  const populateParentAddress = async () => {
+    if (!parentAddress && parentUser?.UserId) {
+      // Fetch parent address from backend API
+      try {
+        const result = await dispatch(fetchParentAddressData(parentUser.UserId));
+        
+        if (result.ok && result.data) {
+          const addressData = result.data;
+          
+          // Populate form fields with parent address
+          setValue("Province", {
+            province_code: addressData.ProvinceCode || "",
+            province_name: addressData.ProvinceName || ""
+          });
+          setValue("City", {
+            city_code: addressData.CityCode || "",
+            city_name: addressData.CityName || ""
+          });
+          setValue("Barangay", {
+            brgy_code: addressData.BrgyCode || "",
+            brgy_name: addressData.BrgyName || ""
+          });
+          setValue("HomeStreet", addressData.HomeStreet || "");
+          
+          setParentAddress(addressData);
+        } else {
+          console.error("Failed to fetch parent address");
+        }
+      } catch (error) {
+        console.error("Error fetching parent address:", error);
+      }
+    } else if (parentAddress) {
+      // Parent address already fetched, just populate
+      setValue("Province", {
+        province_code: parentAddress.ProvinceCode || "",
+        province_name: parentAddress.ProvinceName || ""
+      });
+      setValue("City", {
+        city_code: parentAddress.CityCode || "",
+        city_name: parentAddress.CityName || ""
+      });
+      setValue("Barangay", {
+        brgy_code: parentAddress.BrgyCode || "",
+        brgy_name: parentAddress.BrgyName || ""
+      });
+      setValue("HomeStreet", parentAddress.HomeStreet || "");
+    }
+  };
+
+  // Watch for sameAsParentAddress checkbox changes
+  useEffect(() => {
+    if (sameAsParentAddress) {
+      populateParentAddress();
+    }
+  }, [sameAsParentAddress]);
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -218,57 +302,58 @@ const NewStudentForm = () => {
   };
 
   const handleNext = async () => {
-    let fieldsToValidate = [];
-    switch (step) {
-      case 1:
-        fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
-        break;
-      case 2:
-        fieldsToValidate = ["Campus", "Division", "Level"];
-        if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
-        fieldsToValidate.push("Religion", "Nationality");
-        break;
-      case 3:
-        fieldsToValidate = [];
-        break;
-      case 4:
-        fieldsToValidate = [
-          "MothersFname",
-          "MothersLname",
-          "MothersEmail",
-          "MothersMobilePhoneNo",
-        ];
-        break;
-      case 5:
-        fieldsToValidate = [
-          "ContactPerson",
-          "ContactEmail",
-          "OtpCode",
-          "ContactMobilePhoneNo",
-          "Relationship",
-        ];
-        break;
-      case 6:
-        fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
-        break;
-      case 7:
-        fieldsToValidate = [];
-        break;
-    }
-    const valid = await trigger(fieldsToValidate);
+    // let fieldsToValidate = [];
+    // switch (step) {
+    //   case 1:
+    //     fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
+    //     break;
+    //   case 2:
+    //     fieldsToValidate = ["Campus", "Division", "Level"];
+    //     if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
+    //     fieldsToValidate.push("Religion", "Nationality");
+    //     break;
+    //   case 3:
+    //     fieldsToValidate = [];
+    //     break;
+    //   case 4:
+    //     fieldsToValidate = [
+    //       "MothersFname",
+    //       "MothersLname",
+    //       "MothersEmail",
+    //       "MothersMobilePhoneNo",
+    //     ];
+    //     break;
+    //   case 5:
+    //     fieldsToValidate = [
+    //       "ContactPerson",
+    //       "ContactEmail",
+    //       "OtpCode",
+    //       "ContactMobilePhoneNo",
+    //       "Relationship",
+    //     ];
+    //     break;
+    //   case 6:
+    //     fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
+    //     break;
+    //   case 7:
+    //     fieldsToValidate = [];
+    //     break;
+    // }
+    // const valid = await trigger(fieldsToValidate);
 
-    if (step === 5) {
-      if (otpValid !== true) {
-        setIsMessage(true);
-        setIsColor("red");
-        setSuccessMessage("OTP is invalid or not verified.");
-        return; // prevent moving to next step
-      }
-    }
+    // if (step === 5) {
+    //   if (otpValid !== true) {
+    //     setIsMessage(true);
+    //     setIsColor("red");
+    //     setSuccessMessage("OTP is invalid or not verified.");
+    //     return; // prevent moving to next step
+    //   }
+    // }
 
-    if (valid) {
-      setStep(step + 1);
-    }
+    // if (valid) {
+    //   setStep(step + 1);
+    // }
+    setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -310,6 +395,12 @@ const NewStudentForm = () => {
       "NationalityName",
       formData.Nationality?.NationalityName || ""
     );
+    
+    // Dual Citizenship
+    payload.append("HasDualCitizenship", hasDualCitizenship ? "1" : "0");
+    payload.append("DualNationalityId", formData.DualNationality?.NationalityId ?? "");
+    payload.append("DualNationalityName", formData.DualNationality?.NationalityName || "");
+    
     payload.append("ReligionId", formData.Religion?.ReligionId ?? "");
     payload.append("ReligionName", formData.Religion?.ReligionName || null);
     payload.append("OtherReligion", formData.OtherReligion || null);
@@ -332,6 +423,7 @@ const NewStudentForm = () => {
     payload.append("ContactEmail", formData.ContactEmail || "");
     payload.append("Relationship", formData.Relationship || "");
 
+    // Student Address Information
     payload.append("ProvinceCode", formData.Province?.province_code || "");
     payload.append("ProvinceName", formData.Province?.province_name || "");
     payload.append("CityCode", formData.City?.city_code || "");
@@ -339,461 +431,687 @@ const NewStudentForm = () => {
     payload.append("BrgyCode", formData.Barangay?.brgy_code || "");
     payload.append("BrgyName", formData.Barangay?.brgy_name || "");
     payload.append("HomeStreet", formData.HomeStreet || "");
+    payload.append("SameAsParentAddress", sameAsParentAddress ? "1" : "0");
+
+    // Parent ID - backend will use this to fetch parent's address if needed
+    payload.append("ParentId", parentUser?.UserId || "");
 
     payload.append("StudentType", formData.StudentType || "New");
-    payload.append("DocId", formData.DocId || 0);
+    // payload.append("DocId", formData.DocId || 0);
 
-    // Append files if present
-    if (formData.TwoByTwo) payload.append("TwoByTwo", formData.TwoByTwo);
-    if (formData.BirthCert) payload.append("BirthCert", formData.BirthCert);
-    if (formData.Baptismal) payload.append("Baptismal", formData.Baptismal);
-    if (formData.GoodMoral) payload.append("GoodMoral", formData.GoodMoral);
-    if (formData.ReportCard) payload.append("ReportCard", formData.ReportCard);
+    // Append dynamic document files
+    Object.keys(documentFiles).forEach((docTempChildId) => {
+      const file = documentFiles[docTempChildId];
+      if (file) {
+        payload.append(`Document_${docTempChildId}`, file);
+      }
+    });
 
     console.log("SUBMIT PAYLOAD:", payload);
 
     const res = await dispatch(fetchInsertStudentData(payload));
     if (res.ok) {
-        setIsSuccessModalOpen(true);
-        if (isSuccessModalOpen == false) {
-            navigate('/congratulationletter');
-        }
+      setIsSuccessModalOpen(true);
+      if (isSuccessModalOpen == false) {
+        navigate('/congratulationletter');
+      }
     }
     else {
-        return;
+      return;
     }
   };
 
   return (
-    <div className=" justify-center px-1 rounded-xl">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden flex w-full max-w-5xl h-auto">
-        <div className="w-full p-8">
-          <h2 className="text-2xl font-bold text-green-800 mb-6">
-            {stepTitle[step]}
-          </h2>
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-4">
+      {/* Modern Progress Indicator */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {[1, 2, 3, 4, 5].map((stepNum) => (
+            <div key={stepNum} className="flex-1 flex items-center">
+              <div className="flex flex-col items-center w-full">
+                {/* Circle */}
+                <div
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 ${step >= stepNum
+                    ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg scale-110"
+                    : "bg-gray-200 text-gray-500"
+                    }`}
+                >
+                  {step > stepNum ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    stepNum
+                  )}
+                </div>
+                {/* Label - Hidden on mobile */}
+                <span className="hidden md:block text-xs mt-2 text-gray-600 text-center">
+                  {stepTitle[stepNum]?.split(" ")[0]}
+                </span>
+              </div>
+              {/* Connector Line */}
+              {stepNum < 5 && (
+                <div
+                  className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${step > stepNum ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-gray-200"
+                    }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        {/* Current Step Title */}
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+          {stepTitle[step]}
+        </h2>
+      </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <AnimatePresence mode="wait">
+      {/* Form Card with Modern Design */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {step === 1 && (
                 <>
-                  <motion.div
-                    key="one"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                  <div 
+                    className="animate-slideIn"
+                    style={{
+                      animation: 'slideIn 0.25s ease-out'
+                    }}
                   >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <InputField
-                        name="Fname"
-                        label="First Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input first name...."
-                        divClassName=""
-                        required
-                        errors={errors.Fname}
-                        errorMessage={errors.Fname?.message}
-                      />
-                      <InputField
-                        name="Mname"
-                        label="Middle Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input middle name...."
-                        divClassName=""
-                      />
-                      <InputField
-                        name="Lname"
-                        label="Last Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input last name...."
-                        divClassName=""
-                        required
-                        errors={errors.Lname}
-                        errorMessage={errors.Lname?.message}
-                      />
-                      <InputField
-                        name="DateOfBirth"
-                        label="Date of birth"
-                        register={register}
-                        isEditing={true}
-                        divClassName=""
-                        type="date"
-                        required
-                        errors={errors.DateOfBirth}
-                        errorMessage={errors.DateOfBirth?.message}
-                      />
-                      <InputField
-                        name="PlaceOfBirth"
-                        label="Place of birth"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input place of birth...."
-                        divClassName=""
-                      />
-                      <RadioGroupField
-                        name="Gender"
-                        label="Gender"
-                        register={register}
-                        isEditing={true}
-                        required
-                        options={[
-                          { label: "Male", value: "male" },
-                          { label: "Female", value: "female" },
-                        ]}
-                        divClassName=""
-                        error={errors.Gender}
-                      />
-                    </div>
-                    <h2 className="text-2xl font-bold text-green-800 mb-6">
-                      Campus Information
-                    </h2>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <RHFListbox
-                        name="Campus"
-                        control={control}
-                        list={campusList}
-                        label="Campus"
-                        labelKey="CampusName"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Campus}
-                      />
-                      <RHFListbox
-                        name="Division"
-                        control={control}
-                        list={divisionList}
-                        label="Division"
-                        labelKey="DivName"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Division}
-                      />
-                      <RHFListbox
-                        name="Level"
-                        control={control}
-                        list={levelList}
-                        label="Level"
-                        labelKey="LevelName"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Level}
-                      />
+                    {/* Student/Learner Information Section */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-l-4 border-green-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Student Details
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
 
-                      {level?.LevelId === 15 && (
+                        <InputField
+                          name="Fname"
+                          label="First Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input first name...."
+                          divClassName=""
+                          required
+                          errors={errors.Fname}
+                          errorMessage={errors.Fname?.message}
+                        />
+                        <InputField
+                          name="Mname"
+                          label="Middle Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input middle name...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="Lname"
+                          label="Last Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input last name...."
+                          divClassName=""
+                          required
+                          errors={errors.Lname}
+                          errorMessage={errors.Lname?.message}
+                        />
+                        <InputField
+                          name="DateOfBirth"
+                          label="Date of birth"
+                          register={register}
+                          isEditing={true}
+                          divClassName=""
+                          type="date"
+                          required
+                          errors={errors.DateOfBirth}
+                          errorMessage={errors.DateOfBirth?.message}
+                        />
+                        <InputField
+                          name="PlaceOfBirth"
+                          label="Place of birth"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input place of birth...."
+                          divClassName=""
+                          required
+                          errors={errors.PlaceOfBirth}
+                          errorMessage={errors.PlaceOfBirth?.message}
+                        />
+                        <RadioGroupField
+                          name="Gender"
+                          label="Gender"
+                          register={register}
+                          isEditing={true}
+                          required
+                          options={[
+                            { label: "Male", value: "male" },
+                            { label: "Female", value: "female" },
+                          ]}
+                          divClassName=""
+                          error={errors.Gender}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Campus Information Section */}
+                    <div className="space-y-6 pt-4">
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-l-4 border-blue-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          Campus Information
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         <RHFListbox
-                          name="Strand"
+                          name="Campus"
                           control={control}
-                          list={strandList}
-                          label="Strand"
-                          labelKey="StrandName"
+                          list={campusList}
+                          label="Campus"
+                          labelKey="CampusName"
                           isEditing={false}
                           divClassName=""
                           required
-                          error={errors.Strand}
+                          error={errors.Campus}
                         />
-                      )}
-                      <RHFListbox
-                        name="Religion"
-                        control={control}
-                        list={religionList}
-                        label="Religion"
-                        labelKey="ReligionName"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Religion}
-                      />
-                      {selectedReligion?.ReligionId === 18 && (
-                        <InputField
-                          name="OtherReligion"
-                          label="Other Religion"
-                          register={register}
-                          isEditing={true}
-                          placeholder="Please input religion...."
+                        <RHFListbox
+                          name="Division"
+                          control={control}
+                          list={divisionList}
+                          label="Division"
+                          labelKey="DivName"
+                          isEditing={false}
                           divClassName=""
                           required
-                          errors={errors.OtherReligion}
-                          errorMessage={errors.OtherReligion?.message}
+                          error={errors.Division}
                         />
-                      )}
-                      <RHFListbox
-                        name="Nationality"
-                        control={control}
-                        list={nationalityList}
-                        label="Nationality"
-                        labelKey="NationalityName"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Nationality}
-                      />
+                        <RHFListbox
+                          name="Level"
+                          control={control}
+                          list={levelList}
+                          label="Level"
+                          labelKey="LevelName"
+                          isEditing={false}
+                          divClassName=""
+                          required
+                          error={errors.Level}
+                        />
+
+                        {level?.LevelId === 15 && (
+                          <RHFListbox
+                            name="Strand"
+                            control={control}
+                            list={strandList}
+                            label="Strand"
+                            labelKey="StrandName"
+                            isEditing={false}
+                            divClassName=""
+                            required
+                            error={errors.Strand}
+                          />
+                        )}
+                        <RHFListbox
+                          name="Religion"
+                          control={control}
+                          list={religionList}
+                          label="Religion"
+                          labelKey="ReligionName"
+                          isEditing={false}
+                          divClassName=""
+                          required
+                          error={errors.Religion}
+                        />
+                        {selectedReligion?.ReligionId === 18 && (
+                          <InputField
+                            name="OtherReligion"
+                            label="Other Religion"
+                            register={register}
+                            isEditing={true}
+                            placeholder="Please input religion...."
+                            divClassName=""
+                            required
+                            errors={errors.OtherReligion}
+                            errorMessage={errors.OtherReligion?.message}
+                          />
+                        )}
+                        <RHFListbox
+                          name="Nationality"
+                          control={control}
+                          list={nationalityList}
+                          label="Nationality"
+                          labelKey="NationalityName"
+                          isEditing={false}
+                          divClassName=""
+                          required
+                          error={errors.Nationality}
+                        />
+                        
+                        {/* Dual Citizenship Checkbox */}
+                        <div className="flex items-center gap-3 pt-2">
+                          <input
+                            type="checkbox"
+                            id="dualCitizenship"
+                            checked={hasDualCitizenship}
+                            onChange={(e) => {
+                              setHasDualCitizenship(e.target.checked);
+                              if (!e.target.checked) {
+                                setValue("DualNationality", null);
+                              }
+                            }}
+                            className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                          />
+                          <label
+                            htmlFor="dualCitizenship"
+                            className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                          >
+                            I have dual citizenship
+                          </label>
+                        </div>
+                        
+                        {/* Dual Nationality Dropdown - Shows when checkbox is checked */}
+                        {hasDualCitizenship && (
+                          <div className="animate-slideIn mt-4">
+                            <RHFListbox
+                              name="DualNationality"
+                              control={control}
+                              list={nationalityList}
+                              label="Second Nationality"
+                              labelKey="NationalityName"
+                              isEditing={false}
+                              divClassName=""
+                              required={hasDualCitizenship}
+                              error={errors.DualNationality}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="pt-2">
-                      <GreenBtn label="Next →" onClick={handleNext} />
+                    {/* Action Buttons */}
+                    <div className="pt-6 flex justify-end border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                      >
+                        Next
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </>
               )}
 
               {step === 2 && (
                 <>
-                  <motion.div
-                    key="three"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                  <div
+                    className="animate-slideIn"
+                    style={{
+                      animation: 'slideIn 0.25s ease-out'
+                    }}
                   >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <InputField
-                        name="FathersFname"
-                        label="First Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input first name...."
-                        divClassName=""
-                      />
-                      <InputField
-                        name="FathersMname"
-                        label="Middle Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input middle name...."
-                        divClassName=""
-                      />
-                      <InputField
-                        name="FathersLname"
-                        label="Last Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input last name...."
-                        divClassName=""
-                      />
-                      {/* <InputField name="FathersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" /> */}
-                      <InputField
-                        name="FathersMobilePhoneNo"
-                        label="Mobile Phone No."
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input mobile phone...."
-                        divClassName=""
-                      />
-                      <InputField
-                        name="FathersOccupation"
-                        label="Occupation"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input occupation...."
-                        divClassName=""
-                      />
+                    {/* Father's Information Section */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border-l-4 border-blue-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Father's Information
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <InputField
+                          name="FathersFname"
+                          label="First Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input first name...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="FathersMname"
+                          label="Middle Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input middle name...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="FathersLname"
+                          label="Last Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input last name...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="FathersMobilePhoneNo"
+                          label="Mobile Phone No."
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input mobile phone...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="FathersOccupation"
+                          label="Occupation"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input occupation...."
+                          divClassName=""
+                        />
+                      </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-green-800 mb-6">
-                      Mother's Information
-                    </h2>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <InputField
-                        name="MothersFname"
-                        label="First Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input first name...."
-                        divClassName=""
-                        required
-                        errors={errors.MothersFname}
-                        errorMessage={errors.MothersFname?.message}
-                      />
-                      <InputField
-                        name="MothersMname"
-                        label="Middle Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input middle name...."
-                        divClassName=""
-                      />
-                      <InputField
-                        name="MothersLname"
-                        label="Last Name"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input last name...."
-                        divClassName=""
-                        required
-                        errors={errors.MothersLname}
-                        errorMessage={errors.MothersLname?.message}
-                      />
-                      {/* <InputField name="MothersEmail" label="Email" register={register} isEditing={true} placeholder="Please input email...." divClassName="" required errors={errors.MothersEmail} errorMessage={errors.MothersEmail?.message} type="email" isValidEmail={isValidEmail} /> */}
-                      <InputField
-                        name="MothersMobilePhoneNo"
-                        label="Mobile Phone No."
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input mobile phone...."
-                        divClassName=""
-                        required
-                        errors={errors.MothersMobilePhoneNo}
-                        errorMessage={errors.MothersMobilePhoneNo?.message}
-                      />
-                      <InputField
-                        name="MothersOccupation"
-                        label="Occupation"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input occupation...."
-                        divClassName=""
-                      />
+                    {/* Mother's Information Section */}
+                    <div className="space-y-6 pt-6">
+                      <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border-l-4 border-pink-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Mother's Information
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <InputField
+                          name="MothersFname"
+                          label="First Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input first name...."
+                          divClassName=""
+                          required
+                          errors={errors.MothersFname}
+                          errorMessage={errors.MothersFname?.message}
+                        />
+                        <InputField
+                          name="MothersMname"
+                          label="Middle Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input middle name...."
+                          divClassName=""
+                        />
+                        <InputField
+                          name="MothersLname"
+                          label="Last Name"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input last name...."
+                          divClassName=""
+                          required
+                          errors={errors.MothersLname}
+                          errorMessage={errors.MothersLname?.message}
+                        />
+                        <InputField
+                          name="MothersMobilePhoneNo"
+                          label="Mobile Phone No."
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input mobile phone...."
+                          divClassName=""
+                          required
+                          errors={errors.MothersMobilePhoneNo}
+                          errorMessage={errors.MothersMobilePhoneNo?.message}
+                        />
+                        <InputField
+                          name="MothersOccupation"
+                          label="Occupation"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input occupation...."
+                          divClassName=""
+                        />
+                      </div>
                     </div>
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
+
+                    {/* Action Buttons */}
+                    <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                      >
+                        Next
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </>
               )}
               {step === 3 && (
                 <>
-                  <motion.div
-                    key="four"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                  <div
+                    className="animate-slideIn"
+                    style={{
+                      animation: 'slideIn 0.25s ease-out'
+                    }}
                   >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <RHFListbox
-                        name="Province"
-                        control={control}
-                        list={provinceList}
-                        label="Province"
-                        labelKey="province_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Province}
-                      />
-                      <RHFListbox
-                        name="City"
-                        control={control}
-                        list={cityList}
-                        label="City"
-                        labelKey="city_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.City}
-                      />
-                      <RHFListbox
-                        name="Barangay"
-                        control={control}
-                        list={brgyList}
-                        label="Barangay"
-                        labelKey="brgy_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Barangay}
-                      />
-                      <InputField
-                        name="HomeStreet"
-                        label="Home Steet Number"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input street no(Block 1 Lot 1)."
-                        divClassName=""
-                        required
-                        errors={errors.HomeStreet}
-                        errorMessage={errors.HomeStreet?.message}
-                      />
+                    {/* Address Information Section */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-4 border-l-4 border-indigo-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Address Information
+                        </h3>
+                      </div>
+
+                      {/* Same as Parent Address Checkbox */}
+                      <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <input
+                          type="checkbox"
+                          id="sameAsParent"
+                          checked={sameAsParentAddress}
+                          onChange={(e) => setSameAsParentAddress(e.target.checked)}
+                          className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                        />
+                        <label htmlFor="sameAsParent" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                          Same address as parent/guardian
+                        </label>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <RHFListbox
+                          name="Province"
+                          control={control}
+                          list={provinceList}
+                          label="Province"
+                          labelKey="province_name"
+                          isEditing={sameAsParentAddress}
+                          divClassName=""
+                          required
+                          error={errors.Province}
+                        />
+                        <RHFListbox
+                          name="City"
+                          control={control}
+                          list={cityList}
+                          label="City"
+                          labelKey="city_name"
+                          isEditing={sameAsParentAddress}
+                          divClassName=""
+                          required
+                          error={errors.City}
+                        />
+                        <RHFListbox
+                          name="Barangay"
+                          control={control}
+                          list={brgyList}
+                          label="Barangay"
+                          labelKey="brgy_name"
+                          isEditing={sameAsParentAddress}
+                          divClassName=""
+                          required
+                          error={errors.Barangay}
+                        />
+                        <InputField
+                          name="HomeStreet"
+                          label="Home Street Number"
+                          register={register}
+                          isEditing={!sameAsParentAddress}
+                          placeholder="Please input street no(Block 1 Lot 1)."
+                          divClassName=""
+                          required
+                          errors={errors.HomeStreet}
+                          errorMessage={errors.HomeStreet?.message}
+                        />
+                      </div>
                     </div>
 
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
+                    {/* Action Buttons */}
+                    <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                      >
+                        Next
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </>
               )}
               {step === 4 && (
                 <>
-                  <motion.div
-                    key="five"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                  <div
+                    className="animate-slideIn"
+                    style={{
+                      animation: 'slideIn 0.25s ease-out'
+                    }}
                   >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-2 md:grid-cols-2 gap-6">
-                      <InputField
-                        name="ContactPerson"
-                        label="Fullname"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input fullname...."
-                        divClassName=""
-                        required
-                        errors={errors.ContactPerson}
-                        errorMessage={errors.ContactPerson?.message}
-                      />
-                      <InputField
-                        name="ContactEmail"
-                        label="Email"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input email...."
-                        divClassName=""
-                        required
-                        errors={errors.ContactEmail}
-                        errorMessage={errors.ContactEmail?.message}
-                        type="email"
-                        isValidEmail={isValidEmail}
-                      />
-                      {/* <InputField
-                                                name="OtpCode"
-                                                label="Email Verification Code"
-                                                register={register}
-                                                isEditing={true}
-                                                placeholder="Please input otp code...."
-                                                divClassName="relative"
-                                                addButton={true}
-                                                handleClick={handleSendVerificationCode}
-                                                required
-                                                errors={errors.OtpCode}
-                                                errorMessage={errors.OtpCode?.message}
-                                                isOtpValid={otpValid}
-                                                isOtp={true}
-                                                onChange={(e) => handleOtpChange(e.target.value)}
-                                                isMessage={isMessage}
-                                                successMessage={successMessage}
-                                                disabled={otpCooldown}
-                                                color={color}
-                                            /> */}
+                    {/* Emergency Contact Section */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border-l-4 border-red-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Emergency Contact Person
+                        </h3>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <InputField
+                          name="ContactPerson"
+                          label="Fullname"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input fullname...."
+                          divClassName=""
+                          required
+                          errors={errors.ContactPerson}
+                          errorMessage={errors.ContactPerson?.message}
+                        />
+                        <InputField
+                          name="ContactEmail"
+                          label="Email"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input email...."
+                          divClassName=""
+                          required
+                          errors={errors.ContactEmail}
+                          errorMessage={errors.ContactEmail?.message}
+                          type="email"
+                          isValidEmail={isValidEmail}
+                        />
+                        <InputField
+                          name="ContactMobilePhoneNo"
+                          label="Mobile Phone No."
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input mobile phone...."
+                          divClassName=""
+                          required
+                          errors={errors.ContactMobilePhoneNo}
+                          errorMessage={errors.ContactMobilePhoneNo?.message}
+                        />
+                        <InputField
+                          name="Relationship"
+                          label="Relationship"
+                          register={register}
+                          isEditing={true}
+                          placeholder="Please input relationship...."
+                          divClassName=""
+                          required
+                          errors={errors.Relationship}
+                          errorMessage={errors.Relationship?.message}
+                        />
+                      </div>
                     </div>
 
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
+                    {/* Action Buttons */}
+                    <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                      >
+                        Next
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </>
               )}
               {step === 5 && (
                 <>
-                  <motion.div
-                    key="six"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                  <div
+                    className="animate-slideIn"
+                    style={{
+                      animation: 'slideIn 0.25s ease-out'
+                    }}
                   >
                     <div
-                      className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
+                      className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mb-6"
                       role="alert"
                     >
                       <strong className="font-bold">Note: </strong>
@@ -801,70 +1119,83 @@ const NewStudentForm = () => {
                         PNG and JPG are Allowed..
                       </span>
                     </div>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 pt-2">
-                      <InputFileField
-                        name="TwoByTwo"
-                        label="Upload 2x2 Picture"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setTwoByTwoFile}
-                        file={twoByTwoFile}
-                        altFileName="2x2 Preview"
-                      />
-                      <InputFileField
-                        name="BirthCert"
-                        label="Upload Birth Certificate"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBirthCertificate}
-                        file={birthCertificate}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="Baptismal"
-                        label="Upload Baptismal"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBaptismal}
-                        file={baptismal}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="GoodMoral"
-                        label="Upload Good Moral"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setGoodMoral}
-                        file={goodMoral}
-                        altFileName="Good Moral Preview"
-                      />
-                      <InputFileField
-                        name="ReportCard"
-                        label="Upload Report Card"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setReportCard}
-                        file={reportCard}
-                        altFileName="Report Card Preview"
-                      />
+
+                    {/* Document Upload Section */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border-l-4 border-purple-500">
+                        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          Required Documents
+                        </h3>
+                        <p className="text-sm text-red-600 mt-2">
+                          * Please attach the following files in JPEG/JPG format.
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        {initialDocuments.length > 0 ? (
+                          initialDocuments.map((doc) => (
+                            <div key={doc.DocTempChildId} className="space-y-2">
+                              <InputFileField
+                                name={`doc_${doc.DocTempChildId}`}
+                                label={`Upload ${doc.DocName}`}
+                                register={register}
+                                isEditing={true}
+                                type="file"
+                                onFileChange={(file) => {
+                                  setDocumentFiles(prev => ({
+                                    ...prev,
+                                    [doc.DocTempChildId]: file
+                                  }));
+                                }}
+                                file={documentFiles[doc.DocTempChildId]}
+                                altFileName={`${doc.DocName} Preview`}
+                              />
+                              {doc.Remarks && (
+                                <p className="text-xs text-gray-500 italic pl-1">
+                                  {doc.Remarks}
+                                </p>
+                              )}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="col-span-2 text-center py-8">
+                            <p className="text-gray-500">Loading documents...</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn
-                        label="Submit"
+
+                    {/* Action Buttons - Final Step */}
+                    <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={handleBack}
+                        className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                        </svg>
+                        Back
+                      </button>
+                      <button
+                        type="submit"
                         onClick={handleSubmit(onSubmit)}
-                      />
+                        className="px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Submit Enrollment
+                      </button>
                     </div>
-                  </motion.div>
+                  </div>
                 </>
               )}
-            </AnimatePresence>
           </form>
+
         </div>
         <ModalComponent
           isOpen={isModalOpen}
@@ -879,10 +1210,12 @@ const NewStudentForm = () => {
               onClick: () => console.log("No clicked"),
             },
           ]}
-          // backgroundImage="/assets/img/White-Background.png"
+        // backgroundImage="/assets/img/White-Background.png"
         />
       </div>
     </div>
+    // </div>
   );
 };
+
 export default NewStudentForm;

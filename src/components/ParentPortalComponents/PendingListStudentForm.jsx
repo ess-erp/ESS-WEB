@@ -25,7 +25,7 @@ const PendingListStudentForm = () => {
     const { search } = useLocation();
     const query = new URLSearchParams(search);
     // const employeeAppId = query.get("employeeAppId");
-    const StudentId = query.get("StudentId") || null;
+    const AppId = query.get("AppId") || null;
     const [isEditing, setIsEditing] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const user = useState(() => {
@@ -87,7 +87,7 @@ const PendingListStudentForm = () => {
                                     </span>
                                 </label>
                             </div>
-                            <StudentListFormComponent isEditing={isEditing} studentId={StudentId}/>
+                            <StudentListFormComponent isEditing={isEditing} appId={AppId}/>
 
                             {/* <EmployeeOnlineAppComponent isEditing={isEditing} appId={employeeAppId} userId={user[0].UserId} /> */}
                         </div>

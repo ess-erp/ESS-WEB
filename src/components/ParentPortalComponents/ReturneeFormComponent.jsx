@@ -7,10 +7,8 @@ import RedBtn from "../ButtonsComponents/RedBtn";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import RHFListbox from "../ButtonsComponents/RHFListbox";
 import InputField from "../ButtonsComponents/InputField";
-import InputFileField from "../ButtonsComponents/InputFileField";
 import RadioGroupField from "../ButtonsComponents/RadioGroupField";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import { motion, AnimatePresence } from "framer-motion";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import {
   fetchCampusData,
@@ -23,8 +21,10 @@ import {
   fetchProvinceData,
   fetchCityData,
   fetchBarangayData,
-  fetchInsertStudentData,
+  fetchInitialDocumentsData,
+  // fetchInsertStudentData,
 } from "../../states/OnlineApplicationState/Action";
+import { fetchParentAddressData } from "../../states/ParentState/Action";
 
 const ReturneeFormComponent = () => {
   const navigate = useNavigate();
@@ -32,14 +32,20 @@ const ReturneeFormComponent = () => {
   const [step, setStep] = useState(1);
   const [transList, setTransList] = useState([]);
   const [transDropdown, setTransDropdown] = useState(null);
+  
+  // Get logged-in parent user data
+  const [parentUser] = useState(() => {
+    const savedUser = localStorage.getItem("userData");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
+  // Parent address data
+  const [parentAddress, setParentAddress] = useState(null);
   const stepTitle = {
-    1: "Personal Information",
-    2: "Father's Information ",
-    3: "Address Informationn",
+    1: "Student/Learner Information",
+    2: "Father's & Mother's Information",
+    3: "Address Information",
     4: "Emergency Contact Person Information",
-    5: "File Attachment",
-    6: "Address Information",
-    7: "File Attachment",
   };
   const {
     getValues,
@@ -47,6 +53,7 @@ const ReturneeFormComponent = () => {
     handleSubmit,
     control,
     watch,
+    setValue,
     formState: { errors },
     trigger,
   } = useForm({
@@ -63,6 +70,7 @@ const ReturneeFormComponent = () => {
       Level: null,
       Strand: null,
       Nationality: null,
+      DualNationality: null,
       Religion: null,
       OtherReligion: "",
       FathersFname: "",
@@ -89,11 +97,6 @@ const ReturneeFormComponent = () => {
       BrgyCode: "",
       BrgyName: "",
       HomeStreet: "",
-      TwoByTwo: null,
-      BirthCert: null,
-      Baptismal: null,
-      GoodMoral: null,
-      ReportCard: null,
       StudentType: "New",
     },
   });
@@ -205,15 +208,134 @@ const ReturneeFormComponent = () => {
     }
   };
 
-  const [twoByTwoFile, setTwoByTwoFile] = useState(null);
-  const [birthCertificate, setBirthCertificate] = useState(null);
-  const [baptismal, setBaptismal] = useState(null);
-  const [goodMoral, setGoodMoral] = useState(null);
-  const [reportCard, setReportCard] = useState(null);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
+  const [sameAsParentAddress, setSameAsParentAddress] = useState(false);
+  const [hasDualCitizenship, setHasDualCitizenship] = useState(false);
+
+  // Function to populate parent's address to form fields
+  const populateParentAddress = async () => {
+    if (!parentAddress && parentUser?.UserId) {
+      // Fetch parent address from backend API
+      try {
+        const result = await dispatch(fetchParentAddressData(parentUser.UserId));
+        
+        if (result.ok && result.data) {
+          const addressData = result.data;
+          
+          // Populate form fields with parent address
+          setValue("Province", {
+            province_code: addressData.ProvinceCode || "",
+            province_name: addressData.ProvinceName || ""
+          });
+          setValue("City", {
+            city_code: addressData.CityCode || "",
+            city_name: addressData.CityName || ""
+          });
+          setValue("Barangay", {
+            brgy_code: addressData.BrgyCode || "",
+            brgy_name: addressData.BrgyName || ""
+          });
+          setValue("HomeStreet", addressData.HomeStreet || "");
+          
+          setParentAddress(addressData);
+        } else {
+          console.error("Failed to fetch parent address");
+        }
+      } catch (error) {
+        console.error("Error fetching parent address:", error);
+      }
+    } else if (parentAddress) {
+      // Parent address already fetched, just populate
+      setValue("Province", {
+        province_code: parentAddress.ProvinceCode || "",
+        province_name: parentAddress.ProvinceName || ""
+      });
+      setValue("City", {
+        city_code: parentAddress.CityCode || "",
+        city_name: parentAddress.CityName || ""
+      });
+      setValue("Barangay", {
+        brgy_code: parentAddress.BrgyCode || "",
+        brgy_name: parentAddress.BrgyName || ""
+      });
+      setValue("HomeStreet", parentAddress.HomeStreet || "");
+    }
+  };
+
+  // Watch for sameAsParentAddress checkbox changes
+  useEffect(() => {
+    if (sameAsParentAddress) {
+      populateParentAddress();
+    }
+  }, [sameAsParentAddress]);
+
+  // Handler for student selection - populates all form fields
+  const handleStudentSelection = (selected) => {
+    setTransDropdown(selected);
+
+    if (!selected) return;
+
+    // Populate personal details
+    setValue("Fname", selected.Fname || "");
+    setValue("Mname", selected.Mname || "");
+    setValue("Lname", selected.Lname || "");
+    setValue("Email", selected.Email || "");
+    setValue("DateOfBirth", selected.DateOfBirth || "");
+    setValue("Gender", selected.Gender || "");
+    setValue("PlaceOfBirth", selected.PlaceOfBirth || "");
+
+    // Populate campus information
+    setValue("Campus", selected.Campus || null);
+    setValue("Division", selected.Division || null);
+    setValue("Level", selected.Level || null);
+    setValue("Strand", selected.Strand || null);
+    setValue("Nationality", selected.Nationality || null);
+    
+    // Handle dual citizenship
+    if (selected.HasDualCitizenship === "1" || selected.DualNationality) {
+      setHasDualCitizenship(true);
+      setValue("DualNationality", selected.DualNationality || null);
+    } else {
+      setHasDualCitizenship(false);
+      setValue("DualNationality", null);
+    }
+    
+    setValue("Religion", selected.Religion || null);
+    setValue("OtherReligion", selected.OtherReligion || "");
+
+    // Populate father's information
+    setValue("FathersFname", selected.FathersFname || "");
+    setValue("FathersMname", selected.FathersMname || "");
+    setValue("FathersLname", selected.FathersLname || "");
+    setValue("FathersEmail", selected.FathersEmail || "");
+    setValue("FathersOccupation", selected.FathersOccupation || "");
+    setValue("FathersMobileNo", selected.FathersMobileNo || "");
+
+    // Populate mother's information
+    setValue("MothersFname", selected.MothersFname || "");
+    setValue("MothersMname", selected.MothersMname || "");
+    setValue("MothersLname", selected.MothersLname || "");
+    setValue("MothersEmail", selected.MothersEmail || "");
+    setValue("MothersOccupation", selected.MothersOccupation || "");
+    setValue("MothersMobileNo", selected.MothersMobileNo || "");
+
+    // Populate address information
+    setValue("ProvinceCode", selected.ProvinceCode || "");
+    setValue("ProvinceName", selected.ProvinceName || "");
+    setValue("CityCode", selected.CityCode || "");
+    setValue("CityName", selected.CityName || "");
+    setValue("BrgyCode", selected.BrgyCode || "");
+    setValue("BrgyName", selected.BrgyName || "");
+    setValue("HomeStreet", selected.HomeStreet || "");
+
+    // Populate emergency contact
+    setValue("ContactPerson", selected.ContactPerson || "");
+    setValue("ContactEmail", selected.ContactEmail || "");
+    setValue("ContactMobileNo", selected.ContactMobileNo || "");
+    setValue("Relationship", selected.Relationship || "");
+  };
 
   const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -221,57 +343,32 @@ const ReturneeFormComponent = () => {
   };
 
   const handleNext = async () => {
-    let fieldsToValidate = [];
-    switch (step) {
-      case 1:
-        fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
-        break;
-      case 2:
-        fieldsToValidate = ["Campus", "Division", "Level"];
-        if (watch("Level")?.LevelId === 15) fieldsToValidate.push("Strand");
-        fieldsToValidate.push("Religion", "Nationality");
-        break;
-      case 3:
-        fieldsToValidate = [];
-        break;
-      case 4:
-        fieldsToValidate = [
-          "MothersFname",
-          "MothersLname",
-          "MothersEmail",
-          "MothersMobilePhoneNo",
-        ];
-        break;
-      case 5:
-        fieldsToValidate = [
-          "ContactPerson",
-          "ContactEmail",
-          "OtpCode",
-          "ContactMobilePhoneNo",
-          "Relationship",
-        ];
-        break;
-      case 6:
-        fieldsToValidate = ["Province", "City", "Barangay", "HomeStreet"];
-        break;
-      case 7:
-        fieldsToValidate = [];
-        break;
-    }
-    const valid = await trigger(fieldsToValidate);
+    // let fieldsToValidate = [];
+    // switch (step) {
+    //   case 1:
+    //     fieldsToValidate = ["Fname", "Lname", "Gender", "DateOfBirth"];
+    //     break;
+    //   case 2:
+    //     fieldsToValidate = [];
+    //     break;
+    //   case 3:
+    //     fieldsToValidate = [];
+    //     break;
+    //   case 4:
+    //     fieldsToValidate = [
+    //       "ContactPerson",
+    //       "ContactEmail",
+    //       "ContactMobilePhoneNo",
+    //       "Relationship",
+    //     ];
+    //     break;
+    // }
+    // const valid = await trigger(fieldsToValidate);
 
-    if (step === 5) {
-      if (otpValid !== true) {
-        setIsMessage(true);
-        setIsColor("red");
-        setSuccessMessage("OTP is invalid or not verified.");
-        return; // prevent moving to next step
-      }
-    }
-
-    if (valid) {
-      setStep(step + 1);
-    }
+    // if (valid) {
+    //   setStep(step + 1);
+    // }
+    setStep(step + 1);
   };
 
   const handleBack = () => {
@@ -313,6 +410,12 @@ const ReturneeFormComponent = () => {
       "NationalityName",
       formData.Nationality?.NationalityName || ""
     );
+    
+    // Dual Citizenship
+    payload.append("HasDualCitizenship", hasDualCitizenship ? "1" : "0");
+    payload.append("DualNationalityId", formData.DualNationality?.NationalityId ?? "");
+    payload.append("DualNationalityName", formData.DualNationality?.NationalityName || "");
+    
     payload.append("ReligionId", formData.Religion?.ReligionId ?? "");
     payload.append("ReligionName", formData.Religion?.ReligionName || null);
     payload.append("OtherReligion", formData.OtherReligion || null);
@@ -335,6 +438,7 @@ const ReturneeFormComponent = () => {
     payload.append("ContactEmail", formData.ContactEmail || "");
     payload.append("Relationship", formData.Relationship || "");
 
+    // Student Address Information
     payload.append("ProvinceCode", formData.Province?.province_code || "");
     payload.append("ProvinceName", formData.Province?.province_name || "");
     payload.append("CityCode", formData.City?.city_code || "");
@@ -342,16 +446,13 @@ const ReturneeFormComponent = () => {
     payload.append("BrgyCode", formData.Barangay?.brgy_code || "");
     payload.append("BrgyName", formData.Barangay?.brgy_name || "");
     payload.append("HomeStreet", formData.HomeStreet || "");
+    payload.append("SameAsParentAddress", sameAsParentAddress ? "1" : "0");
+
+    // Parent ID - backend will use this to fetch parent's address if needed
+    payload.append("ParentId", parentUser?.UserId || "");
 
     payload.append("StudentType", formData.StudentType || "New");
     payload.append("DocId", formData.DocId || 0);
-
-    // Append files if present
-    if (formData.TwoByTwo) payload.append("TwoByTwo", formData.TwoByTwo);
-    if (formData.BirthCert) payload.append("BirthCert", formData.BirthCert);
-    if (formData.Baptismal) payload.append("Baptismal", formData.Baptismal);
-    if (formData.GoodMoral) payload.append("GoodMoral", formData.GoodMoral);
-    if (formData.ReportCard) payload.append("ReportCard", formData.ReportCard);
 
     console.log("SUBMIT PAYLOAD:", payload);
 
@@ -367,35 +468,86 @@ const ReturneeFormComponent = () => {
   };
 
   return (
-    <div className=" justify-center px-1 rounded-xl ">
-      <div className="bg-white shadow-lg rounded-lg overflow-hidden flex w-full max-w-5xl h-auto">
-        <div className="w-full p-8">
-          <div className="flex flex-col gap-2 w-full pb-7 justify-center grid grid-cols-1 md:grid-cols-3 gap-6">
-            <SearchableSelect
-              options={transList}
-              value={transDropdown}
-              onChange={(selected) => setTransType(selected)}
-              placeholder="Search..."
-              label="Search Student number or fullname "
-            />
-          </div>
+    <div className="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-4">
+      {/* Modern Progress Indicator */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center justify-between mb-4">
+          {[1, 2, 3, 4].map((stepNum) => (
+            <div key={stepNum} className="flex-1 flex items-center">
+              <div className="flex flex-col items-center w-full">
+                {/* Circle */}
+                <div
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-sm sm:text-base transition-all duration-300 ${step >= stepNum
+                      ? "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg scale-110"
+                      : "bg-gray-200 text-gray-500"
+                    }`}
+                >
+                  {step > stepNum ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    stepNum
+                  )}
+                </div>
+                {/* Label - Hidden on mobile */}
+                <span className="hidden md:block text-xs mt-2 text-gray-600 text-center">
+                  {stepTitle[stepNum]?.split(" ")[0]}
+                </span>
+              </div>
+              {/* Connector Line */}
+              {stepNum < 4 && (
+                <div
+                  className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${step > stepNum ? "bg-gradient-to-r from-green-500 to-green-600" : "bg-gray-200"
+                    }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+        {/* Current Step Title */}
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center bg-gradient-to-r from-green-700 to-green-600 bg-clip-text text-transparent">
+          {stepTitle[step]}
+        </h2>
+      </div>
 
-          <h2 className="text-2xl font-bold text-green-800 mb-6">
-            {stepTitle[step]}
-          </h2>
+      {/* Form Card with Modern Design */}
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="p-4 sm:p-6 lg:p-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {step === 1 && (
+              <>
+                <div
+                  className="animate-slideIn"
+                  style={{
+                    animation: 'slideIn 0.25s ease-out'
+                  }}
+                >
+                  {/* Student/Learner Information Section */}
+                  <div className="space-y-6">
+                    {/* Search Student Bar - At the top */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+                      <SearchableSelect
+                        options={transList}
+                        value={transDropdown}
+                        onChange={handleStudentSelection}
+                        placeholder="Search student number or fullname..."
+                        label="Search Returning Student"
+                      />
+                      <p className="text-xs text-gray-600 mt-2">
+                        💡 Search and select a returning student to auto-fill all form fields
+                      </p>
+                    </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <AnimatePresence mode="wait">
-              {step === 1 && (
-                <>
-                  <motion.div
-                    key="one"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 border-l-4 border-green-500">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Personal Details
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       <InputField
                         name="Fname"
                         label="First Name"
@@ -444,6 +596,9 @@ const ReturneeFormComponent = () => {
                         isEditing={true}
                         placeholder="Please input place of birth...."
                         divClassName=""
+                        required
+                        errors={errors.PlaceOfBirth}
+                        errorMessage={errors.PlaceOfBirth?.message}
                       />
                       <RadioGroupField
                         name="Gender"
@@ -459,10 +614,19 @@ const ReturneeFormComponent = () => {
                         error={errors.Gender}
                       />
                     </div>
-                    <h2 className="text-2xl font-bold text-green-800 mb-6">
-                      Campus Information
-                    </h2>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  </div>
+
+                  {/* Campus Information Section */}
+                  <div className="space-y-6 pt-4">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-l-4 border-blue-500">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        Campus Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       <RHFListbox
                         name="Campus"
                         control={control}
@@ -545,25 +709,84 @@ const ReturneeFormComponent = () => {
                         required
                         error={errors.Nationality}
                       />
+                      
+                      {/* Dual Citizenship Checkbox */}
+                      <div className="flex items-center gap-3 pt-2">
+                        <input
+                          type="checkbox"
+                          id="dualCitizenshipReturnee"
+                          checked={hasDualCitizenship}
+                          onChange={(e) => {
+                            setHasDualCitizenship(e.target.checked);
+                            if (!e.target.checked) {
+                              setValue("DualNationality", null);
+                            }
+                          }}
+                          className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                        />
+                        <label
+                          htmlFor="dualCitizenshipReturnee"
+                          className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                        >
+                          I have dual citizenship
+                        </label>
+                      </div>
+                      
+                      {/* Dual Nationality Dropdown - Shows when checkbox is checked */}
+                      {hasDualCitizenship && (
+                        <div className="animate-slideIn mt-4">
+                          <RHFListbox
+                            name="DualNationality"
+                            control={control}
+                            list={nationalityList}
+                            label="Second Nationality"
+                            labelKey="NationalityName"
+                            isEditing={false}
+                            divClassName=""
+                            required={hasDualCitizenship}
+                            error={errors.DualNationality}
+                          />
+                        </div>
+                      )}
                     </div>
+                  </div>
 
-                    <div className="pt-2">
-                      <GreenBtn label="Next →" onClick={handleNext} />
+                  {/* Action Buttons */}
+                  <div className="pt-6 flex justify-end border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                    >
+                      Next
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {step === 2 && (
+              <>
+                <div
+                  className="animate-slideIn"
+                  style={{
+                    animation: 'slideIn 0.25s ease-out'
+                  }}
+                >
+                  {/* Father's Information Section */}
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border-l-4 border-blue-500">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Father's Information
+                      </h3>
                     </div>
-                  </motion.div>
-                </>
-              )}
-
-              {step === 2 && (
-                <>
-                  <motion.div
-                    key="three"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       <InputField
                         name="FathersFname"
                         label="First Name"
@@ -589,14 +812,6 @@ const ReturneeFormComponent = () => {
                         divClassName=""
                       />
                       <InputField
-                        name="FathersEmail"
-                        label="Email"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input email...."
-                        divClassName=""
-                      />
-                      <InputField
                         name="FathersMobilePhoneNo"
                         label="Mobile Phone No."
                         register={register}
@@ -613,11 +828,19 @@ const ReturneeFormComponent = () => {
                         divClassName=""
                       />
                     </div>
+                  </div>
 
-                    <h2 className="text-2xl font-bold text-green-800 mb-6">
-                      Mother's Information
-                    </h2>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Mother's Information Section */}
+                  <div className="space-y-6 pt-6">
+                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-4 border-l-4 border-pink-500">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Mother's Information
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       <InputField
                         name="MothersFname"
                         label="First Name"
@@ -649,19 +872,6 @@ const ReturneeFormComponent = () => {
                         errorMessage={errors.MothersLname?.message}
                       />
                       <InputField
-                        name="MothersEmail"
-                        label="Email"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input email...."
-                        divClassName=""
-                        required
-                        errors={errors.MothersEmail}
-                        errorMessage={errors.MothersEmail?.message}
-                        type="email"
-                        isValidEmail={isValidEmail}
-                      />
-                      <InputField
                         name="MothersMobilePhoneNo"
                         label="Mobile Phone No."
                         register={register}
@@ -681,89 +891,133 @@ const ReturneeFormComponent = () => {
                         divClassName=""
                       />
                     </div>
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
-                    </div>
-                  </motion.div>
-                </>
-              )}
-              {step === 3 && (
-                <>
-                  <motion.div
-                    key="four"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <RHFListbox
-                        name="Province"
-                        control={control}
-                        list={provinceList}
-                        label="Province"
-                        labelKey="province_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Province}
-                      />
-                      <RHFListbox
-                        name="City"
-                        control={control}
-                        list={cityList}
-                        label="City"
-                        labelKey="city_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.City}
-                      />
-                      <RHFListbox
-                        name="Barangay"
-                        control={control}
-                        list={brgyList}
-                        label="Barangay"
-                        labelKey="brgy_name"
-                        isEditing={false}
-                        divClassName=""
-                        required
-                        error={errors.Barangay}
-                      />
-                      <InputField
-                        name="HomeStreet"
-                        label="Home Steet Number"
-                        register={register}
-                        isEditing={true}
-                        placeholder="Please input street no(Block 1 Lot 1)."
-                        divClassName=""
-                        required
-                        errors={errors.HomeStreet}
-                        errorMessage={errors.HomeStreet?.message}
-                      />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="px-6 sm:px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                    >
+                      Next
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+            {step === 3 && (
+              <>
+                <div
+                  className="animate-slideIn"
+                  style={{
+                    animation: 'slideIn 0.25s ease-out'
+                  }}
+                >
+                  {/* Same as Parent Address Checkbox */}
+                  <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+                    <input
+                      type="checkbox"
+                      id="sameAsParentReturnee"
+                      checked={sameAsParentAddress}
+                      onChange={(e) => setSameAsParentAddress(e.target.checked)}
+                      className="w-5 h-5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                    />
+                    <label htmlFor="sameAsParentReturnee" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+                      Same address as parent/guardian
+                    </label>
+                  </div>
+
+                  <div className="max-h-96 overflow-y-auto pr-2 space-y-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <RHFListbox
+                      name="Province"
+                      control={control}
+                      list={provinceList}
+                      label="Province"
+                      labelKey="province_name"
+                      isEditing={sameAsParentAddress}
+                      divClassName=""
+                      required
+                      error={errors.Province}
+                    />
+                    <RHFListbox
+                      name="City"
+                      control={control}
+                      list={cityList}
+                      label="City"
+                      labelKey="city_name"
+                      isEditing={sameAsParentAddress}
+                      divClassName=""
+                      required
+                      error={errors.City}
+                    />
+                    <RHFListbox
+                      name="Barangay"
+                      control={control}
+                      list={brgyList}
+                      label="Barangay"
+                      labelKey="brgy_name"
+                      isEditing={sameAsParentAddress}
+                      divClassName=""
+                      required
+                      error={errors.Barangay}
+                    />
+                    <InputField
+                      name="HomeStreet"
+                      label="Home Street Number"
+                      register={register}
+                      isEditing={!sameAsParentAddress}
+                      placeholder="Please input street no(Block 1 Lot 1)."
+                      divClassName=""
+                      required
+                      errors={errors.HomeStreet}
+                      errorMessage={errors.HomeStreet?.message}
+                    />
+                  </div>
+
+                  <div className="pt-2 flex justify-between items-center">
+                    <RedBtn label="← Back" onClick={handleBack} />
+                    <GreenBtn label="Next →" onClick={handleNext} />
+                  </div>
+                </div>
+              </>
+            )}
+            {step === 4 && (
+              <>
+                <div
+                  className="animate-slideIn"
+                  style={{
+                    animation: 'slideIn 0.25s ease-out'
+                  }}
+                >
+                  <div className="space-y-6">
+                    {/* Emergency Contact Section Header */}
+                    <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border-l-4 border-red-500">
+                      <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Emergency Contact Person
+                      </h3>
                     </div>
 
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
-                    </div>
-                  </motion.div>
-                </>
-              )}
-              {step === 4 && (
-                <>
-                  <motion.div
-                    key="five"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <InputField
                         name="ContactPerson"
-                        label="Fullname"
+                        label="Full Name"
                         register={register}
                         isEditing={true}
                         placeholder="Please input fullname...."
@@ -774,7 +1028,7 @@ const ReturneeFormComponent = () => {
                       />
                       <InputField
                         name="ContactEmail"
-                        label="Email"
+                        label="Email Address"
                         register={register}
                         isEditing={true}
                         placeholder="Please input email...."
@@ -786,115 +1040,55 @@ const ReturneeFormComponent = () => {
                         isValidEmail={isValidEmail}
                       />
                       <InputField
-                        name="OtpCode"
-                        label="Email Verification Code"
+                        name="ContactMobileNo"
+                        label="Mobile Number"
                         register={register}
                         isEditing={true}
-                        placeholder="Please input otp code...."
-                        divClassName="relative"
-                        addButton={true}
-                        handleClick={handleSendVerificationCode}
+                        placeholder="Please input mobile number...."
+                        divClassName=""
                         required
-                        errors={errors.OtpCode}
-                        errorMessage={errors.OtpCode?.message}
-                        isOtpValid={otpValid}
-                        isOtp={true}
-                        onChange={(e) => handleOtpChange(e.target.value)}
-                        isMessage={isMessage}
-                        successMessage={successMessage}
-                        disabled={otpCooldown}
-                        color={color}
+                        errors={errors.ContactMobileNo}
+                        errorMessage={errors.ContactMobileNo?.message}
+                      />
+                      <InputField
+                        name="Relationship"
+                        label="Relationship"
+                        register={register}
+                        isEditing={true}
+                        placeholder="Please input relationship...."
+                        divClassName=""
+                        required
+                        errors={errors.Relationship}
+                        errorMessage={errors.Relationship?.message}
                       />
                     </div>
+                  </div>
 
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn label="Next →" onClick={handleNext} />
-                    </div>
-                  </motion.div>
-                </>
-              )}
-              {step === 5 && (
-                <>
-                  <motion.div
-                    key="six"
-                    initial={{ x: 50, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: -50, opacity: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div
-                      className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative"
-                      role="alert"
+                  <div className="pt-6 flex justify-between items-center border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      className="px-6 sm:px-8 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                     >
-                      <strong className="font-bold">Note: </strong>
-                      <span className="block sm:inline">
-                        PNG and JPG are Allowed..
-                      </span>
-                    </div>
-                    <div className="max-h-96 overflow-y-auto pr-2 space-y-6 pt-2">
-                      <InputFileField
-                        name="TwoByTwo"
-                        label="Upload 2x2 Picture"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setTwoByTwoFile}
-                        file={twoByTwoFile}
-                        altFileName="2x2 Preview"
-                      />
-                      <InputFileField
-                        name="BirthCert"
-                        label="Upload Birth Certificate"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBirthCertificate}
-                        file={birthCertificate}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="Baptismal"
-                        label="Upload Baptismal"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setBaptismal}
-                        file={baptismal}
-                        altFileName="Birth Certificate Preview"
-                      />
-                      <InputFileField
-                        name="GoodMoral"
-                        label="Upload Good Moral"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setGoodMoral}
-                        file={goodMoral}
-                        altFileName="Good Moral Preview"
-                      />
-                      <InputFileField
-                        name="ReportCard"
-                        label="Upload Report Card"
-                        register={register}
-                        isEditing={true}
-                        type="file"
-                        onFileChange={setReportCard}
-                        file={reportCard}
-                        altFileName="Report Card Preview"
-                      />
-                    </div>
-                    <div className="pt-2 flex justify-between items-center">
-                      <RedBtn label="← Back" onClick={handleBack} />
-                      <GreenBtn
-                        label="Submit"
-                        onClick={handleSubmit(onSubmit)}
-                      />
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                      </svg>
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      onClick={handleSubmit(onSubmit)}
+                      className="px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center gap-2"
+                    >
+                      Submit Application
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </form>
         </div>
         <ModalComponent

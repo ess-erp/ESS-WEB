@@ -15,6 +15,7 @@ import {
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
     FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
     FETCH_INITIAL_DOCUMENTS_REQUEST, FETCH_INITIAL_DOCUMENTS_SUCCESS, FETCH_INITIAL_DOCUMENTS_FAILURE,
+    FETCH_CREATE_PARENT_ACCOUNT_REQUEST, FETCH_CREATE_PARENT_ACCOUNT_SUCCESS, FETCH_CREATE_PARENT_ACCOUNT_FAILURE,
 } from './ActionType';
 
 const initialFormState = {
@@ -41,6 +42,7 @@ const initialState = {
     insertEmployeeState: { ...initialFormState },
     accountActivationState: { ...initialFormState },
     initialDocumentsState: { ...initialFormState },
+    createParentAccountState: { ...initialFormState },
 }
 
 const onlineAppReducer = (state = initialState, action) => {
@@ -170,6 +172,14 @@ const onlineAppReducer = (state = initialState, action) => {
             return { ...state, initialDocumentsState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INITIAL_DOCUMENTS_FAILURE:
             return { ...state, initialDocumentsState: { loading: false, data: [], error: action.payload } };
+
+        //Create Parent Portal Account
+        case FETCH_CREATE_PARENT_ACCOUNT_REQUEST:
+            return { ...state, createParentAccountState: { loading: true, data: [], error: '' } };
+        case FETCH_CREATE_PARENT_ACCOUNT_SUCCESS:
+            return { ...state, createParentAccountState: { loading: false, data: action.payload, error: '', success: true } };
+        case FETCH_CREATE_PARENT_ACCOUNT_FAILURE:
+            return { ...state, createParentAccountState: { loading: false, data: [], error: action.payload, success: false } };
 
         default:
             return state;

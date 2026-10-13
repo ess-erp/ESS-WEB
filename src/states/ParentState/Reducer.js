@@ -14,6 +14,7 @@ import {
     FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
     FETCH_GET_MISC_BREAKDOWN_REQUEST, FETCH_GET_MISC_BREAKDOWN_SUCCESS, FETCH_GET_MISC_BREAKDOWN_FAILURE,
     FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
+    FETCH_PARENT_ADDRESS_REQUEST, FETCH_PARENT_ADDRESS_SUCCESS, FETCH_PARENT_ADDRESS_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -39,6 +40,7 @@ const initialGeneralState = {
     studentPendingTransactionState: { ...initialState },
     miscBreakdownState: { ...initialState },
     siSeriesState: { ...initialState },
+    parentAddressState: { ...initialState },
 };
 
 const parentReducer = (state = initialGeneralState, action) => {
@@ -160,6 +162,14 @@ const parentReducer = (state = initialGeneralState, action) => {
             return { ...state, siSeriesState: { loading: false, data: action.payload, error: '' } };
         case FETCH_SI_SERIES_FAILURE:
             return { ...state, siSeriesState: { loading: false, data: [], error: action.payload } };  
+
+        // Parent Address
+        case FETCH_PARENT_ADDRESS_REQUEST:
+            return { ...state, parentAddressState: { loading: true, data: [], error: '' } };
+        case FETCH_PARENT_ADDRESS_SUCCESS:
+            return { ...state, parentAddressState: { loading: false, data: action.payload, error: '', success: true } };
+        case FETCH_PARENT_ADDRESS_FAILURE:
+            return { ...state, parentAddressState: { loading: false, data: [], error: action.payload, success: false } };
 
         default:
             return state;

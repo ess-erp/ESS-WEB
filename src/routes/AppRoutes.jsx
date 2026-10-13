@@ -3,10 +3,8 @@ import ProtectedRoutes from "./ProtectedRoutes";
 import Login from "../pages/Auth/Login";
 import AccessDenied from "../components/SharedComponents/AccessDenied";
 import AdmissionDashboard from "../pages/Admission/Dashboard";
-import OnlineApplication from "../pages/Index/OnlineApplication";
-import ReturneeFormComponent from "../components/OnlineAppComponents/ReturneeFormComponent";
-import CongratsComponent from "../components/OnlineAppComponents/CongratsComponent";
-import AccountActivation from "../components/OnlineAppComponents/AccountActivation";
+import Registration from "../pages/Index/Registration";
+import AccountActivation from "../components/RegistrationComponents/AccountActivation";
 import EmployeeOnlineApplication from "../pages/EmployeeOnlineApplication/OnlineApplication";
 import EmployeeCongratsLetter from "../pages/EmployeeOnlineApplication/CongratsLetter";
 import StudentOnlineApplication from "../pages/Admission/StudentOnlineApplication";
@@ -87,9 +85,7 @@ const AppRoutes = () => (
   <Router>
     <Routes>
       <Route path="/" element={<Login />} />
-      <Route path="/onlineapplication" element={<OnlineApplication />} />
-      <Route path="/returneeform" element={<ReturneeFormComponent />} />
-      <Route path="/congratulationletter" element={<CongratsComponent />} />
+      <Route path="/registration" element={<Registration />} />
       <Route path="accountactivation" element={<AccountActivation />} />
       <Route path="/accessdenied" element={<AccessDenied />} />
       <Route path="/employeeonlineapplication" element={<EmployeeOnlineApplication />} />

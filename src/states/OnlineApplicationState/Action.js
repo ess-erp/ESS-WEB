@@ -15,6 +15,7 @@ import {
     FETCH_INSERT_EMPLOYEE_REQUEST, FETCH_INSERT_EMPLOYEE_SUCCESS, FETCH_INSERT_EMPLOYEE_FAILURE,
     FETCH_ACCOUNT_ACTIVATION_REQUEST, FETCH_ACCOUNT_ACTIVATION_SUCCESS, FETCH_ACCOUNT_ACTIVATION_FAILURE,
     FETCH_INITIAL_DOCUMENTS_REQUEST, FETCH_INITIAL_DOCUMENTS_SUCCESS, FETCH_INITIAL_DOCUMENTS_FAILURE,
+    FETCH_CREATE_PARENT_ACCOUNT_REQUEST, FETCH_CREATE_PARENT_ACCOUNT_SUCCESS, FETCH_CREATE_PARENT_ACCOUNT_FAILURE,
 } from './ActionType';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
@@ -280,41 +281,41 @@ export const fetchBarangayData = (CityCode = '') => async (dispatch) => {
 };
 
 
-//Insert Student
-export const fetchInsertStudentRequest = () => ({ type: FETCH_INSERTSTUDENT_REQUEST });
-export const fetchInsertStudentSuccess = (data) => ({ type: FETCH_INSERTSTUDENT_SUCCESS, payload: data });
-export const fetchInsertStudentFailure = (error) => ({ type: FETCH_INSERTSTUDENT_FAILURE, payload: error });
+// //Insert Student
+// export const fetchInsertStudentRequest = () => ({ type: FETCH_INSERTSTUDENT_REQUEST });
+// export const fetchInsertStudentSuccess = (data) => ({ type: FETCH_INSERTSTUDENT_SUCCESS, payload: data });
+// export const fetchInsertStudentFailure = (error) => ({ type: FETCH_INSERTSTUDENT_FAILURE, payload: error });
 
-export const fetchInsertStudentData = (formData) => async (dispatch) => {
-    dispatch(fetchInsertStudentRequest());
-    try {
-        const url = `${baseUrl}/auth/student-online-application`; // also removed the stray " at the end
+// export const fetchInsertStudentData = (formData) => async (dispatch) => {
+//     dispatch(fetchInsertStudentRequest());
+//     try {
+//         const url = `${baseUrl}/auth/student-online-application`; // also removed the stray " at the end
 
-        const response = await fetch(url, {
-            method: 'POST',
-            body: formData,
-        });
+//         const response = await fetch(url, {
+//             method: 'POST',
+//             body: formData,
+//         });
 
-        const text = await response.text();
-        let res;
-        try {
-            res = text ? JSON.parse(text) : {};
-        } catch {
-            res = { success: false, message: text || "Invalid JSON response" };
-        }
+//         const text = await response.text();
+//         let res;
+//         try {
+//             res = text ? JSON.parse(text) : {};
+//         } catch {
+//             res = { success: false, message: text || "Invalid JSON response" };
+//         }
 
-        if (res.success === false) {
-            throw new Error(res.message || "Unknown error");
-        }
+//         if (res.success === false) {
+//             throw new Error(res.message || "Unknown error");
+//         }
 
-        dispatch(fetchInsertStudentSuccess(res));
-        return { ok: true, data: res };
-    }
-    catch (error) {
-        dispatch(fetchInsertStudentFailure(error.message));
-        return { ok: false, error };
-    }
-};
+//         dispatch(fetchInsertStudentSuccess(res));
+//         return { ok: true, data: res };
+//     }
+//     catch (error) {
+//         dispatch(fetchInsertStudentFailure(error.message));
+//         return { ok: false, error };
+//     }
+// };
 
 
 //Get old student
@@ -457,6 +458,41 @@ export const fetchInitialDocumentsData = () => async (dispatch) => {
     catch (error) {
         console.error("Initial Documents Error:", error);
         dispatch(fetchInitialDocumentsFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+
+//Create Parent Portal Account
+export const fetchCreateParentAccountRequest = () => ({ type: FETCH_CREATE_PARENT_ACCOUNT_REQUEST });
+export const fetchCreateParentAccountSuccess = (data) => ({ type: FETCH_CREATE_PARENT_ACCOUNT_SUCCESS, payload: data });
+export const fetchCreateParentAccountFailure = (error) => ({ type: FETCH_CREATE_PARENT_ACCOUNT_FAILURE, payload: error });
+
+export const fetchCreateParentAccountData = (formData) => async (dispatch) => {
+    dispatch(fetchCreateParentAccountRequest());
+    try {
+        const url = `${baseUrl}/online/create-parent-account`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const res = await response.json();
+
+        if (res.success === false) {
+            throw new Error(res.message || "Failed to create parent account");
+        }
+
+        dispatch(fetchCreateParentAccountSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        console.error("Create Parent Account Error:", error);
+        dispatch(fetchCreateParentAccountFailure(error.message));
         return { ok: false, error };
     }
 };

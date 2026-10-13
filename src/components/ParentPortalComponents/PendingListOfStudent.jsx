@@ -630,7 +630,7 @@ const PendingListOfStudent = ({ type, userId }) => {
       name: "Actions",
       cell: (row) => (
         <div className="flex items-center gap-1 whitespace-nowrap">
-          <BlueBtn label="View" onClick={() => navigate(`/parent/pendingliststudentform?StudentId=${row.StudentId}`)} />
+          <BlueBtn label="View" onClick={() => navigate(`/parent/pendingliststudentform?AppId=${row.AppId}`)} />
           {["O-EXAMINATION-CASHIER", "O-RESERVATION", "O-RESERVED", "Y"].includes(row.ActiveStatus) && (
             <GreenBtn label="Payment" onClick={() => handleOpenPayment(row)} />
           )}

@@ -14,6 +14,7 @@ import {
     FETCH_STUDENT_PENDING_TRANSACTION_REQUEST, FETCH_STUDENT_PENDING_TRANSACTION_SUCCESS, FETCH_STUDENT_PENDING_TRANSACTION_FAILURE,
     FETCH_GET_MISC_BREAKDOWN_REQUEST, FETCH_GET_MISC_BREAKDOWN_SUCCESS, FETCH_GET_MISC_BREAKDOWN_FAILURE,
     FETCH_SI_SERIES_REQUEST, FETCH_SI_SERIES_SUCCESS, FETCH_SI_SERIES_FAILURE,
+    FETCH_PARENT_ADDRESS_REQUEST, FETCH_PARENT_ADDRESS_SUCCESS, FETCH_PARENT_ADDRESS_FAILURE,
 } from "./ActionType";
 
 import { getToken } from "../../services/tokenServices";
@@ -56,12 +57,12 @@ export const fetchStudentByIdRequest = () => ({ type: FETCH_STUDENTBYID_REQUEST 
 export const fetchStudentByIdSuccess = (data) => ({ type: FETCH_STUDENTBYID_SUCCESS, payload: data });
 export const fetchStudentByIdFailure = (error) => ({ type: FETCH_STUDENTBYID_FAILURE, payload: error });
 
-export const fetchStudentByIdData = (studentId) => async (dispatch) => {
+export const fetchStudentByIdData = (appId) => async (dispatch) => {
     dispatch(fetchStudentByIdRequest());
 
     try {
         const token = getToken();
-        const url = `${baseUrl}/parent/list-of-studentId?StudentId=${studentId}`;
+        const url = `${baseUrl}/parent/list-of-appId?appId=${appId}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -470,6 +471,41 @@ export const fetchGetMiscBreakdownData = (levelId) => async (dispatch) => {
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchGetMiscBreakdownFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// Get Parent Address
+export const fetchParentAddressRequest = () => ({ type: FETCH_PARENT_ADDRESS_REQUEST });
+export const fetchParentAddressSuccess = (data) => ({ type: FETCH_PARENT_ADDRESS_SUCCESS, payload: data });
+export const fetchParentAddressFailure = (error) => ({ type: FETCH_PARENT_ADDRESS_FAILURE, payload: error });
+
+export const fetchParentAddressData = (userId) => async (dispatch) => {
+    dispatch(fetchParentAddressRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/parent/get-parent-address?userId=${userId}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            }
+        });
+
+        const res = await response.json();
+        const addressData = res.data || res;
+
+        if (res.success === false) {
+            throw new Error(res.message || "Failed to fetch parent address");
+        }
+
+        dispatch(fetchParentAddressSuccess(addressData));
+        return { ok: true, data: addressData };
+    }
+    catch (error) {
+        console.error("Fetch Parent Address Error:", error);
+        dispatch(fetchParentAddressFailure(error.message));
         return { ok: false, error };
     }
 };

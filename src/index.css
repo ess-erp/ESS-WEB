@@ -84,3 +84,15 @@ button:focus-visible {
     background-color: #f9f9f9;
   } */
 }
+
+/* Slide-in animation for smooth transitions */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

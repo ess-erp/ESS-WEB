@@ -154,11 +154,21 @@ import { updateCfwEnrollmentCountRealtime } from "../states/CfwState/Action";
 let connection = null;
 
 const SignalRListener = ({ userId }) => {
-    console.log(userId);
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if(!userId) return;
+        // Don't initialize if no userId (user not logged in)
+        if (!userId) {
+            console.log("⚠️ SignalR: No userId provided. Skipping connection.");
+            return;
+        }
+
+        // Don't initialize if no token
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.log("⚠️ SignalR: No token found. Skipping connection.");
+            return;
+        }
 
         // Prevent duplicate connection creation
         if (!connection) {
@@ -255,13 +265,14 @@ const SignalRListener = ({ userId }) => {
 
         startConnection();
 
+        // Cleanup function
         return () => {
-            // Optional cleanup
-            // Usually avoid stopping global SignalR connection
-            // unless app is fully unloading
-
-            // connection.stop();
-
+            // Stop connection when user logs out
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                console.log("🔌 SignalR: Disconnecting due to component unmount");
+                connection.stop();
+                connection = null;
+            }
         };
 
     }, [dispatch, userId]);
