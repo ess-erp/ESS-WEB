@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
-import NewStudentForm from "../../components/ParentPortalComponents/NewStudentForm";
+import NewStudentFormComponent from "../../components/ParentPortalComponents/NewStudentFormComponent";
 import ReturneeFormComponent from "../../components/ParentPortalComponents/ReturneeFormComponent";
 
 const EnrollStudent = () => {
@@ -82,7 +82,7 @@ const EnrollStudent = () => {
                 }}
               >
                 {entryType === "new" ? (
-                  <NewStudentForm type="new" />
+                  <NewStudentFormComponent type="new" />
                 ) : (
                   <ReturneeFormComponent type="returnee" />
                 )}

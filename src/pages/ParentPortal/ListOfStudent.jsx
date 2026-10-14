@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
-import PendingListOfStudent from "../../components/ParentPortalComponents/PendingListOfStudent";
+import ListOfStudentDataTable from "../../components/ParentPortalComponents/ListOfStudentDataTable";
 import { FaClock, FaCheckCircle } from "react-icons/fa";
 
 const ListOfStudent = () => {
@@ -18,7 +18,7 @@ const ListOfStudent = () => {
 
   const breadcrumbItems = [
     { label: "Dashboard", href: "/parent/dashboard" },
-    { label: "List of Pending Student", href: "/parent/List-of-student" },
+    { label: "List of Student", href: "/parent/List-of-student" },
   ];
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -49,7 +49,7 @@ const ListOfStudent = () => {
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
           <h2 className="text-sm font-bold text-black mt-2">
-            List of Pending Student
+            List of Student
           </h2>
         </div>
         <hr className="border-t-1 border-solid border-gray-400 my-6" />
@@ -58,7 +58,7 @@ const ListOfStudent = () => {
 
             <div className="flex justify-center">
               <h2 className="text-2xl font-bold text-green-500 mt-2">
-                List of Pending Student
+                List of Student
               </h2>
             </div>
             <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded">
@@ -86,7 +86,7 @@ const ListOfStudent = () => {
             {/* Content */}
             <div className="w-full">
               {entryType === "pending" && user && (
-                <PendingListOfStudent
+                <ListOfStudentDataTable
                   type="pending"
                   userId={user.UserId}
                 />

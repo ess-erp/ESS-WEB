@@ -51,7 +51,7 @@ import PrincipalDashboard from "../pages/Principal/Dashboard";
 import PrincipalOnlineApplication from "../pages/Principal/EmployeeOnlineApp";
 import PrincipalEmployeeInitialInterview from "../pages/Principal/EmployeeInitialInterview";
 import ListOfStudent from "../pages/ParentPortal/ListOfStudent";
-import PendingListStudentForm from "../components/ParentPortalComponents/PendingListStudentForm";
+import StudentAppComponent from "../components/ParentPortalComponents/StudentAppComponent";
 import TeacherDashboard from "../pages/Teacher/Dashboard";
 import TeacherListOfSection from "../pages/Teacher/ListOfSection";
 import TeacherEncodingOfGradeClub from "../pages/Teacher/EncodingOfGradeClub";
@@ -487,7 +487,7 @@ const AppRoutes = () => (
           path="/parent/pendingliststudentform"
           element={
             <ProtectedRoutes allowedRoles={[17]}>
-              <PendingListStudentForm />
+              <StudentAppComponent />
             </ProtectedRoutes>
           }
         />

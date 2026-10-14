@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import BlueBtn from "../../components/ButtonsComponents/BlueBtn";
+import BlueBtn from "../ButtonsComponents/BlueBtn";
 import RedBtn from "../ButtonsComponents/RedBtn";
 import GreenBtn from "../ButtonsComponents/GreenBtn";
 import RHFListbox from "../ButtonsComponents/RHFListbox";
@@ -22,11 +22,10 @@ import {
   fetchCityData,
   fetchBarangayData,
   fetchInitialDocumentsData,
-  // fetchInsertStudentData,
 } from "../../states/OnlineApplicationState/Action";
-import { fetchParentAddressData } from "../../states/ParentState/Action";
+import { fetchParentAddressData, fetchInsertStudentEnrollmentData, } from "../../states/ParentState/Action";
 
-const NewStudentForm = () => {
+const NewStudentFormComponent = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [step, setStep] = useState(1);
@@ -377,6 +376,7 @@ const NewStudentForm = () => {
     payload.append("Lname", formData.Lname || "");
     payload.append("Email", formData.Email || "");
     payload.append("DateOfBirth", formData.DateOfBirth || "");
+    payload.append("PlaceOfBirth", formData.PlaceOfBirth || "");
     payload.append("Gender", formData.Gender || "");
 
     payload.append("CampusId", formData.Campus?.CampusId ?? "");
@@ -397,7 +397,7 @@ const NewStudentForm = () => {
     );
     
     // Dual Citizenship
-    payload.append("HasDualCitizenship", hasDualCitizenship ? "1" : "0");
+    payload.append("HasDualCitizenship", hasDualCitizenship ? "true" : "false");
     payload.append("DualNationalityId", formData.DualNationality?.NationalityId ?? "");
     payload.append("DualNationalityName", formData.DualNationality?.NationalityName || "");
     
@@ -421,6 +421,7 @@ const NewStudentForm = () => {
 
     payload.append("ContactPerson", formData.ContactPerson || "");
     payload.append("ContactEmail", formData.ContactEmail || "");
+    payload.append("ContactMobilePhoneNo", formData.ContactMobilePhoneNo || "");
     payload.append("Relationship", formData.Relationship || "");
 
     // Student Address Information
@@ -431,7 +432,7 @@ const NewStudentForm = () => {
     payload.append("BrgyCode", formData.Barangay?.brgy_code || "");
     payload.append("BrgyName", formData.Barangay?.brgy_name || "");
     payload.append("HomeStreet", formData.HomeStreet || "");
-    payload.append("SameAsParentAddress", sameAsParentAddress ? "1" : "0");
+    payload.append("SameAsParentAddress", sameAsParentAddress ? "true" : "false");
 
     // Parent ID - backend will use this to fetch parent's address if needed
     payload.append("ParentId", parentUser?.UserId || "");
@@ -449,12 +450,10 @@ const NewStudentForm = () => {
 
     console.log("SUBMIT PAYLOAD:", payload);
 
-    const res = await dispatch(fetchInsertStudentData(payload));
+    const res = await dispatch(fetchInsertStudentEnrollmentData(payload));
     if (res.ok) {
+      setIsModalOpen(false);
       setIsSuccessModalOpen(true);
-      if (isSuccessModalOpen == false) {
-        navigate('/congratulationletter');
-      }
     }
     else {
       return;
@@ -535,7 +534,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input first name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.Fname}
                           errorMessage={errors.Fname?.message}
@@ -546,7 +545,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input middle name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="Lname"
@@ -554,7 +553,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input last name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.Lname}
                           errorMessage={errors.Lname?.message}
@@ -564,7 +563,7 @@ const NewStudentForm = () => {
                           label="Date of birth"
                           register={register}
                           isEditing={true}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           type="date"
                           required
                           errors={errors.DateOfBirth}
@@ -576,7 +575,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input place of birth...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.PlaceOfBirth}
                           errorMessage={errors.PlaceOfBirth?.message}
@@ -591,7 +590,7 @@ const NewStudentForm = () => {
                             { label: "Male", value: "male" },
                             { label: "Female", value: "female" },
                           ]}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           error={errors.Gender}
                         />
                       </div>
@@ -615,7 +614,7 @@ const NewStudentForm = () => {
                           label="Campus"
                           labelKey="CampusName"
                           isEditing={false}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Campus}
                         />
@@ -626,7 +625,7 @@ const NewStudentForm = () => {
                           label="Division"
                           labelKey="DivName"
                           isEditing={false}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Division}
                         />
@@ -637,7 +636,7 @@ const NewStudentForm = () => {
                           label="Level"
                           labelKey="LevelName"
                           isEditing={false}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Level}
                         />
@@ -650,7 +649,7 @@ const NewStudentForm = () => {
                             label="Strand"
                             labelKey="StrandName"
                             isEditing={false}
-                            divClassName=""
+                            divClassName="w-full p-2"
                             required
                             error={errors.Strand}
                           />
@@ -662,7 +661,7 @@ const NewStudentForm = () => {
                           label="Religion"
                           labelKey="ReligionName"
                           isEditing={false}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Religion}
                         />
@@ -673,7 +672,7 @@ const NewStudentForm = () => {
                             register={register}
                             isEditing={true}
                             placeholder="Please input religion...."
-                            divClassName=""
+                            divClassName="w-full p-2"
                             required
                             errors={errors.OtherReligion}
                             errorMessage={errors.OtherReligion?.message}
@@ -686,7 +685,7 @@ const NewStudentForm = () => {
                           label="Nationality"
                           labelKey="NationalityName"
                           isEditing={false}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Nationality}
                         />
@@ -723,7 +722,7 @@ const NewStudentForm = () => {
                               label="Second Nationality"
                               labelKey="NationalityName"
                               isEditing={false}
-                              divClassName=""
+                              divClassName="w-full p-2"
                               required={hasDualCitizenship}
                               error={errors.DualNationality}
                             />
@@ -774,7 +773,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input first name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="FathersMname"
@@ -782,7 +781,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input middle name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="FathersLname"
@@ -790,7 +789,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input last name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="FathersMobilePhoneNo"
@@ -798,7 +797,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input mobile phone...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="FathersOccupation"
@@ -806,7 +805,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input occupation...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                       </div>
                     </div>
@@ -828,7 +827,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input first name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.MothersFname}
                           errorMessage={errors.MothersFname?.message}
@@ -839,7 +838,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input middle name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                         <InputField
                           name="MothersLname"
@@ -847,7 +846,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input last name...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.MothersLname}
                           errorMessage={errors.MothersLname?.message}
@@ -858,7 +857,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input mobile phone...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.MothersMobilePhoneNo}
                           errorMessage={errors.MothersMobilePhoneNo?.message}
@@ -869,7 +868,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input occupation...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                         />
                       </div>
                     </div>
@@ -942,7 +941,7 @@ const NewStudentForm = () => {
                           label="Province"
                           labelKey="province_name"
                           isEditing={sameAsParentAddress}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Province}
                         />
@@ -953,7 +952,7 @@ const NewStudentForm = () => {
                           label="City"
                           labelKey="city_name"
                           isEditing={sameAsParentAddress}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.City}
                         />
@@ -964,7 +963,7 @@ const NewStudentForm = () => {
                           label="Barangay"
                           labelKey="brgy_name"
                           isEditing={sameAsParentAddress}
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           error={errors.Barangay}
                         />
@@ -974,7 +973,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={!sameAsParentAddress}
                           placeholder="Please input street no(Block 1 Lot 1)."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.HomeStreet}
                           errorMessage={errors.HomeStreet?.message}
@@ -1033,7 +1032,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input fullname...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.ContactPerson}
                           errorMessage={errors.ContactPerson?.message}
@@ -1044,7 +1043,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input email...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.ContactEmail}
                           errorMessage={errors.ContactEmail?.message}
@@ -1057,7 +1056,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input mobile phone...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.ContactMobilePhoneNo}
                           errorMessage={errors.ContactMobilePhoneNo?.message}
@@ -1068,7 +1067,7 @@ const NewStudentForm = () => {
                           register={register}
                           isEditing={true}
                           placeholder="Please input relationship...."
-                          divClassName=""
+                          divClassName="w-full p-2"
                           required
                           errors={errors.Relationship}
                           errorMessage={errors.Relationship?.message}
@@ -1213,9 +1212,24 @@ const NewStudentForm = () => {
         // backgroundImage="/assets/img/White-Background.png"
         />
       </div>
+        {/* Success Modal */}
+        <ModalComponent
+          isOpen={isSuccessModalOpen}
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            window.location.reload(); // Refresh page to clear form
+          }}
+          title={<span className="font-bold text-lg text-green-700">Success!</span>}
+          body={
+            <div className="text-center">
+              <p className="text-lg mb-2">✅ Student application submitted successfully!</p>
+              <p className="text-sm text-gray-600">Your enrollment application has been received.</p>
+            </div>
+          }
+        />
     </div>
     // </div>
   );
 };
 
-export default NewStudentForm;
+export default NewStudentFormComponent;

@@ -458,10 +458,8 @@ const ReturneeFormComponent = () => {
 
     const res = await dispatch(fetchInsertStudentData(payload));
     if (res.ok) {
+      setIsModalOpen(false);
       setIsSuccessModalOpen(true);
-      if (isSuccessModalOpen == false) {
-        navigate("/congratulationletter");
-      }
     } else {
       return;
     }
@@ -1107,7 +1105,20 @@ const ReturneeFormComponent = () => {
           backgroundImage="/assets/img/White-Background.png"
         />
       </div>
+        {/* Success Modal */}
+        <ModalComponent
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          title={<span className="font-bold text-lg text-green-700">Success!</span>}
+          body={
+            <div className="text-center">
+              <p className="text-lg mb-2">✅ Returnee student application submitted successfully!</p>
+              <p className="text-sm text-gray-600">Your enrollment application has been received.</p>
+            </div>
+          }
+        />
     </div>
   );
 };
 export default ReturneeFormComponent;
+

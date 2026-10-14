@@ -32,7 +32,8 @@ import {
   getDateInputValue,
 } from "../../GlobalFunction/FormatDate";
 
-const StudentListFormComponent = ({ isEditing, appId, userId }) => {
+const ApplicationFormComponent = ({ isEditing, appId, userId }) => {
+  console.log(appId);
   const dispatch = useDispatch();
   const formatDate = getFormatDate;
   const toDateInputValue = getDateInputValue;
@@ -40,7 +41,7 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
   const { register, handleSubmit, reset, control, watch } = useForm({
     mode: "onSubmit",
     defaultValues: {
-      StudentId: "",
+      AppId: "",
       AppNumber: "",
       Lrn: "",
       Fname: "",
@@ -126,7 +127,7 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
     if (!studentData || !isEditing) return;
 
     reset({
-      StudentId: studentData.StudentId ?? "",
+      AppId: studentData.AppId ?? "",
       AppNumber: studentData.AppNumber ?? "",
       Lrn: studentData.Lrn ?? "",
       Fname: studentData.Fname ?? "",
@@ -301,7 +302,7 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
-  
+  console.log(othersTableState);
   // Static templates for parents to view
   const staticTemplates = [
     { TempName: "Test Permit", DateCreated: null, ActiveStatus: "Pending" },
@@ -427,7 +428,7 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
       );
 
       const enrollPayload = {
-        StudentId: studentData?.StudentId || formData?.StudentId,
+        AppId: studentData?.AppId || formData?.AppId,
         // CampusId: formData?.Campus?.CampusId || studentData?.CampusId,
         CampusId:
           formData?.Campus?.CampusId ||
@@ -504,11 +505,11 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
         <div>
           <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
           <InputField
-            name="StudentNumber"
-            label="Student Number"
+            name="AppNumber"
+            label="Application Number"
             register={register}
-            isEditing={isEditing}
-            displayValue={studentData.StudentNumber}
+            isEditing={false}
+            displayValue={studentData.AppNumber}
           />
           <InputField
             name="Lrn"
@@ -833,15 +834,15 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
           </button>
         )}
 
-        <button
+        {/* <button
           type="button"
           className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-800 transition"
           onClick={handleSubmit((data) => {
             onSubmit(data, "enroll");
           })}
         >
-          Enroll Now
-        </button>
+          Proceed to Enrollment
+        </button> */}
       </div>
       </form>
 
@@ -1033,4 +1034,4 @@ const StudentListFormComponent = ({ isEditing, appId, userId }) => {
   );
 };
 
-export default StudentListFormComponent;
+export default ApplicationFormComponent;

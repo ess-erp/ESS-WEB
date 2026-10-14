@@ -54,7 +54,7 @@ const RHFListbox = ({
                     }}
                     render={({ field }) => (
                         <Listbox value={field.value} onChange={field.onChange}>
-                            <div className="relative pt-2">
+                            <div className="relative pt-2 w-full">
                                 <Listbox.Button className="relative w-full rounded-lg border py-2 pl-3 pr-10 text-left shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                                     {field.value ? field.value[labelKey] : "Select"}
                                     <ChevronUpDownIcon className="absolute right-2 top-2.5 h-5 w-5 text-gray-400" />

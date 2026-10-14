@@ -62,7 +62,7 @@ export const fetchStudentByIdData = (appId) => async (dispatch) => {
 
     try {
         const token = getToken();
-        const url = `${baseUrl}/parent/list-of-appId?appId=${appId}`;
+        const url = `${baseUrl}/parent/get-student-data-by-appid?appId=${appId}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -163,13 +163,13 @@ export const fetchInsertStudentEnrollmentData = (formData) => async (dispatch) =
         const token = getToken();
         const url = `${baseUrl}/parent/insert-student-enrollment`;
 
-        const response = await fetch(url, {
+        const response =  await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                // Don't set Content-Type when sending FormData - browser sets it automatically with boundary
                 'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify(formData),
+            body: formData, // Send FormData directly, not JSON.stringify
         });
 
         console.log(response);

@@ -317,7 +317,7 @@ const StudentInfoComponent = ({ isEditing, appId, userId }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
             <div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="StudentNumber" label="Student Number" register={register} isEditing={isEditing} displayValue={studentData.AppNumber} />
+                    <InputField name="StudentNumber" label="Application Number" register={register} isEditing={isEditing} displayValue={studentData.AppNumber} />
                     <InputField name="Lrn" label="LRN" register={register} isEditing={isEditing} displayValue={studentData.Lrn} />
                 </div>
                 <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">

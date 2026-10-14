@@ -91,9 +91,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
   const sharedMenu = [
     { separator: true },
+    {
+      name: "Notification",
+      icon: Bell,
+      path: "/notification",
+    },
 
-    // Dynamic Ticket Visibility
-    ...(!shouldHideTickets(user?.UserRoleId)
+    // Dynamic Ticket Visibility - hide for Parents
+    ...(!shouldHideTickets(user?.UserRoleId) && user?.UserRoleId !== 17
       ? [
         {
           name: "Tickets",
@@ -103,30 +108,36 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       ]
       : []),
 
-    // {
-    //   name: "Employee Portal",
-    //   icon: UserIconSolid,
-    //   path: "/tickets",
-    // },
-    {
-      name: "Employee Portal",
-      icon: UserIconSolid,
-      children: [
+    // Employee Portal - hide for Parents
+    ...(user?.UserRoleId !== 17
+      ? [
         {
-          name: "Time & Attendance (Leave Management)",
-          path: "/sru/generate-student-id",
+          name: "Employee Portal",
+          icon: UserIconSolid,
+          children: [
+            {
+              name: "Time & Attendance (Leave Management)",
+              path: "/sru/generate-student-id",
+            },
+            {
+              name: "Payroll & Compensation",
+              path: "/sru/generate-school-form",
+            },
+          ],
         },
+      ]
+      : []),
+
+    // Profile - hide for Parents
+    ...(user?.UserRoleId !== 17
+      ? [
         {
-          name: "Payroll & Compensation",
-          path: "/sru/generate-school-form",
+          name: "Profile",
+          icon: SettingsIcon,
+          path: "/profile",
         },
-      ],
-    },
-    {
-      name: "Profile",
-      icon: SettingsIcon,
-      path: "/profile",
-    },
+      ]
+      : []),
   ];
 
 
@@ -374,12 +385,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       icon: User,
       path: "/parent/listofstudent",
     },
-    { separator: true },
-    {
-      name: "Notification",
-      icon: Bell,
-      path: "/notification",
-    },
+    ...sharedMenu,
   ];
 
   const adviserMenu = [

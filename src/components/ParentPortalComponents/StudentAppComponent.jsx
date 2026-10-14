@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import Sidebar from "../../components/SharedComponents/Sidebar";
-import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
-import StudentListFormComponent from "./StudentListFormComponent";
+import Sidebar from "../SharedComponents/Sidebar";
+import Breadcrumb from "../SharedComponents/Breadcrumb";
+import ApplicationFormComponent from "./ApplicationFormComponent";
 
 
-const PendingListStudentForm = () => {
+const StudentAppComponent = () => {
 
     useEffect(() => {
         document.title = "Student Application Information";
@@ -87,7 +87,7 @@ const PendingListStudentForm = () => {
                                     </span>
                                 </label>
                             </div>
-                            <StudentListFormComponent isEditing={isEditing} appId={AppId}/>
+                            <ApplicationFormComponent isEditing={isEditing} appId={AppId}/>
 
                             {/* <EmployeeOnlineAppComponent isEditing={isEditing} appId={employeeAppId} userId={user[0].UserId} /> */}
                         </div>
@@ -98,4 +98,4 @@ const PendingListStudentForm = () => {
     );
 };
 
-export default PendingListStudentForm;
+export default StudentAppComponent;
