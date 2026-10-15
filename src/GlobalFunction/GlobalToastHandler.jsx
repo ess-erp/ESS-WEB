@@ -13,23 +13,24 @@ const GlobalToastHandler = () => {
     const audioRef = useRef(new Audio(notificationSound));
 
     useEffect(() => {
-        if (toastData.length == 0) return;
+        if (toastData.length === 0) return;
 
+        // Play notification sound
         audioRef.current.currentTime = 0;
         audioRef.current.play().catch((err) => {
             console.log("Audio play blocked until user clicks somewhere first:", err);
         });
 
+        // Optional: Auto-hide toast after 7 seconds
         // const timer = setTimeout(() => {
         //     dispatch(hideToast());
         // }, 7000);
 
-        return () => clearTimeout(timer);
+        // return () => clearTimeout(timer);
     }, [toastData, dispatch]);
 
-    if (toastData.length == 0) return null;
+    if (toastData.length === 0) return null;
     console.log(toastData);
-    // console.log(toastMessage);
 
     return <NotificationToast toastData={toastData} />;
 };

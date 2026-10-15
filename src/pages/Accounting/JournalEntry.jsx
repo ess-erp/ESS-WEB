@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import JournalEntryDataTable from "../../components/AccountingComponents/JournalEntryDataTable";
-import CashierTransactionJournalDataTable from "../../components/AccountingComponents/CashierTransactionJournalDataTable";
-import { FileText, Receipt } from "lucide-react";
 
 const JournalEntry = () => {
     useEffect(() => {
@@ -16,7 +14,6 @@ const JournalEntry = () => {
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [activeTab, setActiveTab] = useState("manual"); // "manual" or "cashier"
 
     return (
         <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
@@ -36,58 +33,17 @@ const JournalEntry = () => {
                         </h2>
                     </div>
 
-                    {/* Tab Switcher */}
-                    <div className="flex justify-center">
-                        <div className="inline-flex bg-gray-100 rounded-lg p-1 gap-1">
-                            <button
-                                onClick={() => setActiveTab("manual")}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-md font-semibold text-sm transition-all ${
-                                    activeTab === "manual"
-                                        ? "bg-white text-green-700 shadow-sm"
-                                        : "text-gray-600 hover:text-gray-900"
-                                }`}
-                            >
-                                <FileText size={18} />
-                                Manual Journal Entries
-                            </button>
-                            <button
-                                onClick={() => setActiveTab("cashier")}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-md font-semibold text-sm transition-all ${
-                                    activeTab === "cashier"
-                                        ? "bg-white text-green-700 shadow-sm"
-                                        : "text-gray-600 hover:text-gray-900"
-                                }`}
-                            >
-                                <Receipt size={18} />
-                                Cashier Transactions (Auto-Generated)
-                            </button>
-                        </div>
-                    </div>
-
                     {/* Info Banner */}
-                    {activeTab === "manual" ? (
-                        <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg" role="alert">
-                            <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">
-                                Record double-entry transactions manually. Every journal entry must have equal total debits and credits.
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg" role="alert">
-                            <strong className="font-bold">Auto-Generated Entries: </strong>
-                            <span className="block sm:inline">
-                                Journal entries are automatically generated from cashier transactions based on assigned COA accounts. Review and adjust before posting.
-                            </span>
-                        </div>
-                    )}
+                    <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded-lg" role="alert">
+                        <strong className="font-bold">Automated Journal Entries: </strong>
+                        <span className="block sm:inline">
+                            Journal entries are automatically generated from cashier transactions based on assigned COA accounts. All transactions are balanced and ready for review.
+                        </span>
+                    </div>
 
                     {/* Content */}
                     <div className="pb-6">
-                        {activeTab === "manual" ? (
-                            <JournalEntryDataTable />
-                        ) : (
-                            <CashierTransactionJournalDataTable />
-                        )}
+                        <JournalEntryDataTable />
                     </div>
                 </section>
             </div>

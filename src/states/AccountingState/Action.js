@@ -22,6 +22,7 @@ import {
     FETCH_GET_JOURNAL_DETAIL_REQUEST, FETCH_GET_JOURNAL_DETAIL_SUCCESS, FETCH_GET_JOURNAL_DETAIL_FAILURE,
     FETCH_INSERT_JOURNAL_REQUEST, FETCH_INSERT_JOURNAL_SUCCESS, FETCH_INSERT_JOURNAL_FAILURE,
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
+    FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
 } from './ActionType';
 import { getToken } from '../../services/tokenServices';
 
@@ -327,17 +328,20 @@ export const fetchGetJournalRequest = () => ({ type: FETCH_GET_JOURNAL_REQUEST }
 export const fetchGetJournalSuccess = (data) => ({ type: FETCH_GET_JOURNAL_SUCCESS, payload: data });
 export const fetchGetJournalFailure = (error) => ({ type: FETCH_GET_JOURNAL_FAILURE, payload: error });
 
-export const fetchGetJournalData = (page, pageSize, search, dateFrom, dateTo) => async (dispatch) => {
+export const fetchGetJournalData = (page, pageSize, search, userId, userType, calendarId) => async (dispatch) => {
     dispatch(fetchGetJournalRequest());
     try {
         const token = getToken();
-        let url = `${baseUrl}/accounting/get-journal?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
-        if (dateFrom) url += `&dateFrom=${dateFrom}`;
-        if (dateTo)   url += `&dateTo=${dateTo}`;
+        let url = `${baseUrl}/accounting/get-journal-entries?page=${page}&pageSize=${pageSize}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (userId) url += `&userId=${userId}`;
+        if (userType) url += `&userType=${encodeURIComponent(userType)}`;
+        if (calendarId) url += `&calendarId=${calendarId}`;
+        
         const res = await fetch(url, { method: 'POST', headers: authHeaders(token) });
         const data = await res.json();
         dispatch(fetchGetJournalSuccess(data));
-        return { ok: true, data: data.data, totalRecords: data.totalRecords };
+        return { ok: true, data: data.Data || data.data, totalRecords: data.TotalRecords || data.totalRecords };
     } catch (err) {
         dispatch(fetchGetJournalFailure(err.message));
         return { ok: false, err };
@@ -352,8 +356,9 @@ export const fetchGetJournalDetailData = (journalId) => async (dispatch) => {
     dispatch(fetchGetJournalDetailRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-journal-detail?journalId=${journalId}`, {
-            method: 'POST', headers: authHeaders(token),
+        const res = await fetch(`${baseUrl}/accounting/get-journal-detail/${journalId}`, {
+            method: 'GET', 
+            headers: authHeaders(token),
         });
         const data = await res.json();
         dispatch(fetchGetJournalDetailSuccess(data));
@@ -392,7 +397,7 @@ export const fetchUpdateJournalData = (formData) => async (dispatch) => {
     dispatch(fetchUpdateJournalRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/update-journal`, {
+        const res = await fetch(`${baseUrl}/accounting/update-journal-entry`, {
             method: 'POST', headers: authHeaders(token), body: JSON.stringify(formData),
         });
         const data = await res.json();
@@ -400,6 +405,28 @@ export const fetchUpdateJournalData = (formData) => async (dispatch) => {
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchUpdateJournalFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const fetchPostJournalRequest = () => ({ type: FETCH_POST_JOURNAL_REQUEST });
+export const fetchPostJournalSuccess = (data) => ({ type: FETCH_POST_JOURNAL_SUCCESS, payload: data });
+export const fetchPostJournalFailure = (error) => ({ type: FETCH_POST_JOURNAL_FAILURE, payload: error });
+
+export const fetchPostJournalData = (journalId) => async (dispatch) => {
+    dispatch(fetchPostJournalRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/post-journal-entry`, {
+            method: 'POST', 
+            headers: authHeaders(token), 
+            body: JSON.stringify({ journalId }),
+        });
+        const data = await res.json();
+        dispatch(fetchPostJournalSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchPostJournalFailure(err.message));
         return { ok: false, err };
     }
 };
@@ -547,6 +574,35 @@ export const fetchPostCashierJournalData = (formData) => async (dispatch) => {
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchPostCashierJournalFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// School Year Dropdown
+// ============================================================================
+import {
+    FETCH_GET_SCHOOL_YEAR_LIST_REQUEST, 
+    FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, 
+    FETCH_GET_SCHOOL_YEAR_LIST_FAILURE,
+} from './ActionType';
+
+export const fetchGetSchoolYearListRequest = () => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_REQUEST });
+export const fetchGetSchoolYearListSuccess = (data) => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, payload: data });
+export const fetchGetSchoolYearListFailure = (error) => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_FAILURE, payload: error });
+
+export const fetchGetSchoolYearListData = () => async (dispatch) => {
+    dispatch(fetchGetSchoolYearListRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/get-school-year-list`, {
+            method: 'POST', headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchGetSchoolYearListSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchGetSchoolYearListFailure(err.message));
         return { ok: false, err };
     }
 };

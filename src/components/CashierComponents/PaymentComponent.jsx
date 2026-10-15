@@ -550,6 +550,9 @@ const PaymentComponent = () => {
         else if (transType === "Tuition Fee") {
             setUserFormId(student.StudentId);
         }
+        else{
+            setUserFormId(student.AppId);
+        }
         
         // Clear any previous errors
         setErrors(false);
@@ -627,6 +630,7 @@ const PaymentComponent = () => {
             transType,
             transCode: transDropdown?.transCode || "",
             transGroup: transDropdown?.transGroup || "",
+            feesChildId: transDropdown?.value || 0, // Store FeesChildId from dropdown
             userFormId,
             fullName,
             referenceNumber,
@@ -775,8 +779,10 @@ const PaymentComponent = () => {
                     UserId: t.userFormId,
                     ReferenceId: t.userFormId,
                     ReferenceNo: t.referenceNumber,
-                    FeesChildId: t.miscBreakdown?.[0]?.FeeChildId || null,
-                    MiscId: t.miscBreakdown?.[0]?.MiscId || null,
+                    // FeesChildId: for Assessment Plan use tuitionChildId, for others use stored feesChildId from dropdown
+                    FeesChildId: t.transType === "Assessment Plan" ? t.tuitionChildId : (t.feesChildId || null),
+                    // MiscId: comes from miscBreakdown array
+                    MiscId: (t.miscBreakdown && t.miscBreakdown.length > 0) ? (t.miscBreakdown[0]?.MiscId || null) : null,
                     TuitionChildId: t.tuitionChildId || 0,
                     TypeOfTransaction: t.transType,
                     OrChildId: t.orChildId,
@@ -803,8 +809,10 @@ const PaymentComponent = () => {
                     UserId: userFormId,
                     ReferenceId: userFormId,
                     ReferenceNo: referenceNumber,
-                    FeesChildId: miscBreakdown[0]?.FeeChildId || null,
-                    MiscId: miscBreakdown[0]?.MiscId || null,
+                    // FeesChildId: for Assessment Plan use tuitionChildId, for others use dropdown value
+                    FeesChildId: transType === "Assessment Plan" ? tuitionChildId : (transDropdown?.value || null),
+                    // MiscId: comes from miscBreakdown array
+                    MiscId: (miscBreakdown && miscBreakdown.length > 0) ? (miscBreakdown[0]?.MiscId || null) : null,
                     TuitionChildId: tuitionChildId || 0,
                     TypeOfTransaction: transType,
                     OrChildId: orNumberData.OrChildId,

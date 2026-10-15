@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchGetSchoolYearListData } from '../../states/AccountingState/Action';
 
 const SchoolYearDropdown = ({ 
     value, 
@@ -6,15 +8,31 @@ const SchoolYearDropdown = ({
     className = "px-3 py-2 border border-gray-300 rounded",
     includeAll = true 
 }) => {
-    // Centralized school year options - update this array to add new school years
+    const dispatch = useDispatch();
+    const schoolYearListState = useSelector((s) => s.accounting.schoolYearListState);
+
+    // Fetch school years on mount
+    useEffect(() => {
+        dispatch(fetchGetSchoolYearListData());
+    }, [dispatch]);
+
+    // Build school year options from Redux state
     const schoolYears = [
         ...(includeAll ? [{ value: "", label: "All School Years" }] : []),
-        { value: "2023-2024", label: "SY 2023-2024" },
-        { value: "2024-2025", label: "SY 2024-2025" },
-        { value: "2025-2026", label: "SY 2025-2026" },
-        { value: "2026-2027", label: "SY 2026-2027" },
-        // Add new school years here in the future
+        ...(schoolYearListState.data || []).map(sy => ({
+            value: sy.CalendarId || sy.calendarId,
+            label: sy.SchoolYear || sy.schoolYear
+        }))
     ];
+
+    // Loading state
+    if (schoolYearListState.loading) {
+        return (
+            <select className={className} disabled>
+                <option>Loading school years...</option>
+            </select>
+        );
+    }
 
     return (
         <select

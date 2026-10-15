@@ -22,6 +22,7 @@ import {
     FETCH_GET_JOURNAL_DETAIL_REQUEST, FETCH_GET_JOURNAL_DETAIL_SUCCESS, FETCH_GET_JOURNAL_DETAIL_FAILURE,
     FETCH_INSERT_JOURNAL_REQUEST, FETCH_INSERT_JOURNAL_SUCCESS, FETCH_INSERT_JOURNAL_FAILURE,
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
+    FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
     // SI Series
     FETCH_GET_SI_SERIES_REQUEST, FETCH_GET_SI_SERIES_SUCCESS, FETCH_GET_SI_SERIES_FAILURE,
     FETCH_INSERT_SI_SERIES_REQUEST, FETCH_INSERT_SI_SERIES_SUCCESS, FETCH_INSERT_SI_SERIES_FAILURE,
@@ -31,6 +32,8 @@ import {
     // Cashier Transaction Journal
     FETCH_GET_CASHIER_TRANSACTIONS_REQUEST, FETCH_GET_CASHIER_TRANSACTIONS_SUCCESS, FETCH_GET_CASHIER_TRANSACTIONS_FAILURE,
     FETCH_POST_CASHIER_JOURNAL_REQUEST, FETCH_POST_CASHIER_JOURNAL_SUCCESS, FETCH_POST_CASHIER_JOURNAL_FAILURE,
+    // School Year Dropdown
+    FETCH_GET_SCHOOL_YEAR_LIST_REQUEST, FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, FETCH_GET_SCHOOL_YEAR_LIST_FAILURE,
     // Templates / Fees (migrated from Finance)
     FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
     FETCH_LIST_OF_USER_DATA_REQUEST, FETCH_LIST_OF_USER_DATA_SUCCESS, FETCH_LIST_OF_USER_DATA_FAILURE,
@@ -71,6 +74,7 @@ const initialState = {
     journalDetailState: { ...s },
     insertJournalState: { ...s },
     updateJournalState: { ...s },
+    postJournalState: { ...s },
     // SI Series
     siSeriesListState: { ...s },
     insertSiSeriesState: { ...s },
@@ -80,6 +84,8 @@ const initialState = {
     // Cashier Transaction Journal
     cashierTransactionsState: { ...s },
     postCashierJournalState: { ...s },
+    // School Year Dropdown
+    schoolYearListState: { ...s },
     // Templates / Fees (migrated from Finance)
     templateTableState: { ...s },
     listOfUserState: { ...s },
@@ -174,6 +180,10 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_UPDATE_JOURNAL_SUCCESS: return { ...state, updateJournalState: ok(action.payload) };
         case FETCH_UPDATE_JOURNAL_FAILURE: return { ...state, updateJournalState: err(action.payload) };
 
+        case FETCH_POST_JOURNAL_REQUEST: return { ...state, postJournalState: req() };
+        case FETCH_POST_JOURNAL_SUCCESS: return { ...state, postJournalState: ok(action.payload) };
+        case FETCH_POST_JOURNAL_FAILURE: return { ...state, postJournalState: err(action.payload) };
+
         // ── SI Series ─────────────────────────────────────────────────────────
         case FETCH_GET_SI_SERIES_REQUEST: return { ...state, siSeriesListState: req() };
         case FETCH_GET_SI_SERIES_SUCCESS: return { ...state, siSeriesListState: ok(action.payload) };
@@ -200,6 +210,11 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_POST_CASHIER_JOURNAL_REQUEST: return { ...state, postCashierJournalState: req() };
         case FETCH_POST_CASHIER_JOURNAL_SUCCESS: return { ...state, postCashierJournalState: ok(action.payload) };
         case FETCH_POST_CASHIER_JOURNAL_FAILURE: return { ...state, postCashierJournalState: err(action.payload) };
+
+        // ── School Year Dropdown ──────────────────────────────────────────────
+        case FETCH_GET_SCHOOL_YEAR_LIST_REQUEST: return { ...state, schoolYearListState: req() };
+        case FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS: return { ...state, schoolYearListState: ok(action.payload) };
+        case FETCH_GET_SCHOOL_YEAR_LIST_FAILURE: return { ...state, schoolYearListState: err(action.payload) };
 
         // ── Templates / Fees (migrated from Finance) ──────────────────────────
         case FETCH_TEMPLATE_TABLE_DATA_REQUEST:

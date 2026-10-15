@@ -4,6 +4,7 @@ import SignalRListener from "./GlobalFunction/SignalRListener";
 
 function App() {
   const [userId, setUserId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   // Monitor localStorage for user changes
   useEffect(() => {
@@ -13,12 +14,15 @@ function App() {
         try {
           const user = JSON.parse(userData);
           setUserId(user?.UserId || null);
+          setUserRole(user?.UserRoleId || null);
         } catch (error) {
           console.error("Failed to parse userData:", error);
           setUserId(null);
+          setUserRole(null);
         }
       } else {
         setUserId(null);
+        setUserRole(null);
       }
     };
 
@@ -39,7 +43,7 @@ function App() {
 
   return (
     <>
-      {userId && <SignalRListener userId={userId} />}
+      {userId && userRole && <SignalRListener userId={userId} userRole={userRole} />}
       <AppRoutes />
     </>
   );

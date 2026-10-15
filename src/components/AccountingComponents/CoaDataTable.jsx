@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Plus, Lock, Pencil, ChevronRight, ChevronDown } from 'lucide-react';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
+import SearchableSelect from '../ButtonsComponents/SearchableSelect';
 import {
     fetchGetCoaData,
     fetchInsertCoaData,
@@ -23,6 +24,19 @@ const ACCOUNT_GROUPS = [
 ];
 
 const NORMAL_BALANCES = ['Debit', 'Credit'];
+
+// Mapping for auto-population based on Account Group
+const ACCOUNT_GROUP_DEFAULTS = {
+    'Asset': 'Debit',
+    'Contra-Asset': 'Credit',
+    'Liabilities': 'Credit',
+    "Stockholder's Equity": 'Credit',
+    'Revenue': 'Credit',
+    'Contra-Revenue': 'Debit',
+    'Direct Costs': 'Debit',
+    'Operating Expenses': 'Debit',
+    'Non-Operating Expense': 'Debit',
+};
 
 const ACCOUNT_LEVELS = [
     { value: 1, label: 'Level 1 — Header' },
@@ -215,7 +229,22 @@ const CoaDataTable = () => {
 
     // ── Add handlers ──────────────────────────────────────────────────────────
     const handleAddChange = (field, value) => {
-        setAddForm(prev => ({ ...prev, [field]: value }));
+        setAddForm(prev => {
+            const updated = { ...prev, [field]: value };
+            
+            // Auto-populate Account Group and Normal Balance when parent is selected
+            if (field === 'parentCoaChildId' && value) {
+                const parent = parentOptions.find(a => 
+                    String(a.coaChildId ?? a.CoaChildId) === String(value)
+                );
+                if (parent) {
+                    updated.accountGroup = f(parent, 'accountGroup', 'AccountGroup');
+                    updated.normalBalance = f(parent, 'normalBalance', 'NormalBalance');
+                }
+            }
+            
+            return updated;
+        });
         if (addErrors[field]) setAddErrors(prev => ({ ...prev, [field]: '' }));
     };
 
@@ -271,7 +300,22 @@ const CoaDataTable = () => {
     };
 
     const handleEditChange = (field, value) => {
-        setEditForm(prev => ({ ...prev, [field]: value }));
+        setEditForm(prev => {
+            const updated = { ...prev, [field]: value };
+            
+            // Auto-populate Account Group and Normal Balance when parent is selected
+            if (field === 'parentCoaChildId' && value) {
+                const parent = parentOptions.find(a => 
+                    String(a.coaChildId ?? a.CoaChildId) === String(value)
+                );
+                if (parent) {
+                    updated.accountGroup = f(parent, 'accountGroup', 'AccountGroup');
+                    updated.normalBalance = f(parent, 'normalBalance', 'NormalBalance');
+                }
+            }
+            
+            return updated;
+        });
         if (editErrors[field]) setEditErrors(prev => ({ ...prev, [field]: '' }));
     };
 
@@ -311,105 +355,128 @@ const CoaDataTable = () => {
     };
 
     // ── Shared form body ──────────────────────────────────────────────────────
-    const buildFormBody = (form, handleChange, errors, parentList) => (
-        <div className="flex flex-col gap-4 text-left">
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Parent Account</label>
-                <select
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
-                    value={form.parentCoaChildId}
-                    onChange={e => handleChange('parentCoaChildId', e.target.value)}
-                >
-                    <option value="">— None (Root / Level 1) —</option>
-                    {parentList.map(a => (
-                        <option key={a.coaChildId ?? a.CoaChildId} value={a.coaChildId ?? a.CoaChildId}>
-                            {a.accountCode ?? a.AccountCode} — {a.accountName ?? a.AccountName}
-                        </option>
-                    ))}
-                </select>
-            </div>
+    const buildFormBody = (form, handleChange, errors, parentList) => {
+        // Prepare options for SearchableSelect
+        const parentAccountOptions = [
+            { value: '', label: '— None (Root / Level 1) —' },
+            ...parentList.map(a => ({
+                value: String(a.coaChildId ?? a.CoaChildId),
+                label: `${a.accountCode ?? a.AccountCode} — ${a.accountName ?? a.AccountName}`
+            }))
+        ];
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Account Code <span className="text-red-500">*</span>
-                </label>
-                <input type="text" placeholder="e.g. 1-1001.12"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-400
-                        ${errors.accountCode ? 'border-red-400' : 'border-gray-300'}`}
-                    value={form.accountCode}
-                    onChange={e => handleChange('accountCode', e.target.value)} />
-                {errors.accountCode && <p className="text-xs text-red-500 mt-1">{errors.accountCode}</p>}
-            </div>
+        const accountGroupOptions = ACCOUNT_GROUPS.map(g => ({
+            value: g,
+            label: g
+        }));
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Account Name <span className="text-red-500">*</span>
-                </label>
-                <input type="text" placeholder="e.g. Petty Cash - Admin"
-                    className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400
-                        ${errors.accountName ? 'border-red-400' : 'border-gray-300'}`}
-                    value={form.accountName}
-                    onChange={e => handleChange('accountName', e.target.value)} />
-                {errors.accountName && <p className="text-xs text-red-500 mt-1">{errors.accountName}</p>}
-            </div>
+        const normalBalanceOptions = NORMAL_BALANCES.map(b => ({
+            value: b,
+            label: b
+        }));
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Account Group <span className="text-red-500">*</span>
-                </label>
-                <select
-                    className={`w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400
-                        ${errors.accountGroup ? 'border-red-400' : 'border-gray-300'}`}
-                    value={form.accountGroup}
-                    onChange={e => handleChange('accountGroup', e.target.value)}>
-                    <option value="">— Select Account Group —</option>
-                    {ACCOUNT_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-                {errors.accountGroup && <p className="text-xs text-red-500 mt-1">{errors.accountGroup}</p>}
-            </div>
+        const accountLevelOptions = ACCOUNT_LEVELS.map(l => ({
+            value: l.value,
+            label: l.label
+        }));
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Normal Balance <span className="text-red-500">*</span>
-                </label>
-                <select
-                    className={`w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400
-                        ${errors.normalBalance ? 'border-red-400' : 'border-gray-300'}`}
-                    value={form.normalBalance}
-                    onChange={e => handleChange('normalBalance', e.target.value)}>
-                    <option value="">— Select Normal Balance —</option>
-                    {NORMAL_BALANCES.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-                {errors.normalBalance && <p className="text-xs text-red-500 mt-1">{errors.normalBalance}</p>}
-            </div>
+        const statusOptions = [
+            { value: 'Y', label: 'Active' },
+            { value: 'N', label: 'Inactive' }
+        ];
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Account Level <span className="text-red-500">*</span>
-                </label>
-                <select
-                    className={`w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400
-                        ${errors.accountLevel ? 'border-red-400' : 'border-gray-300'}`}
-                    value={form.accountLevel}
-                    onChange={e => handleChange('accountLevel', e.target.value)}>
-                    <option value="">— Select Level —</option>
-                    {ACCOUNT_LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-                </select>
-                {errors.accountLevel && <p className="text-xs text-red-500 mt-1">{errors.accountLevel}</p>}
-            </div>
+        return (
+            <div className="flex flex-col gap-4 text-left">
+                <div>
+                    <SearchableSelect
+                        label="Parent Account"
+                        options={parentAccountOptions}
+                        value={parentAccountOptions.find(opt => opt.value === String(form.parentCoaChildId))}
+                        onChange={(selected) => handleChange('parentCoaChildId', selected?.value || '')}
+                        placeholder="— None (Root / Level 1) —"
+                        showSearchIcon={true}
+                    />
+                </div>
 
-            <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">Status</label>
-                <select
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-green-400"
-                    value={form.activeStatus}
-                    onChange={e => handleChange('activeStatus', e.target.value)}>
-                    <option value="Y">Active</option>
-                    <option value="N">Inactive</option>
-                </select>
+                <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Account Code <span className="text-red-500">*</span>
+                    </label>
+                    <input type="text" placeholder="e.g. 1-1001.12"
+                        className={`w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-green-400
+                            ${errors.accountCode ? 'border-red-400' : 'border-gray-300'}`}
+                        value={form.accountCode}
+                        onChange={e => handleChange('accountCode', e.target.value)} />
+                    {errors.accountCode && <p className="text-xs text-red-500 mt-1">{errors.accountCode}</p>}
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Account Name <span className="text-red-500">*</span>
+                    </label>
+                    <input type="text" placeholder="e.g. Petty Cash - Admin"
+                        className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400
+                            ${errors.accountName ? 'border-red-400' : 'border-gray-300'}`}
+                        value={form.accountName}
+                        onChange={e => handleChange('accountName', e.target.value)} />
+                    {errors.accountName && <p className="text-xs text-red-500 mt-1">{errors.accountName}</p>}
+                </div>
+
+                <div>
+                    <SearchableSelect
+                        label="Account Group"
+                        required={true}
+                        options={accountGroupOptions}
+                        value={accountGroupOptions.find(opt => opt.value === form.accountGroup)}
+                        onChange={(selected) => handleChange('accountGroup', selected?.value || '')}
+                        placeholder="— Select Account Group —"
+                        showSearchIcon={true}
+                        errors={!!errors.accountGroup}
+                        errorMessage={errors.accountGroup}
+                    />
+                </div>
+
+                <div>
+                    <SearchableSelect
+                        label="Normal Balance"
+                        required={true}
+                        options={normalBalanceOptions}
+                        value={normalBalanceOptions.find(opt => opt.value === form.normalBalance)}
+                        onChange={(selected) => handleChange('normalBalance', selected?.value || '')}
+                        placeholder="— Select Normal Balance —"
+                        showSearchIcon={true}
+                        errors={!!errors.normalBalance}
+                        errorMessage={errors.normalBalance}
+                    />
+                </div>
+
+                <div>
+                    <SearchableSelect
+                        label="Account Level"
+                        required={true}
+                        options={accountLevelOptions}
+                        value={accountLevelOptions.find(opt => opt.value === form.accountLevel)}
+                        onChange={(selected) => handleChange('accountLevel', selected?.value || '')}
+                        placeholder="— Select Level —"
+                        showSearchIcon={true}
+                        errors={!!errors.accountLevel}
+                        errorMessage={errors.accountLevel}
+                    />
+                </div>
+
+                <div>
+                    <SearchableSelect
+                        label="Status"
+                        options={statusOptions}
+                        value={statusOptions.find(opt => opt.value === form.activeStatus)}
+                        onChange={(selected) => handleChange('activeStatus', selected?.value || 'Y')}
+                        placeholder="Select Status"
+                        showSearchIcon={false}
+                    />
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const buildConfirmBody = (form) => (
         <div className="text-sm text-gray-600 space-y-2 text-left">
