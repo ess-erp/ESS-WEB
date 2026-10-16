@@ -12,6 +12,7 @@ import {
     FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
     FETCH_GET_CASHIER_MISC_BREAKDOWN_REQUEST, FETCH_GET_CASHIER_MISC_BREAKDOWN_SUCCESS, FETCH_GET_CASHIER_MISC_BREAKDOWN_FAILURE,
     FETCH_CASHIER_PENDING_TRANSACTION_REQUEST, FETCH_CASHIER_PENDING_TRANSACTION_SUCCESS, FETCH_CASHIER_PENDING_TRANSACTION_FAILURE,
+    FETCH_CANCEL_TRANSACTION_REQUEST, FETCH_CANCEL_TRANSACTION_SUCCESS, FETCH_CANCEL_TRANSACTION_FAILURE,
 } from './ActionType';
 import { getToken } from "../../services/tokenServices";
 
@@ -416,6 +417,35 @@ export const fetchCashierPendingTransactionData = (appId) => async (dispatch) =>
         return { ok: true, data: res };
     } catch (error) {
         dispatch(fetchCashierPendingTransactionFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+export const fetchCancelTransactionRequest = () => ({ type: FETCH_CANCEL_TRANSACTION_REQUEST });
+export const fetchCancelTransactionSuccess = (data) => ({ type: FETCH_CANCEL_TRANSACTION_SUCCESS, payload: data });
+export const fetchCancelTransactionFailure = (error) => ({ type: FETCH_CANCEL_TRANSACTION_FAILURE, payload: error });
+
+export const fetchCancelTransactionData = (transId) => async (dispatch) => {
+    dispatch(fetchCancelTransactionRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/cashier/cancel-transaction`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ transId })
+        });
+
+        const res = await response.json();
+        dispatch(fetchCancelTransactionSuccess(res));
+        return { ok: true, data: res };
+    }
+    catch (error) {
+        dispatch(fetchCancelTransactionFailure(error.message));
         return { ok: false, error };
     }
 };

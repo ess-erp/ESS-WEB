@@ -12,6 +12,7 @@ import {
     FETCH_STUDENT_APP_ASSESSMENT_REQUEST, FETCH_STUDENT_APP_ASSESSMENT_SUCCESS, FETCH_STUDENT_APP_ASSESSMENT_FAILURE,
     FETCH_GET_CASHIER_MISC_BREAKDOWN_REQUEST, FETCH_GET_CASHIER_MISC_BREAKDOWN_SUCCESS, FETCH_GET_CASHIER_MISC_BREAKDOWN_FAILURE,
     FETCH_CASHIER_PENDING_TRANSACTION_REQUEST, FETCH_CASHIER_PENDING_TRANSACTION_SUCCESS, FETCH_CASHIER_PENDING_TRANSACTION_FAILURE,
+    FETCH_CANCEL_TRANSACTION_REQUEST, FETCH_CANCEL_TRANSACTION_SUCCESS, FETCH_CANCEL_TRANSACTION_FAILURE,
 } from './ActionType';
 
 const initialState = {
@@ -35,6 +36,7 @@ const initialGeneralState = {
     studentAppAssessmentState: { ...initialState },
     cashierMiscBreakdownState: { ...initialState },
     cashierPendingTransactionState: { ...initialState },
+    cancelTransactionState: { ...initialState },
 }
 
 const cashierReducer = (state = initialGeneralState, action) => {
@@ -138,6 +140,13 @@ const cashierReducer = (state = initialGeneralState, action) => {
             return { ...state, cashierMiscBreakdownState: { loading: false, data: action.payload, error: '' } };
         case FETCH_GET_CASHIER_MISC_BREAKDOWN_FAILURE:
             return { ...state, cashierMiscBreakdownState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_CANCEL_TRANSACTION_REQUEST:
+            return { ...state, cancelTransactionState: { loading: true, data: [], error: '' } };
+        case FETCH_CANCEL_TRANSACTION_SUCCESS:
+            return { ...state, cancelTransactionState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_CANCEL_TRANSACTION_FAILURE:
+            return { ...state, cancelTransactionState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

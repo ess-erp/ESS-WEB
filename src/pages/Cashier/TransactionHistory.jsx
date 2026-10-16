@@ -34,7 +34,7 @@ const TransactionHistory = () => {
                         </div>
                         <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
                             <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">This is the status of on-going enrollment of student.</span>
+                            <span className="block sm:inline">List of transaction. You can request to cancel the SI number by clicking the x icon in the action column.</span>
                         </div>
                         {/* <EnrollmentStatusComponent />
                             <AnnouncementComponent /> */}

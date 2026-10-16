@@ -24,6 +24,7 @@ import {
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
     FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST, FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS, FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE,
     FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
+    FETCH_UPDATE_JOURNAL_STATUS_REQUEST, FETCH_UPDATE_JOURNAL_STATUS_SUCCESS, FETCH_UPDATE_JOURNAL_STATUS_FAILURE,
 } from './ActionType';
 import { getToken } from '../../services/tokenServices';
 
@@ -455,6 +456,61 @@ export const fetchPostJournalData = (journalId) => async (dispatch) => {
 };
 
 // ============================================================================
+// Update Journal Status (Unified: Post/Approve/Decline)
+// Y = Post Journal, C = Approve Cancellation, D = Decline Cancellation
+// ============================================================================
+
+export const fetchUpdateJournalStatusRequest = () => ({ type: FETCH_UPDATE_JOURNAL_STATUS_REQUEST });
+export const fetchUpdateJournalStatusSuccess = (data) => ({ type: FETCH_UPDATE_JOURNAL_STATUS_SUCCESS, payload: data });
+export const fetchUpdateJournalStatusFailure = (error) => ({ type: FETCH_UPDATE_JOURNAL_STATUS_FAILURE, payload: error });
+
+export const fetchUpdateJournalStatusData = (journalId, statusAction, modifiedByUserId) => async (dispatch) => {
+    dispatch(fetchUpdateJournalStatusRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/update-journal-status?modifiedByUserId=${modifiedByUserId}`, {
+            method: 'POST', 
+            headers: authHeaders(token), 
+            body: JSON.stringify({ 
+                journalId, 
+                statusAction 
+            }),
+        });
+        const data = await res.json();
+        dispatch(fetchUpdateJournalStatusSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchUpdateJournalStatusFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Edit Journal Lines ────────────────────────────────────────────────────────
+import { FETCH_EDIT_JOURNAL_LINES_REQUEST, FETCH_EDIT_JOURNAL_LINES_SUCCESS, FETCH_EDIT_JOURNAL_LINES_FAILURE } from './ActionType';
+
+export const fetchEditJournalLinesRequest = () => ({ type: FETCH_EDIT_JOURNAL_LINES_REQUEST });
+export const fetchEditJournalLinesSuccess = (data) => ({ type: FETCH_EDIT_JOURNAL_LINES_SUCCESS, payload: data });
+export const fetchEditJournalLinesFailure = (error) => ({ type: FETCH_EDIT_JOURNAL_LINES_FAILURE, payload: error });
+
+export const fetchEditJournalLinesData = (payload) => async (dispatch) => {
+    dispatch(fetchEditJournalLinesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/edit-journal-lines`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(fetchEditJournalLinesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchEditJournalLinesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
 // SI Series
 // ============================================================================
 import {
@@ -479,7 +535,6 @@ export const fetchGetSiSeriesData = (page, pageSize, search) => async (dispatch)
             method: 'POST', headers: authHeaders(token),
         });
         const data = await res.json();
-        console.log(data);
         dispatch(fetchGetSiSeriesSuccess(data));
         return { ok: true, data: data.Data, totalRecords: data.TotalRecords };
     } catch (err) {

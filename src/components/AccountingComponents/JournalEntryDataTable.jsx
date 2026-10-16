@@ -11,14 +11,23 @@ import {
     Search,
     Filter,
     X,
-    Receipt
+    Receipt,
+    CheckCircle,
+    XCircle,
+    AlertTriangle
 } from "lucide-react";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import ViewJournalModalComponent from "./ViewJournalModalComponent";
-import { fetchGetJournalData, fetchGetSchoolYearListData, fetchGetJournalDetailData, fetchPostJournalData, fetchEditJournalAmountsData } from "../../states/AccountingState/Action";
-import { showToast } from "../../states/NotificationState/Action";
+import { 
+    fetchGetJournalData, 
+    fetchGetSchoolYearListData, 
+    fetchGetJournalDetailData, 
+    fetchPostJournalData, 
+    fetchEditJournalAmountsData, 
+    fetchUpdateJournalStatusData
+ } from "../../states/AccountingState/Action";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n) =>
@@ -69,7 +78,18 @@ const JournalEntryDataTable = () => {
     const [isViewModal, setIsViewModal] = useState(false);
     const [selectedJournalId, setSelectedJournalId] = useState(null);
     const [posting, setPosting] = useState(false);
-    const [modalData, setModalData] = useState({ isBalanced: false, activeStatus: "P", journalId: null });
+    const [modalData, setModalData] = useState({ 
+        isBalanced: false, 
+        activeStatus: "P", 
+        journalId: null,
+        isCancellationRequested: false
+    });
+
+    // Confirmation and Result Modals
+    const [isConfirmModal, setIsConfirmModal] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // { type: 'Y'|'C'|'D', journalId }
+    const [isResultModal, setIsResultModal] = useState(false);
+    const [resultData, setResultData] = useState({ success: false, message: '' });
 
     // ── Fetch Data ────────────────────────────────────────────────────────────
     const fetchData = () => {
@@ -100,25 +120,25 @@ const JournalEntryDataTable = () => {
         await dispatch(fetchGetJournalDetailData(journalId));
     };
 
-    const handlePostJournal = async (journalId) => {
-        setPosting(true);
-        try {
-            const result = await dispatch(fetchPostJournalData(journalId));
-            if (result.ok) {
-                showToast("success", "Journal entry posted successfully!");
-                // Refresh the journal detail
-                await dispatch(fetchGetJournalDetailData(journalId));
-                // Refresh the list
-                fetchData();
-            } else {
-                showToast("error", result.data?.message || "Failed to post journal entry");
-            }
-        } catch (error) {
-            showToast("error", "An error occurred while posting journal entry");
-        } finally {
-            setPosting(false);
-        }
-    };
+    // const handlePostJournal = async (journalId) => {
+    //     setPosting(true);
+    //     try {
+    //         const result = await dispatch(fetchPostJournalData(journalId));
+    //         if (result.ok) {
+    //             showToast("success", "Journal entry posted successfully!");
+    //             // Refresh the journal detail
+    //             await dispatch(fetchGetJournalDetailData(journalId));
+    //             // Refresh the list
+    //             fetchData();
+    //         } else {
+    //             showToast("error", result.data?.message || "Failed to post journal entry");
+    //         }
+    //     } catch (error) {
+    //         showToast("error", "An error occurred while posting journal entry");
+    //     } finally {
+    //         setPosting(false);
+    //     }
+    // };
 
     const handleEditJournal = async (payload) => {
         try {
@@ -137,6 +157,67 @@ const JournalEntryDataTable = () => {
         }
     };
 
+    const handleUpdateJournalStatus = async (journalId, statusAction) => {
+        setPosting(true);
+        try {
+            // Get modifiedByUserId from logged-in user
+            const modifiedByUserId = user?.userId || user?.UserId;
+            
+            if (!modifiedByUserId) {
+                dispatch(showToast({
+                    title: "Error",
+                    message: "User ID not found. Please log in again.",
+                    type: "error"
+                }));
+                setPosting(false);
+                return;
+            }
+
+            const result = await dispatch(fetchUpdateJournalStatusData(journalId, statusAction, modifiedByUserId));
+            console.log(result);
+            if (result.ok) {
+                // Different messages based on status action
+                let successMessage = '';
+                if (statusAction === 'Y') {
+                    successMessage = 'Journal entry posted successfully!';
+                } else if (statusAction === 'C') {
+                    successMessage = 'SI/OR cancellation approved successfully!';
+                } else if (statusAction === 'D') {
+                    successMessage = 'SI/OR cancellation declined successfully!';
+                }
+                
+                dispatch(showToast({
+                    title: "Success",
+                    message: successMessage,
+                    type: "success"
+                }));
+                
+                // Refresh the journal detail
+                await dispatch(fetchGetJournalDetailData(journalId));
+                // Refresh the list
+                fetchData();
+                // Close modal if cancelled (approved)
+                if (statusAction === 'C') {
+                    setIsViewModal(false);
+                }
+            } else {
+                dispatch(showToast({
+                    title: "Error",
+                    message: result.data?.message || result.data?.Message || "Failed to update journal status",
+                    type: "error"
+                }));
+            }
+        } catch (error) {
+            dispatch(showToast({
+                title: "Error",
+                message: error.message,
+                type: "error"
+            }));
+        } finally {
+            setPosting(false);
+        }
+    };
+
     const handleClearFilters = () => {
         setSearch("");
         setUserType(null);
@@ -146,16 +227,6 @@ const JournalEntryDataTable = () => {
 
     // ── DataTable Columns ─────────────────────────────────────────────────────
     const columns = [
-        // {
-        //     name: "Journal ID",
-        //     selector: (r) => r.JournalId,
-        //     sortable: true,
-        //     minWidth: "110px",
-        //     maxWidth: "130px",
-        //     cell: (r) => (
-        //         <span className="font-mono text-xs font-bold text-gray-900">#{r.JournalId}</span>
-        //     ),
-        // },
         {
             name: "Issued To",
             selector: (r) => r.IssuedFullName || "—",
@@ -260,14 +331,26 @@ const JournalEntryDataTable = () => {
             minWidth: "140px",
             maxWidth: "180px",
             cell: (r) => {
+                // Backend returns: "POSTED" (Y), "CANCELLED" (C), or "UNPOSTED" (P)
+                const status = r.Status || "UNPOSTED";
                 const activeStatus = r.ActiveStatus || "P";
-                const isPosted = activeStatus === "Y";
+                
+                // Determine color based on ActiveStatus
+                // Y = Green (Posted), C = Red (Cancelled), P = Red (Unposted)
+                let colorClass = '';
+                if (activeStatus === "Y") {
+                    colorClass = 'text-green-700 bg-green-50 border-green-200';
+                } else if (activeStatus === "C") {
+                    colorClass = 'text-red-700 bg-red-50 border-red-200';
+                } else {
+                    colorClass = 'text-orange-700 bg-orange-50 border-orange-200';
+                }
                 
                 return (
                     <div className="py-2">
-                        <p className={`text-xs font-semibold ${isPosted ? 'text-green-700' : 'text-red-700'}`}>
-                            {isPosted ? 'POSTED' : 'UNPOSTED'}
-                        </p>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${colorClass}`}>
+                            {status}
+                        </span>
                     </div>
                 );
             },
@@ -481,7 +564,7 @@ const JournalEntryDataTable = () => {
                         <ViewJournalModalComponent 
                             journal={journalDetailState.data} 
                             loading={journalDetailState.loading}
-                            onPost={handlePostJournal}
+                            onPost={handleUpdateJournalStatus}
                             posting={posting}
                             onGetModalData={setModalData}
                             onEdit={handleEditJournal}
@@ -489,17 +572,45 @@ const JournalEntryDataTable = () => {
                     </div>
                 }
                 buttons={[
-                    // Show Post button only if status is Pending (P)
-                    ...(modalData.activeStatus === "P" ? [{
+                    // If status is "C" (Cancelled), only show Close button
+                    ...(modalData.activeStatus === "C" ? [] :
+                    // Show Approve and Decline buttons if there's a cancellation request AND not cancelled
+                    modalData.isCancellationRequested && modalData.activeStatus !== "C" ? [
+                        {
+                            label: posting ? "Processing..." : "Approve Cancellation",
+                            type: "green",
+                            onClick: () => handleUpdateJournalStatus(modalData.journalId, 'C'),
+                            disabled: posting,
+                            icon: posting ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : <CheckCircle size={16} />
+                        },
+                        {
+                            label: posting ? "Processing..." : "Decline Cancellation",
+                            type: "red",
+                            onClick: () => handleUpdateJournalStatus(modalData.journalId, 'D'),
+                            disabled: posting,
+                            icon: posting ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            ) : <XCircle size={16} />
+                        }
+                    ] : 
+                    // Show Post button only if status is Pending (P) and no cancellation request
+                    modalData.activeStatus === "P" ? [{
                         label: posting ? "Posting..." : "Post Journal Entry",
                         type: "green",
-                        onClick: () => handlePostJournal(modalData.journalId),
+                        onClick: () => handleUpdateJournalStatus(modalData.journalId, 'Y'),
                         disabled: posting || !modalData.isBalanced,
                         icon: posting ? (
                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                         ) : <Receipt size={16} />
                     }] : []),
-                    { label: "Close", type: "red", onClick: () => setIsViewModal(false) },
+                    // Close button - always shown with different color if cancelled
+                    { 
+                        label: "Close", 
+                        type: modalData.activeStatus === "C" ? "red" : "blue", 
+                        onClick: () => setIsViewModal(false) 
+                    },
                 ]}
             />
         </div>

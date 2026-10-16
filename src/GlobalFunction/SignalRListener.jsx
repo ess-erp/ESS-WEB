@@ -11,7 +11,7 @@
  * - Role 1 (Admission): ReceiveNotification, UpdateEnrollmentCount, NewTestPermit
  * - Role 2 (CFW): ReceiveNotification, UpdateCfwEnrollmentCount
  * - Role 3 (Cashier): ReceiveNotification, NewTestPermit, PaymentReceived
- * - Role 4 (Accounting): ReceiveNotification, NewTransaction
+ * - Role 4 (Accounting): ReceiveNotification, NewTransaction, NewJournalEntry
  * - Role 5 (SRU): ReceiveNotification, StudentUpdate
  * - Role 6 (Academic): ReceiveNotification, GradeUpdate
  * - Role 7-10 (HR/Management): ReceiveNotification, EmployeeUpdate
@@ -21,7 +21,7 @@
  * - Role 14-15 (Teacher): ReceiveNotification, ClassUpdate
  * - Role 16 (Student): ReceiveNotification (student-specific)
  * - Role 17 (Parent): ReceiveNotification, NewTestPermit (parent-specific, child's test permit)
- * - Role 18 (Accounting): ReceiveNotification, NewTransaction
+ * - Role 18 (Accounting): ReceiveNotification, NewTransaction, NewJournalEntry
  * 
  * All real-time events are dispatched to Redux for state management.
  * 
@@ -47,7 +47,7 @@ const ROLE_EVENT_MAP = {
     1: ['ReceiveNotification', 'UpdateEnrollmentCount', 'NewTestPermit'], // Admission
     2: ['ReceiveNotification', 'UpdateCfwEnrollmentCount'], // CFW
     3: ['ReceiveNotification', 'NewTestPermit', 'PaymentReceived'], // Cashier
-    4: ['ReceiveNotification', 'NewTransaction'], // Accounting
+    4: ['ReceiveNotification', 'NewTransaction', 'NewJournalEntry'], // Accounting
     5: ['ReceiveNotification', 'StudentUpdate'], // SRU
     6: ['ReceiveNotification', 'GradeUpdate'], // Academic
     7: ['ReceiveNotification', 'EmployeeUpdate'], // HR
@@ -61,7 +61,7 @@ const ROLE_EVENT_MAP = {
     15: ['ReceiveNotification', 'ClassUpdate'], // Teacher
     16: ['ReceiveNotification'], // Student (student-specific notifications)
     17: ['ReceiveNotification', 'NewTestPermit'], // Parent (receives test permit notifications for their children)
-    18: ['ReceiveNotification', 'NewTransaction'], // Accounting
+    18: ['ReceiveNotification', 'NewTransaction', 'NewJournalEntry'], // Accounting
 };
 
 const SignalRListener = ({ userId, userRole }) => {
@@ -151,7 +151,86 @@ const SignalRListener = ({ userId, userRole }) => {
                             // Default toast for other roles
                             dispatch(showToast(data));
                         }
-                    } else {
+                    } 
+                    // Special handling for CANCELLATION_REQUEST notifications
+                    else if (notificationType === 'CANCELLATION_REQUEST') {
+                        // For Accounting roles (4, 18), show with action to review
+                        if (userRole === 18) {
+                            // Extract OR Number from message if available
+                            const orNumberMatch = (data.Message || data.message || '').match(/SI Number: (\w+)/);
+                            const orNumber = orNumberMatch ? orNumberMatch[1] : '';
+
+                            dispatch(showToast({
+                                title: data.Title || data.title || "SI Cancellation Request",
+                                message: data.Message || data.message,
+                                type: "warning",
+                                action: orNumber ? {
+                                    label: "Review Request",
+                                    url: `/accounting/journal-entry`
+                                } : undefined
+                            }));
+                        } else {
+                            // Default toast for other roles
+                            dispatch(showToast(data));
+                        }
+                    }
+                    // Special handling for NEW_JOURNAL_ENTRY notifications
+                    else if (notificationType === 'NEW_JOURNAL_ENTRY') {
+                        // For Accounting roles (4, 18), show with action to view
+                        if (userRole === 4 || userRole === 18) {
+                            const journalId = data.JournalId || data.journalId;
+
+                            dispatch(showToast({
+                                title: data.Title || data.title || "New Journal Entry",
+                                message: data.Message || data.message,
+                                type: "info",
+                                action: journalId ? {
+                                    label: "View Entry",
+                                    url: `/accounting/journal-entry?journalId=${journalId}`
+                                } : undefined
+                            }));
+                        } else {
+                            // Default toast for other roles
+                            dispatch(showToast(data));
+                        }
+                    }
+                    // Special handling for CANCELLATION_APPROVED notifications
+                    else if (notificationType === 'CANCELLATION_APPROVED') {
+                        // For Cashier role (3), show success notification
+                        if (userRole === 3) {
+                            dispatch(showToast({
+                                title: data.Title || data.title || "Cancellation Approved",
+                                message: data.Message || data.message,
+                                type: "success",
+                                action: {
+                                    label: "View Transactions",
+                                    url: `/cashier/transaction-history`
+                                }
+                            }));
+                        } else {
+                            // Default toast for other roles
+                            dispatch(showToast(data));
+                        }
+                    }
+                    // Special handling for CANCELLATION_DECLINED notifications
+                    else if (notificationType === 'CANCELLATION_DECLINED') {
+                        // For Cashier role (3), show warning notification
+                        if (userRole === 3) {
+                            dispatch(showToast({
+                                title: data.Title || data.title || "Cancellation Declined",
+                                message: data.Message || data.message,
+                                type: "warning",
+                                action: {
+                                    label: "View Transactions",
+                                    url: `/cashier/transaction-history`
+                                }
+                            }));
+                        } else {
+                            // Default toast for other roles
+                            dispatch(showToast(data));
+                        }
+                    }
+                    else {
                         // Default notification handling for other types
                         dispatch(showToast(data));
                     }
@@ -237,6 +316,24 @@ const SignalRListener = ({ userId, userRole }) => {
                         title: "New Transaction",
                         message: data.message,
                         type: "info"
+                    }));
+                });
+            }
+
+            // NewJournalEntry - Accounting roles (4, 18)
+            if (allowedEvents.includes('NewJournalEntry')) {
+                connection.on("NewJournalEntry", (data) => {
+                    console.log(`📒 [Role ${userRole}] New Journal Entry:`, data);
+                    
+                    dispatch(receiveSignalRNotification(data));
+                    dispatch(showToast({
+                        title: data.Title || data.title || "New Journal Entry",
+                        message: data.Message || data.message,
+                        type: "info",
+                        action: data.JournalId ? {
+                            label: "View Entry",
+                            url: `/accounting/journal-entry?journalId=${data.JournalId}`
+                        } : undefined
                     }));
                 });
             }

@@ -24,6 +24,8 @@ import {
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
     FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST, FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS, FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE,
     FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
+    FETCH_UPDATE_JOURNAL_STATUS_REQUEST, FETCH_UPDATE_JOURNAL_STATUS_SUCCESS, FETCH_UPDATE_JOURNAL_STATUS_FAILURE,
+    FETCH_EDIT_JOURNAL_LINES_REQUEST, FETCH_EDIT_JOURNAL_LINES_SUCCESS, FETCH_EDIT_JOURNAL_LINES_FAILURE,
     // SI Series
     FETCH_GET_SI_SERIES_REQUEST, FETCH_GET_SI_SERIES_SUCCESS, FETCH_GET_SI_SERIES_FAILURE,
     FETCH_INSERT_SI_SERIES_REQUEST, FETCH_INSERT_SI_SERIES_SUCCESS, FETCH_INSERT_SI_SERIES_FAILURE,
@@ -77,6 +79,8 @@ const initialState = {
     updateJournalState: { ...s },
     editJournalAmountsState: { ...s },
     postJournalState: { ...s },
+    updateJournalStatusState: { ...s },
+    editJournalLinesState: { ...s },
     // SI Series
     siSeriesListState: { ...s },
     insertSiSeriesState: { ...s },
@@ -189,6 +193,14 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_POST_JOURNAL_REQUEST: return { ...state, postJournalState: req() };
         case FETCH_POST_JOURNAL_SUCCESS: return { ...state, postJournalState: ok(action.payload) };
         case FETCH_POST_JOURNAL_FAILURE: return { ...state, postJournalState: err(action.payload) };
+
+        case FETCH_UPDATE_JOURNAL_STATUS_REQUEST: return { ...state, updateJournalStatusState: req() };
+        case FETCH_UPDATE_JOURNAL_STATUS_SUCCESS: return { ...state, updateJournalStatusState: ok(action.payload) };
+        case FETCH_UPDATE_JOURNAL_STATUS_FAILURE: return { ...state, updateJournalStatusState: err(action.payload) };
+
+        case FETCH_EDIT_JOURNAL_LINES_REQUEST: return { ...state, editJournalLinesState: req() };
+        case FETCH_EDIT_JOURNAL_LINES_SUCCESS: return { ...state, editJournalLinesState: ok(action.payload) };
+        case FETCH_EDIT_JOURNAL_LINES_FAILURE: return { ...state, editJournalLinesState: err(action.payload) };
 
         // ── SI Series ─────────────────────────────────────────────────────────
         case FETCH_GET_SI_SERIES_REQUEST: return { ...state, siSeriesListState: req() };
