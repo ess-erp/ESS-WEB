@@ -22,6 +22,7 @@ import {
     FETCH_GET_JOURNAL_DETAIL_REQUEST, FETCH_GET_JOURNAL_DETAIL_SUCCESS, FETCH_GET_JOURNAL_DETAIL_FAILURE,
     FETCH_INSERT_JOURNAL_REQUEST, FETCH_INSERT_JOURNAL_SUCCESS, FETCH_INSERT_JOURNAL_FAILURE,
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
+    FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST, FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS, FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE,
     FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
 } from './ActionType';
 import { getToken } from '../../services/tokenServices';
@@ -405,6 +406,28 @@ export const fetchUpdateJournalData = (formData) => async (dispatch) => {
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchUpdateJournalFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const fetchEditJournalAmountsRequest = () => ({ type: FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST });
+export const fetchEditJournalAmountsSuccess = (data) => ({ type: FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS, payload: data });
+export const fetchEditJournalAmountsFailure = (error) => ({ type: FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE, payload: error });
+
+export const fetchEditJournalAmountsData = (formData) => async (dispatch) => {
+    dispatch(fetchEditJournalAmountsRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/edit-journal-amounts`, {
+            method: 'POST', 
+            headers: authHeaders(token), 
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchEditJournalAmountsSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchEditJournalAmountsFailure(err.message));
         return { ok: false, err };
     }
 };

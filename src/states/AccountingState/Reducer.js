@@ -22,6 +22,7 @@ import {
     FETCH_GET_JOURNAL_DETAIL_REQUEST, FETCH_GET_JOURNAL_DETAIL_SUCCESS, FETCH_GET_JOURNAL_DETAIL_FAILURE,
     FETCH_INSERT_JOURNAL_REQUEST, FETCH_INSERT_JOURNAL_SUCCESS, FETCH_INSERT_JOURNAL_FAILURE,
     FETCH_UPDATE_JOURNAL_REQUEST, FETCH_UPDATE_JOURNAL_SUCCESS, FETCH_UPDATE_JOURNAL_FAILURE,
+    FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST, FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS, FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE,
     FETCH_POST_JOURNAL_REQUEST, FETCH_POST_JOURNAL_SUCCESS, FETCH_POST_JOURNAL_FAILURE,
     // SI Series
     FETCH_GET_SI_SERIES_REQUEST, FETCH_GET_SI_SERIES_SUCCESS, FETCH_GET_SI_SERIES_FAILURE,
@@ -74,6 +75,7 @@ const initialState = {
     journalDetailState: { ...s },
     insertJournalState: { ...s },
     updateJournalState: { ...s },
+    editJournalAmountsState: { ...s },
     postJournalState: { ...s },
     // SI Series
     siSeriesListState: { ...s },
@@ -179,6 +181,10 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_UPDATE_JOURNAL_REQUEST: return { ...state, updateJournalState: req() };
         case FETCH_UPDATE_JOURNAL_SUCCESS: return { ...state, updateJournalState: ok(action.payload) };
         case FETCH_UPDATE_JOURNAL_FAILURE: return { ...state, updateJournalState: err(action.payload) };
+
+        case FETCH_EDIT_JOURNAL_AMOUNTS_REQUEST: return { ...state, editJournalAmountsState: req() };
+        case FETCH_EDIT_JOURNAL_AMOUNTS_SUCCESS: return { ...state, editJournalAmountsState: ok(action.payload) };
+        case FETCH_EDIT_JOURNAL_AMOUNTS_FAILURE: return { ...state, editJournalAmountsState: err(action.payload) };
 
         case FETCH_POST_JOURNAL_REQUEST: return { ...state, postJournalState: req() };
         case FETCH_POST_JOURNAL_SUCCESS: return { ...state, postJournalState: ok(action.payload) };

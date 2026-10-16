@@ -17,7 +17,7 @@ import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import ViewJournalModalComponent from "./ViewJournalModalComponent";
-import { fetchGetJournalData, fetchGetSchoolYearListData, fetchGetJournalDetailData, fetchPostJournalData } from "../../states/AccountingState/Action";
+import { fetchGetJournalData, fetchGetSchoolYearListData, fetchGetJournalDetailData, fetchPostJournalData, fetchEditJournalAmountsData } from "../../states/AccountingState/Action";
 import { showToast } from "../../states/NotificationState/Action";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -117,6 +117,23 @@ const JournalEntryDataTable = () => {
             showToast("error", "An error occurred while posting journal entry");
         } finally {
             setPosting(false);
+        }
+    };
+
+    const handleEditJournal = async (payload) => {
+        try {
+            const result = await dispatch(fetchEditJournalAmountsData(payload));
+            if (result.ok) {
+                dispatch(showToast("success", "Journal amounts updated successfully!"));
+                // Refresh the journal detail with the journalId from payload
+                await dispatch(fetchGetJournalDetailData(payload.JournalId));
+                // Refresh the list
+                fetchData();
+            } else {
+                dispatch(showToast("error", result.data?.message || "Failed to update journal amounts"));
+            }
+        } catch (error) {
+            dispatch(showToast("error", "An error occurred while updating journal amounts"));
         }
     };
 
@@ -467,6 +484,7 @@ const JournalEntryDataTable = () => {
                             onPost={handlePostJournal}
                             posting={posting}
                             onGetModalData={setModalData}
+                            onEdit={handleEditJournal}
                         />
                     </div>
                 }

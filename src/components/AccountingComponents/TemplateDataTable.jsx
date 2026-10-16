@@ -15,6 +15,7 @@ import {
     fetchLevelData,
 } from "../../states/AdmissionState/Action";
 import useTemplateStore from "../../zustands/AccountingZustands/useTemplateStore";
+import TuitionFeeTemplateForm from "./TuitionFeeTemplateForm";
 
 const TemplateDataTable = ({ selectedStatus }) => {
     const dispatch = useDispatch();
@@ -485,6 +486,8 @@ const TemplateDataTable = ({ selectedStatus }) => {
                 isOpen={isModalOpen}
                 onClose={closeModal}
                 title="Add New Template"
+                size="w-[95vw] max-w-6xl"
+                maxHeight="90vh"
                 body={
                     <div className="max-h-[70vh] overflow-y-auto p-2 space-y-4">
                         <div className="text-center">
@@ -510,10 +513,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
 
                         {/* Tuition Fee Template */}
                         {templateType === "tuitionfee" && (
-                            <div>
-                                {/* Tuition form content here */}
-                                <p className="text-center text-gray-600">Tuition Fee Template Form</p>
-                            </div>
+                            <TuitionFeeTemplateForm levelOptions={level} />
                         )}
 
                         {/* Miscellaneous Template */}
@@ -523,15 +523,118 @@ const TemplateDataTable = ({ selectedStatus }) => {
                                 <p className="text-center text-gray-600">Miscellaneous Fees Template Form</p>
                             </div>
                         )}
-
-                        <button
-                            onClick={handleSubmit}
-                            className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                        >
-                            Save Template
-                        </button>
                     </div>
                 }
+                buttons={[
+                    {
+                        label: "Save Template",
+                        type: "green",
+                        onClick: openSubmitModal,
+                        disabled: !templateType,
+                    },
+                    {
+                        label: "Cancel",
+                        type: "red",
+                        onClick: closeModal,
+                    },
+                ]}
+            />
+
+            {/* Submit Confirmation Modal */}
+            <ModalComponent
+                isOpen={isSubmitModalOpen}
+                onClose={() => setIsSubmitModalOpen(false)}
+                title="Confirm Submission"
+                body={
+                    <div className="text-center py-4">
+                        <p className="text-gray-700 mb-2">
+                            Are you sure you want to save this template?
+                        </p>
+                        <p className="text-sm text-gray-500">
+                            Template Type: <span className="font-semibold">{templateType === "tuitionfee" ? "Tuition Fee" : "Miscellaneous Fees"}</span>
+                        </p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Confirm",
+                        type: "green",
+                        onClick: () => {
+                            setIsSubmitModalOpen(false);
+                            handleSubmit();
+                        },
+                    },
+                    {
+                        label: "Cancel",
+                        type: "red",
+                        onClick: () => setIsSubmitModalOpen(false),
+                    },
+                ]}
+            />
+
+            {/* Loading Modal */}
+            <ModalComponent
+                isOpen={isLoadingModalOpen}
+                onClose={() => {}}
+                title="Processing"
+                body={
+                    <div className="flex flex-col items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mb-4"></div>
+                        <p className="text-gray-700 font-medium">Saving template...</p>
+                    </div>
+                }
+                buttons={[]}
+            />
+
+            {/* Success Modal */}
+            <ModalComponent
+                isOpen={isSuccessModalOpen}
+                onClose={() => setIsSuccessModalOpen(false)}
+                title="Success"
+                body={
+                    <div className="text-center py-4">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                            <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-700 font-medium">{modalBody}</p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "green",
+                        onClick: () => {
+                            setIsSuccessModalOpen(false);
+                            window.location.reload();
+                        },
+                    },
+                ]}
+            />
+
+            {/* Error Modal */}
+            <ModalComponent
+                isOpen={isErrorModalOpen}
+                onClose={() => setIsErrorModalOpen(false)}
+                title="Error"
+                body={
+                    <div className="text-center py-4">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                            <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-700 font-medium">Failed to save template. Please try again.</p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsErrorModalOpen(false),
+                    },
+                ]}
             />
         </div>
     );

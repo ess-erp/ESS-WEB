@@ -1,16 +1,34 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { 
     FileText, 
     User, 
     Calendar,
     Receipt,
-    ArrowRight
+    ArrowRight,
+    Edit2,
+    Save,
+    X
 } from "lucide-react";
 
 // ─── View Journal Modal Component ─────────────────────────────────────────────
-const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetModalData }) => {
+const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetModalData, onEdit }) => {
     const activeStatus = journal?.ActiveStatus || "P";
-    const isBalanced = true; // Simplified - assume balanced since no journal lines validation needed
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedDebitAmount, setEditedDebitAmount] = useState("");
+    const [editedCreditAmount, setEditedCreditAmount] = useState("");
+    
+    // Calculate if debit and credit are balanced
+    const debitAmount = isEditing ? Number(editedDebitAmount || 0) : Number(journal?.DebitAmount || 0);
+    const creditAmount = isEditing ? Number(editedCreditAmount || 0) : Number(journal?.CreditAmount || 0);
+    const isBalanced = debitAmount === creditAmount && debitAmount > 0;
+
+    // Initialize edit values when journal changes
+    useEffect(() => {
+        if (journal) {
+            setEditedDebitAmount(journal.DebitAmount?.toString() || "");
+            setEditedCreditAmount(journal.CreditAmount?.toString() || "");
+        }
+    }, [journal?.JournalId]);
 
     // Pass modal data to parent for footer buttons
     useEffect(() => {
@@ -18,6 +36,35 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
             onGetModalData({ isBalanced, activeStatus, journalId: journal.JournalId });
         }
     }, [journal?.JournalId, activeStatus, isBalanced, onGetModalData]);
+
+    const handleEditToggle = () => {
+        if (isEditing) {
+            // Cancel editing - reset values
+            setEditedDebitAmount(journal.DebitAmount?.toString() || "");
+            setEditedCreditAmount(journal.CreditAmount?.toString() || "");
+        }
+        setIsEditing(!isEditing);
+    };
+
+    const handleSaveEdit = () => {
+        if (onEdit && isBalanced) {
+            // Create payload for editing journal amounts
+            const payload = {
+                JournalId: journal.JournalId,
+                DebitAmount: Number(editedDebitAmount),
+                CreditAmount: Number(editedCreditAmount),
+                // Include additional context for audit trail
+                DebitCoaName: journal.DebitCoaName,
+                CreditCoaName: journal.CreditCoaName,
+                IssuedFullName: journal.IssuedFullName,
+                TransactionType: journal.TransactionType,
+                OrNumberUsed: journal.OrNumberUsed
+            };
+            
+            onEdit(payload);
+            setIsEditing(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -132,18 +179,74 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
             {/* Account Information Card */}
             {(journal.DebitCoaName || journal.CreditCoaName) && (
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <div className="bg-blue-100 text-blue-600 rounded-lg p-1.5">
-                            <FileText size={16} />
-                        </div>
-                        Chart of Accounts
-                    </h3>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                            <div className="bg-blue-100 text-blue-600 rounded-lg p-1.5">
+                                <FileText size={16} />
+                            </div>
+                            Chart of Accounts
+                        </h3>
+                        {/* Edit Button - Only show if unposted */}
+                        {activeStatus !== "Y" && !isEditing && (
+                            <button
+                                onClick={handleEditToggle}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition"
+                            >
+                                <Edit2 size={14} />
+                                Edit Amounts
+                            </button>
+                        )}
+                        {/* Save/Cancel Buttons - Only show in edit mode */}
+                        {isEditing && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handleSaveEdit}
+                                    disabled={!isBalanced}
+                                    className={`flex items-center gap-2 px-3 py-1.5 text-white text-sm font-semibold rounded-lg transition ${
+                                        isBalanced 
+                                            ? "bg-green-600 hover:bg-green-700" 
+                                            : "bg-gray-400 cursor-not-allowed"
+                                    }`}
+                                >
+                                    <Save size={14} />
+                                    Save
+                                </button>
+                                <button
+                                    onClick={handleEditToggle}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-500 hover:bg-gray-600 text-white text-sm font-semibold rounded-lg transition"
+                                >
+                                    <X size={14} />
+                                    Cancel
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <div className="flex items-center justify-center gap-4 py-4">
                         {/* Debit Account */}
                         <div className="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-4">
-                            <p className="text-xs font-bold text-blue-900 uppercase tracking-wide mb-2">Account Name</p>
                             <p className="text-xs font-bold text-blue-900 uppercase tracking-wide mb-2">Debit</p>
-                            <p className="text-sm font-semibold text-gray-900">{journal.DebitCoaName || "—"}</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-3">{journal.DebitCoaName || "—"}</p>
+                            <div className="border-t border-blue-200 pt-3">
+                                <p className="text-xs text-blue-700 font-medium mb-1">Amount</p>
+                                {isEditing ? (
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={editedDebitAmount}
+                                        onChange={(e) => setEditedDebitAmount(e.target.value)}
+                                        className="w-full text-xl font-bold text-blue-900 border border-blue-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="0.00"
+                                    />
+                                ) : (
+                                    <p className="text-xl font-bold text-blue-900">
+                                        ₱{Number(journal.DebitAmount || 0).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Arrow */}
@@ -153,10 +256,62 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
 
                         {/* Credit Account */}
                         <div className="flex-1 bg-green-50 border border-green-200 rounded-xl p-4">
-                            <p className="text-xs font-bold text-green-900 uppercase tracking-wide mb-2">Account Name</p>
                             <p className="text-xs font-bold text-green-900 uppercase tracking-wide mb-2">Credit</p>
-                            <p className="text-sm font-semibold text-gray-900">{journal.CreditCoaName || "—"}</p>
+                            <p className="text-sm font-semibold text-gray-900 mb-3">{journal.CreditCoaName || "—"}</p>
+                            <div className="border-t border-green-200 pt-3">
+                                <p className="text-xs text-green-700 font-medium mb-1">Amount</p>
+                                {isEditing ? (
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        value={editedCreditAmount}
+                                        onChange={(e) => setEditedCreditAmount(e.target.value)}
+                                        className="w-full text-xl font-bold text-green-900 border border-green-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        placeholder="0.00"
+                                    />
+                                ) : (
+                                    <p className="text-xl font-bold text-green-900">
+                                        ₱{Number(journal.CreditAmount || 0).toLocaleString("en-PH", {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </p>
+                                )}
+                            </div>
                         </div>
+                    </div>
+
+                    {/* Balance Validation Indicator */}
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-semibold text-gray-700">Balance Status:</span>
+                            {isBalanced ? (
+                                <div className="flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-lg">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="font-bold text-sm">Balanced</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="font-bold text-sm">Unbalanced</span>
+                                </div>
+                            )}
+                        </div>
+                        {!isBalanced && (
+                            <p className="text-xs text-red-600 mt-2 italic">
+                                ⚠️ Warning: Debit and Credit amounts must be equal before {isEditing ? "saving" : "posting"}.
+                            </p>
+                        )}
+                        {isEditing && (
+                            <p className="text-xs text-blue-600 mt-2 italic">
+                                💡 Tip: Adjust the amounts above to make the entry balanced.
+                            </p>
+                        )}
                     </div>
                 </div>
             )}
