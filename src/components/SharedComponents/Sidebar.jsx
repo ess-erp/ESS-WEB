@@ -11,6 +11,7 @@ import {
   User,
   IdCard,
   FileText,
+  Package,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -440,6 +441,25 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     ...sharedMenu,
   ];
 
+  const purchasingMenu = [
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/purchasing/dashboard",
+    },
+    {
+      name: "Inventory Management",
+      icon: Package,
+      path: "/purchasing/inventory",
+    },
+    {
+      name: "Request Form",
+      icon: FileText,
+      path: "/purchasing/requestform",
+    },
+    ...sharedMenu,
+  ];
+
 
 
   /* =========================================================
@@ -462,6 +482,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     15: adviserMenu,
     17: parentMenu,
     18: accountingMenu,
+    19: purchasingMenu,
   };
 
 

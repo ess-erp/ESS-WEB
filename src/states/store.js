@@ -15,6 +15,7 @@ import parentReducer from './ParentState/Reducer';
 import teacherReducer from './TeacherState/Reducer';
 import notificationReducer from './NotificationState/Reducer';
 import accountingReducer from './AccountingState/Reducer';
+import purchasingReducer from './PurchasingState/Reducer';
 
 const rootReducer = combineReducers({
   login: loginformReducer,
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   teacher: teacherReducer,
   notification: notificationReducer,
   accounting: accountingReducer,
+  purchasing: purchasingReducer,
 });
 
 const store = createStore(rootReducer, applyMiddleware(thunk));

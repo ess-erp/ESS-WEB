@@ -67,6 +67,9 @@ import AccountingAddCoaTransaction from "../pages/Accounting/AddCoaTransaction";
 import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
 import AccountingSiSeries from "../pages/Accounting/SiSeries";
 import AccountingTemplatesForm from "../pages/Accounting/TemplatesForm";
+import PurchasingDashboard from "../pages/Purchasing/Dashboard";
+import PurchasingInventoryManagement from "../pages/Purchasing/InventoryManagement";
+import PurchasingRequestForm from "../pages/Purchasing/RequestForm";
 
 
 
@@ -594,13 +597,44 @@ const AppRoutes = () => (
 
         {/* end of accounting module */}
 
+        {/* start of purchasing module */}
+
+        <Route
+          path="/purchasing/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingDashboard />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/purchasing/inventory"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingInventoryManagement />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/purchasing/requestform"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingRequestForm />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* end of purchasing module */}
+
         {/* shared components */}
 
 
         <Route
           path="/notification"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
               <Notification />
             </ProtectedRoutes>
           }
@@ -608,7 +642,7 @@ const AppRoutes = () => (
         <Route
           path="/ticketing"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 , 18]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
               <Ticketing />
             </ProtectedRoutes>
           }
@@ -616,7 +650,7 @@ const AppRoutes = () => (
         <Route
           path="/profile"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
               <Profile />
             </ProtectedRoutes>
           }
