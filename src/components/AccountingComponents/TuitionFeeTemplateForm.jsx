@@ -1,6 +1,25 @@
-import { FileText, Calendar, DollarSign, Info } from "lucide-react";
+import { FileText, Calendar, Info } from "lucide-react";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import useTemplateStore from "../../zustands/AccountingZustands/useTemplateStore";
+
+// Custom Peso Icon Component
+const PesoIcon = ({ size = 16, className = "" }) => (
+    <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M8 21V3h6a4 4 0 0 1 0 8h-6" />
+        <line x1="5" y1="9" x2="13" y2="9" />
+        <line x1="5" y1="13" x2="13" y2="13" />
+    </svg>
+);
 
 // Simple Input Component for Template Form
 const SimpleInput = ({ label, type = "text", value, onChange, error, placeholder, icon, required }) => {
@@ -121,7 +140,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                         value={tuitionForm.amountA}
                         onChange={(e) => setTuitionFormField("amountA", e.target.value)}
                         error={errors.amountA}
-                        icon={<DollarSign size={16} />}
+                        icon={<PesoIcon size={16} />}
                         required
                     />
                     <SimpleInput
@@ -157,7 +176,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountB1}
                                 onChange={(e) => setTuitionFormField("amountB1", e.target.value)}
                                 error={errors.amountB1}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -183,7 +202,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountB2}
                                 onChange={(e) => setTuitionFormField("amountB2", e.target.value)}
                                 error={errors.amountB2}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -221,7 +240,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountC1}
                                 onChange={(e) => setTuitionFormField("amountC1", e.target.value)}
                                 error={errors.amountC1}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -247,7 +266,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountC2}
                                 onChange={(e) => setTuitionFormField("amountC2", e.target.value)}
                                 error={errors.amountC2}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -273,7 +292,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountC3}
                                 onChange={(e) => setTuitionFormField("amountC3", e.target.value)}
                                 error={errors.amountC3}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -311,7 +330,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountD1}
                                 onChange={(e) => setTuitionFormField("amountD1", e.target.value)}
                                 error={errors.amountD1}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -337,7 +356,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountD2}
                                 onChange={(e) => setTuitionFormField("amountD2", e.target.value)}
                                 error={errors.amountD2}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -363,7 +382,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountD3}
                                 onChange={(e) => setTuitionFormField("amountD3", e.target.value)}
                                 error={errors.amountD3}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput
@@ -389,7 +408,7 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                                 value={tuitionForm.amountD4}
                                 onChange={(e) => setTuitionFormField("amountD4", e.target.value)}
                                 error={errors.amountD4}
-                                icon={<DollarSign size={16} />}
+                                icon={<PesoIcon size={16} />}
                                 required
                             />
                             <SimpleInput

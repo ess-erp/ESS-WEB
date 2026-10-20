@@ -4,15 +4,15 @@ import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import { motion, AnimatePresence } from 'framer-motion';
 import TemplateDataTable from '../../components/AccountingComponents/TemplateDataTable';
 
-const TemplatesForm = () => {
+const FeeAssessment = () => {
 
     useEffect(() => {
-        document.title = 'Templates - Accounting';
+        document.title = 'Fee Assessment - Accounting';
     }, []);
 
     const breadcrumbItems = [
         { label: 'Dashboard', href: '/accounting/dashboard' },
-        { label: 'Templates', href: '/accounting/templates' },
+        { label: 'Fee Assessment', href: '/accounting/fee-assessment' },
     ];
 
     const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -24,19 +24,19 @@ const TemplatesForm = () => {
             <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
-                    <h2 className="text-2xl font-bold text-black mt-2">Templates</h2>
+                    <h2 className="text-2xl font-bold text-black mt-2">Fee Assessment & Fee Tables</h2>
                 </div>
 
                 <section className="flex items-center justify-center h-[calc(100%-5rem)]">
                     <div className="flex flex-col space-y-4 h-full w-full">
                         <div className="flex justify-center">
                             <h2 className="text-2xl font-bold text-green-700 mt-2">
-                                Templates Form
+                                Fee Assessment & Fee Tables
                             </h2>
                         </div>
                         <div className="bg-blue-50 border border-blue-400 text-blue-700 px-4 py-3 rounded relative" role="alert">
                             <strong className="font-bold">Note: </strong>
-                            <span className="block sm:inline">This is the list of all templates for table of fees management.</span>
+                            <span className="block sm:inline">This is the list of all fee templates for table of fees management.</span>
                         </div>
                         
                         <div className="flex justify-center items-center my-4">
@@ -86,4 +86,4 @@ const TemplatesForm = () => {
     );
 };
 
-export default TemplatesForm;
+export default FeeAssessment;

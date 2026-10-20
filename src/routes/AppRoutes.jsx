@@ -39,6 +39,9 @@ import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
 import HrEmployeeHiringProcess from "../pages/HumanResources/EmployeeHiringProcess";
 import HrTemplates from "../pages/HumanResources/Templates";
 import HrEmployeeInitialInterview from "../pages/HumanResources/EmployeeInitialInterview";
+import PayrollProcessing from "../pages/HumanResources/PayrollProcessing";
+import EmployeePayrollList from "../pages/HumanResources/EmployeePayrollList";
+import PayrollSummaryReport from "../pages/HumanResources/PayrollSummaryReport";
 import ParentDashboard from "../pages/ParentPortal/Dashboard";
 import ParentEnrollStudent from "../pages/ParentPortal/EnrollStudent";
 import SacDashboard from "../pages/Sac/Dashboard";
@@ -66,10 +69,14 @@ import AccountingChartOfAccounts from "../pages/Accounting/ChartOfAccounts";
 import AccountingAddCoaTransaction from "../pages/Accounting/AddCoaTransaction";
 import AccountingJournalEntry from "../pages/Accounting/JournalEntry";
 import AccountingSiSeries from "../pages/Accounting/SiSeries";
-import AccountingTemplatesForm from "../pages/Accounting/TemplatesForm";
+import AccountingFeeAssessment from "../pages/Accounting/FeeAssessment";
+import AccountingStudentLedger from "../pages/Accounting/StudentLedger";
+import AccountingFinancialReports from "../pages/Accounting/FinancialReports";
 import PurchasingDashboard from "../pages/Purchasing/Dashboard";
 import PurchasingInventoryManagement from "../pages/Purchasing/InventoryManagement";
 import PurchasingRequestForm from "../pages/Purchasing/RequestForm";
+import PurchasingPurchaseOrder from "../pages/Purchasing/PurchaseOrder";
+import PurchasingSupplier from "../pages/Purchasing/Supplier";
 
 
 
@@ -366,6 +373,30 @@ const AppRoutes = () => (
           }
         />
         <Route
+          path="/hrd/payroll-processing"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <PayrollProcessing />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employee-payroll"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <EmployeePayrollList />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/payroll-reports"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <PayrollSummaryReport />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
           path="/hrd/employeeinitialinterview"
           element={
             <ProtectedRoutes allowedRoles={[10]}>
@@ -587,10 +618,28 @@ const AppRoutes = () => (
         />
 
         <Route
-          path="/accounting/templates"
+          path="/accounting/fee-assessment"
           element={
             <ProtectedRoutes allowedRoles={[18]}>
-              <AccountingTemplatesForm />
+              <AccountingFeeAssessment />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/student-ledger"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingStudentLedger />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/financial-reports"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingFinancialReports />
             </ProtectedRoutes>
           }
         />
@@ -622,6 +671,24 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[19]}>
               <PurchasingRequestForm />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/purchasing/purchaseorder"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingPurchaseOrder />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/purchasing/supplier"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingSupplier />
             </ProtectedRoutes>
           }
         />

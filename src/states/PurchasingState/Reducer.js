@@ -1,43 +1,41 @@
 import {
-    FETCH_GET_INVENTORY_REQUEST,
-    FETCH_GET_INVENTORY_SUCCESS,
-    FETCH_GET_INVENTORY_FAILURE,
-    CREATE_INVENTORY_STOCK_REQUEST,
-    CREATE_INVENTORY_STOCK_SUCCESS,
-    CREATE_INVENTORY_STOCK_FAILURE,
-    UPDATE_INVENTORY_STOCK_REQUEST,
-    UPDATE_INVENTORY_STOCK_SUCCESS,
-    UPDATE_INVENTORY_STOCK_FAILURE,
-    DELETE_INVENTORY_STOCK_REQUEST,
-    DELETE_INVENTORY_STOCK_SUCCESS,
-    DELETE_INVENTORY_STOCK_FAILURE,
-    FETCH_GET_REQUEST_FORM_REQUEST,
-    FETCH_GET_REQUEST_FORM_SUCCESS,
-    FETCH_GET_REQUEST_FORM_FAILURE,
-    CREATE_REQUEST_FORM_REQUEST,
-    CREATE_REQUEST_FORM_SUCCESS,
-    CREATE_REQUEST_FORM_FAILURE,
-    UPDATE_REQUEST_FORM_REQUEST,
-    UPDATE_REQUEST_FORM_SUCCESS,
-    UPDATE_REQUEST_FORM_FAILURE,
-    DELETE_REQUEST_FORM_REQUEST,
-    DELETE_REQUEST_FORM_SUCCESS,
-    DELETE_REQUEST_FORM_FAILURE,
+    // Request Form
+    FETCH_GET_REQUEST_FORM_REQUEST, FETCH_GET_REQUEST_FORM_SUCCESS, FETCH_GET_REQUEST_FORM_FAILURE,
+    CREATE_REQUEST_FORM_REQUEST, CREATE_REQUEST_FORM_SUCCESS, CREATE_REQUEST_FORM_FAILURE,
+    // Purchase Order
+    FETCH_GET_PURCHASE_ORDER_REQUEST, FETCH_GET_PURCHASE_ORDER_SUCCESS, FETCH_GET_PURCHASE_ORDER_FAILURE,
+    CREATE_PURCHASE_ORDER_REQUEST, CREATE_PURCHASE_ORDER_SUCCESS, CREATE_PURCHASE_ORDER_FAILURE,
+    // Inventory
+    FETCH_GET_INVENTORY_REQUEST, FETCH_GET_INVENTORY_SUCCESS, FETCH_GET_INVENTORY_FAILURE,
+    CREATE_INVENTORY_STOCK_REQUEST, CREATE_INVENTORY_STOCK_SUCCESS, CREATE_INVENTORY_STOCK_FAILURE,
+    // Supplier
+    FETCH_GET_SUPPLIER_REQUEST, FETCH_GET_SUPPLIER_SUCCESS, FETCH_GET_SUPPLIER_FAILURE,
+    CREATE_SUPPLIER_REQUEST, CREATE_SUPPLIER_SUCCESS, CREATE_SUPPLIER_FAILURE,
+    UPDATE_SUPPLIER_REQUEST, UPDATE_SUPPLIER_SUCCESS, UPDATE_SUPPLIER_FAILURE,
 } from './ActionType';
 
-const s = { loading: false, data: [], error: '', success: false };
+// ─── Initial State ────────────────────────────────────────────────────────────
+const s = {
+    loading: false,
+    data: [],
+    error: '',
+    success: false,
+};
 
 const initialState = {
-    // Inventory Stock Management
-    inventoryState: { ...s },
-    createInventoryStockState: { ...s },
-    updateInventoryStockState: { ...s },
-    deleteInventoryStockState: { ...s },
-    // Request Form Management
+    // Request Form
     requestFormState: { ...s },
     createRequestFormState: { ...s },
-    updateRequestFormState: { ...s },
-    deleteRequestFormState: { ...s },
+    // Purchase Order
+    purchaseOrderState: { ...s },
+    createPurchaseOrderState: { ...s },
+    // Inventory
+    inventoryState: { ...s },
+    createInventoryStockState: { ...s },
+    // Supplier
+    supplierState: { ...s },
+    createSupplierState: { ...s },
+    updateSupplierState: { ...s },
 };
 
 const ok = (payload) => ({ loading: false, data: payload, error: '', success: true });
@@ -46,63 +44,45 @@ const req = () => ({ loading: true, data: [], error: '', success: false });
 
 const purchasingReducer = (state = initialState, action) => {
     switch (action.type) {
-        // ── Inventory Stock Management ────────────────────────────────────────
-        case FETCH_GET_INVENTORY_REQUEST:
-            return { ...state, inventoryState: req() };
-        case FETCH_GET_INVENTORY_SUCCESS:
-            return { ...state, inventoryState: ok(action.payload) };
-        case FETCH_GET_INVENTORY_FAILURE:
-            return { ...state, inventoryState: err(action.payload) };
+        // ── Request Form ──────────────────────────────────────────────────────
+        case FETCH_GET_REQUEST_FORM_REQUEST: return { ...state, requestFormState: req() };
+        case FETCH_GET_REQUEST_FORM_SUCCESS: return { ...state, requestFormState: ok(action.payload) };
+        case FETCH_GET_REQUEST_FORM_FAILURE: return { ...state, requestFormState: err(action.payload) };
 
-        case CREATE_INVENTORY_STOCK_REQUEST:
-            return { ...state, createInventoryStockState: req() };
-        case CREATE_INVENTORY_STOCK_SUCCESS:
-            return { ...state, createInventoryStockState: ok(action.payload) };
-        case CREATE_INVENTORY_STOCK_FAILURE:
-            return { ...state, createInventoryStockState: err(action.payload) };
+        case CREATE_REQUEST_FORM_REQUEST: return { ...state, createRequestFormState: req() };
+        case CREATE_REQUEST_FORM_SUCCESS: return { ...state, createRequestFormState: ok(action.payload) };
+        case CREATE_REQUEST_FORM_FAILURE: return { ...state, createRequestFormState: err(action.payload) };
 
-        case UPDATE_INVENTORY_STOCK_REQUEST:
-            return { ...state, updateInventoryStockState: req() };
-        case UPDATE_INVENTORY_STOCK_SUCCESS:
-            return { ...state, updateInventoryStockState: ok(action.payload) };
-        case UPDATE_INVENTORY_STOCK_FAILURE:
-            return { ...state, updateInventoryStockState: err(action.payload) };
+        // ── Purchase Order ────────────────────────────────────────────────────
+        case FETCH_GET_PURCHASE_ORDER_REQUEST: return { ...state, purchaseOrderState: req() };
+        case FETCH_GET_PURCHASE_ORDER_SUCCESS: return { ...state, purchaseOrderState: ok(action.payload) };
+        case FETCH_GET_PURCHASE_ORDER_FAILURE: return { ...state, purchaseOrderState: err(action.payload) };
 
-        case DELETE_INVENTORY_STOCK_REQUEST:
-            return { ...state, deleteInventoryStockState: req() };
-        case DELETE_INVENTORY_STOCK_SUCCESS:
-            return { ...state, deleteInventoryStockState: ok(action.payload) };
-        case DELETE_INVENTORY_STOCK_FAILURE:
-            return { ...state, deleteInventoryStockState: err(action.payload) };
+        case CREATE_PURCHASE_ORDER_REQUEST: return { ...state, createPurchaseOrderState: req() };
+        case CREATE_PURCHASE_ORDER_SUCCESS: return { ...state, createPurchaseOrderState: ok(action.payload) };
+        case CREATE_PURCHASE_ORDER_FAILURE: return { ...state, createPurchaseOrderState: err(action.payload) };
 
-        // ── Request Form Management ───────────────────────────────────────────
-        case FETCH_GET_REQUEST_FORM_REQUEST:
-            return { ...state, requestFormState: req() };
-        case FETCH_GET_REQUEST_FORM_SUCCESS:
-            return { ...state, requestFormState: ok(action.payload) };
-        case FETCH_GET_REQUEST_FORM_FAILURE:
-            return { ...state, requestFormState: err(action.payload) };
+        // ── Inventory ─────────────────────────────────────────────────────────
+        case FETCH_GET_INVENTORY_REQUEST: return { ...state, inventoryState: req() };
+        case FETCH_GET_INVENTORY_SUCCESS: return { ...state, inventoryState: ok(action.payload) };
+        case FETCH_GET_INVENTORY_FAILURE: return { ...state, inventoryState: err(action.payload) };
 
-        case CREATE_REQUEST_FORM_REQUEST:
-            return { ...state, createRequestFormState: req() };
-        case CREATE_REQUEST_FORM_SUCCESS:
-            return { ...state, createRequestFormState: ok(action.payload) };
-        case CREATE_REQUEST_FORM_FAILURE:
-            return { ...state, createRequestFormState: err(action.payload) };
+        case CREATE_INVENTORY_STOCK_REQUEST: return { ...state, createInventoryStockState: req() };
+        case CREATE_INVENTORY_STOCK_SUCCESS: return { ...state, createInventoryStockState: ok(action.payload) };
+        case CREATE_INVENTORY_STOCK_FAILURE: return { ...state, createInventoryStockState: err(action.payload) };
 
-        case UPDATE_REQUEST_FORM_REQUEST:
-            return { ...state, updateRequestFormState: req() };
-        case UPDATE_REQUEST_FORM_SUCCESS:
-            return { ...state, updateRequestFormState: ok(action.payload) };
-        case UPDATE_REQUEST_FORM_FAILURE:
-            return { ...state, updateRequestFormState: err(action.payload) };
+        // ── Supplier ──────────────────────────────────────────────────────────
+        case FETCH_GET_SUPPLIER_REQUEST: return { ...state, supplierState: req() };
+        case FETCH_GET_SUPPLIER_SUCCESS: return { ...state, supplierState: ok(action.payload) };
+        case FETCH_GET_SUPPLIER_FAILURE: return { ...state, supplierState: err(action.payload) };
 
-        case DELETE_REQUEST_FORM_REQUEST:
-            return { ...state, deleteRequestFormState: req() };
-        case DELETE_REQUEST_FORM_SUCCESS:
-            return { ...state, deleteRequestFormState: ok(action.payload) };
-        case DELETE_REQUEST_FORM_FAILURE:
-            return { ...state, deleteRequestFormState: err(action.payload) };
+        case CREATE_SUPPLIER_REQUEST: return { ...state, createSupplierState: req() };
+        case CREATE_SUPPLIER_SUCCESS: return { ...state, createSupplierState: ok(action.payload) };
+        case CREATE_SUPPLIER_FAILURE: return { ...state, createSupplierState: err(action.payload) };
+
+        case UPDATE_SUPPLIER_REQUEST: return { ...state, updateSupplierState: req() };
+        case UPDATE_SUPPLIER_SUCCESS: return { ...state, updateSupplierState: ok(action.payload) };
+        case UPDATE_SUPPLIER_FAILURE: return { ...state, updateSupplierState: err(action.payload) };
 
         default:
             return state;

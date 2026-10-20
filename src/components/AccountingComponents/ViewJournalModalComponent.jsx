@@ -328,13 +328,6 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                     <div className="space-y-4">
                         <div>
                             <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1.5">
-                                <FileText size={14} />
-                                Journal ID
-                            </p>
-                            <p className="text-lg font-bold text-gray-900">#{journal.JournalId}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-gray-500 font-medium mb-1 flex items-center gap-1.5">
                                 <User size={14} />
                                 Issued To
                             </p>
@@ -488,6 +481,9 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                                         Account
                                     </th>
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                                        Account Group
+                                    </th>
                                     <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
                                         Debit
                                     </th>
@@ -549,6 +545,11 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                                                         </p>
                                                     </>
                                                 )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="text-sm text-gray-700">
+                                                    {(isEditingLines ? line.originalData?.AccountGroup : line.AccountGroup) || "—"}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-3 text-right whitespace-nowrap">
                                                 {isEditingLines && isDebit ? (
@@ -612,7 +613,7 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                             {/* Totals Row */}
                             <tfoot className="bg-gray-100 border-t-2 border-gray-300">
                                 <tr>
-                                    <td colSpan="2" className="px-4 py-3 text-right">
+                                    <td colSpan="3" className="px-4 py-3 text-right">
                                         <span className="text-sm font-bold text-gray-900">TOTALS:</span>
                                     </td>
                                     <td className="px-4 py-3 text-right">
@@ -746,6 +747,12 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                             ) : (
                                 <p className="text-sm font-semibold text-gray-900 mb-3">{journal.DebitCoaName || "—"}</p>
                             )}
+                            {!isEditing && journal.AccountGroup && (
+                                <div className="mb-2">
+                                    <p className="text-xs text-blue-700 font-medium">Account Group</p>
+                                    <p className="text-sm font-semibold text-gray-700">{journal.AccountGroup}</p>
+                                </div>
+                            )}
                             <div className="border-t border-blue-200 pt-3">
                                 <p className="text-xs text-blue-700 font-medium mb-1">Amount</p>
                                 {isEditing ? (
@@ -790,6 +797,12 @@ const ViewJournalModalComponent = ({ journal, loading, onPost, posting, onGetMod
                                 </div>
                             ) : (
                                 <p className="text-sm font-semibold text-gray-900 mb-3">{journal.CreditCoaName || "—"}</p>
+                            )}
+                            {!isEditing && journal.AccountGroup && (
+                                <div className="mb-2">
+                                    <p className="text-xs text-green-700 font-medium">Account Group</p>
+                                    <p className="text-sm font-semibold text-gray-700">{journal.AccountGroup}</p>
+                                </div>
                             )}
                             <div className="border-t border-green-200 pt-3">
                                 <p className="text-xs text-green-700 font-medium mb-1">Amount</p>

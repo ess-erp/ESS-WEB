@@ -16,6 +16,7 @@ import {
 } from "../../states/AdmissionState/Action";
 import useTemplateStore from "../../zustands/AccountingZustands/useTemplateStore";
 import TuitionFeeTemplateForm from "./TuitionFeeTemplateForm";
+import MiscellaneousTemplateForm from "./MiscellaneousTemplateForm";
 
 const TemplateDataTable = ({ selectedStatus }) => {
     const dispatch = useDispatch();
@@ -518,10 +519,7 @@ const TemplateDataTable = ({ selectedStatus }) => {
 
                         {/* Miscellaneous Template */}
                         {templateType === "miscellaneous" && (
-                            <div>
-                                {/* Miscellaneous form content here */}
-                                <p className="text-center text-gray-600">Miscellaneous Fees Template Form</p>
-                            </div>
+                            <MiscellaneousTemplateForm />
                         )}
                     </div>
                 }

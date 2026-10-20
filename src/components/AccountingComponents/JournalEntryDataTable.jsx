@@ -263,7 +263,7 @@ const JournalEntryDataTable = () => {
             ),
         },
         {
-            name: "OR Number",
+            name: "SI Number",
             selector: (r) => r.OrNumberUsed || "—",
             sortable: true,
             minWidth: "130px",

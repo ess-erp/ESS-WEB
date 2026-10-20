@@ -13,7 +13,8 @@ import {
     ChevronUp,
     CheckCircle,
     Clock,
-    XCircle
+    XCircle,
+    Trash2
 } from "lucide-react";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
@@ -59,14 +60,44 @@ const RequestFormDataTable = () => {
     const [isViewModal, setIsViewModal] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
 
-    // Form State
-    const [formData, setFormData] = useState({
-        itemName: "",
-        quantity: "",
-        purpose: "",
-        requestedDate: new Date().toISOString().split('T')[0],
-        remarks: ""
+    // Form State for Redesigned Form
+    const [formNumber, setFormNumber] = useState("");
+    const [requestDate, setRequestDate] = useState(new Date().toISOString().split('T')[0]);
+    const [requestedBy, setRequestedBy] = useState(null);
+    const [campus, setCampus] = useState(null);
+    const [transactionType, setTransactionType] = useState({
+        jobOrder: false,
+        cashAdvance: false,
+        outsideTransaction: false,
+        services: false,
+        billing: false,
+        others: false
     });
+    const [items, setItems] = useState([
+        { qty: "", unit: "", description: "", unitCost: "", amount: "" }
+    ]);
+    const [usedFor, setUsedFor] = useState("");
+    const [suppliers, setSuppliers] = useState([
+        { supplierName: "", address: "", contactNumber: "" },
+        { supplierName: "", address: "", contactNumber: "" },
+        { supplierName: "", address: "", contactNumber: "" }
+    ]);
+
+    // Dummy user options for "Requested By" dropdown
+    const [userOptions, setUserOptions] = useState([
+        { value: 1, label: "Victor Montero" },
+        { value: 2, label: "John Doe" },
+        { value: 3, label: "Jane Smith" },
+        { value: 4, label: "Maria Santos" },
+        { value: 5, label: "Juan dela Cruz" }
+    ]);
+
+    // Campus options
+    const campusOptions = [
+        { value: "Main", label: "Main Campus" },
+        { value: "South", label: "South Campus" }
+    ];
+
     const [formErrors, setFormErrors] = useState({});
 
     // ── Fetch Data ────────────────────────────────────────────────────────────
@@ -90,43 +121,100 @@ const RequestFormDataTable = () => {
     };
 
     const handleOpenAddModal = () => {
+        // Generate form number
+        const randomNum = Math.floor(100000 + Math.random() * 900000);
+        setFormNumber(randomNum.toString());
+        
         // Reset form
-        setFormData({
-            itemName: "",
-            quantity: "",
-            purpose: "",
-            requestedDate: new Date().toISOString().split('T')[0],
-            remarks: ""
+        setRequestDate(new Date().toISOString().split('T')[0]);
+        setRequestedBy(null);
+        setCampus(null);
+        setTransactionType({
+            jobOrder: false,
+            cashAdvance: false,
+            outsideTransaction: false,
+            services: false,
+            billing: false,
+            others: false
         });
+        setItems([
+            { qty: "", unit: "", description: "", unitCost: "", amount: "" }
+        ]);
+        setUsedFor("");
+        setSuppliers([
+            { supplierName: "", address: "", contactNumber: "" },
+            { supplierName: "", address: "", contactNumber: "" },
+            { supplierName: "", address: "", contactNumber: "" }
+        ]);
         setFormErrors({});
         setIsAddModal(true);
     };
 
-    const handleInputChange = (field, value) => {
-        setFormData({ ...formData, [field]: value });
-        // Clear error for this field
-        if (formErrors[field]) {
-            setFormErrors({ ...formErrors, [field]: null });
+    // Handle add new item row
+    const handleAddItem = () => {
+        setItems([...items, { qty: "", unit: "", description: "", unitCost: "", amount: "" }]);
+    };
+
+    // Handle remove item row
+    const handleRemoveItem = (index) => {
+        if (items.length > 1) {
+            const updatedItems = items.filter((_, i) => i !== index);
+            setItems(updatedItems);
         }
+    };
+
+    // Handle item field change
+    const handleItemChange = (index, field, value) => {
+        const updatedItems = [...items];
+        updatedItems[index][field] = value;
+        
+        // Auto-calculate amount if qty and unitCost are provided
+        if (field === "qty" || field === "unitCost") {
+            const qty = parseFloat(updatedItems[index].qty) || 0;
+            const unitCost = parseFloat(updatedItems[index].unitCost) || 0;
+            updatedItems[index].amount = (qty * unitCost).toFixed(2);
+        }
+        
+        setItems(updatedItems);
+    };
+
+    // Handle supplier field change
+    const handleSupplierChange = (index, field, value) => {
+        const updatedSuppliers = [...suppliers];
+        updatedSuppliers[index][field] = value;
+        setSuppliers(updatedSuppliers);
+    };
+
+    // Handle transaction type checkbox
+    const handleTransactionTypeChange = (type) => {
+        setTransactionType({ ...transactionType, [type]: !transactionType[type] });
     };
 
     const validateForm = () => {
         const errors = {};
         
-        if (!formData.itemName.trim()) {
-            errors.itemName = "Item name is required";
-        }
-        
-        if (!formData.quantity || formData.quantity <= 0) {
-            errors.quantity = "Quantity must be greater than 0";
-        }
-        
-        if (!formData.purpose.trim()) {
-            errors.purpose = "Purpose is required";
+        if (!requestedBy) {
+            errors.requestedBy = "Please select who is requesting";
         }
 
-        if (!formData.requestedDate) {
-            errors.requestedDate = "Requested date is required";
+        if (!campus) {
+            errors.campus = "Please select campus";
+        }
+        
+        if (!requestDate) {
+            errors.requestDate = "Request date is required";
+        }
+
+        // Check if at least one transaction type is selected
+        const hasTransactionType = Object.values(transactionType).some(val => val === true);
+        if (!hasTransactionType) {
+            errors.transactionType = "Please select at least one transaction type";
+        }
+
+        // Check if at least one item has description
+        const hasItems = items.some(item => item.description.trim() !== "");
+        if (!hasItems) {
+            errors.items = "Please add at least one item with description";
         }
 
         setFormErrors(errors);
@@ -140,12 +228,14 @@ const RequestFormDataTable = () => {
         }
 
         const payload = {
-            ItemName: formData.itemName,
-            Quantity: formData.quantity,
-            Purpose: formData.purpose,
-            RequestedDate: formData.requestedDate,
-            Remarks: formData.remarks || "",
-            RequestedByUserId: user?.UserId,
+            FormNumber: formNumber,
+            RequestDate: requestDate,
+            RequestedByUserId: requestedBy?.value,
+            Campus: campus?.value,
+            TransactionTypes: transactionType,
+            Items: items.filter(item => item.description.trim() !== ""),
+            UsedFor: usedFor,
+            Suppliers: suppliers.filter(s => s.supplierName.trim() !== ""),
             Status: "Pending"
         };
 
@@ -153,14 +243,14 @@ const RequestFormDataTable = () => {
             const result = await dispatch(createRequestFormData(payload));
             
             if (result.ok) {
-                dispatch(showToast("success", "Request submitted successfully!"));
+                dispatch(showToast("success", "Requisition form submitted successfully!"));
                 setIsAddModal(false);
                 fetchData(); // Refresh the table
             } else {
-                dispatch(showToast("error", result.data?.message || "Failed to submit request"));
+                dispatch(showToast("error", result.data?.message || "Failed to submit requisition form"));
             }
         } catch (error) {
-            dispatch(showToast("error", "An error occurred while submitting request"));
+            dispatch(showToast("error", "An error occurred while submitting requisition form"));
         }
     };
 
@@ -296,7 +386,7 @@ const RequestFormDataTable = () => {
         },
     ];
 
-    // Custom styles for DataTable
+    // Custom styles for DataTable with animation
     const customStyles = {
         headRow: {
             style: {
@@ -321,6 +411,19 @@ const RequestFormDataTable = () => {
                 "&:hover": {
                     backgroundColor: "#f0fdf4",
                     cursor: "pointer",
+                    transform: "scale(1.01)",
+                    transition: "all 0.2s ease-in-out",
+                },
+                animation: "fadeInUp 0.5s ease-in-out",
+                "@keyframes fadeInUp": {
+                    "0%": {
+                        opacity: 0,
+                        transform: "translateY(20px)",
+                    },
+                    "100%": {
+                        opacity: 1,
+                        transform: "translateY(0)",
+                    },
                 },
             },
         },
@@ -346,12 +449,6 @@ const RequestFormDataTable = () => {
                             <p className="text-green-100 text-xs sm:text-sm mt-1">
                                 Create and manage purchase requests
                             </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 sm:px-4 py-2 text-white">
-                                <p className="text-[10px] sm:text-xs font-medium">Total Requests</p>
-                                <p className="text-xl sm:text-2xl font-bold">{totalRecords}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -454,129 +551,344 @@ const RequestFormDataTable = () => {
                             responsive
                             customStyles={customStyles}
                             noDataComponent={
-                                <div className="py-12 sm:py-16 text-center px-4">
-                                    <FileText className="mx-auto text-gray-300 mb-4" size={48} />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="py-12 sm:py-16 text-center px-4"
+                                >
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                    >
+                                        <FileText className="mx-auto text-gray-300 mb-4" size={48} />
+                                    </motion.div>
                                     <p className="text-gray-500 font-medium text-base sm:text-lg">No requests found</p>
                                     <p className="text-gray-400 text-xs sm:text-sm mt-2 max-w-md mx-auto">
                                         Create a new purchase request to get started.
                                     </p>
-                                </div>
+                                </motion.div>
                             }
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Add New Request Modal */}
+            {/* Add New Request Modal - Redesigned Requisition Form */}
             <ModalComponent
                 isOpen={isAddModal}
                 onClose={() => setIsAddModal(false)}
                 title={
-                    <div className="flex items-center gap-2">
-                        <div className="bg-green-600 text-white rounded-lg p-2">
-                            <Plus size={20} />
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-green-600 text-white rounded-lg p-2">
+                                <FileText size={20} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-base text-gray-900">ELIZABETH SETON SCHOOL</p>
+                                <p className="text-xs text-gray-600">Service Administration Unit</p>
+                                <p className="text-xs text-gray-600">Purchasing Department</p>
+                                <p className="text-xs font-bold text-red-600">REQUISITION FORM</p>
+                            </div>
                         </div>
-                        <span className="font-bold text-base sm:text-lg text-gray-900">New Purchase Request</span>
+                        <div className="text-right">
+                            <div className="bg-gray-100 border-2 border-gray-400 px-3 py-1 rounded">
+                                <p className="text-xs text-gray-600">№</p>
+                                <p className="text-xl font-bold text-red-600">{formNumber}</p>
+                            </div>
+                        </div>
                     </div>
                 }
-                size="w-[95vw] max-w-2xl"
+                size="w-[95vw] max-w-6xl"
                 maxHeight="90vh"
                 body={
-                    <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-2 py-2 space-y-4">
-                        {/* Item Name */}
-                        <div>
-                            <label className="block mb-2 text-sm font-medium text-gray-900">
-                                Item Name <span className="text-red-500">*</span>
+                    <div className="overflow-y-auto max-h-[calc(90vh-180px)] px-4 py-4 space-y-4">
+                        {/* Date, Requested By, and Campus Row */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-b pb-4">
+                            <div>
+                                <label className="block mb-2 text-sm font-bold text-gray-900">
+                                    DATE: <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={requestDate}
+                                    onChange={(e) => setRequestDate(e.target.value)}
+                                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
+                                        formErrors.requestDate ? "border-red-500" : "border-gray-300"
+                                    }`}
+                                />
+                                {formErrors.requestDate && (
+                                    <p className="text-red-500 text-xs mt-1">{formErrors.requestDate}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm font-bold text-gray-900">
+                                    REQUESTED BY: <span className="text-red-500">*</span>
+                                </label>
+                                <SearchableSelect
+                                    label=""
+                                    options={userOptions}
+                                    value={requestedBy}
+                                    onChange={setRequestedBy}
+                                    placeholder="Search and select user..."
+                                    showSearchIcon={true}
+                                />
+                                {formErrors.requestedBy && (
+                                    <p className="text-red-500 text-xs mt-1">{formErrors.requestedBy}</p>
+                                )}
+                            </div>
+                            <div>
+                                <label className="block mb-2 text-sm font-bold text-gray-900">
+                                    CAMPUS: <span className="text-red-500">*</span>
+                                </label>
+                                <SearchableSelect
+                                    label=""
+                                    options={campusOptions}
+                                    value={campus}
+                                    onChange={setCampus}
+                                    placeholder="Select campus..."
+                                    showSearchIcon={false}
+                                />
+                                {formErrors.campus && (
+                                    <p className="text-red-500 text-xs mt-1">{formErrors.campus}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Transaction Type Checkboxes */}
+                        <div className="border-b pb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-900">
+                                TRANSACTION TYPE: <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                value={formData.itemName}
-                                onChange={(e) => handleInputChange("itemName", e.target.value)}
-                                placeholder="Enter item name"
-                                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                                    formErrors.itemName ? "border-red-500" : "border-gray-300"
-                                }`}
-                            />
-                            {formErrors.itemName && (
-                                <p className="text-red-500 text-xs mt-1">{formErrors.itemName}</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.jobOrder}
+                                        onChange={() => handleTransactionTypeChange("jobOrder")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) JOB ORDER</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.cashAdvance}
+                                        onChange={() => handleTransactionTypeChange("cashAdvance")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) CASH ADVANCE</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.outsideTransaction}
+                                        onChange={() => handleTransactionTypeChange("outsideTransaction")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) OUTSIDE TRANSACTION</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.services}
+                                        onChange={() => handleTransactionTypeChange("services")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) SERVICES</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.billing}
+                                        onChange={() => handleTransactionTypeChange("billing")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) BILLING</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={transactionType.others}
+                                        onChange={() => handleTransactionTypeChange("others")}
+                                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span className="text-sm text-gray-700">( ) OTHERS</span>
+                                </label>
+                            </div>
+                            {formErrors.transactionType && (
+                                <p className="text-red-500 text-xs mt-2">{formErrors.transactionType}</p>
                             )}
                         </div>
 
-                        {/* Quantity */}
-                        <div>
-                            <label className="block mb-2 text-sm font-medium text-gray-900">
-                                Quantity <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="number"
-                                min="1"
-                                value={formData.quantity}
-                                onChange={(e) => handleInputChange("quantity", e.target.value)}
-                                placeholder="Enter quantity"
-                                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                                    formErrors.quantity ? "border-red-500" : "border-gray-300"
-                                }`}
-                            />
-                            {formErrors.quantity && (
-                                <p className="text-red-500 text-xs mt-1">{formErrors.quantity}</p>
+                        {/* Items Table */}
+                        <div className="border-b pb-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <label className="block text-sm font-bold text-gray-900">
+                                    ITEMS: <span className="text-red-500">*</span>
+                                </label>
+                                <button
+                                    onClick={handleAddItem}
+                                    className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-lg transition"
+                                >
+                                    <Plus size={14} />
+                                    Add Item
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full border-collapse border border-gray-300">
+                                    <thead className="bg-gray-100">
+                                        <tr>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center w-16">QTY.</th>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center w-24">UNIT</th>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center">DESCRIPTION</th>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center w-32">UNIT COST</th>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center w-32">AMOUNT</th>
+                                            <th className="border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 text-center w-16">ACTION</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {items.map((item, index) => (
+                                            <tr key={index}>
+                                                <td className="border border-gray-300 p-1">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="1"
+                                                        value={item.qty}
+                                                        onChange={(e) => handleItemChange(index, "qty", e.target.value)}
+                                                        placeholder="0"
+                                                        className="w-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-400 text-center"
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-300 p-1">
+                                                    <input
+                                                        type="text"
+                                                        value={item.unit}
+                                                        onChange={(e) => handleItemChange(index, "unit", e.target.value)}
+                                                        placeholder="e.g., roll"
+                                                        className="w-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-300 p-1">
+                                                    <input
+                                                        type="text"
+                                                        value={item.description}
+                                                        onChange={(e) => handleItemChange(index, "description", e.target.value)}
+                                                        placeholder="Enter description"
+                                                        className="w-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-400"
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-300 p-1">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={item.unitCost}
+                                                        onChange={(e) => handleItemChange(index, "unitCost", e.target.value)}
+                                                        placeholder="0.00"
+                                                        className="w-full px-2 py-1.5 text-sm border-0 focus:outline-none focus:ring-2 focus:ring-green-400 text-right"
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-300 p-1">
+                                                    <input
+                                                        type="text"
+                                                        value={item.amount}
+                                                        readOnly
+                                                        placeholder="0.00"
+                                                        className="w-full px-2 py-1.5 text-sm border-0 bg-gray-50 text-right font-semibold"
+                                                    />
+                                                </td>
+                                                <td className="border border-gray-300 p-1 text-center">
+                                                    {items.length > 1 && (
+                                                        <button
+                                                            onClick={() => handleRemoveItem(index)}
+                                                            className="p-1 text-red-600 hover:bg-red-50 rounded transition"
+                                                            title="Remove row"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {formErrors.items && (
+                                <p className="text-red-500 text-xs mt-2">{formErrors.items}</p>
                             )}
                         </div>
 
-                        {/* Purpose */}
-                        <div>
-                            <label className="block mb-2 text-sm font-medium text-gray-900">
-                                Purpose <span className="text-red-500">*</span>
+                        {/* Used For */}
+                        <div className="border-b pb-4">
+                            <label className="block mb-2 text-sm font-bold text-gray-900">
+                                USED FOR:
                             </label>
                             <textarea
-                                value={formData.purpose}
-                                onChange={(e) => handleInputChange("purpose", e.target.value)}
-                                placeholder="Enter the purpose of this request"
-                                rows={3}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                                    formErrors.purpose ? "border-red-500" : "border-gray-300"
-                                }`}
-                            />
-                            {formErrors.purpose && (
-                                <p className="text-red-500 text-xs mt-1">{formErrors.purpose}</p>
-                            )}
-                        </div>
-
-                        {/* Requested Date */}
-                        <div>
-                            <label className="block mb-2 text-sm font-medium text-gray-900">
-                                Requested Date <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                value={formData.requestedDate}
-                                onChange={(e) => handleInputChange("requestedDate", e.target.value)}
-                                className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                                    formErrors.requestedDate ? "border-red-500" : "border-gray-300"
-                                }`}
-                            />
-                            {formErrors.requestedDate && (
-                                <p className="text-red-500 text-xs mt-1">{formErrors.requestedDate}</p>
-                            )}
-                        </div>
-
-                        {/* Remarks */}
-                        <div>
-                            <label className="block mb-2 text-sm font-medium text-gray-900">
-                                Remarks
-                            </label>
-                            <textarea
-                                value={formData.remarks}
-                                onChange={(e) => handleInputChange("remarks", e.target.value)}
-                                placeholder="Enter any additional remarks"
+                                value={usedFor}
+                                onChange={(e) => setUsedFor(e.target.value)}
+                                placeholder="Enter what this requisition will be used for"
                                 rows={2}
                                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                             />
                         </div>
+
+                        {/* Suggested Suppliers */}
+                        {/* <div>
+                            <label className="block mb-3 text-sm font-bold text-gray-900">
+                                SUGGESTED SUPPLIERS:
+                            </label>
+                            <div className="space-y-3">
+                                {suppliers.map((supplier, index) => (
+                                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        <div>
+                                            <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                Supplier Name {index + 1}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={supplier.supplierName}
+                                                onChange={(e) => handleSupplierChange(index, "supplierName", e.target.value)}
+                                                placeholder="Enter supplier name"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                Address
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={supplier.address}
+                                                onChange={(e) => handleSupplierChange(index, "address", e.target.value)}
+                                                placeholder="Enter address"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block mb-1 text-xs font-medium text-gray-700">
+                                                Contact #
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={supplier.contactNumber}
+                                                onChange={(e) => handleSupplierChange(index, "contactNumber", e.target.value)}
+                                                placeholder="Enter contact number"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div> */}
                     </div>
                 }
                 buttons={[
                     {
-                        label: createRequestState.loading ? "Submitting..." : "Submit Request",
+                        label: createRequestState.loading ? "Submitting..." : "Submit Requisition",
                         type: "green",
                         onClick: handleSubmit,
                         disabled: createRequestState.loading,

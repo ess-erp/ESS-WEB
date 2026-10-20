@@ -1,136 +1,30 @@
 import {
-    FETCH_GET_INVENTORY_REQUEST,
-    FETCH_GET_INVENTORY_SUCCESS,
-    FETCH_GET_INVENTORY_FAILURE,
-    CREATE_INVENTORY_STOCK_REQUEST,
-    CREATE_INVENTORY_STOCK_SUCCESS,
-    CREATE_INVENTORY_STOCK_FAILURE,
-    UPDATE_INVENTORY_STOCK_REQUEST,
-    UPDATE_INVENTORY_STOCK_SUCCESS,
-    UPDATE_INVENTORY_STOCK_FAILURE,
-    DELETE_INVENTORY_STOCK_REQUEST,
-    DELETE_INVENTORY_STOCK_SUCCESS,
-    DELETE_INVENTORY_STOCK_FAILURE,
-    FETCH_GET_REQUEST_FORM_REQUEST,
-    FETCH_GET_REQUEST_FORM_SUCCESS,
-    FETCH_GET_REQUEST_FORM_FAILURE,
-    CREATE_REQUEST_FORM_REQUEST,
-    CREATE_REQUEST_FORM_SUCCESS,
-    CREATE_REQUEST_FORM_FAILURE,
-    UPDATE_REQUEST_FORM_REQUEST,
-    UPDATE_REQUEST_FORM_SUCCESS,
-    UPDATE_REQUEST_FORM_FAILURE,
-    DELETE_REQUEST_FORM_REQUEST,
-    DELETE_REQUEST_FORM_SUCCESS,
-    DELETE_REQUEST_FORM_FAILURE,
+    // Request Form
+    FETCH_GET_REQUEST_FORM_REQUEST, FETCH_GET_REQUEST_FORM_SUCCESS, FETCH_GET_REQUEST_FORM_FAILURE,
+    CREATE_REQUEST_FORM_REQUEST, CREATE_REQUEST_FORM_SUCCESS, CREATE_REQUEST_FORM_FAILURE,
+    // Purchase Order
+    FETCH_GET_PURCHASE_ORDER_REQUEST, FETCH_GET_PURCHASE_ORDER_SUCCESS, FETCH_GET_PURCHASE_ORDER_FAILURE,
+    CREATE_PURCHASE_ORDER_REQUEST, CREATE_PURCHASE_ORDER_SUCCESS, CREATE_PURCHASE_ORDER_FAILURE,
+    // Inventory
+    FETCH_GET_INVENTORY_REQUEST, FETCH_GET_INVENTORY_SUCCESS, FETCH_GET_INVENTORY_FAILURE,
+    CREATE_INVENTORY_STOCK_REQUEST, CREATE_INVENTORY_STOCK_SUCCESS, CREATE_INVENTORY_STOCK_FAILURE,
+    // Supplier
+    FETCH_GET_SUPPLIER_REQUEST, FETCH_GET_SUPPLIER_SUCCESS, FETCH_GET_SUPPLIER_FAILURE,
+    CREATE_SUPPLIER_REQUEST, CREATE_SUPPLIER_SUCCESS, CREATE_SUPPLIER_FAILURE,
+    UPDATE_SUPPLIER_REQUEST, UPDATE_SUPPLIER_SUCCESS, UPDATE_SUPPLIER_FAILURE,
 } from './ActionType';
 import { getToken } from '../../services/tokenServices';
 
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
+// ─── helper ──────────────────────────────────────────────────────────────────
 const authHeaders = (token) => ({
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
 });
 
-const authHeadersMultipart = (token) => ({
-    'Authorization': `Bearer ${token}`,
-    // Don't set Content-Type for multipart/form-data - browser will set it automatically
-});
-
 // ============================================================================
-// Inventory Stock Management
-// ============================================================================
-
-export const fetchGetInventoryRequest = () => ({ type: FETCH_GET_INVENTORY_REQUEST });
-export const fetchGetInventorySuccess = (data) => ({ type: FETCH_GET_INVENTORY_SUCCESS, payload: data });
-export const fetchGetInventoryFailure = (error) => ({ type: FETCH_GET_INVENTORY_FAILURE, payload: error });
-
-export const fetchGetInventoryData = (page, pageSize, search) => async (dispatch) => {
-    dispatch(fetchGetInventoryRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(
-            `${baseUrl}/purchasing/get-inventory?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`,
-            { method: 'POST', headers: authHeaders(token) }
-        );
-        const data = await res.json();
-        dispatch(fetchGetInventorySuccess(data));
-        return { ok: true, data };
-    } catch (err) {
-        dispatch(fetchGetInventoryFailure(err.message));
-        return { ok: false, err };
-    }
-};
-
-export const createInventoryStockRequest = () => ({ type: CREATE_INVENTORY_STOCK_REQUEST });
-export const createInventoryStockSuccess = (data) => ({ type: CREATE_INVENTORY_STOCK_SUCCESS, payload: data });
-export const createInventoryStockFailure = (error) => ({ type: CREATE_INVENTORY_STOCK_FAILURE, payload: error });
-
-export const createInventoryStockData = (formData) => async (dispatch) => {
-    dispatch(createInventoryStockRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/purchasing/create-inventory-stock`, {
-            method: 'POST',
-            headers: authHeadersMultipart(token),
-            body: formData, // FormData object with file upload
-        });
-        const data = await res.json();
-        dispatch(createInventoryStockSuccess(data));
-        return { ok: true, data };
-    } catch (err) {
-        dispatch(createInventoryStockFailure(err.message));
-        return { ok: false, err };
-    }
-};
-
-export const updateInventoryStockRequest = () => ({ type: UPDATE_INVENTORY_STOCK_REQUEST });
-export const updateInventoryStockSuccess = (data) => ({ type: UPDATE_INVENTORY_STOCK_SUCCESS, payload: data });
-export const updateInventoryStockFailure = (error) => ({ type: UPDATE_INVENTORY_STOCK_FAILURE, payload: error });
-
-export const updateInventoryStockData = (formData) => async (dispatch) => {
-    dispatch(updateInventoryStockRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/purchasing/update-inventory-stock`, {
-            method: 'POST',
-            headers: authHeadersMultipart(token),
-            body: formData,
-        });
-        const data = await res.json();
-        dispatch(updateInventoryStockSuccess(data));
-        return { ok: true, data };
-    } catch (err) {
-        dispatch(updateInventoryStockFailure(err.message));
-        return { ok: false, err };
-    }
-};
-
-export const deleteInventoryStockRequest = () => ({ type: DELETE_INVENTORY_STOCK_REQUEST });
-export const deleteInventoryStockSuccess = (data) => ({ type: DELETE_INVENTORY_STOCK_SUCCESS, payload: data });
-export const deleteInventoryStockFailure = (error) => ({ type: DELETE_INVENTORY_STOCK_FAILURE, payload: error });
-
-export const deleteInventoryStockData = (stockId) => async (dispatch) => {
-    dispatch(deleteInventoryStockRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/purchasing/delete-inventory-stock/${stockId}`, {
-            method: 'DELETE',
-            headers: authHeaders(token),
-        });
-        const data = await res.json();
-        dispatch(deleteInventoryStockSuccess(data));
-        return { ok: true, data };
-    } catch (err) {
-        dispatch(deleteInventoryStockFailure(err.message));
-        return { ok: false, err };
-    }
-};
-
-// ============================================================================
-// Request Form Management
+// Request Form
 // ============================================================================
 
 export const fetchGetRequestFormRequest = () => ({ type: FETCH_GET_REQUEST_FORM_REQUEST });
@@ -142,8 +36,8 @@ export const fetchGetRequestFormData = (page, pageSize, search, status) => async
     try {
         const token = getToken();
         const res = await fetch(
-            `${baseUrl}/purchasing/get-request-forms?page=${page}&pageSize=${pageSize}&search=${search ?? ''}&status=${status ?? ''}`,
-            { method: 'POST', headers: authHeaders(token) }
+            `${baseUrl}/purchasing/get-request-forms?page=${page}&pageSize=${pageSize}&search=${search || ''}&status=${status || ''}`,
+            { method: 'GET', headers: authHeaders(token) }
         );
         const data = await res.json();
         dispatch(fetchGetRequestFormSuccess(data));
@@ -158,14 +52,14 @@ export const createRequestFormRequest = () => ({ type: CREATE_REQUEST_FORM_REQUE
 export const createRequestFormSuccess = (data) => ({ type: CREATE_REQUEST_FORM_SUCCESS, payload: data });
 export const createRequestFormFailure = (error) => ({ type: CREATE_REQUEST_FORM_FAILURE, payload: error });
 
-export const createRequestFormData = (formData) => async (dispatch) => {
+export const createRequestFormData = (payload) => async (dispatch) => {
     dispatch(createRequestFormRequest());
     try {
         const token = getToken();
         const res = await fetch(`${baseUrl}/purchasing/create-request-form`, {
             method: 'POST',
             headers: authHeaders(token),
-            body: JSON.stringify(formData),
+            body: JSON.stringify(payload),
         });
         const data = await res.json();
         dispatch(createRequestFormSuccess(data));
@@ -176,45 +70,169 @@ export const createRequestFormData = (formData) => async (dispatch) => {
     }
 };
 
-export const updateRequestFormRequest = () => ({ type: UPDATE_REQUEST_FORM_REQUEST });
-export const updateRequestFormSuccess = (data) => ({ type: UPDATE_REQUEST_FORM_SUCCESS, payload: data });
-export const updateRequestFormFailure = (error) => ({ type: UPDATE_REQUEST_FORM_FAILURE, payload: error });
+// ============================================================================
+// Purchase Order
+// ============================================================================
 
-export const updateRequestFormData = (formData) => async (dispatch) => {
-    dispatch(updateRequestFormRequest());
+export const fetchGetPurchaseOrderRequest = () => ({ type: FETCH_GET_PURCHASE_ORDER_REQUEST });
+export const fetchGetPurchaseOrderSuccess = (data) => ({ type: FETCH_GET_PURCHASE_ORDER_SUCCESS, payload: data });
+export const fetchGetPurchaseOrderFailure = (error) => ({ type: FETCH_GET_PURCHASE_ORDER_FAILURE, payload: error });
+
+export const fetchGetPurchaseOrderData = (page, pageSize, search, status) => async (dispatch) => {
+    dispatch(fetchGetPurchaseOrderRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/purchasing/update-request-form`, {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify(formData),
-        });
+        const res = await fetch(
+            `${baseUrl}/purchasing/get-purchase-orders?page=${page}&pageSize=${pageSize}&search=${search || ''}&status=${status || ''}`,
+            { method: 'GET', headers: authHeaders(token) }
+        );
         const data = await res.json();
-        dispatch(updateRequestFormSuccess(data));
+        dispatch(fetchGetPurchaseOrderSuccess(data));
         return { ok: true, data };
     } catch (err) {
-        dispatch(updateRequestFormFailure(err.message));
+        dispatch(fetchGetPurchaseOrderFailure(err.message));
         return { ok: false, err };
     }
 };
 
-export const deleteRequestFormRequest = () => ({ type: DELETE_REQUEST_FORM_REQUEST });
-export const deleteRequestFormSuccess = (data) => ({ type: DELETE_REQUEST_FORM_SUCCESS, payload: data });
-export const deleteRequestFormFailure = (error) => ({ type: DELETE_REQUEST_FORM_FAILURE, payload: error });
+export const createPurchaseOrderRequest = () => ({ type: CREATE_PURCHASE_ORDER_REQUEST });
+export const createPurchaseOrderSuccess = (data) => ({ type: CREATE_PURCHASE_ORDER_SUCCESS, payload: data });
+export const createPurchaseOrderFailure = (error) => ({ type: CREATE_PURCHASE_ORDER_FAILURE, payload: error });
 
-export const deleteRequestFormData = (requestId) => async (dispatch) => {
-    dispatch(deleteRequestFormRequest());
+export const createPurchaseOrderData = (payload) => async (dispatch) => {
+    dispatch(createPurchaseOrderRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/purchasing/delete-request-form/${requestId}`, {
-            method: 'DELETE',
+        const res = await fetch(`${baseUrl}/purchasing/create-purchase-order`, {
+            method: 'POST',
             headers: authHeaders(token),
+            body: JSON.stringify(payload),
         });
         const data = await res.json();
-        dispatch(deleteRequestFormSuccess(data));
+        dispatch(createPurchaseOrderSuccess(data));
         return { ok: true, data };
     } catch (err) {
-        dispatch(deleteRequestFormFailure(err.message));
+        dispatch(createPurchaseOrderFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// Inventory
+// ============================================================================
+
+export const fetchGetInventoryRequest = () => ({ type: FETCH_GET_INVENTORY_REQUEST });
+export const fetchGetInventorySuccess = (data) => ({ type: FETCH_GET_INVENTORY_SUCCESS, payload: data });
+export const fetchGetInventoryFailure = (error) => ({ type: FETCH_GET_INVENTORY_FAILURE, payload: error });
+
+export const fetchGetInventoryData = (page, pageSize, search) => async (dispatch) => {
+    dispatch(fetchGetInventoryRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(
+            `${baseUrl}/purchasing/get-inventory?page=${page}&pageSize=${pageSize}&search=${search || ''}`,
+            { method: 'GET', headers: authHeaders(token) }
+        );
+        const data = await res.json();
+        dispatch(fetchGetInventorySuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchGetInventoryFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const createInventoryStockRequest = () => ({ type: CREATE_INVENTORY_STOCK_REQUEST });
+export const createInventoryStockSuccess = (data) => ({ type: CREATE_INVENTORY_STOCK_SUCCESS, payload: data });
+export const createInventoryStockFailure = (error) => ({ type: CREATE_INVENTORY_STOCK_FAILURE, payload: error });
+
+export const createInventoryStockData = (payload) => async (dispatch) => {
+    dispatch(createInventoryStockRequest());
+    try {
+        const token = getToken();
+        // Note: payload is FormData for file upload
+        const res = await fetch(`${baseUrl}/purchasing/create-inventory-stock`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                // Do NOT set Content-Type for FormData - browser will set it with boundary
+            },
+            body: payload,
+        });
+        const data = await res.json();
+        dispatch(createInventoryStockSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(createInventoryStockFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// Supplier
+// ============================================================================
+
+export const fetchGetSupplierRequest = () => ({ type: FETCH_GET_SUPPLIER_REQUEST });
+export const fetchGetSupplierSuccess = (data) => ({ type: FETCH_GET_SUPPLIER_SUCCESS, payload: data });
+export const fetchGetSupplierFailure = (error) => ({ type: FETCH_GET_SUPPLIER_FAILURE, payload: error });
+
+export const fetchGetSupplierData = (page, pageSize, search, status) => async (dispatch) => {
+    dispatch(fetchGetSupplierRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(
+            `${baseUrl}/purchasing/get-suppliers?page=${page}&pageSize=${pageSize}&search=${search || ''}&status=${status || ''}`,
+            { method: 'GET', headers: authHeaders(token) }
+        );
+        const data = await res.json();
+        dispatch(fetchGetSupplierSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchGetSupplierFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const createSupplierRequest = () => ({ type: CREATE_SUPPLIER_REQUEST });
+export const createSupplierSuccess = (data) => ({ type: CREATE_SUPPLIER_SUCCESS, payload: data });
+export const createSupplierFailure = (error) => ({ type: CREATE_SUPPLIER_FAILURE, payload: error });
+
+export const createSupplierData = (payload) => async (dispatch) => {
+    dispatch(createSupplierRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/purchasing/create-supplier`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(createSupplierSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(createSupplierFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updateSupplierRequest = () => ({ type: UPDATE_SUPPLIER_REQUEST });
+export const updateSupplierSuccess = (data) => ({ type: UPDATE_SUPPLIER_SUCCESS, payload: data });
+export const updateSupplierFailure = (error) => ({ type: UPDATE_SUPPLIER_FAILURE, payload: error });
+
+export const updateSupplierData = (payload) => async (dispatch) => {
+    dispatch(updateSupplierRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/purchasing/update-supplier`, {
+            method: 'PUT',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updateSupplierSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updateSupplierFailure(err.message));
         return { ok: false, err };
     }
 };

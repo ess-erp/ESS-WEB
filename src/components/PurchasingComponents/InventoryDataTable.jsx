@@ -275,7 +275,7 @@ const InventoryDataTable = () => {
         },
     ];
 
-    // Custom styles for DataTable
+    // Custom styles for DataTable with animation
     const customStyles = {
         headRow: {
             style: {
@@ -300,6 +300,19 @@ const InventoryDataTable = () => {
                 "&:hover": {
                     backgroundColor: "#f0fdf4",
                     cursor: "pointer",
+                    transform: "scale(1.01)",
+                    transition: "all 0.2s ease-in-out",
+                },
+                animation: "fadeInUp 0.5s ease-in-out",
+                "@keyframes fadeInUp": {
+                    "0%": {
+                        opacity: 0,
+                        transform: "translateY(20px)",
+                    },
+                    "100%": {
+                        opacity: 1,
+                        transform: "translateY(0)",
+                    },
                 },
             },
         },
@@ -325,12 +338,6 @@ const InventoryDataTable = () => {
                             <p className="text-green-100 text-xs sm:text-sm mt-1">
                                 Manage and track all inventory stock items
                             </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 sm:px-4 py-2 text-white">
-                                <p className="text-[10px] sm:text-xs font-medium">Total Items</p>
-                                <p className="text-xl sm:text-2xl font-bold">{totalRecords}</p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -395,13 +402,24 @@ const InventoryDataTable = () => {
                             responsive
                             customStyles={customStyles}
                             noDataComponent={
-                                <div className="py-12 sm:py-16 text-center px-4">
-                                    <Package className="mx-auto text-gray-300 mb-4" size={48} />
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5 }}
+                                    className="py-12 sm:py-16 text-center px-4"
+                                >
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                    >
+                                        <Package className="mx-auto text-gray-300 mb-4" size={48} />
+                                    </motion.div>
                                     <p className="text-gray-500 font-medium text-base sm:text-lg">No inventory items found</p>
                                     <p className="text-gray-400 text-xs sm:text-sm mt-2 max-w-md mx-auto">
                                         Start adding stock items to track your inventory.
                                     </p>
-                                </div>
+                                </motion.div>
                             }
                         />
                     </div>

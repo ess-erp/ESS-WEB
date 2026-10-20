@@ -12,6 +12,9 @@ import {
   IdCard,
   FileText,
   Package,
+  ShoppingCart,
+  Receipt,
+  BarChart3,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -303,6 +306,21 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/hrd/onlineapplication",
     },
     {
+      name: "Payroll Processing",
+      icon: CreditCardIcon,
+      path: "/hrd/payroll-processing",
+    },
+    {
+      name: "Employee Payroll",
+      icon: Receipt,
+      path: "/hrd/employee-payroll",
+    },
+    {
+      name: "Payroll Reports",
+      icon: BarChart3,
+      path: "/hrd/payroll-reports",
+    },
+    {
       name: "Templates",
       icon: DocumentIcon,
       path: "/hrd/templates",
@@ -434,9 +452,19 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/accounting/siseries",
     },
     {
-      name: "Templates",
+      name: "Fee Assessment",
       icon: FileText,
-      path: "/accounting/templates",
+      path: "/accounting/fee-assessment",
+    },
+    {
+      name: "Student Ledger",
+      icon: User,
+      path: "/accounting/student-ledger",
+    },
+    {
+      name: "Financial Reports",
+      icon: BarChart3,
+      path: "/accounting/financial-reports",
     },
     ...sharedMenu,
   ];
@@ -456,6 +484,16 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "Request Form",
       icon: FileText,
       path: "/purchasing/requestform",
+    },
+    {
+      name: "Purchase Order",
+      icon: ShoppingCart,
+      path: "/purchasing/purchaseorder",
+    },
+    {
+      name: "Supplier List",
+      icon: User,
+      path: "/purchasing/supplier",
     },
     ...sharedMenu,
   ];
