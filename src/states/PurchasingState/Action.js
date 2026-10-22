@@ -12,6 +12,10 @@ import {
     FETCH_GET_SUPPLIER_REQUEST, FETCH_GET_SUPPLIER_SUCCESS, FETCH_GET_SUPPLIER_FAILURE,
     CREATE_SUPPLIER_REQUEST, CREATE_SUPPLIER_SUCCESS, CREATE_SUPPLIER_FAILURE,
     UPDATE_SUPPLIER_REQUEST, UPDATE_SUPPLIER_SUCCESS, UPDATE_SUPPLIER_FAILURE,
+    // RF Number Series
+    FETCH_GET_RF_NUMBER_SERIES_REQUEST, FETCH_GET_RF_NUMBER_SERIES_SUCCESS, FETCH_GET_RF_NUMBER_SERIES_FAILURE,
+    CREATE_RF_NUMBER_SERIES_REQUEST, CREATE_RF_NUMBER_SERIES_SUCCESS, CREATE_RF_NUMBER_SERIES_FAILURE,
+    UPDATE_RF_NUMBER_SERIES_REQUEST, UPDATE_RF_NUMBER_SERIES_SUCCESS, UPDATE_RF_NUMBER_SERIES_FAILURE,
 } from './ActionType';
 import { getToken } from '../../services/tokenServices';
 
@@ -233,6 +237,75 @@ export const updateSupplierData = (payload) => async (dispatch) => {
         return { ok: true, data };
     } catch (err) {
         dispatch(updateSupplierFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// RF Number Series
+// ============================================================================
+
+export const fetchGetRfNumberSeriesRequest = () => ({ type: FETCH_GET_RF_NUMBER_SERIES_REQUEST });
+export const fetchGetRfNumberSeriesSuccess = (data) => ({ type: FETCH_GET_RF_NUMBER_SERIES_SUCCESS, payload: data });
+export const fetchGetRfNumberSeriesFailure = (error) => ({ type: FETCH_GET_RF_NUMBER_SERIES_FAILURE, payload: error });
+
+export const fetchGetRfNumberSeriesData = (page, pageSize, search, status) => async (dispatch) => {
+    dispatch(fetchGetRfNumberSeriesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(
+            `${baseUrl}/purchasing/get-rf-number-series?page=${page}&pageSize=${pageSize}&search=${search || ''}&status=${status || ''}`,
+            { method: 'GET', headers: authHeaders(token) }
+        );
+        const data = await res.json();
+        dispatch(fetchGetRfNumberSeriesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchGetRfNumberSeriesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const createRfNumberSeriesRequest = () => ({ type: CREATE_RF_NUMBER_SERIES_REQUEST });
+export const createRfNumberSeriesSuccess = (data) => ({ type: CREATE_RF_NUMBER_SERIES_SUCCESS, payload: data });
+export const createRfNumberSeriesFailure = (error) => ({ type: CREATE_RF_NUMBER_SERIES_FAILURE, payload: error });
+
+export const createRfNumberSeriesData = (payload) => async (dispatch) => {
+    dispatch(createRfNumberSeriesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/purchasing/create-rf-number-series`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(createRfNumberSeriesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(createRfNumberSeriesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updateRfNumberSeriesRequest = () => ({ type: UPDATE_RF_NUMBER_SERIES_REQUEST });
+export const updateRfNumberSeriesSuccess = (data) => ({ type: UPDATE_RF_NUMBER_SERIES_SUCCESS, payload: data });
+export const updateRfNumberSeriesFailure = (error) => ({ type: UPDATE_RF_NUMBER_SERIES_FAILURE, payload: error });
+
+export const updateRfNumberSeriesData = (payload) => async (dispatch) => {
+    dispatch(updateRfNumberSeriesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/purchasing/update-rf-number-series`, {
+            method: 'PUT',
+            headers: authHeaders(token),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updateRfNumberSeriesSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updateRfNumberSeriesFailure(err.message));
         return { ok: false, err };
     }
 };

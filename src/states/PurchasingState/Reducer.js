@@ -12,6 +12,10 @@ import {
     FETCH_GET_SUPPLIER_REQUEST, FETCH_GET_SUPPLIER_SUCCESS, FETCH_GET_SUPPLIER_FAILURE,
     CREATE_SUPPLIER_REQUEST, CREATE_SUPPLIER_SUCCESS, CREATE_SUPPLIER_FAILURE,
     UPDATE_SUPPLIER_REQUEST, UPDATE_SUPPLIER_SUCCESS, UPDATE_SUPPLIER_FAILURE,
+    // RF Number Series
+    FETCH_GET_RF_NUMBER_SERIES_REQUEST, FETCH_GET_RF_NUMBER_SERIES_SUCCESS, FETCH_GET_RF_NUMBER_SERIES_FAILURE,
+    CREATE_RF_NUMBER_SERIES_REQUEST, CREATE_RF_NUMBER_SERIES_SUCCESS, CREATE_RF_NUMBER_SERIES_FAILURE,
+    UPDATE_RF_NUMBER_SERIES_REQUEST, UPDATE_RF_NUMBER_SERIES_SUCCESS, UPDATE_RF_NUMBER_SERIES_FAILURE,
 } from './ActionType';
 
 // ─── Initial State ────────────────────────────────────────────────────────────
@@ -36,6 +40,10 @@ const initialState = {
     supplierState: { ...s },
     createSupplierState: { ...s },
     updateSupplierState: { ...s },
+    // RF Number Series
+    rfNumberSeriesState: { ...s },
+    createRfNumberSeriesState: { ...s },
+    updateRfNumberSeriesState: { ...s },
 };
 
 const ok = (payload) => ({ loading: false, data: payload, error: '', success: true });
@@ -83,6 +91,19 @@ const purchasingReducer = (state = initialState, action) => {
         case UPDATE_SUPPLIER_REQUEST: return { ...state, updateSupplierState: req() };
         case UPDATE_SUPPLIER_SUCCESS: return { ...state, updateSupplierState: ok(action.payload) };
         case UPDATE_SUPPLIER_FAILURE: return { ...state, updateSupplierState: err(action.payload) };
+
+        // ── RF Number Series ──────────────────────────────────────────────────
+        case FETCH_GET_RF_NUMBER_SERIES_REQUEST: return { ...state, rfNumberSeriesState: req() };
+        case FETCH_GET_RF_NUMBER_SERIES_SUCCESS: return { ...state, rfNumberSeriesState: ok(action.payload) };
+        case FETCH_GET_RF_NUMBER_SERIES_FAILURE: return { ...state, rfNumberSeriesState: err(action.payload) };
+
+        case CREATE_RF_NUMBER_SERIES_REQUEST: return { ...state, createRfNumberSeriesState: req() };
+        case CREATE_RF_NUMBER_SERIES_SUCCESS: return { ...state, createRfNumberSeriesState: ok(action.payload) };
+        case CREATE_RF_NUMBER_SERIES_FAILURE: return { ...state, createRfNumberSeriesState: err(action.payload) };
+
+        case UPDATE_RF_NUMBER_SERIES_REQUEST: return { ...state, updateRfNumberSeriesState: req() };
+        case UPDATE_RF_NUMBER_SERIES_SUCCESS: return { ...state, updateRfNumberSeriesState: ok(action.payload) };
+        case UPDATE_RF_NUMBER_SERIES_FAILURE: return { ...state, updateRfNumberSeriesState: err(action.payload) };
 
         default:
             return state;
