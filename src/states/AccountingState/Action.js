@@ -690,6 +690,7 @@ export const fetchGetSchoolYearListData = () => async (dispatch) => {
 // ============================================================================
 import {
     FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
+    FETCH_UPDATE_TEMPLATE_REQUEST, FETCH_UPDATE_TEMPLATE_SUCCESS, FETCH_UPDATE_TEMPLATE_FAILURE,
     FETCH_LIST_OF_USER_DATA_REQUEST, FETCH_LIST_OF_USER_DATA_SUCCESS, FETCH_LIST_OF_USER_DATA_FAILURE,
     FETCH_INSERT_OR_SERIES_DATA_REQUEST, FETCH_INSERT_OR_SERIES_DATA_SUCCESS, FETCH_INSERT_OR_SERIES_DATA_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST, FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE,
@@ -707,7 +708,7 @@ export const fetchTemplateTableData = (selectedStatus, page = 1, pageSize = 10, 
     dispatch(fetchTemplateTableDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/get-templates?status=${selectedStatus}&page=${page}&pageSize=${pageSize}&search=${search}`, {
+        const res = await fetch(`${baseUrl}/accounting/get-templates?status=${selectedStatus}&page=${page}&pageSize=${pageSize}&search=${search}`, {
             method: 'POST',
             headers: authHeaders(token),
         });
@@ -716,6 +717,30 @@ export const fetchTemplateTableData = (selectedStatus, page = 1, pageSize = 10, 
         return { ok: true, data: data.data || data, totalRecords: data.totalRecords || data.length };
     } catch (err) {
         dispatch(fetchTemplateTableDataFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Update Template ──────────────────────────────────────────────────────────
+
+export const fetchUpdateTemplateRequest = () => ({ type: FETCH_UPDATE_TEMPLATE_REQUEST });
+export const fetchUpdateTemplateSuccess = (data) => ({ type: FETCH_UPDATE_TEMPLATE_SUCCESS, payload: data });
+export const fetchUpdateTemplateFailure = (error) => ({ type: FETCH_UPDATE_TEMPLATE_FAILURE, payload: error });
+
+export const fetchUpdateTemplateData = (formData) => async (dispatch) => {
+    dispatch(fetchUpdateTemplateRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/update-template`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(formData),
+        });
+        const data = await res.json();
+        dispatch(fetchUpdateTemplateSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchUpdateTemplateFailure(err.message));
         return { ok: false, err };
     }
 };
@@ -730,7 +755,7 @@ export const fetchListOfUserData = () => async (dispatch) => {
     dispatch(fetchListOfUserDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/get-users`, {
+        const res = await fetch(`${baseUrl}/accounting/get-users`, {
             method: 'POST',
             headers: authHeaders(token),
         });
@@ -753,7 +778,7 @@ export const fetchInsertOrSeriesData = (formData) => async (dispatch) => {
     dispatch(fetchInsertOrSeriesDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/insert-or-series`, {
+        const res = await fetch(`${baseUrl}/accounting/insert-or-series`, {
             method: 'POST',
             headers: authHeaders(token),
             body: JSON.stringify(formData),
@@ -777,7 +802,7 @@ export const fetchInsertTableOfFeesData = (formData) => async (dispatch) => {
     dispatch(fetchInsertTableOfFeesDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/insert-table-of-fees`, {
+        const res = await fetch(`${baseUrl}/accounting/insert-table-of-fees`, {
             method: 'POST',
             headers: authHeaders(token),
             body: JSON.stringify(formData),
@@ -801,7 +826,7 @@ export const fetchInsertTuitionFeeData = (formData) => async (dispatch) => {
     dispatch(fetchInsertTuitionFeeDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/insert-tuition-fee`, {
+        const res = await fetch(`${baseUrl}/accounting/insert-tuition-fee`, {
             method: 'POST',
             headers: authHeaders(token),
             body: JSON.stringify(formData),
@@ -825,7 +850,7 @@ export const fetchInsertMiscellaneousData = (formData) => async (dispatch) => {
     dispatch(fetchInsertMiscellaneousDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/finance/insert-miscellaneous`, {
+        const res = await fetch(`${baseUrl}/accounting/insert-miscellaneous`, {
             method: 'POST',
             headers: authHeaders(token),
             body: JSON.stringify(formData),
@@ -955,3 +980,243 @@ export const fetchDeleteTransactionTypes = (id) => async (dispatch) => {
 };
 
 
+
+// ============================================================================
+// Student Ledger — SOA / Statement of Account
+// ============================================================================
+import {
+    FETCH_STUDENT_LEDGER_REQUEST,   FETCH_STUDENT_LEDGER_SUCCESS,   FETCH_STUDENT_LEDGER_FAILURE,
+    FETCH_ALL_STUDENT_LEDGERS_REQUEST, FETCH_ALL_STUDENT_LEDGERS_SUCCESS, FETCH_ALL_STUDENT_LEDGERS_FAILURE,
+    POST_LEDGER_TRANSACTION_REQUEST,  POST_LEDGER_TRANSACTION_SUCCESS,  POST_LEDGER_TRANSACTION_FAILURE,
+    VOID_LEDGER_TRANSACTION_REQUEST,  VOID_LEDGER_TRANSACTION_SUCCESS,  VOID_LEDGER_TRANSACTION_FAILURE,
+} from './ActionType';
+
+// ── fetchStudentLedgerByStudentId ─────────────────────────────────────────────
+// Returns the master summary (StudentLedgerMasterTable) and all child
+// transactions (StudentLedgerChildTable) for a single student's SOA.
+// Endpoint: POST /accounting/get-student-ledger-by-student/:studentId
+
+export const fetchStudentLedgerRequest = () => ({ type: FETCH_STUDENT_LEDGER_REQUEST });
+export const fetchStudentLedgerSuccess = (data) => ({ type: FETCH_STUDENT_LEDGER_SUCCESS, payload: data });
+export const fetchStudentLedgerFailure = (error) => ({ type: FETCH_STUDENT_LEDGER_FAILURE, payload: error });
+
+export const fetchStudentLedgerByStudentId = (studentId) => async (dispatch) => {
+    dispatch(fetchStudentLedgerRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/get-student-ledger-by-student/${studentId}`, {
+            method: 'POST',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchStudentLedgerSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchStudentLedgerFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── fetchAllStudentLedgers ────────────────────────────────────────────────────
+// Returns a paginated list of all StudentLedgerMasterTable records for the
+// data table view (with optional filters: calendarId, levelId, search, status).
+// Endpoint: POST /accounting/get-all-student-ledgers
+
+export const fetchAllStudentLedgersRequest = () => ({ type: FETCH_ALL_STUDENT_LEDGERS_REQUEST });
+export const fetchAllStudentLedgersSuccess = (data) => ({ type: FETCH_ALL_STUDENT_LEDGERS_SUCCESS, payload: data });
+export const fetchAllStudentLedgersFailure = (error) => ({ type: FETCH_ALL_STUDENT_LEDGERS_FAILURE, payload: error });
+
+export const fetchAllStudentLedgers = (filters = {}) => async (dispatch) => {
+    dispatch(fetchAllStudentLedgersRequest());
+    try {
+        const token = getToken();
+        const {
+            page      = 1,
+            pageSize  = 10,
+            search    = '',
+            calendarId = null,
+            levelId    = null,
+            activeStatus = null,
+        } = filters;
+
+        const params = new URLSearchParams({
+            page:     page.toString(),
+            pageSize: pageSize.toString(),
+            search:   search ?? '',
+        });
+        if (calendarId)   params.append('calendarId',   calendarId.toString());
+        if (levelId)      params.append('levelId',      levelId.toString());
+        if (activeStatus) params.append('activeStatus', activeStatus);
+
+        const res = await fetch(`${baseUrl}/accounting/get-all-student-ledgers?${params}`, {
+            method: 'POST',
+            headers: authHeaders(token),
+        });
+        const data = await res.json();
+        dispatch(fetchAllStudentLedgersSuccess(data));
+        return { ok: true, data: data.Data || data.data || data, totalRecords: data.TotalRecords || data.totalRecords || 0 };
+    } catch (err) {
+        dispatch(fetchAllStudentLedgersFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── postLedgerTransaction ─────────────────────────────────────────────────────
+// Inserts a new debit or credit entry into StudentLedgerChildTable and
+// recalculates the running balance + master totals on the backend.
+// Endpoint: POST /accounting/post-ledger-transaction
+//
+// Payload shape (maps to StudentLedgerChildTable fields):
+// {
+//   StudentLedgerMasterId : number,
+//   TransactionDate       : string (ISO date),
+//   TransactionType       : string,   // e.g. "Tuition Fee", "Payment"
+//   OrChildId             : number | null,
+//   OrNumberUsed          : string,
+//   ReferenceNo           : string,
+//   Description           : string,
+//   Debit                 : number,
+//   Credit                : number,
+//   CreatedByUserId       : number,
+// }
+
+export const postLedgerTransactionRequest = () => ({ type: POST_LEDGER_TRANSACTION_REQUEST });
+export const postLedgerTransactionSuccess = (data) => ({ type: POST_LEDGER_TRANSACTION_SUCCESS, payload: data });
+export const postLedgerTransactionFailure = (error) => ({ type: POST_LEDGER_TRANSACTION_FAILURE, payload: error });
+
+export const postLedgerTransaction = (transactionData) => async (dispatch) => {
+    dispatch(postLedgerTransactionRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/post-ledger-transaction`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify(transactionData),
+        });
+        const data = await res.json();
+        dispatch(postLedgerTransactionSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(postLedgerTransactionFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── voidLedgerTransaction ─────────────────────────────────────────────────────
+// Sets a StudentLedgerChildTable row's ActiveStatus to 'V' (voided) and
+// reverses its effect on the master balance.
+// Endpoint: POST /accounting/void-ledger-transaction
+//
+// Payload: { StudentLedgerChildId: number, VoidReason: string, VoidedByUserId: number }
+
+export const voidLedgerTransactionRequest = () => ({ type: VOID_LEDGER_TRANSACTION_REQUEST });
+export const voidLedgerTransactionSuccess = (data) => ({ type: VOID_LEDGER_TRANSACTION_SUCCESS, payload: data });
+export const voidLedgerTransactionFailure = (error) => ({ type: VOID_LEDGER_TRANSACTION_FAILURE, payload: error });
+
+export const voidLedgerTransaction = (childId, reason, voidedByUserId) => async (dispatch) => {
+    dispatch(voidLedgerTransactionRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/void-ledger-transaction`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify({
+                StudentLedgerChildId: childId,
+                VoidReason:           reason,
+                VoidedByUserId:       voidedByUserId,
+            }),
+        });
+        const data = await res.json();
+        dispatch(voidLedgerTransactionSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(voidLedgerTransactionFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// Financial Report
+// ============================================================================
+import {
+    FETCH_FINANCIAL_REPORT_REQUEST,
+    FETCH_FINANCIAL_REPORT_SUCCESS,
+    FETCH_FINANCIAL_REPORT_FAILURE,
+} from './ActionType';
+
+export const fetchFinancialReportRequest = () => ({ type: FETCH_FINANCIAL_REPORT_REQUEST });
+export const fetchFinancialReportSuccess = (data) => ({ type: FETCH_FINANCIAL_REPORT_SUCCESS, payload: data });
+export const fetchFinancialReportFailure = (error) => ({ type: FETCH_FINANCIAL_REPORT_FAILURE, payload: error });
+
+// reportType: 'daily-collection' | 'aging' | 'income'
+// filters:    { dateFrom: string, dateTo: string }
+// Endpoint:   POST /accounting/get-financial-report
+export const fetchFinancialReport = (reportType, filters = {}) => async (dispatch) => {
+    dispatch(fetchFinancialReportRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/accounting/get-financial-report`, {
+            method: 'POST',
+            headers: authHeaders(token),
+            body: JSON.stringify({
+                ReportType: reportType,
+                DateFrom:   filters.dateFrom  ?? null,
+                DateTo:     filters.dateTo    ?? null,
+                Page:       filters.page      ?? 1,
+                PageSize:   filters.pageSize  ?? 10,
+            }),
+        });
+        const data = await res.json();
+        dispatch(fetchFinancialReportSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(fetchFinancialReportFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+
+// ============================================================================
+// General Ledger Actions
+// ============================================================================
+
+export const fetchGeneralLedgerRequest = () => ({ type: 'FETCH_GENERAL_LEDGER_REQUEST' });
+export const fetchGeneralLedgerSuccess = (data) => ({ type: 'FETCH_GENERAL_LEDGER_SUCCESS', payload: data });
+export const fetchGeneralLedgerFailure = (error) => ({ type: 'FETCH_GENERAL_LEDGER_FAILURE', payload: error });
+
+// fetchGeneralLedger — paginated, filterable general ledger list
+// Returns all GL entries with search, date range, account, and school year filtering
+// Endpoint: POST /accounting/get-general-ledger
+export const fetchGeneralLedger = (filters = {}) => async (dispatch) => {
+    dispatch(fetchGeneralLedgerRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/accounting/get-general-ledger`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                Search: filters.search || '',
+                SchoolYearId: filters.schoolYearId || null,
+                AccountId: filters.accountId || null,
+                DateFrom: filters.dateFrom || null,
+                DateTo: filters.dateTo || null,
+                Page: filters.page || 1,
+                PageSize: filters.pageSize || 10,
+            }),
+        });
+        const data = await res.json();
+        dispatch(fetchGeneralLedgerSuccess(data));
+        return { 
+            ok: true, 
+            data: data.data ?? data, 
+            summary: data.summary ?? { totalDebits: 0, totalCredits: 0, netBalance: 0 },
+            totalRecords: data.totalRecords ?? 0 
+        };
+    } catch (err) {
+        dispatch(fetchGeneralLedgerFailure(err.message));
+        return { ok: false, err };
+    }
+};

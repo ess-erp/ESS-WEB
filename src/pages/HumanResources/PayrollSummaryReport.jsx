@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, 
@@ -79,6 +79,10 @@ const PayrollSummaryReport = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('2026-01-15');
   const [viewType, setViewType] = useState('department'); // 'department' or 'contribution'
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    document.title = 'Payroll Reports | HRD';
+  }, []);
 
   const breadcrumbItems = [
     { label: 'Human Resources', href: '/hrd/dashboard' },
@@ -200,24 +204,25 @@ const PayrollSummaryReport = () => {
   return (
     <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
       <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.4 }}
-        className="flex-1 min-h-screen bg-gray-50 px-6 py-4"
-      >
+      <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
-          <motion.h1 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="text-3xl font-bold text-gray-800 mb-2 mt-2"
-          >
-            Payroll Summary Report
-          </motion.h1>
-          <p className="text-gray-600">Comprehensive payroll breakdown and analytics</p>
+          <h2 className="text-sm font-bold text-black mt-2">Payroll Summary Report</h2>
         </div>
+
+        <section className="flex items-center justify-center h-[calc(100%-5rem)]">
+          <div className="flex flex-col space-y-4 h-full w-full">
+            <hr className="border-t-1 border-solid border-gray-400 my-6" />
+            <div className="flex justify-center">
+              <h2 className="text-2xl font-bold text-green-500 mt-2">
+                Payroll Summary Report
+              </h2>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+              <strong className="font-bold">Note: </strong>
+              <span className="block sm:inline">This is the payroll summary report section.</span>
+            </div>
+            <div>
 
       {/* Period Selector and Actions */}
       <motion.div
@@ -519,25 +524,10 @@ const PayrollSummaryReport = () => {
         </motion.div>
       </div>
 
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-        }
-      `}</style>
-      </motion.div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

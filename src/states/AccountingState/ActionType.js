@@ -55,6 +55,27 @@ export const FETCH_CREATE_STUDENT_LEDGER_REQUEST     = 'FETCH_CREATE_STUDENT_LED
 export const FETCH_CREATE_STUDENT_LEDGER_SUCCESS     = 'FETCH_CREATE_STUDENT_LEDGER_SUCCESS';
 export const FETCH_CREATE_STUDENT_LEDGER_FAILURE     = 'FETCH_CREATE_STUDENT_LEDGER_FAILURE';
 
+// ── Student Ledger — SOA / Statement of Account ───────────────────────────────
+// fetchStudentLedgerByStudentId  → master summary + child transactions for one student
+export const FETCH_STUDENT_LEDGER_REQUEST = 'FETCH_STUDENT_LEDGER_REQUEST';
+export const FETCH_STUDENT_LEDGER_SUCCESS = 'FETCH_STUDENT_LEDGER_SUCCESS';
+export const FETCH_STUDENT_LEDGER_FAILURE = 'FETCH_STUDENT_LEDGER_FAILURE';
+
+// fetchAllStudentLedgers  → paginated master-ledger list for the data table
+export const FETCH_ALL_STUDENT_LEDGERS_REQUEST = 'FETCH_ALL_STUDENT_LEDGERS_REQUEST';
+export const FETCH_ALL_STUDENT_LEDGERS_SUCCESS = 'FETCH_ALL_STUDENT_LEDGERS_SUCCESS';
+export const FETCH_ALL_STUDENT_LEDGERS_FAILURE = 'FETCH_ALL_STUDENT_LEDGERS_FAILURE';
+
+// postLedgerTransaction  → insert a new debit/credit child entry
+export const POST_LEDGER_TRANSACTION_REQUEST = 'POST_LEDGER_TRANSACTION_REQUEST';
+export const POST_LEDGER_TRANSACTION_SUCCESS = 'POST_LEDGER_TRANSACTION_SUCCESS';
+export const POST_LEDGER_TRANSACTION_FAILURE = 'POST_LEDGER_TRANSACTION_FAILURE';
+
+// voidLedgerTransaction  → cancel / void an existing child entry
+export const VOID_LEDGER_TRANSACTION_REQUEST = 'VOID_LEDGER_TRANSACTION_REQUEST';
+export const VOID_LEDGER_TRANSACTION_SUCCESS = 'VOID_LEDGER_TRANSACTION_SUCCESS';
+export const VOID_LEDGER_TRANSACTION_FAILURE = 'VOID_LEDGER_TRANSACTION_FAILURE';
+
 // ── Journal Entry ─────────────────────────────────────────────────────────────
 export const FETCH_GET_JOURNAL_REQUEST    = 'FETCH_GET_JOURNAL_REQUEST';
 export const FETCH_GET_JOURNAL_SUCCESS    = 'FETCH_GET_JOURNAL_SUCCESS';
@@ -134,6 +155,11 @@ export const FETCH_TEMPLATE_TABLE_DATA_REQUEST = 'FETCH_TEMPLATE_TABLE_DATA_REQU
 export const FETCH_TEMPLATE_TABLE_DATA_SUCCESS = 'FETCH_TEMPLATE_TABLE_DATA_SUCCESS';
 export const FETCH_TEMPLATE_TABLE_DATA_FAILURE = 'FETCH_TEMPLATE_TABLE_DATA_FAILURE';
 
+// ── Update Template ───────────────────────────────────────────────────────────
+export const FETCH_UPDATE_TEMPLATE_REQUEST = 'FETCH_UPDATE_TEMPLATE_REQUEST';
+export const FETCH_UPDATE_TEMPLATE_SUCCESS = 'FETCH_UPDATE_TEMPLATE_SUCCESS';
+export const FETCH_UPDATE_TEMPLATE_FAILURE = 'FETCH_UPDATE_TEMPLATE_FAILURE';
+
 // ── List of Users ─────────────────────────────────────────────────────────────
 export const FETCH_LIST_OF_USER_DATA_REQUEST = 'FETCH_LIST_OF_USER_DATA_REQUEST';
 export const FETCH_LIST_OF_USER_DATA_SUCCESS = 'FETCH_LIST_OF_USER_DATA_SUCCESS';
@@ -179,3 +205,19 @@ export const FETCH_UPDATE_TRANSACTION_TYPES_FAILURE = 'FETCH_UPDATE_TRANSACTION_
 export const FETCH_DELETE_TRANSACTION_TYPES_REQUEST = 'FETCH_DELETE_TRANSACTION_TYPES_REQUEST';
 export const FETCH_DELETE_TRANSACTION_TYPES_SUCCESS = 'FETCH_DELETE_TRANSACTION_TYPES_SUCCESS';
 export const FETCH_DELETE_TRANSACTION_TYPES_FAILURE = 'FETCH_DELETE_TRANSACTION_TYPES_FAILURE';
+
+// ============================================================================
+// Financial Report
+// ============================================================================
+
+export const FETCH_FINANCIAL_REPORT_REQUEST = 'FETCH_FINANCIAL_REPORT_REQUEST';
+export const FETCH_FINANCIAL_REPORT_SUCCESS = 'FETCH_FINANCIAL_REPORT_SUCCESS';
+export const FETCH_FINANCIAL_REPORT_FAILURE = 'FETCH_FINANCIAL_REPORT_FAILURE';
+
+// ============================================================================
+// General Ledger
+// ============================================================================
+
+export const FETCH_GENERAL_LEDGER_REQUEST = 'FETCH_GENERAL_LEDGER_REQUEST';
+export const FETCH_GENERAL_LEDGER_SUCCESS = 'FETCH_GENERAL_LEDGER_SUCCESS';
+export const FETCH_GENERAL_LEDGER_FAILURE = 'FETCH_GENERAL_LEDGER_FAILURE';

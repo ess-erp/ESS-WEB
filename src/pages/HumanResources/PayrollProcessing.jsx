@@ -187,8 +187,22 @@ const PayrollProcessing = () => {
             <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
-                    <h2 className="text-2xl font-bold text-black mt-2">Payroll Processing</h2>
+                    <h2 className="text-sm font-bold text-black mt-2">Payroll Processing</h2>
                 </div>
+
+                <section className="flex items-center justify-center h-[calc(100%-5rem)]">
+                    <div className="flex flex-col space-y-4 h-full w-full">
+                        <hr className="border-t-1 border-solid border-gray-400 my-6" />
+                        <div className="flex justify-center">
+                            <h2 className="text-2xl font-bold text-green-500 mt-2">
+                                Payroll Processing
+                            </h2>
+                        </div>
+                        <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert">
+                            <strong className="font-bold">Note: </strong>
+                            <span className="block sm:inline">This is the payroll processing section.</span>
+                        </div>
+                        <div>
 
                 {/* Period Selection */}
                 <motion.div
@@ -506,6 +520,9 @@ const PayrollProcessing = () => {
                         }
                     ]}
                 />
+                </div>
+                    </div>
+                </section>
             </div>
         </div>
     );

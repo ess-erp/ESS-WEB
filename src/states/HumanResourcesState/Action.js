@@ -526,3 +526,448 @@ export const fetchInsertHiredEmployeeData = (formData) => async (dispatch) => {
 //         return ({ ok: false, error })
 //     }
 // };
+
+// ── Daily Time Record (DTR) ───────────────────────────────────────────────────
+import {
+    FETCH_DTR_LOGS_REQUEST, FETCH_DTR_LOGS_SUCCESS, FETCH_DTR_LOGS_FAILURE,
+    POST_DTR_SCAN_REQUEST,  POST_DTR_SCAN_SUCCESS,  POST_DTR_SCAN_FAILURE,
+    DTR_SCAN_RATE_LIMITED,
+} from './ActionType';
+
+export const fetchDtrLogsRequest = () => ({ type: FETCH_DTR_LOGS_REQUEST });
+export const fetchDtrLogsSuccess = (data) => ({ type: FETCH_DTR_LOGS_SUCCESS, payload: data });
+export const fetchDtrLogsFailure = (error) => ({ type: FETCH_DTR_LOGS_FAILURE, payload: error });
+
+// fetchDtrLogs — paginated list of all DTR entries for the audit table
+// Endpoint: POST /hr/get-dtr-logs
+export const fetchDtrLogs = (page = 1, pageSize = 10, search = '', date = null) => async (dispatch) => {
+    dispatch(fetchDtrLogsRequest());
+    try {
+        const token = getToken();
+        const params = new URLSearchParams({
+            page:     page.toString(),
+            pageSize: pageSize.toString(),
+            search:   search ?? '',
+        });
+        if (date) params.append('date', date);
+
+        const res = await fetch(`${baseUrl}/hr/get-dtr-logs?${params}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        const data = await res.json();
+        dispatch(fetchDtrLogsSuccess(data));
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
+    } catch (err) {
+        dispatch(fetchDtrLogsFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const postDtrScanRequest = () => ({ type: POST_DTR_SCAN_REQUEST });
+export const postDtrScanSuccess = (data) => ({ type: POST_DTR_SCAN_SUCCESS, payload: data });
+export const postDtrScanFailure = (error) => ({ type: POST_DTR_SCAN_FAILURE, payload: error });
+export const dtrScanRateLimited = (payload) => ({ type: DTR_SCAN_RATE_LIMITED, payload });
+
+// postBiometricScan — submit a face-scan event (TIME-IN or TIME-OUT)
+// Endpoint: POST /hr/post-biometric-scan
+// Body: { EmployeeId, ScanTime, ScanType }  — ScanType determined by backend open-shift logic
+export const postBiometricScan = ({ employeeId, employeeNo, fullName, scanTime }) => async (dispatch) => {
+    dispatch(postDtrScanRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/hr/post-biometric-scan`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                EmployeeId: employeeId,
+                EmployeeNo: employeeNo,
+                FullName:   fullName,
+                ScanTime:   scanTime,
+            }),
+        });
+        const data = await res.json();
+        dispatch(postDtrScanSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(postDtrScanFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Notice of Filing of Leave ─────────────────────────────────────────────────
+import {
+    FETCH_LEAVE_FILINGS_REQUEST, FETCH_LEAVE_FILINGS_SUCCESS, FETCH_LEAVE_FILINGS_FAILURE,
+    CREATE_LEAVE_FILING_REQUEST, CREATE_LEAVE_FILING_SUCCESS, CREATE_LEAVE_FILING_FAILURE,
+    UPDATE_LEAVE_STATUS_REQUEST, UPDATE_LEAVE_STATUS_SUCCESS, UPDATE_LEAVE_STATUS_FAILURE,
+} from './ActionType';
+
+export const fetchLeaveFilingsRequest = () => ({ type: FETCH_LEAVE_FILINGS_REQUEST });
+export const fetchLeaveFilingsSuccess = (data) => ({ type: FETCH_LEAVE_FILINGS_SUCCESS, payload: data });
+export const fetchLeaveFilingsFailure = (error) => ({ type: FETCH_LEAVE_FILINGS_FAILURE, payload: error });
+
+// fetchLeaveFilings — paginated, filterable leave filing list
+// Endpoint: POST /hr/get-leave-filings
+export const fetchLeaveFilings = (filters = {}) => async (dispatch) => {
+    dispatch(fetchLeaveFilingsRequest());
+    try {
+        const token = getToken();
+        const { page = 1, pageSize = 10, search = '', status = null, leaveType = null } = filters;
+        const params = new URLSearchParams({ page, pageSize, search: search ?? '' });
+        if (status)    params.append('status',    status);
+        if (leaveType) params.append('leaveType', leaveType);
+
+        const res = await fetch(`${baseUrl}/hr/get-leave-filings?${params}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+        });
+        const data = await res.json();
+        dispatch(fetchLeaveFilingsSuccess(data));
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
+    } catch (err) {
+        dispatch(fetchLeaveFilingsFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const createLeaveFilingRequest = () => ({ type: CREATE_LEAVE_FILING_REQUEST });
+export const createLeaveFilingSuccess = (data) => ({ type: CREATE_LEAVE_FILING_SUCCESS, payload: data });
+export const createLeaveFilingFailure = (error) => ({ type: CREATE_LEAVE_FILING_FAILURE, payload: error });
+
+// submitLeaveFiling — create a new leave application
+// Endpoint: POST /hr/submit-leave-filing
+// Payload: { EmployeeId, LeaveType, StartDate, EndDate, TotalDays, Reason }
+export const submitLeaveFiling = (payload) => async (dispatch) => {
+    dispatch(createLeaveFilingRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/hr/submit-leave-filing`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(createLeaveFilingSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(createLeaveFilingFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updateLeaveStatusRequest = () => ({ type: UPDATE_LEAVE_STATUS_REQUEST });
+export const updateLeaveStatusSuccess = (data) => ({ type: UPDATE_LEAVE_STATUS_SUCCESS, payload: data });
+export const updateLeaveStatusFailure = (error) => ({ type: UPDATE_LEAVE_STATUS_FAILURE, payload: error });
+
+// updateLeaveStatus — approve, reject, or cancel a leave application
+// Endpoint: POST /hr/update-leave-status
+// Payload: { LeaveId, Status, Remarks }
+export const updateLeaveStatus = (leaveId, status, remarks = '') => async (dispatch) => {
+    dispatch(updateLeaveStatusRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${baseUrl}/hr/update-leave-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ LeaveId: leaveId, Status: status, Remarks: remarks }),
+        });
+        const data = await res.json();
+        dispatch(updateLeaveStatusSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updateLeaveStatusFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// Employee Management Actions
+// ============================================================================
+
+export const fetchEmployeesRequest = () => ({ type: 'FETCH_EMPLOYEES_REQUEST' });
+export const fetchEmployeesSuccess = (data) => ({ type: 'FETCH_EMPLOYEES_SUCCESS', payload: data });
+export const fetchEmployeesFailure = (error) => ({ type: 'FETCH_EMPLOYEES_FAILURE', payload: error });
+
+// fetchEmployeeList — paginated, filterable employee list
+// Returns all employees with search, department filtering, and status filtering
+// Endpoint: POST /hr/get-all-employees
+export const fetchEmployeeList = (filters = {}) => async (dispatch) => {
+    dispatch(fetchEmployeesRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-all-employees`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                page: filters.page || 1,
+                pageSize: filters.pageSize || 10,
+                search: filters.search || '',
+                departmentId: filters.departmentId || null,
+                status: filters.status || null,
+            }),
+        });
+        const data = await res.json();
+        dispatch(fetchEmployeesSuccess(data));
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
+    } catch (err) {
+        dispatch(fetchEmployeesFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ============================================================================
+// Deductions Management Actions
+// ============================================================================
+
+// ── SSS Contribution Table ────────────────────────────────────────────────────
+export const fetchSssTableRequest = () => ({ type: 'FETCH_SSS_TABLE_REQUEST' });
+export const fetchSssTableSuccess = (data) => ({ type: 'FETCH_SSS_TABLE_SUCCESS', payload: data });
+export const fetchSssTableFailure = (error) => ({ type: 'FETCH_SSS_TABLE_FAILURE', payload: error });
+
+export const fetchSssTable = () => async (dispatch) => {
+    dispatch(fetchSssTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-sss-table`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(fetchSssTableSuccess(data));
+        return { ok: true, data: data.data ?? data };
+    } catch (err) {
+        dispatch(fetchSssTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updateSssTableRequest = () => ({ type: 'UPDATE_SSS_TABLE_REQUEST' });
+export const updateSssTableSuccess = (data) => ({ type: 'UPDATE_SSS_TABLE_SUCCESS', payload: data });
+export const updateSssTableFailure = (error) => ({ type: 'UPDATE_SSS_TABLE_FAILURE', payload: error });
+
+export const updateSssTable = (payload) => async (dispatch) => {
+    dispatch(updateSssTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-sss-table`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updateSssTableSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updateSssTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── PhilHealth Premium Matrix ─────────────────────────────────────────────────
+export const fetchPhilhealthTableRequest = () => ({ type: 'FETCH_PHILHEALTH_TABLE_REQUEST' });
+export const fetchPhilhealthTableSuccess = (data) => ({ type: 'FETCH_PHILHEALTH_TABLE_SUCCESS', payload: data });
+export const fetchPhilhealthTableFailure = (error) => ({ type: 'FETCH_PHILHEALTH_TABLE_FAILURE', payload: error });
+
+export const fetchPhilhealthTable = () => async (dispatch) => {
+    dispatch(fetchPhilhealthTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-philhealth-table`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(fetchPhilhealthTableSuccess(data));
+        return { ok: true, data: data.data ?? data };
+    } catch (err) {
+        dispatch(fetchPhilhealthTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updatePhilhealthTableRequest = () => ({ type: 'UPDATE_PHILHEALTH_TABLE_REQUEST' });
+export const updatePhilhealthTableSuccess = (data) => ({ type: 'UPDATE_PHILHEALTH_TABLE_SUCCESS', payload: data });
+export const updatePhilhealthTableFailure = (error) => ({ type: 'UPDATE_PHILHEALTH_TABLE_FAILURE', payload: error });
+
+export const updatePhilhealthTable = (payload) => async (dispatch) => {
+    dispatch(updatePhilhealthTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-philhealth-table`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updatePhilhealthTableSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updatePhilhealthTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Pag-IBIG Contribution Table ───────────────────────────────────────────────
+export const fetchPagibigTableRequest = () => ({ type: 'FETCH_PAGIBIG_TABLE_REQUEST' });
+export const fetchPagibigTableSuccess = (data) => ({ type: 'FETCH_PAGIBIG_TABLE_SUCCESS', payload: data });
+export const fetchPagibigTableFailure = (error) => ({ type: 'FETCH_PAGIBIG_TABLE_FAILURE', payload: error });
+
+export const fetchPagibigTable = () => async (dispatch) => {
+    dispatch(fetchPagibigTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-pagibig-table`, {
+            method: 'GET',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(fetchPagibigTableSuccess(data));
+        return { ok: true, data: data.data ?? data };
+    } catch (err) {
+        dispatch(fetchPagibigTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updatePagibigTableRequest = () => ({ type: 'UPDATE_PAGIBIG_TABLE_REQUEST' });
+export const updatePagibigTableSuccess = (data) => ({ type: 'UPDATE_PAGIBIG_TABLE_SUCCESS', payload: data });
+export const updatePagibigTableFailure = (error) => ({ type: 'UPDATE_PAGIBIG_TABLE_FAILURE', payload: error });
+
+export const updatePagibigTable = (payload) => async (dispatch) => {
+    dispatch(updatePagibigTableRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-pagibig-table`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updatePagibigTableSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updatePagibigTableFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+// ── Employee Custom Deductions ────────────────────────────────────────────────
+export const fetchEmployeeDeductionsRequest = () => ({ type: 'FETCH_EMPLOYEE_DEDUCTIONS_REQUEST' });
+export const fetchEmployeeDeductionsSuccess = (data) => ({ type: 'FETCH_EMPLOYEE_DEDUCTIONS_SUCCESS', payload: data });
+export const fetchEmployeeDeductionsFailure = (error) => ({ type: 'FETCH_EMPLOYEE_DEDUCTIONS_FAILURE', payload: error });
+
+export const fetchEmployeeDeductions = (filters = {}) => async (dispatch) => {
+    dispatch(fetchEmployeeDeductionsRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-employee-deductions`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+                page: filters.page || 1,
+                pageSize: filters.pageSize || 10,
+                search: filters.search || '',
+                deductionType: filters.deductionType || null,
+                status: filters.status || null,
+            }),
+        });
+        const data = await res.json();
+        dispatch(fetchEmployeeDeductionsSuccess(data));
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
+    } catch (err) {
+        dispatch(fetchEmployeeDeductionsFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const createEmployeeDeductionRequest = () => ({ type: 'CREATE_EMPLOYEE_DEDUCTION_REQUEST' });
+export const createEmployeeDeductionSuccess = (data) => ({ type: 'CREATE_EMPLOYEE_DEDUCTION_SUCCESS', payload: data });
+export const createEmployeeDeductionFailure = (error) => ({ type: 'CREATE_EMPLOYEE_DEDUCTION_FAILURE', payload: error });
+
+export const createEmployeeDeduction = (payload) => async (dispatch) => {
+    dispatch(createEmployeeDeductionRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/create-employee-deduction`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(createEmployeeDeductionSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(createEmployeeDeductionFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const updateEmployeeDeductionRequest = () => ({ type: 'UPDATE_EMPLOYEE_DEDUCTION_REQUEST' });
+export const updateEmployeeDeductionSuccess = (data) => ({ type: 'UPDATE_EMPLOYEE_DEDUCTION_SUCCESS', payload: data });
+export const updateEmployeeDeductionFailure = (error) => ({ type: 'UPDATE_EMPLOYEE_DEDUCTION_FAILURE', payload: error });
+
+export const updateEmployeeDeduction = (payload) => async (dispatch) => {
+    dispatch(updateEmployeeDeductionRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-employee-deduction`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        dispatch(updateEmployeeDeductionSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(updateEmployeeDeductionFailure(err.message));
+        return { ok: false, err };
+    }
+};
+
+export const deleteEmployeeDeductionRequest = () => ({ type: 'DELETE_EMPLOYEE_DEDUCTION_REQUEST' });
+export const deleteEmployeeDeductionSuccess = (data) => ({ type: 'DELETE_EMPLOYEE_DEDUCTION_SUCCESS', payload: data });
+export const deleteEmployeeDeductionFailure = (error) => ({ type: 'DELETE_EMPLOYEE_DEDUCTION_FAILURE', payload: error });
+
+export const deleteEmployeeDeduction = (deductionId) => async (dispatch) => {
+    dispatch(deleteEmployeeDeductionRequest());
+    try {
+        const token = getToken();
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/delete-employee-deduction/${deductionId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        dispatch(deleteEmployeeDeductionSuccess(data));
+        return { ok: true, data };
+    } catch (err) {
+        dispatch(deleteEmployeeDeductionFailure(err.message));
+        return { ok: false, err };
+    }
+};

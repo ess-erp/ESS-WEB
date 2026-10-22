@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useRef } from "react";
 import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,11 +7,11 @@ import TemplatesModalComponent from '../../components/HrComponents/TemplatesModa
 const Templates = () => {
 
     useEffect(() => {
-        document.title = 'Templates';
+        document.title = 'Templates | HRD';
     }, []);
     const breadcrumbItems = [
-        { label: 'Dashboard', href: '/hr/dashboard' },
-        { label: 'Templates', href: '/hr/examroontemplate' },
+        { label: 'Dashboard', href: '/hrd/dashboard' },
+        { label: 'Templates', href: '/hrd/templates' },
     ];
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem("userData");
@@ -23,14 +21,13 @@ const Templates = () => {
     const [selectedStatus, setSelectedStatus] = useState("active");
 
     return (
-        <>
-            <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-                <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-                <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
-                    <div className="mb-4">
-                        <Breadcrumb items={breadcrumbItems} />
-                        <h2 className="text-sm font-bold text-black mt-2">Templates</h2>
-                    </div>
+        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
+            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
+            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+                <div className="mb-4">
+                    <Breadcrumb items={breadcrumbItems} />
+                    <h2 className="text-2xl font-bold text-black mt-2">Templates</h2>
+                </div>
 
                     <section className="flex items-center justify-center h-[calc(100%-5rem)]">
                         <div className="flex flex-col space-y-4 h-full w-full">
@@ -95,9 +92,8 @@ const Templates = () => {
 
                         </div>
                     </section>
-                </div>
             </div>
-        </>
+        </div>
     );
 };
 

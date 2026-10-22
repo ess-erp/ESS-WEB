@@ -39,6 +39,10 @@ import HrEmployeeAppForm from "../pages/HumanResources/EmployeeAppForm";
 import HrEmployeeHiringProcess from "../pages/HumanResources/EmployeeHiringProcess";
 import HrTemplates from "../pages/HumanResources/Templates";
 import HrEmployeeInitialInterview from "../pages/HumanResources/EmployeeInitialInterview";
+import HrDtrManagement from "../pages/HumanResources/DtrManagement";
+import HrLeaveFiling from "../pages/HumanResources/LeaveFiling";
+import HrEmployeeList from "../pages/HumanResources/EmployeeList";
+import HrDeductionsManagement from "../pages/HumanResources/DeductionsManagement";
 import PayrollProcessing from "../pages/HumanResources/PayrollProcessing";
 import EmployeePayrollList from "../pages/HumanResources/EmployeePayrollList";
 import PayrollSummaryReport from "../pages/HumanResources/PayrollSummaryReport";
@@ -62,6 +66,8 @@ import StudentDashboard from "../pages/Student/Dashboard";
 import Notification from "../pages/SharedPages/Notification";
 import Profile from "../pages/SharedPages/Profile";
 import Ticketing from "../pages/SharedPages/Ticketing";
+import TimeAndAttendance from "../pages/SharedPages/TimeAndAttendance";
+import PayrollAndCompensation from "../pages/SharedPages/PayrollAndCompensation";
 import GlobalToastHandler from "../GlobalFunction/GlobalToastHandler";
 import CurriculumEntry from "../pages/AcademicStaff/CurriculumEntry";
 import AccountingDashboard from "../pages/Accounting/Dashboard";
@@ -72,11 +78,13 @@ import AccountingSiSeries from "../pages/Accounting/SiSeries";
 import AccountingFeeAssessment from "../pages/Accounting/FeeAssessment";
 import AccountingStudentLedger from "../pages/Accounting/StudentLedger";
 import AccountingFinancialReports from "../pages/Accounting/FinancialReports";
+import AccountingGeneralLedger from "../pages/Accounting/GeneralLedger";
 import PurchasingDashboard from "../pages/Purchasing/Dashboard";
 import PurchasingInventoryManagement from "../pages/Purchasing/InventoryManagement";
 import PurchasingRequestForm from "../pages/Purchasing/RequestForm";
 import PurchasingPurchaseOrder from "../pages/Purchasing/PurchaseOrder";
 import PurchasingSupplier from "../pages/Purchasing/Supplier";
+import PurchasingRfNumberSeries from "../pages/Purchasing/RfNumberSeries";
 
 
 
@@ -404,6 +412,46 @@ const AppRoutes = () => (
             </ProtectedRoutes>
           }
         />
+        <Route
+          path="/hrd/dtr-management"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrDtrManagement />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/leave-filing"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrLeaveFiling />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employee-list"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrEmployeeList />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employeeappform/:employeeId"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 10]}>
+              <HrEmployeeAppForm />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/deductions"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 10]}>
+              <HrDeductionsManagement />
+            </ProtectedRoutes>
+          }
+        />
         {/* end of hr modules */}
 
         {/* start of sac modules */}
@@ -644,6 +692,15 @@ const AppRoutes = () => (
           }
         />
 
+        <Route
+          path="/accounting/general-ledger"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingGeneralLedger />
+            </ProtectedRoutes>
+          }
+        />
+
         {/* end of accounting module */}
 
         {/* start of purchasing module */}
@@ -693,6 +750,15 @@ const AppRoutes = () => (
           }
         />
 
+        <Route
+          path="/purchasing/rf-number-series"
+          element={
+            <ProtectedRoutes allowedRoles={[19]}>
+              <PurchasingRfNumberSeries />
+            </ProtectedRoutes>
+          }
+        />
+
         {/* end of purchasing module */}
 
         {/* shared components */}
@@ -719,6 +785,24 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
               <Profile />
+            </ProtectedRoutes>
+          }
+        />
+
+        {/* Employee Portal Routes */}
+        <Route
+          path="/employee/time-attendance"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19]}>
+              <TimeAndAttendance />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/employee/payroll"
+          element={
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19]}>
+              <PayrollAndCompensation />
             </ProtectedRoutes>
           }
         />

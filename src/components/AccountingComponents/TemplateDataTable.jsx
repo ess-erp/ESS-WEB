@@ -10,6 +10,7 @@ import {
     fetchListOfUserData,
     fetchInsertTuitionFeeData,
     fetchInsertMiscellaneousData,
+    fetchUpdateTemplateData,
 } from "../../states/AccountingState/Action";
 import {
     fetchLevelData,
@@ -38,6 +39,8 @@ const TemplateDataTable = ({ selectedStatus }) => {
     const levelState = useSelector((state) => state.admission.levelState || {});
     const level = levelState.data || [];
 
+    console.log('Level State:', levelState);
+    console.log('Level Data:', level);
 
     useEffect(() => {
         dispatch(fetchListOfUserData());
@@ -165,8 +168,76 @@ const TemplateDataTable = ({ selectedStatus }) => {
         },
     ];
 
-    const openRowModal = () => {
-        alert("test");
+    const openRowModal = (row, mode) => {
+        setSelectedTemplate(row);
+        if (mode === "view") {
+            setIsViewModalOpen(true);
+        } else if (mode === "edit") {
+            setIsEditModalOpen(true);
+            // Pre-fill edit form with row data
+            setEditForm({
+                TempTitle: row.TempTitle || "",
+                TempType: row.TempType || "",
+            });
+        }
+    };
+
+    const closeViewModal = () => {
+        setIsViewModalOpen(false);
+        setSelectedTemplate(null);
+    };
+
+    const closeEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedTemplate(null);
+        setEditForm({ TempTitle: "", TempType: "" });
+        setEditErrors({});
+    };
+
+    const handleEditSubmit = async () => {
+        // Validate edit form
+        const newErrors = {};
+        if (!editForm.TempTitle?.trim()) {
+            newErrors.TempTitle = "Template name is required";
+        }
+        
+        if (Object.keys(newErrors).length > 0) {
+            setEditErrors(newErrors);
+            return;
+        }
+
+        setIsEditLoadingModalOpen(true);
+        
+        try {
+            const payload = {
+                TemplateId: selectedTemplate.TemplateId,
+                TempTitle: editForm.TempTitle,
+                TempType: editForm.TempType,
+                ModifiedByUserId: currentUserId,
+            };
+
+            const result = await dispatch(fetchUpdateTemplateData(payload));
+            
+            setIsEditLoadingModalOpen(false);
+
+            if (result.ok) {
+                setIsEditSuccessModalOpen(true);
+                setEditModalBody("Template updated successfully!");
+                closeEditModal();
+                
+                // Refresh table
+                fetchTemplates(selectedStatus, page, pageSize, search);
+            } else {
+                setIsEditErrorModalOpen(true);
+                setEditModalBody(result.data?.message || result.data?.Message || "Failed to update template. Please try again.");
+            }
+
+        } catch (error) {
+            console.error("Error updating template:", error);
+            setIsEditLoadingModalOpen(false);
+            setIsEditErrorModalOpen(true);
+            setEditModalBody("Failed to update template. Please try again.");
+        }
     };
 
     const handleToggleActive = async (selectedRow, newStatus) => {
@@ -193,11 +264,24 @@ const TemplateDataTable = ({ selectedStatus }) => {
             console.error("Error updating template:", error);
         }
     };
+
+    // Modal states for Add Template
     const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [isLoadingModalOpen, setIsLoadingModalOpen] = useState(false);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [modalBody, setModalBody] = useState("");
+
+    // Modal states for View/Edit
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
+    const [editForm, setEditForm] = useState({ TempTitle: "", TempType: "" });
+    const [editErrors, setEditErrors] = useState({});
+    const [isEditLoadingModalOpen, setIsEditLoadingModalOpen] = useState(false);
+    const [isEditSuccessModalOpen, setIsEditSuccessModalOpen] = useState(false);
+    const [isEditErrorModalOpen, setIsEditErrorModalOpen] = useState(false);
+    const [editModalBody, setEditModalBody] = useState("");
 
 
     const {
@@ -631,6 +715,241 @@ const TemplateDataTable = ({ selectedStatus }) => {
                         label: "Close",
                         type: "red",
                         onClick: () => setIsErrorModalOpen(false),
+                    },
+                ]}
+            />
+
+            {/* View Template Modal */}
+            <ModalComponent
+                isOpen={isViewModalOpen}
+                onClose={closeViewModal}
+                title="View Template Details"
+                size="w-full max-w-2xl"
+                body={
+                    selectedTemplate && (
+                        <div className="space-y-4 p-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Template Name */}
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Template Name
+                                    </label>
+                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
+                                        {selectedTemplate.TempTitle || "—"}
+                                    </div>
+                                </div>
+
+                                {/* Template Type */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Template Type
+                                    </label>
+                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
+                                        {selectedTemplate.TempType || "—"}
+                                    </div>
+                                </div>
+
+                                {/* Status */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Status
+                                    </label>
+                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                            selectedTemplate.isActive 
+                                                ? 'bg-green-100 text-green-700' 
+                                                : 'bg-gray-100 text-gray-700'
+                                        }`}>
+                                            {selectedTemplate.isActive ? 'Active' : 'Draft'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Created By */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Created By
+                                    </label>
+                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
+                                        {selectedTemplate.CreatedByFullname || "—"}
+                                    </div>
+                                </div>
+
+                                {/* Date Created */}
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        Date Created
+                                    </label>
+                                    <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
+                                        {selectedTemplate.DateCreated 
+                                            ? new Date(selectedTemplate.DateCreated).toLocaleDateString('en-PH', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })
+                                            : "—"}
+                                    </div>
+                                </div>
+
+                                {/* Date Modified */}
+                                {selectedTemplate.DateModified && (
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Last Modified
+                                        </label>
+                                        <div className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
+                                            {new Date(selectedTemplate.DateModified).toLocaleDateString('en-PH', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "gray",
+                        onClick: closeViewModal,
+                    },
+                ]}
+            />
+
+            {/* Edit Template Modal */}
+            <ModalComponent
+                isOpen={isEditModalOpen}
+                onClose={closeEditModal}
+                title="Edit Template"
+                size="w-full max-w-2xl"
+                body={
+                    selectedTemplate && (
+                        <div className="space-y-4 p-4">
+                            {/* Template Name */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Template Name <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editForm.TempTitle}
+                                    onChange={(e) => setEditForm({ ...editForm, TempTitle: e.target.value })}
+                                    placeholder="Enter template name"
+                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                                        editErrors.TempTitle ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                />
+                                {editErrors.TempTitle && (
+                                    <p className="text-red-500 text-xs mt-1">{editErrors.TempTitle}</p>
+                                )}
+                            </div>
+
+                            {/* Template Type (Read-only) */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Template Type
+                                </label>
+                                <input
+                                    type="text"
+                                    value={editForm.TempType}
+                                    readOnly
+                                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed text-gray-600"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Template type cannot be changed</p>
+                            </div>
+
+                            {/* Info Box */}
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-start gap-2">
+                                    <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <div className="text-sm text-blue-800">
+                                        <p className="font-semibold mb-1">Edit Information</p>
+                                        <p>You can update the template name. To modify template structure or fees, please create a new template.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+                buttons={[
+                    {
+                        label: "Cancel",
+                        type: "red",
+                        onClick: closeEditModal,
+                    },
+                    {
+                        label: "Save Changes",
+                        type: "green",
+                        onClick: handleEditSubmit,
+                    },
+                ]}
+            />
+
+            {/* Edit Loading Modal */}
+            <ModalComponent
+                isOpen={isEditLoadingModalOpen}
+                onClose={() => {}}
+                title="Updating"
+                body={
+                    <div className="flex flex-col items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mb-4"></div>
+                        <p className="text-gray-700 font-medium">Updating template...</p>
+                    </div>
+                }
+                buttons={[]}
+            />
+
+            {/* Edit Success Modal */}
+            <ModalComponent
+                isOpen={isEditSuccessModalOpen}
+                onClose={() => setIsEditSuccessModalOpen(false)}
+                title="Success"
+                body={
+                    <div className="text-center py-4">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                            <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-700 font-medium">{editModalBody}</p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "green",
+                        onClick: () => setIsEditSuccessModalOpen(false),
+                    },
+                ]}
+            />
+
+            {/* Edit Error Modal */}
+            <ModalComponent
+                isOpen={isEditErrorModalOpen}
+                onClose={() => setIsEditErrorModalOpen(false)}
+                title="Error"
+                body={
+                    <div className="text-center py-4">
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                            <svg className="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-700 font-medium">{editModalBody}</p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setIsEditErrorModalOpen(false),
                     },
                 ]}
             />

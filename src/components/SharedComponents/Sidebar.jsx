@@ -15,6 +15,9 @@ import {
   ShoppingCart,
   Receipt,
   BarChart3,
+  Clock,
+  Calculator,
+  Hash,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -89,8 +92,35 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   };
 
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+
   const toggleDropdown = (name) => {
     setOpenDropdown((prev) => (prev === name ? null : name));
+  };
+
+  // Filter menu items based on search query
+  const filterMenuItems = (items, query) => {
+    if (!query.trim()) return items;
+
+    const lowerQuery = query.toLowerCase();
+
+    return items.filter((item) => {
+      // Don't filter separators
+      if (item.separator) return false;
+
+      // Check if parent name matches
+      const parentMatches = item.name.toLowerCase().includes(lowerQuery);
+
+      // Check if any child matches
+      if (item.children) {
+        const childMatches = item.children.some((child) =>
+          child.name.toLowerCase().includes(lowerQuery)
+        );
+        return parentMatches || childMatches;
+      }
+
+      return parentMatches;
+    });
   };
 
   const sharedMenu = [
@@ -121,11 +151,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           children: [
             {
               name: "Time & Attendance (Leave Management)",
-              path: "/sru/generate-student-id",
+              path: "/employee/time-attendance",
             },
             {
               name: "Payroll & Compensation",
-              path: "/sru/generate-school-form",
+              path: "/employee/payroll",
             },
           ],
         },
@@ -306,6 +336,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/hrd/onlineapplication",
     },
     {
+      name: "Employee Directory",
+      icon: User,
+      path: "/hrd/employee-list",
+    },
+
+    {
+      name: "DTR Management",
+      icon: Clock,
+      path: "/hrd/dtr-management",
+    },
+    {
+      name: "Leave Filing Management",
+      icon: CalendarPlus,
+      path: "/hrd/leave-filing",
+    },
+    {
       name: "Payroll Processing",
       icon: CreditCardIcon,
       path: "/hrd/payroll-processing",
@@ -321,6 +367,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/hrd/payroll-reports",
     },
     {
+      name: "Deductions Management",
+      icon: Calculator,
+      path: "/hrd/deductions",
+    },
+    {
       name: "Templates",
       icon: DocumentIcon,
       path: "/hrd/templates",
@@ -334,9 +385,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/hrd/dashboard",
     },
     {
-      name: "Employee Daily Time Record",
-      icon: UserIconSolid,
-      path: "/hrd/onlineapplication",
+      name: "DTR Management",
+      icon: Clock,
+      path: "/hrd/dtr-management",
     },
     {
       name: "Templates",
@@ -447,6 +498,21 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/accounting/journalentry",
     },
     {
+      name: "Student Ledger",
+      icon: User,
+      path: "/accounting/student-ledger",
+    },
+    {
+      name: "General Ledger",
+      icon: BookPlus,
+      path: "/accounting/general-ledger",
+    },
+    {
+      name: "Financial Reports",
+      icon: BarChart3,
+      path: "/accounting/financial-reports",
+    },
+    {
       name: "SI / OR Series",
       icon: CreditCardIcon,
       path: "/accounting/siseries",
@@ -455,16 +521,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "Fee Assessment",
       icon: FileText,
       path: "/accounting/fee-assessment",
-    },
-    {
-      name: "Student Ledger",
-      icon: User,
-      path: "/accounting/student-ledger",
-    },
-    {
-      name: "Financial Reports",
-      icon: BarChart3,
-      path: "/accounting/financial-reports",
     },
     ...sharedMenu,
   ];
@@ -494,6 +550,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       name: "Supplier List",
       icon: User,
       path: "/purchasing/supplier",
+    },
+    {
+      name: "RF No. Series",
+      icon: Hash,
+      path: "/purchasing/rf-number-series",
     },
     ...sharedMenu,
   ];
@@ -571,6 +632,9 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   };
 
   const menuItems = getMenuByRoles(user?.UserRoleId);
+
+  // Filter menu items based on search query (must be after menuItems declaration)
+  const filteredMenuItems = filterMenuItems(menuItems, searchQuery);
 
 
 
@@ -685,25 +749,110 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
             </span>
             <input
               type="text"
-              className="w-full py-2 pl-10 pr-4 text-black bg-white border rounded-md focus:border-blue-400 focus:ring focus:ring-blue-300 focus:outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full py-2 pl-10 pr-10 text-black bg-white border rounded-md focus:border-blue-400 focus:ring focus:ring-blue-300 focus:outline-none"
               placeholder="Search"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-6 flex items-center pr-1 text-gray-400 hover:text-gray-600"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         )}
         <nav className="mt-4">
-          {menuItems.map((item, index) =>
-            item.separator ? (
-              <hr key={`sep-${index}`} className="my-6 border-gray-200" />
-            ) : item.children ? (
-              // =========================
-              // DROPDOWN PARENT ITEM
-              // =========================
-              <div key={item.name + index}>
-                <a
-                  onClick={() => toggleDropdown(item.name)}
-                  className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-          focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
-        ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
+          {filteredMenuItems.length === 0 && searchQuery ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm text-gray-500">No menu items found</p>
+              <p className="text-xs text-gray-400 mt-1">Try a different search term</p>
+            </div>
+          ) : (
+            filteredMenuItems.map((item, index) =>
+              item.separator ? (
+                <hr key={`sep-${index}`} className="my-6 border-gray-200" />
+              ) : item.children ? (
+                // =========================
+                // DROPDOWN PARENT ITEM
+                // =========================
+                <div key={item.name + index}>
+                  <a
+                    onClick={() => toggleDropdown(item.name)}
+                    className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+            focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
+          ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
+                  >
+                    {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
+                      <NotificationBell />
+                    ) : (
+                      <item.icon className="h-5 w-5 text-gray-600" />
+                    )}
+
+                    {isSidebarOpen && (
+                      <>
+                        <span className="mx-4 font-medium">{item.name}</span>
+
+                        <svg
+                          className={`w-4 h-4 ml-auto transition-transform ${openDropdown === item.name ? "rotate-180" : ""
+                            }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </>
+                    )}
+                  </a>
+
+                  {openDropdown === item.name && isSidebarOpen && (
+                    <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
+                      {item.children
+                        .filter((child) =>
+                          !searchQuery || child.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .map((child, i) => (
+                          <Link
+                            key={i}
+                            to={child.path}
+                            className={`block px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition
+                        ${location.pathname === child.path ? "bg-gray-100 font-semibold" : ""}`}
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // =========================
+                // NORMAL ITEM
+                // =========================
+                <Link
+                  to={item.path}
+                  key={item.name + index}
+                  className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
+                 ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
                 >
                   {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
                     <NotificationBell />
@@ -712,62 +861,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                   )}
 
                   {isSidebarOpen && (
-                    <>
-                      <span className="mx-4 font-medium">{item.name}</span>
-
-                      <svg
-                        className={`w-4 h-4 ml-auto transition-transform ${openDropdown === item.name ? "rotate-180" : ""
-                          }`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </>
+                    <span className="mx-4 font-medium">{item.name}</span>
                   )}
-                </a>
-
-                {openDropdown === item.name && isSidebarOpen && (
-                  <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
-                    {item.children.map((child, i) => (
-                      <Link
-                        key={i}
-                        to={child.path}
-                        className={`block px-3 py-2 text-sm rounded-md hover:bg-gray-100 transition
-                      ${location.pathname === child.path ? "bg-gray-100 font-semibold" : ""}`}
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              // =========================
-              // NORMAL ITEM (Fixed Component Matching here!)
-              // =========================
-              <Link
-                to={item.path}
-                key={item.name + index}
-                className={`flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
-               ${activeItem === item.name ? "bg-gray-100 font-semibold" : ""}`}
-              >
-                {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
-                  <NotificationBell />
-                ) : (
-                  <item.icon className="h-5 w-5 text-gray-600" />
-                )}
-
-                {isSidebarOpen && (
-                  <span className="mx-4 font-medium">{item.name}</span>
-                )}
-              </Link>
+                </Link>
+              )
             )
           )}
         </nav>

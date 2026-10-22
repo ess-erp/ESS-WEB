@@ -94,8 +94,7 @@ const SearchableSelect = ({
                         }),
                         menu: (base) => ({
                             ...base,
-                            minWidth: "350px",
-                            width: "auto",
+                            width: "100%",
                             maxHeight: "300px",
                         }),
                         menuList: (base) => ({

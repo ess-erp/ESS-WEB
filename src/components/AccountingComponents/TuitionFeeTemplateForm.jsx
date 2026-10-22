@@ -54,11 +54,16 @@ const SimpleInput = ({ label, type = "text", value, onChange, error, placeholder
 const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
     const { tuitionForm, setTuitionFormField, errors } = useTemplateStore();
 
+    console.log('TuitionFeeTemplateForm - levelOptions received:', levelOptions);
+    console.log('TuitionFeeTemplateForm - levelOptions length:', levelOptions.length);
+
     // Transform level options for SearchableSelect
     const levelSelectOptions = levelOptions.map(level => ({
         value: level.LevelId || level.levelId,
-        label: level.Level || level.level
+        label: level.LevelName || level.levelName
     }));
+
+    console.log('TuitionFeeTemplateForm - transformed levelSelectOptions:', levelSelectOptions);
 
     const handleLevelChange = (selectedOption) => {
         setTuitionFormField("levelId", selectedOption?.value || "");
@@ -117,7 +122,8 @@ const TuitionFeeTemplateForm = ({ levelOptions = [] }) => {
                         options={levelSelectOptions}
                         value={selectedLevel}
                         onChange={handleLevelChange}
-                        error={errors.levelId}
+                        errors={!!errors.levelId}
+                        errorMessage={errors.levelId}
                         required
                     />
                 </div>

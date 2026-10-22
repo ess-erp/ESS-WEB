@@ -17,6 +17,11 @@ import {
     FETCH_GET_STUDENT_LEDGER_REQUEST, FETCH_GET_STUDENT_LEDGER_SUCCESS, FETCH_GET_STUDENT_LEDGER_FAILURE,
     FETCH_GET_STUDENT_LEDGER_DETAIL_REQUEST, FETCH_GET_STUDENT_LEDGER_DETAIL_SUCCESS, FETCH_GET_STUDENT_LEDGER_DETAIL_FAILURE,
     FETCH_CREATE_STUDENT_LEDGER_REQUEST, FETCH_CREATE_STUDENT_LEDGER_SUCCESS, FETCH_CREATE_STUDENT_LEDGER_FAILURE,
+    // Student Ledger — SOA
+    FETCH_STUDENT_LEDGER_REQUEST, FETCH_STUDENT_LEDGER_SUCCESS, FETCH_STUDENT_LEDGER_FAILURE,
+    FETCH_ALL_STUDENT_LEDGERS_REQUEST, FETCH_ALL_STUDENT_LEDGERS_SUCCESS, FETCH_ALL_STUDENT_LEDGERS_FAILURE,
+    POST_LEDGER_TRANSACTION_REQUEST, POST_LEDGER_TRANSACTION_SUCCESS, POST_LEDGER_TRANSACTION_FAILURE,
+    VOID_LEDGER_TRANSACTION_REQUEST, VOID_LEDGER_TRANSACTION_SUCCESS, VOID_LEDGER_TRANSACTION_FAILURE,
     // Journal Entry
     FETCH_GET_JOURNAL_REQUEST, FETCH_GET_JOURNAL_SUCCESS, FETCH_GET_JOURNAL_FAILURE,
     FETCH_GET_JOURNAL_DETAIL_REQUEST, FETCH_GET_JOURNAL_DETAIL_SUCCESS, FETCH_GET_JOURNAL_DETAIL_FAILURE,
@@ -39,6 +44,7 @@ import {
     FETCH_GET_SCHOOL_YEAR_LIST_REQUEST, FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, FETCH_GET_SCHOOL_YEAR_LIST_FAILURE,
     // Templates / Fees (migrated from Finance)
     FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
+    FETCH_UPDATE_TEMPLATE_REQUEST, FETCH_UPDATE_TEMPLATE_SUCCESS, FETCH_UPDATE_TEMPLATE_FAILURE,
     FETCH_LIST_OF_USER_DATA_REQUEST, FETCH_LIST_OF_USER_DATA_SUCCESS, FETCH_LIST_OF_USER_DATA_FAILURE,
     FETCH_INSERT_OR_SERIES_DATA_REQUEST, FETCH_INSERT_OR_SERIES_DATA_SUCCESS, FETCH_INSERT_OR_SERIES_DATA_FAILURE,
     FETCH_INSERT_TABLE_OF_FEES_DATA_REQUEST, FETCH_INSERT_TABLE_OF_FEES_DATA_SUCCESS, FETCH_INSERT_TABLE_OF_FEES_DATA_FAILURE,
@@ -48,7 +54,10 @@ import {
     FETCH_GET_TRANSACTION_TYPES_REQUEST, FETCH_GET_TRANSACTION_TYPES_SUCCESS, FETCH_GET_TRANSACTION_TYPES_FAILURE,
     FETCH_CREATE_TRANSACTION_TYPES_REQUEST, FETCH_CREATE_TRANSACTION_TYPES_SUCCESS, FETCH_CREATE_TRANSACTION_TYPES_FAILURE,
     FETCH_UPDATE_TRANSACTION_TYPES_REQUEST, FETCH_UPDATE_TRANSACTION_TYPES_SUCCESS, FETCH_UPDATE_TRANSACTION_TYPES_FAILURE,
+    FETCH_FINANCIAL_REPORT_REQUEST, FETCH_FINANCIAL_REPORT_SUCCESS, FETCH_FINANCIAL_REPORT_FAILURE,
     FETCH_DELETE_TRANSACTION_TYPES_REQUEST, FETCH_DELETE_TRANSACTION_TYPES_SUCCESS, FETCH_DELETE_TRANSACTION_TYPES_FAILURE,
+    // General Ledger
+    FETCH_GENERAL_LEDGER_REQUEST, FETCH_GENERAL_LEDGER_SUCCESS, FETCH_GENERAL_LEDGER_FAILURE,
 } from './ActionType';
 
 const s = { loading: false, data: [], error: '', success: false };
@@ -72,6 +81,13 @@ const initialState = {
     studentLedgerState: { ...s },
     studentLedgerDetailState: { ...s },
     createStudentLedgerState: { ...s },
+    // Student Ledger — SOA
+    // studentLedger      → master summary + child transactions for one student
+    // studentLedgerList  → paginated master list for the data table
+    studentLedger: { loading: false, data: { master: null, transactions: [] }, error: null, success: false },
+    studentLedgerList: { loading: false, data: [], error: null, success: false, totalRecords: 0 },
+    postLedgerTransactionState: { ...s },
+    voidLedgerTransactionState: { ...s },
     // Journal Entry
     journalState: { ...s },
     journalDetailState: { ...s },
@@ -94,6 +110,7 @@ const initialState = {
     schoolYearListState: { ...s },
     // Templates / Fees (migrated from Finance)
     templateTableState: { ...s },
+    updateTemplateState: { ...s },
     listOfUserState: { ...s },
     insertOrSeriesState: { ...s },
     insertFeesState: { ...s },
@@ -104,6 +121,21 @@ const initialState = {
     createTransactionTypesState: { ...s },
     updateTransactionTypesState: { ...s },
     deleteTransactionTypesState: { ...s },
+    // Financial Report
+    financialReportState: { loading: false, data: null, error: null, success: false, totalRecords: 0 },
+    // General Ledger
+    generalLedgerState: { 
+        loading: false, 
+        data: [], 
+        summary: {
+            totalDebit: 0,
+            totalCredit: 0,
+            netChange: 0
+        },
+        error: null, 
+        success: false, 
+        totalRecords: 0 
+    },
 };
 
 const ok = (payload) => ({ loading: false, data: payload, error: '', success: true });
@@ -168,6 +200,53 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_CREATE_STUDENT_LEDGER_REQUEST: return { ...state, createStudentLedgerState: req() };
         case FETCH_CREATE_STUDENT_LEDGER_SUCCESS: return { ...state, createStudentLedgerState: ok(action.payload) };
         case FETCH_CREATE_STUDENT_LEDGER_FAILURE: return { ...state, createStudentLedgerState: err(action.payload) };
+
+        // ── Student Ledger — SOA ──────────────────────────────────────────────
+        // fetchStudentLedgerByStudentId: master summary + child transactions
+        case FETCH_STUDENT_LEDGER_REQUEST:
+            return { ...state, studentLedger: { loading: true, data: { master: null, transactions: [] }, error: null, success: false } };
+        case FETCH_STUDENT_LEDGER_SUCCESS:
+            return {
+                ...state,
+                studentLedger: {
+                    loading: false,
+                    data: {
+                        master:       action.payload?.Master       ?? action.payload?.master       ?? action.payload ?? null,
+                        transactions: action.payload?.Transactions ?? action.payload?.transactions ?? [],
+                    },
+                    error: null,
+                    success: true,
+                },
+            };
+        case FETCH_STUDENT_LEDGER_FAILURE:
+            return { ...state, studentLedger: { loading: false, data: { master: null, transactions: [] }, error: action.payload, success: false } };
+
+        // fetchAllStudentLedgers: paginated master-ledger list
+        case FETCH_ALL_STUDENT_LEDGERS_REQUEST:
+            return { ...state, studentLedgerList: { loading: true, data: [], error: null, success: false, totalRecords: 0 } };
+        case FETCH_ALL_STUDENT_LEDGERS_SUCCESS:
+            return {
+                ...state,
+                studentLedgerList: {
+                    loading: false,
+                    data:         action.payload?.Data         ?? action.payload?.data         ?? action.payload ?? [],
+                    totalRecords: action.payload?.TotalRecords ?? action.payload?.totalRecords ?? 0,
+                    error: null,
+                    success: true,
+                },
+            };
+        case FETCH_ALL_STUDENT_LEDGERS_FAILURE:
+            return { ...state, studentLedgerList: { loading: false, data: [], error: action.payload, success: false, totalRecords: 0 } };
+
+        // postLedgerTransaction: insert a debit/credit child entry
+        case POST_LEDGER_TRANSACTION_REQUEST:  return { ...state, postLedgerTransactionState: req() };
+        case POST_LEDGER_TRANSACTION_SUCCESS:  return { ...state, postLedgerTransactionState: ok(action.payload) };
+        case POST_LEDGER_TRANSACTION_FAILURE:  return { ...state, postLedgerTransactionState: err(action.payload) };
+
+        // voidLedgerTransaction: cancel / void an existing child entry
+        case VOID_LEDGER_TRANSACTION_REQUEST:  return { ...state, voidLedgerTransactionState: req() };
+        case VOID_LEDGER_TRANSACTION_SUCCESS:  return { ...state, voidLedgerTransactionState: ok(action.payload) };
+        case VOID_LEDGER_TRANSACTION_FAILURE:  return { ...state, voidLedgerTransactionState: err(action.payload) };
 
         // ── Journal Entry ─────────────────────────────────────────────────────
         case FETCH_GET_JOURNAL_REQUEST: return { ...state, journalState: req() };
@@ -241,6 +320,14 @@ const accountingReducer = (state = initialState, action) => {
             return { ...state, templateTableState: ok(action.payload) };
         case FETCH_TEMPLATE_TABLE_DATA_FAILURE:
             return { ...state, templateTableState: err(action.payload) };
+
+        case FETCH_UPDATE_TEMPLATE_REQUEST:
+            return { ...state, updateTemplateState: req() };
+        case FETCH_UPDATE_TEMPLATE_SUCCESS:
+            return { ...state, updateTemplateState: ok(action.payload) };
+        case FETCH_UPDATE_TEMPLATE_FAILURE:
+            return { ...state, updateTemplateState: err(action.payload) };
+
         case FETCH_LIST_OF_USER_DATA_REQUEST:
             return { ...state, listOfUserState: req() };
         case FETCH_LIST_OF_USER_DATA_SUCCESS:
@@ -300,6 +387,61 @@ const accountingReducer = (state = initialState, action) => {
             return { ...state, deleteTransactionTypesState: ok(action.payload) };
         case FETCH_DELETE_TRANSACTION_TYPES_FAILURE:
             return { ...state, deleteTransactionTypesState: err(action.payload) };
+
+        // ── Financial Report ──────────────────────────────────────────────────
+        case FETCH_FINANCIAL_REPORT_REQUEST:
+            return { ...state, financialReportState: { loading: true, data: null, error: null, success: false, totalRecords: 0 } };
+        case FETCH_FINANCIAL_REPORT_SUCCESS:
+            return {
+                ...state,
+                financialReportState: {
+                    loading: false,
+                    data: action.payload,
+                    totalRecords: action.payload?.TotalRecords ?? action.payload?.totalRecords ?? 0,
+                    error: null,
+                    success: true,
+                },
+            };
+        case FETCH_FINANCIAL_REPORT_FAILURE:
+            return { ...state, financialReportState: { loading: false, data: null, error: action.payload, success: false, totalRecords: 0 } };
+
+        // ── General Ledger ────────────────────────────────────────────────────
+        case FETCH_GENERAL_LEDGER_REQUEST:
+            return { 
+                ...state, 
+                generalLedgerState: { 
+                    loading: true, 
+                    data: [], 
+                    summary: { totalDebit: 0, totalCredit: 0, netChange: 0 },
+                    error: null, 
+                    success: false, 
+                    totalRecords: 0 
+                } 
+            };
+        case FETCH_GENERAL_LEDGER_SUCCESS:
+            return {
+                ...state,
+                generalLedgerState: {
+                    loading: false,
+                    data:         action.payload?.Data         ?? action.payload?.data         ?? [],
+                    summary:      action.payload?.Summary      ?? action.payload?.summary      ?? { totalDebit: 0, totalCredit: 0, netChange: 0 },
+                    totalRecords: action.payload?.TotalRecords ?? action.payload?.totalRecords ?? 0,
+                    error: null,
+                    success: true,
+                },
+            };
+        case FETCH_GENERAL_LEDGER_FAILURE:
+            return { 
+                ...state, 
+                generalLedgerState: { 
+                    loading: false, 
+                    data: [], 
+                    summary: { totalDebit: 0, totalCredit: 0, netChange: 0 },
+                    error: action.payload, 
+                    success: false, 
+                    totalRecords: 0 
+                } 
+            };
 
         default:
             return state;
