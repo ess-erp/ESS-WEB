@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import ProtectedRoutes from "./ProtectedRoutes";
+import MainLayout from "../layouts/MainLayout";
+import { SidebarProvider } from "../context/SidebarContext";
 import Login from "../pages/Auth/Login";
 import AccessDenied from "../components/SharedComponents/AccessDenied";
 import AdmissionDashboard from "../pages/Admission/Dashboard";
@@ -79,6 +81,7 @@ import AccountingFeeAssessment from "../pages/Accounting/FeeAssessment";
 import AccountingStudentLedger from "../pages/Accounting/StudentLedger";
 import AccountingFinancialReports from "../pages/Accounting/FinancialReports";
 import AccountingGeneralLedger from "../pages/Accounting/GeneralLedger";
+import AccountingCashBankManagement from "../pages/Accounting/CashBankManagement";
 import PurchasingDashboard from "../pages/Purchasing/Dashboard";
 import PurchasingInventoryManagement from "../pages/Purchasing/InventoryManagement";
 import PurchasingRequestForm from "../pages/Purchasing/RequestForm";
@@ -93,7 +96,9 @@ const AuthenticatedLayout = () => {
   return (
     <>
       <GlobalToastHandler /> {/* Live toasts will only activate for children inside this group */}
-      <Outlet />             {/* This renders the actual matched page component */}
+      <MainLayout>
+        <Outlet />             {/* This renders the actual matched page component */}
+      </MainLayout>
     </>
   );
 };
@@ -101,7 +106,8 @@ const AuthenticatedLayout = () => {
 
 const AppRoutes = () => (
   <Router>
-    <Routes>
+    <SidebarProvider>
+      <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/registration" element={<Registration />} />
       <Route path="accountactivation" element={<AccountActivation />} />
@@ -701,6 +707,15 @@ const AppRoutes = () => (
           }
         />
 
+        <Route
+          path="/accounting/cash-bank"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingCashBankManagement />
+            </ProtectedRoutes>
+          }
+        />
+
         {/* end of accounting module */}
 
         {/* start of purchasing module */}
@@ -814,6 +829,7 @@ const AppRoutes = () => (
       {/* Catch-all route → Redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </SidebarProvider>
   </Router>
 );
 

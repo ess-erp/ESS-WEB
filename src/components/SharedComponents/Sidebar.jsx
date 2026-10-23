@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useDispatch } from "react-redux";
 import {
   Bell,
   BookPlus,
@@ -18,6 +17,7 @@ import {
   Clock,
   Calculator,
   Hash,
+  Building2,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -30,39 +30,17 @@ import DocumentIcon from "../IconComponents/DocumentIcon";
 import NotificationBell from "./NotificationBell";
 import { removeToken } from "../../services/tokenServices";
 import { Link } from "react-router-dom";
+import { useSidebar } from "../../context/SidebarContext";
 
-const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
+const Sidebar = () => {
+  const { isCollapsed, toggleSidebar, openSubmenus, toggleSubmenu } = useSidebar();
+  const isSidebarOpen = !isCollapsed;
+  
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("userData");
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const navigate = useNavigate();
-  // const dispatch = useDispatch();
-
-  // Sync sidebar state with localStorage
-  useEffect(() => {
-    // Save sidebar state to localStorage whenever it changes
-    localStorage.setItem("sidebarOpen", JSON.stringify(isSidebarOpen));
-  }, [isSidebarOpen]);
-
-  // Initialize sidebar state from localStorage on mount
-  useEffect(() => {
-    const savedSidebarState = localStorage.getItem("sidebarOpen");
-    if (savedSidebarState !== null) {
-      const isOpen = JSON.parse(savedSidebarState);
-      if (isOpen !== isSidebarOpen) {
-        setIsSidebarOpen(isOpen);
-      }
-    }
-  }, []); // Only run once on mount
-
-  // useEffect(() => {
-  //   if (user && user.UserId) { 
-  //     console.log("User logged in, fetching notifications for user ID:", user.UserId);
-
-  //     dispatch(fetchNotificationCountData(user.UserId));
-  //   }
-  // }, [user, dispatch]);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -91,12 +69,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
     );
   };
 
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-
-  const toggleDropdown = (name) => {
-    setOpenDropdown((prev) => (prev === name ? null : name));
-  };
 
   // Filter menu items based on search query
   const filterMenuItems = (items, query) => {
@@ -498,6 +471,11 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
       path: "/accounting/journalentry",
     },
     {
+      name: "Cash & Bank Reconciliation",
+      icon: Building2,
+      path: "/accounting/cash-bank",
+    },
+    {
       name: "Student Ledger",
       icon: User,
       path: "/accounting/student-ledger",
@@ -701,7 +679,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
           className="p-1 rounded-sm transition-all duration-300 hover:bg-gray-100"
           onClick={(e) => {
             e.preventDefault();
-            setIsSidebarOpen(!isSidebarOpen);
+            toggleSidebar();
           }}
         >
           <svg
@@ -792,10 +770,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                 // =========================
                 <div key={item.name + index}>
                   <a
-                    onClick={() => toggleDropdown(item.name)}
+                    onClick={() => toggleSubmenu(item.name)}
                     className={`w-full flex items-center px-4 py-2 mt-2 text-black rounded-md hover:bg-gray-100 transition-colors duration-300
             focus:outline-none focus:ring-0 focus-visible:outline-none cursor-pointer
-          ${openDropdown === item.name ? "bg-gray-100 font-semibold" : ""}`}
+          ${openSubmenus.includes(item.name) ? "bg-gray-100 font-semibold" : ""}`}
                   >
                     {item.name === "Notification" || item.name.toLowerCase() === "notification" ? (
                       <NotificationBell />
@@ -808,7 +786,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                         <span className="mx-4 font-medium">{item.name}</span>
 
                         <svg
-                          className={`w-4 h-4 ml-auto transition-transform ${openDropdown === item.name ? "rotate-180" : ""
+                          className={`w-4 h-4 ml-auto transition-transform ${openSubmenus.includes(item.name) ? "rotate-180" : ""
                             }`}
                           fill="none"
                           stroke="currentColor"
@@ -825,7 +803,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
                     )}
                   </a>
 
-                  {openDropdown === item.name && isSidebarOpen && (
+                  {openSubmenus.includes(item.name) && isSidebarOpen && (
                     <div className="ml-10 mt-1 border-l border-gray-200 pl-3">
                       {item.children
                         .filter((child) =>

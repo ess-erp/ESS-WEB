@@ -16,6 +16,7 @@ import {
     fetchUserRoleData,
     fetchInsertTemplateTableData,
     fetchHrTemplateData,
+    insertPayrollPeriodData,
 } from '../../states/HumanResourcesState/Action';
 
 const TemplatesModalComponent = ({ selectedStatus }) => {
@@ -80,6 +81,8 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                 return "Position Template Table";
             case "GOLDENRANK":
                 return "Golden Rank Template Table";
+            case "PAYROLLPERIOD":
+                return "Payroll Period Template";
             default:
                 return "—";
         }
@@ -154,7 +157,8 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
         { id: 2, TempType: "Department Template Table" },
         { id: 3, TempType: "Position Template Table" },
         { id: 4, TempType: "Golden Rank Template Table" },
-        { id: 5, TempType: "Other Template Table" }
+        { id: 5, TempType: "Other Template Table" },
+        { id: 6, TempType: "Payroll Period Template" }
     ];
 
     const {
@@ -193,6 +197,9 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                 break;
             case 4:
                 append({ GoldenRankCode: "", GolderRankName: "", Remarks: "" });
+                break;
+            case 6:
+                append({ PeriodName: "", StartDate: "", EndDate: "", PaymentDate: "" });
                 break;
         }
     }, [selectedTemplate]);
@@ -295,8 +302,16 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                     Remarks: item.Remarks
                 }));
                 break;
-        }
 
+            case 6: // PAYROLL PERIOD
+                formattedChildren = TemplateChildDtos.map(item => ({
+                    PeriodName: item.PeriodName,
+                    StartDate: item.StartDate,
+                    EndDate: item.EndDate,
+                    PaymentDate: item.PaymentDate
+                }));
+                break;
+        }
 
         let formData = {};
         switch (TempType?.id) {
@@ -337,15 +352,28 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                 };
                 break;
 
+            case 6: // PAYROLL PERIOD
+                // formData = {
+                //     CreatedByUserId: currentUserId,
+                //     PayrollPeriodChildDtos: formattedChildren,
+                // };
+                formData = formattedChildren;
+                break;
+
             default:
                 formData = {};
         }
 
 
         console.log("FINAL PAYLOAD:", formData);
+        // Use separate action for Payroll Period (case 6)
+        let res;
+        if (TempType?.id === 6) {
+            res = await dispatch(insertPayrollPeriodData(formData));
+        } else {
+            res = await dispatch(fetchInsertTemplateTableData(formData));
+        }
 
-        // const res = await dispatch(fetchInsertCriteriaTemplateData(formData));
-        const res = await dispatch(fetchInsertTemplateTableData(formData));
         if (res.ok) {
             setIsSuccessModalOpen(true);
             if (isSuccessModalOpen == false) {
@@ -809,6 +837,88 @@ const TemplatesModalComponent = ({ selectedStatus }) => {
                                                             GoldenRankCode: "",
                                                             GoldenRankName: "",
                                                             Remarks: ""
+                                                        })
+                                                    }
+                                                    className="bg-blue-500 text-white px-3 py-1 rounded"
+                                                >
+                                                    + Add Row
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {selectedTemplate?.id === 6 && (
+                                        <div>
+                                            {templateFields.map((field, index) => (
+                                                <div
+                                                    key={field.id}
+                                                    className="flex gap-2 mb-2 items-end"
+                                                >
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            Period Name <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            {...register(`TemplateChildDtos.${index}.PeriodName`, { required: "Period Name is required" })}
+                                                            placeholder="E.g., 'August 1-15, 2026'"
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            Start Date <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="date"
+                                                            {...register(`TemplateChildDtos.${index}.StartDate`, { required: "Start Date is required" })}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            End Date <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="date"
+                                                            {...register(`TemplateChildDtos.${index}.EndDate`, { required: "End Date is required" })}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                            Payment Date <span className="text-red-500">*</span>
+                                                        </label>
+                                                        <input
+                                                            type="date"
+                                                            {...register(`TemplateChildDtos.${index}.PaymentDate`, { required: "Payment Date is required" })}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        />
+                                                    </div>
+
+                                                    {/* SHOW REMOVE ONLY IF MORE THAN 1 ROW */}
+                                                    {templateFields.length > 1 && (
+                                                        <div className="mb-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => remove(index)}
+                                                                className="bg-red-500 text-white px-3 py-1 rounded h-fit"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))}
+
+                                            <div className="flex justify-end mb-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        append({
+                                                            PeriodName: "",
+                                                            StartDate: "",
+                                                            EndDate: "",
+                                                            PaymentDate: ""
                                                         })
                                                     }
                                                     className="bg-blue-500 text-white px-3 py-1 rounded"

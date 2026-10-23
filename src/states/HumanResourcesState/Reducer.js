@@ -32,6 +32,14 @@ import {
     CREATE_EMPLOYEE_DEDUCTION_REQUEST, CREATE_EMPLOYEE_DEDUCTION_SUCCESS, CREATE_EMPLOYEE_DEDUCTION_FAILURE,
     UPDATE_EMPLOYEE_DEDUCTION_REQUEST, UPDATE_EMPLOYEE_DEDUCTION_SUCCESS, UPDATE_EMPLOYEE_DEDUCTION_FAILURE,
     DELETE_EMPLOYEE_DEDUCTION_REQUEST, DELETE_EMPLOYEE_DEDUCTION_SUCCESS, DELETE_EMPLOYEE_DEDUCTION_FAILURE,
+    FETCH_PAYROLL_PERIODS_REQUEST, FETCH_PAYROLL_PERIODS_SUCCESS, FETCH_PAYROLL_PERIODS_FAILURE,
+    FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST, FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS, FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE,
+    CREATE_PAYROLL_PERIOD_REQUEST, CREATE_PAYROLL_PERIOD_SUCCESS, CREATE_PAYROLL_PERIOD_FAILURE,
+    UPDATE_PAYROLL_PERIOD_REQUEST, UPDATE_PAYROLL_PERIOD_SUCCESS, UPDATE_PAYROLL_PERIOD_FAILURE,
+    DELETE_PAYROLL_PERIOD_REQUEST, DELETE_PAYROLL_PERIOD_SUCCESS, DELETE_PAYROLL_PERIOD_FAILURE,
+    INSERT_PAYROLL_PERIOD_REQUEST, INSERT_PAYROLL_PERIOD_SUCCESS, INSERT_PAYROLL_PERIOD_FAILURE,
+    CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
+    POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -79,6 +87,18 @@ const initialGeneralState = {
     createDeductionState:   { loading: false, data: null, error: '' },
     updateDeductionState:   { loading: false, data: null, error: '' },
     deleteDeductionState:   { loading: false, data: null, error: '' },
+    
+    // Payroll Period Templates
+    payrollPeriodsState:    { loading: false, data: [], error: '', totalRecords: 0 },
+    payrollPeriodDropdownState: { loading: false, data: [], error: '' },
+    createPayrollPeriodState: { loading: false, data: null, error: '' },
+    updatePayrollPeriodState: { loading: false, data: null, error: '' },
+    deletePayrollPeriodState: { loading: false, data: null, error: '' },
+    insertPayrollPeriodState: { loading: false, data: null, error: '' },
+    
+    // Payroll Processing
+    calculatePayrollState: { loading: false, data: null, error: '' },
+    postJournalEntryState: { loading: false, data: null, error: '' },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -347,6 +367,79 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, deleteDeductionState: { loading: false, data: action.payload, error: '' } };
         case DELETE_EMPLOYEE_DEDUCTION_FAILURE:
             return { ...state, deleteDeductionState: { loading: false, data: null, error: action.payload } };
+
+        // ── Payroll Period Templates ──────────────────────────────────────────
+        case FETCH_PAYROLL_PERIODS_REQUEST:
+            return { ...state, payrollPeriodsState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case FETCH_PAYROLL_PERIODS_SUCCESS:
+            return {
+                ...state,
+                payrollPeriodsState: {
+                    loading: false,
+                    data: action.payload?.data ?? action.payload ?? [],
+                    error: '',
+                    totalRecords: action.payload?.totalRecords ?? 0
+                }
+            };
+        case FETCH_PAYROLL_PERIODS_FAILURE:
+            return { ...state, payrollPeriodsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        case FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST:
+            return { ...state, payrollPeriodDropdownState: { loading: true, data: [], error: '' } };
+        case FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS:
+            return {
+                ...state,
+                payrollPeriodDropdownState: {
+                    loading: false,
+                    data: action.payload?.data ?? action.payload ?? [],
+                    error: ''
+                }
+            };
+        case FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE:
+            return { ...state, payrollPeriodDropdownState: { loading: false, data: [], error: action.payload } };
+
+        case CREATE_PAYROLL_PERIOD_REQUEST:
+            return { ...state, createPayrollPeriodState: { loading: true, data: null, error: '' } };
+        case CREATE_PAYROLL_PERIOD_SUCCESS:
+            return { ...state, createPayrollPeriodState: { loading: false, data: action.payload, error: '' } };
+        case CREATE_PAYROLL_PERIOD_FAILURE:
+            return { ...state, createPayrollPeriodState: { loading: false, data: null, error: action.payload } };
+
+        case UPDATE_PAYROLL_PERIOD_REQUEST:
+            return { ...state, updatePayrollPeriodState: { loading: true, data: null, error: '' } };
+        case UPDATE_PAYROLL_PERIOD_SUCCESS:
+            return { ...state, updatePayrollPeriodState: { loading: false, data: action.payload, error: '' } };
+        case UPDATE_PAYROLL_PERIOD_FAILURE:
+            return { ...state, updatePayrollPeriodState: { loading: false, data: null, error: action.payload } };
+
+        case DELETE_PAYROLL_PERIOD_REQUEST:
+            return { ...state, deletePayrollPeriodState: { loading: true, data: null, error: '' } };
+        case DELETE_PAYROLL_PERIOD_SUCCESS:
+            return { ...state, deletePayrollPeriodState: { loading: false, data: action.payload, error: '' } };
+        case DELETE_PAYROLL_PERIOD_FAILURE:
+            return { ...state, deletePayrollPeriodState: { loading: false, data: null, error: action.payload } };
+
+        case INSERT_PAYROLL_PERIOD_REQUEST:
+            return { ...state, insertPayrollPeriodState: { loading: true, data: null, error: '' } };
+        case INSERT_PAYROLL_PERIOD_SUCCESS:
+            return { ...state, insertPayrollPeriodState: { loading: false, data: action.payload, error: '' } };
+        case INSERT_PAYROLL_PERIOD_FAILURE:
+            return { ...state, insertPayrollPeriodState: { loading: false, data: null, error: action.payload } };
+
+        // ── Payroll Processing ────────────────────────────────────────────────
+        case CALCULATE_PAYROLL_REQUEST:
+            return { ...state, calculatePayrollState: { loading: true, data: null, error: '' } };
+        case CALCULATE_PAYROLL_SUCCESS:
+            return { ...state, calculatePayrollState: { loading: false, data: action.payload, error: '' } };
+        case CALCULATE_PAYROLL_FAILURE:
+            return { ...state, calculatePayrollState: { loading: false, data: null, error: action.payload } };
+
+        case POST_JOURNAL_ENTRY_REQUEST:
+            return { ...state, postJournalEntryState: { loading: true, data: null, error: '' } };
+        case POST_JOURNAL_ENTRY_SUCCESS:
+            return { ...state, postJournalEntryState: { loading: false, data: action.payload, error: '' } };
+        case POST_JOURNAL_ENTRY_FAILURE:
+            return { ...state, postJournalEntryState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;

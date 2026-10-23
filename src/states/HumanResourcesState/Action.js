@@ -15,6 +15,14 @@ import {
     FETCH_POSITION_TEMPLATE_REQUEST, FETCH_POSITION_TEMPLATE_SUCCESS, FETCH_POSITION_TEMPLATE_FAILURE,
     FETCH_GOLDEN_RANK_TEMPLATE_REQUEST, FETCH_GOLDEN_RANK_TEMPLATE_SUCCESS, FETCH_GOLDEN_RANK_TEMPLATE_FAILURE,
     FETCH_INSERT_HIRED_EMPLOYEE_REQUEST, FETCH_INSERT_HIRED_EMPLOYEE_SUCCESS, FETCH_INSERT_HIRED_EMPLOYEE_FAILURE,
+    FETCH_PAYROLL_PERIODS_REQUEST, FETCH_PAYROLL_PERIODS_SUCCESS, FETCH_PAYROLL_PERIODS_FAILURE,
+    FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST, FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS, FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE,
+    CREATE_PAYROLL_PERIOD_REQUEST, CREATE_PAYROLL_PERIOD_SUCCESS, CREATE_PAYROLL_PERIOD_FAILURE,
+    UPDATE_PAYROLL_PERIOD_REQUEST, UPDATE_PAYROLL_PERIOD_SUCCESS, UPDATE_PAYROLL_PERIOD_FAILURE,
+    DELETE_PAYROLL_PERIOD_REQUEST, DELETE_PAYROLL_PERIOD_SUCCESS, DELETE_PAYROLL_PERIOD_FAILURE,
+    INSERT_PAYROLL_PERIOD_REQUEST, INSERT_PAYROLL_PERIOD_SUCCESS, INSERT_PAYROLL_PERIOD_FAILURE,
+    CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
+    POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -701,7 +709,7 @@ export const fetchEmployeeList = (filters = {}) => async (dispatch) => {
     dispatch(fetchEmployeesRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-all-employees`, {
+        const res = await fetch(`${baseUrl}/hr/get-all-employees`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -737,7 +745,7 @@ export const fetchSssTable = () => async (dispatch) => {
     dispatch(fetchSssTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-sss-table`, {
+        const res = await fetch(`${baseUrl}/hr/get-sss-table`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -758,7 +766,7 @@ export const updateSssTable = (payload) => async (dispatch) => {
     dispatch(updateSssTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-sss-table`, {
+        const res = await fetch(`${baseUrl}/hr/update-sss-table`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -784,7 +792,7 @@ export const fetchPhilhealthTable = () => async (dispatch) => {
     dispatch(fetchPhilhealthTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-philhealth-table`, {
+        const res = await fetch(`${baseUrl}/hr/get-philhealth-table`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -805,7 +813,7 @@ export const updatePhilhealthTable = (payload) => async (dispatch) => {
     dispatch(updatePhilhealthTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-philhealth-table`, {
+        const res = await fetch(`${baseUrl}/hr/update-philhealth-table`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -831,7 +839,7 @@ export const fetchPagibigTable = () => async (dispatch) => {
     dispatch(fetchPagibigTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-pagibig-table`, {
+        const res = await fetch(`${baseUrl}/hr/get-pagibig-table`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}` },
         });
@@ -852,7 +860,7 @@ export const updatePagibigTable = (payload) => async (dispatch) => {
     dispatch(updatePagibigTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-pagibig-table`, {
+        const res = await fetch(`${baseUrl}/hr/update-pagibig-table`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -878,7 +886,7 @@ export const fetchEmployeeDeductions = (filters = {}) => async (dispatch) => {
     dispatch(fetchEmployeeDeductionsRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/get-employee-deductions`, {
+        const res = await fetch(`${baseUrl}/hr/get-employee-deductions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -909,7 +917,7 @@ export const createEmployeeDeduction = (payload) => async (dispatch) => {
     dispatch(createEmployeeDeductionRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/create-employee-deduction`, {
+        const res = await fetch(`${baseUrl}/hr/create-employee-deduction`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -934,7 +942,7 @@ export const updateEmployeeDeduction = (payload) => async (dispatch) => {
     dispatch(updateEmployeeDeductionRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/update-employee-deduction`, {
+        const res = await fetch(`${baseUrl}/hr/update-employee-deduction`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -959,8 +967,8 @@ export const deleteEmployeeDeduction = (deductionId) => async (dispatch) => {
     dispatch(deleteEmployeeDeductionRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/hr/delete-employee-deduction/${deductionId}`, {
-            method: 'DELETE',
+        const res = await fetch(`${baseUrl}/hr/delete-employee-deduction/${deductionId}`, {
+            method: 'POST',
             headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -969,5 +977,245 @@ export const deleteEmployeeDeduction = (deductionId) => async (dispatch) => {
     } catch (err) {
         dispatch(deleteEmployeeDeductionFailure(err.message));
         return { ok: false, err };
+    }
+};
+
+// ── Payroll Period Templates ──────────────────────────────────────────────────
+
+// Fetch Payroll Periods (for Templates module table)
+export const fetchPayrollPeriodsRequest = () => ({ type: 'FETCH_PAYROLL_PERIODS_REQUEST' });
+export const fetchPayrollPeriodsSuccess = (data) => ({ type: 'FETCH_PAYROLL_PERIODS_SUCCESS', payload: data });
+export const fetchPayrollPeriodsFailure = (error) => ({ type: 'FETCH_PAYROLL_PERIODS_FAILURE', payload: error });
+
+export const fetchPayrollPeriodTemplates = (filters = {}) => async (dispatch) => {
+    dispatch(fetchPayrollPeriodsRequest());
+    try {
+        const token = getToken();
+        const { page = 1, pageSize = 10, search = '', activeStatus = '' } = filters;
+        
+        const url = `${baseUrl}/hr/get-payroll-periods`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ page, pageSize, search, activeStatus })
+        });
+
+        const res = await response.json();
+        dispatch(fetchPayrollPeriodsSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    } catch (error) {
+        dispatch(fetchPayrollPeriodsFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Fetch Payroll Period Dropdown (for Payroll Processing dropdown - Active/Open only)
+export const fetchPayrollPeriodDropdownRequest = () => ({ type: 'FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST' });
+export const fetchPayrollPeriodDropdownSuccess = (data) => ({ type: 'FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS', payload: data });
+export const fetchPayrollPeriodDropdownFailure = (error) => ({ type: 'FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE', payload: error });
+
+export const fetchPayrollPeriodDropdown = () => async (dispatch) => {
+    dispatch(fetchPayrollPeriodDropdownRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-payroll-periods`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ 
+                pageSize: 100 
+            })
+        });
+
+        const res = await response.json();
+        dispatch(fetchPayrollPeriodDropdownSuccess(res));
+        return { ok: true, data: res.data };
+    } catch (error) {
+        dispatch(fetchPayrollPeriodDropdownFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Create Payroll Period
+export const createPayrollPeriodRequest = () => ({ type: 'CREATE_PAYROLL_PERIOD_REQUEST' });
+export const createPayrollPeriodSuccess = (data) => ({ type: 'CREATE_PAYROLL_PERIOD_SUCCESS', payload: data });
+export const createPayrollPeriodFailure = (error) => ({ type: 'CREATE_PAYROLL_PERIOD_FAILURE', payload: error });
+
+export const createPayrollPeriodTemplate = (payload) => async (dispatch) => {
+    dispatch(createPayrollPeriodRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/create-payroll-period`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        dispatch(createPayrollPeriodSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(createPayrollPeriodFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Update Payroll Period
+export const updatePayrollPeriodRequest = () => ({ type: 'UPDATE_PAYROLL_PERIOD_REQUEST' });
+export const updatePayrollPeriodSuccess = (data) => ({ type: 'UPDATE_PAYROLL_PERIOD_SUCCESS', payload: data });
+export const updatePayrollPeriodFailure = (error) => ({ type: 'UPDATE_PAYROLL_PERIOD_FAILURE', payload: error });
+
+export const updatePayrollPeriodTemplate = (payload) => async (dispatch) => {
+    dispatch(updatePayrollPeriodRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/update-payroll-period`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        dispatch(updatePayrollPeriodSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(updatePayrollPeriodFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Delete Payroll Period
+export const deletePayrollPeriodRequest = () => ({ type: 'DELETE_PAYROLL_PERIOD_REQUEST' });
+export const deletePayrollPeriodSuccess = (data) => ({ type: 'DELETE_PAYROLL_PERIOD_SUCCESS', payload: data });
+export const deletePayrollPeriodFailure = (error) => ({ type: 'DELETE_PAYROLL_PERIOD_FAILURE', payload: error });
+
+export const deletePayrollPeriodTemplate = (periodId) => async (dispatch) => {
+    dispatch(deletePayrollPeriodRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/delete-payroll-period/${periodId}`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        dispatch(deletePayrollPeriodSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(deletePayrollPeriodFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Insert Payroll Period (for Templates Module)
+export const insertPayrollPeriodRequest = () => ({ type: 'INSERT_PAYROLL_PERIOD_REQUEST' });
+export const insertPayrollPeriodSuccess = (data) => ({ type: 'INSERT_PAYROLL_PERIOD_SUCCESS', payload: data });
+export const insertPayrollPeriodFailure = (error) => ({ type: 'INSERT_PAYROLL_PERIOD_FAILURE', payload: error });
+
+export const insertPayrollPeriodData = (payload) => async (dispatch) => {
+    dispatch(insertPayrollPeriodRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/insert-payroll-period-table`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        dispatch(insertPayrollPeriodSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(insertPayrollPeriodFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ============================================================================
+// Payroll Processing Actions
+// ============================================================================
+
+// Calculate Payroll
+export const calculatePayrollRequest = () => ({ type: CALCULATE_PAYROLL_REQUEST });
+export const calculatePayrollSuccess = (data) => ({ type: CALCULATE_PAYROLL_SUCCESS, payload: data });
+export const calculatePayrollFailure = (error) => ({ type: CALCULATE_PAYROLL_FAILURE, payload: error });
+
+export const calculatePayrollData = (payrollPeriodId) => async (dispatch) => {
+    dispatch(calculatePayrollRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/calculate-payroll`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ payrollPeriodId })
+        });
+
+        const res = await response.json();
+        dispatch(calculatePayrollSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(calculatePayrollFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Post to Journal Entry
+export const postJournalEntryRequest = () => ({ type: POST_JOURNAL_ENTRY_REQUEST });
+export const postJournalEntrySuccess = (data) => ({ type: POST_JOURNAL_ENTRY_SUCCESS, payload: data });
+export const postJournalEntryFailure = (error) => ({ type: POST_JOURNAL_ENTRY_FAILURE, payload: error });
+
+export const postJournalEntryData = (payrollPeriodId) => async (dispatch) => {
+    dispatch(postJournalEntryRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/post-payroll-journal-entry`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ payrollPeriodId })
+        });
+
+        const res = await response.json();
+        dispatch(postJournalEntrySuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(postJournalEntryFailure(error.message));
+        return { ok: false, error: error.message };
     }
 };

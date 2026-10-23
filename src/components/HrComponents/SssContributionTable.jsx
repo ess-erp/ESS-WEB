@@ -201,7 +201,7 @@ const SssContributionTable = () => {
     ];
 
     return (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <Shield className="text-blue-600" size={20} />
@@ -415,7 +415,7 @@ const SssContributionTable = () => {
                     { label: 'Cancel', type: 'blue', onClick: () => setDeleteModal(false) },
                 ]}
             />
-        </motion.div>
+        </div>
     );
 };
 
