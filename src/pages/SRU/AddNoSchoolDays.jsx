@@ -1,7 +1,7 @@
 const AddNoSchoolDays = () => {
-    return(
+    return (
         <div>
-
+            {/* Add No School Days content here */}
         </div>
     );
 };

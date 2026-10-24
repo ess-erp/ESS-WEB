@@ -13,7 +13,6 @@ import {
   BarChart3
 } from 'lucide-react';
 import DataTable from 'react-data-table-component';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 
 // Mock payroll summary data
@@ -78,8 +77,6 @@ const mockContributionSummary = [
 const PayrollSummaryReport = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('2026-01-15');
   const [viewType, setViewType] = useState('department'); // 'department' or 'contribution'
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
   useEffect(() => {
     document.title = 'Payroll Reports | HRD';
   }, []);
@@ -202,9 +199,7 @@ const PayrollSummaryReport = () => {
   };
 
   return (
-    <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-      <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+    <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
           <h2 className="text-sm font-bold text-black mt-2">Payroll Summary Report</h2>
@@ -523,11 +518,9 @@ const PayrollSummaryReport = () => {
           </div>
         </motion.div>
       </div>
-
             </div>
           </div>
         </section>
-      </div>
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import EnrollmentStatusComponent from '../../components/AdmissionComponents/EnrollmentStatusComponent';
 import AnnouncementComponent from '../../components/AdmissionComponents/AnnouncementComponent';
@@ -13,13 +12,7 @@ const Dashboard = () => {
         { label: 'Dashboard', href: '/purchasing/dashboard' }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
-    return (
-        <>
-            <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-                <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-                <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+    return (<div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                     <div className="mb-4">
                         <Breadcrumb items={breadcrumbItems} />
                         <h2 className="text-2xl font-bold text-black mt-2">Dashboard</h2>
@@ -45,11 +38,7 @@ const Dashboard = () => {
                             <EnrollmentStatusComponent />
                             <AnnouncementComponent />
                         </div>
-                    </section>
-                </div>
-            </div>
-        </>
-    );
+                    </section></div>);
 };
 
 export default Dashboard;

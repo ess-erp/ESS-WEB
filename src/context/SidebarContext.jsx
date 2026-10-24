@@ -4,9 +4,19 @@ import { useLocation } from 'react-router-dom';
 const SidebarContext = createContext();
 
 export const SidebarProvider = ({ children }) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
+    // Initialize from localStorage or default to true (open)
+    const [sidebarOpen, setSidebarOpen] = useState(() => {
+        const saved = localStorage.getItem('sidebarOpen');
+        return saved !== null ? JSON.parse(saved) : true;
+    });
+    
     const [openSubmenus, setOpenSubmenus] = useState(['Employee Portal']);
     const location = useLocation();
+
+    // Persist sidebar state to localStorage
+    useEffect(() => {
+        localStorage.setItem('sidebarOpen', JSON.stringify(sidebarOpen));
+    }, [sidebarOpen]);
 
     // Auto-expand parent menu based on current route
     useEffect(() => {
@@ -24,9 +34,9 @@ export const SidebarProvider = ({ children }) => {
         if (submenuToExpand && !openSubmenus.includes(submenuToExpand)) {
             setOpenSubmenus(prev => [...prev, submenuToExpand]);
         }
-    }, [location.pathname]);
+    }, [location.pathname, openSubmenus]);
 
-    const toggleSidebar = () => setIsCollapsed(prev => !prev);
+    const toggleSidebar = () => setSidebarOpen(prev => !prev);
     
     const toggleSubmenu = (menuKey) => {
         setOpenSubmenus(prev => 
@@ -37,7 +47,16 @@ export const SidebarProvider = ({ children }) => {
     };
 
     return (
-        <SidebarContext.Provider value={{ isCollapsed, openSubmenus, toggleSidebar, toggleSubmenu }}>
+        <SidebarContext.Provider value={{ 
+            sidebarOpen, 
+            setSidebarOpen, 
+            openSubmenus, 
+            toggleSidebar, 
+            toggleSubmenu,
+            // Backwards compatibility aliases
+            isCollapsed: !sidebarOpen,
+            setIsCollapsed: (value) => setSidebarOpen(!value)
+        }}>
             {children}
         </SidebarContext.Provider>
     );

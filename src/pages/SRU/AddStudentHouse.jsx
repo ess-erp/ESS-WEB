@@ -1,7 +1,7 @@
 const AddStudentHouse = () => {
-    return(
+    return (
         <div>
-
+            {/* Add Student House content here */}
         </div>
     );
 };

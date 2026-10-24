@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import Sidebar from '../../components/SharedComponents/Sidebar';
+﻿import { useState, useEffect } from 'react';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import SssContributionTable from '../../components/HrComponents/SssContributionTable';
 // Import other tables when created
@@ -17,20 +16,17 @@ const DeductionsManagement = () => {
         { label: 'Deductions Management', href: '/hrd/deductions' },
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const [activeTab, setActiveTab] = useState('sss');
 
     const tabs = [
-        { id: 'sss', label: 'SSS Contribution', icon: '🛡️' },
-        { id: 'philhealth', label: 'PhilHealth', icon: '🏥' },
-        { id: 'pagibig', label: 'Pag-IBIG', icon: '🏠' },
-        { id: 'employee', label: 'Employee Deductions', icon: '💰' },
+        { id: 'sss', label: 'SSS Contribution', icon: 'ðŸ›¡ï¸' },
+        { id: 'philhealth', label: 'PhilHealth', icon: 'ðŸ¥' },
+        { id: 'pagibig', label: 'Pag-IBIG', icon: 'ðŸ ' },
+        { id: 'employee', label: 'Employee Deductions', icon: 'ðŸ’°' },
     ];
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? 'pl-[18.5rem]' : 'pl-16'}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">Deductions & Statutory Matrix</h2>
@@ -105,7 +101,6 @@ const DeductionsManagement = () => {
                         </div>
                     </div>
                 </section>
-            </div>
         </div>
     );
 };

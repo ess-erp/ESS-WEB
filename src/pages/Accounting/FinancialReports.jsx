@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { FileText, Download, Filter, Calendar, DollarSign, BarChart3, PieChart } from 'lucide-react';
 import { motion } from 'framer-motion';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import FinancialReportDataTable from '../../components/AccountingComponents/FinancialReportDataTable';
 import { fetchFinancialReport } from '../../states/AccountingState/Action';
@@ -19,12 +18,11 @@ const FinancialReports = () => {
         { label: 'Financial Reports', href: '/accounting/financial-reports' }
     ];
 
-    const [sidebarOpen, setSidebarOpen]       = useState(true);
     const [selectedReport, setSelectedReport] = useState('daily-collection');
     const [dateFrom, setDateFrom]             = useState('2026-10-01');
     const [dateTo, setDateTo]                 = useState('2026-10-25');
 
-    // ── Report type config ────────────────────────────────────────────────────
+    // â”€â”€ Report type config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const reportTypes = [
         {
             key:         'daily-collection',
@@ -46,7 +44,7 @@ const FinancialReports = () => {
         },
     ];
 
-    // ── Handlers ──────────────────────────────────────────────────────────────
+    // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const handleApplyFilters = () => {
         dispatch(fetchFinancialReport(selectedReport, { dateFrom, dateTo }));
     };
@@ -57,9 +55,7 @@ const FinancialReports = () => {
     };
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">Financial Report</h2>
@@ -79,7 +75,7 @@ const FinancialReports = () => {
                         </div>
 
                         <div className="space-y-6">
-                            {/* ── Report Type Selector ──────────────────────── */}
+                            {/* â”€â”€ Report Type Selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -113,7 +109,7 @@ const FinancialReports = () => {
                                 </div>
                             </motion.div>
 
-                            {/* ── Filters ───────────────────────────────────── */}
+                            {/* â”€â”€ Filters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -172,7 +168,7 @@ const FinancialReports = () => {
                                 </div>
                             </motion.div>
 
-                            {/* ── Data Table ────────────────────────────────── */}
+                            {/* â”€â”€ Data Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                             <FinancialReportDataTable
                                 reportType={selectedReport}
                                 dateFrom={dateFrom}
@@ -181,7 +177,6 @@ const FinancialReports = () => {
                         </div>
                     </div>
                 </section>
-            </div>
         </div>
     );
 };

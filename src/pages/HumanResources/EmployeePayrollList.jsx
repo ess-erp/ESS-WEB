@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import DataTable from 'react-data-table-component';
 import {
@@ -12,7 +12,6 @@ import {
   TrendingUp,
   Users
 } from 'lucide-react';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import ModalComponent from '../../components/ButtonsComponents/ModalComponent';
 
@@ -95,7 +94,6 @@ const EmployeePayrollList = () => {
     { label: 'Employee Payroll', href: '/hrd/employee-payroll' }
   ];
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showPayslipModal, setShowPayslipModal] = useState(false);
@@ -168,18 +166,18 @@ const EmployeePayrollList = () => {
       name: 'Basic Salary',
       selector: (row) => row.basicSalary,
       sortable: true,
-      format: (row) => `₱${row.basicSalary.toLocaleString()}`,
+      format: (row) => `â‚±${row.basicSalary.toLocaleString()}`,
       width: '130px',
     },
     {
       name: 'Net Pay',
       selector: (row) => row.netPay,
       sortable: true,
-      format: (row) => `₱${row.netPay.toLocaleString()}`,
+      format: (row) => `â‚±${row.netPay.toLocaleString()}`,
       width: '130px',
       cell: (row) => (
         <span className="font-semibold text-green-600">
-          ₱{row.netPay.toLocaleString()}
+          â‚±{row.netPay.toLocaleString()}
         </span>
       ),
     },
@@ -254,9 +252,7 @@ const EmployeePayrollList = () => {
   };
 
   return (
-    <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-      <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-      <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+    <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
           <h2 className="text-sm font-bold text-black mt-2">Employee Payroll List</h2>
@@ -304,7 +300,7 @@ const EmployeePayrollList = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-600 text-sm font-medium">Total Gross Pay</p>
-                      <p className="text-2xl font-bold text-gray-800 mt-1">₱{totalGrossPay.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-gray-800 mt-1">â‚±{totalGrossPay.toLocaleString()}</p>
                     </div>
                     <div className="bg-green-100 p-3 rounded-full">
                       <TrendingUp className="text-green-600" size={24} />
@@ -321,7 +317,7 @@ const EmployeePayrollList = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-600 text-sm font-medium">Total Net Pay</p>
-                      <p className="text-2xl font-bold text-gray-800 mt-1">₱{totalNetPay.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-gray-800 mt-1">â‚±{totalNetPay.toLocaleString()}</p>
                     </div>
                     <div className="bg-purple-100 p-3 rounded-full">
                       <DollarSign className="text-purple-600" size={24} />
@@ -338,7 +334,7 @@ const EmployeePayrollList = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-gray-600 text-sm font-medium">Total Deductions</p>
-                      <p className="text-2xl font-bold text-gray-800 mt-1">₱{totalDeductions.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-gray-800 mt-1">â‚±{totalDeductions.toLocaleString()}</p>
                     </div>
                     <div className="bg-red-100 p-3 rounded-full">
                       <FileText className="text-red-600" size={24} />
@@ -453,16 +449,16 @@ const EmployeePayrollList = () => {
                         <div className="space-y-3">
                           <div className="flex justify-between">
                             <span className="text-gray-700">Basic Salary</span>
-                            <span className="font-semibold">₱{selectedEmployee.basicSalary.toLocaleString()}</span>
+                            <span className="font-semibold">â‚±{selectedEmployee.basicSalary.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-700">Allowances</span>
-                            <span className="font-semibold">₱{selectedEmployee.allowances.toLocaleString()}</span>
+                            <span className="font-semibold">â‚±{selectedEmployee.allowances.toLocaleString()}</span>
                           </div>
                           <div className="border-t pt-3 flex justify-between">
                             <span className="font-bold text-green-700">Gross Pay</span>
                             <span className="font-bold text-green-700">
-                              ₱{(selectedEmployee.basicSalary + selectedEmployee.allowances).toLocaleString()}
+                              â‚±{(selectedEmployee.basicSalary + selectedEmployee.allowances).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -477,23 +473,23 @@ const EmployeePayrollList = () => {
                         <div className="space-y-3">
                           <div className="flex justify-between">
                             <span className="text-gray-700">SSS</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.35).toFixed(2)}</span>
+                            <span className="font-semibold">â‚±{(selectedEmployee.deductions * 0.35).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-700">PhilHealth</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.30).toFixed(2)}</span>
+                            <span className="font-semibold">â‚±{(selectedEmployee.deductions * 0.30).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-700">Pag-IBIG</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.20).toFixed(2)}</span>
+                            <span className="font-semibold">â‚±{(selectedEmployee.deductions * 0.20).toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-gray-700">Withholding Tax</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.15).toFixed(2)}</span>
+                            <span className="font-semibold">â‚±{(selectedEmployee.deductions * 0.15).toFixed(2)}</span>
                           </div>
                           <div className="border-t pt-3 flex justify-between">
                             <span className="font-bold text-red-700">Total Deductions</span>
-                            <span className="font-bold text-red-700">₱{selectedEmployee.deductions.toLocaleString()}</span>
+                            <span className="font-bold text-red-700">â‚±{selectedEmployee.deductions.toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -502,7 +498,7 @@ const EmployeePayrollList = () => {
                     {/* Net Pay */}
                     <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white text-center">
                       <p className="text-lg mb-2">Net Pay</p>
-                      <p className="text-4xl font-bold">₱{selectedEmployee.netPay.toLocaleString()}</p>
+                      <p className="text-4xl font-bold">â‚±{selectedEmployee.netPay.toLocaleString()}</p>
                     </div>
 
                     {/* Action Buttons */}
@@ -529,9 +525,8 @@ const EmployeePayrollList = () => {
             </div>
           </div>
         </section>
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default EmployeePayrollList;

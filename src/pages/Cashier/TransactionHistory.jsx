@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import Sidebar from '../../components/SharedComponents/Sidebar';
+﻿import { useEffect, useState } from 'react';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import TransactionHistoryDataTable from '../../components/CashierComponents/TransactionHistoryDataTable';
 
@@ -13,12 +12,8 @@ const TransactionHistory = () => {
         { label: 'Transaction History', href: '/cashier/transactionhistory' }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-2xl font-bold text-black mt-2">Transaction History</h2>
@@ -41,7 +36,6 @@ const TransactionHistory = () => {
                         <TransactionHistoryDataTable />
                     </div>
                 </section>
-            </div>
         </div>
     );
 };

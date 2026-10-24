@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import Sidebar from "../../components/SharedComponents/Sidebar";
+﻿import { useEffect, useState } from "react";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import ListOfStudentDataTable from "../../components/ParentPortalComponents/ListOfStudentDataTable";
 import { FaClock, FaCheckCircle } from "react-icons/fa";
@@ -21,7 +20,6 @@ const ListOfStudent = () => {
     { label: "List of Student", href: "/parent/List-of-student" },
   ];
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [entryType, setEntryType] = useState("pending");
 
   const statuses = [
@@ -42,10 +40,7 @@ const ListOfStudent = () => {
   ];
 
   return (
-    <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-      <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-
-      <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
+    <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
         <div className="mb-4">
           <Breadcrumb items={breadcrumbItems} />
           <h2 className="text-sm font-bold text-black mt-2">
@@ -95,9 +90,8 @@ const ListOfStudent = () => {
 
           </div>
         </section>
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default ListOfStudent;

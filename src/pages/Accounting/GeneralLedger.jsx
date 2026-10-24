@@ -1,14 +1,11 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import GeneralLedgerDataTable from '../../components/AccountingComponents/GeneralLedgerDataTable';
 import { fetchGetSchoolYearListData, fetchGetCoaFlatData } from '../../states/AccountingState/Action';
 
 const GeneralLedger = () => {
     const dispatch = useDispatch();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
     useEffect(() => {
         document.title = 'General Ledger | Accountant';
         // Load dropdown dependencies
@@ -22,9 +19,7 @@ const GeneralLedger = () => {
     ];
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">General Ledger</h2>
@@ -49,7 +44,6 @@ const GeneralLedger = () => {
                         <GeneralLedgerDataTable />
                     </div>
                 </section>
-            </div>
         </div>
     );
 };

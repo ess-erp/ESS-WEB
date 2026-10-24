@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import SubjectLoadEntryComponent from "../../components/AcademicComponents/SubjectLoadEntryComponent";
 import NonCurriculumLoadEntryComponent from "../../components/AcademicComponents/NonCurriculumLoadEntryComponent";
@@ -16,7 +15,6 @@ const SubjectLoadEntry = () => {
         { label: "Subject load Entry", href: "/academic/subjectloadentry" }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const [entryType, setEntryType] = useState("subject");
 
     const slideVariants = {
@@ -26,10 +24,7 @@ const SubjectLoadEntry = () => {
     };
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
 
@@ -113,7 +108,6 @@ const SubjectLoadEntry = () => {
                     </div>
 
                 </div>
-            </div>
         </div>
     );
 };

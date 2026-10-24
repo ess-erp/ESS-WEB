@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import Sidebar from "../../components/SharedComponents/Sidebar";
+﻿import React, { useEffect, useState } from "react";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import GradeReportTemplateComponent from "../../components/SruComponents/GradeReportTemplateComponent";
 
@@ -14,12 +13,8 @@ const GradeReportTemplate = () => {
         { label: 'Grade Report Template', href: '/sru/gradereporttemplate' }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">Grade Report Template</h2>
@@ -47,7 +42,6 @@ const GradeReportTemplate = () => {
                         </div>
                     </div>
                 </section>
-            </div>
         </div>
     );
 };

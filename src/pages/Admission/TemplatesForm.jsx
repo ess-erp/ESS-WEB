@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRef } from "react";
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import { Pencil, Eye, Trash } from "lucide-react";
 import DataTable from 'react-data-table-component';
@@ -91,9 +90,6 @@ const TemplatesForm = () => {
         setSeletedSize(size);
         setIsModalOpen(true);
     }
-
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
 
     const [rows, setRows] = useState([]);
 
@@ -367,11 +363,7 @@ const TemplatesForm = () => {
     };
 
 
-    return (
-        <>
-            <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-                <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-                <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+    return (<div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                     <div className="mb-4">
                         <Breadcrumb items={breadcrumbItems} />
                         <h2 className="text-sm font-bold text-black mt-2">Templates</h2>
@@ -524,11 +516,7 @@ const TemplatesForm = () => {
                         ]}
                         size="w-[800px]"
                         maxHeight="100vh"
-                    />
-                </div>
-            </div>
-        </>
-    );
+                    /></div>);
 };
 
 export default TemplatesForm;

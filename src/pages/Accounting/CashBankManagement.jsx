@@ -47,7 +47,6 @@ const MOCK_GL_ENTRIES = [
 ];
 
 const CashBankManagement = () => {
-    const { isCollapsed } = useSidebar();
     useEffect(() => {
         document.title = "Cash & Bank Management | Accounting";
     }, []);
@@ -139,11 +138,7 @@ const CashBankManagement = () => {
     };
 
     return (
-        <div className={`min-h-screen bg-gray-50 px-6 py-4 transition-all duration-300 ${
-            isCollapsed ? 'ml-16' : 'ml-[18.5rem]'
-        }`}>
-            
-            
+        <div className="px-6 py-4">
             {/* Main Content - Fixed Height Container */}
             <div className="flex-1 h-screen bg-gray-50 overflow-hidden">
                 <div className="h-full flex flex-col p-6">
@@ -412,8 +407,8 @@ const CashBankManagement = () => {
                     </motion.div>
                 </div>
             </div>
-        </div>
-    );
+    </div>
+  );
 };
 
 export default CashBankManagement;

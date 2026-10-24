@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import JournalEntryDataTable from "../../components/AccountingComponents/JournalEntryDataTable";
 
@@ -14,12 +13,8 @@ const JournalEntry = () => {
         { label: "Journal Entry",   href: "/accounting/journalentry" },
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
-
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-y-auto">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-y-auto">
                 <motion.div 
                     className="mb-4"
                     initial={{ opacity: 0, y: -20 }}
@@ -73,7 +68,6 @@ const JournalEntry = () => {
                         <JournalEntryDataTable />
                     </motion.div>
                 </section>
-            </div>
         </div>
     );
 };

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import CurriculumComponent from "../../components/AcademicComponents/CurriculumComponent";
 
@@ -15,7 +14,6 @@ const CurriculumEntry = () => {
         { label: "Curriculum Per Level Entry", href: "/academic/curriculumentry" }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     // const [entryType, setEntryType] = useState("subject");
 
     const slideVariants = {
@@ -25,10 +23,7 @@ const CurriculumEntry = () => {
     };
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
 
@@ -53,7 +48,7 @@ const CurriculumEntry = () => {
                         </span>
                     </div>
 
-                    {/* ✅ Animated Content */}
+                    {/* âœ… Animated Content */}
                     <div className="mt-6 relative overflow-hidden">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -75,9 +70,7 @@ const CurriculumEntry = () => {
                             </motion.div>
                         </AnimatePresence>
                     </div>
-
                 </div>
-            </div>
         </div>
     );
 };

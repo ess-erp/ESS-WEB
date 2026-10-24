@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import NotificationPanel from "../../components/SharedComponents/NotificationPanel";
 
@@ -13,17 +12,12 @@ const Notification = () => {
         { label: 'Notification', href: '/notification' }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const [user] = useState(() => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
     const userId = user?.UserId;
-    return (
-        <>
-            <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-                <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-                <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+    return (<div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                     <div className="mb-4">
                         <Breadcrumb items={breadcrumbItems} />
                         <h2 className="text-2x1 font-bold text-black mt-2">Notification</h2>
@@ -35,11 +29,7 @@ const Notification = () => {
                             </div>
                             <NotificationPanel userId={userId} />
                         </div>
-                    </section>
-                </div>
-            </div>
-        </>
-    );
+                    </section></div>);
 };
 
 export default Notification;

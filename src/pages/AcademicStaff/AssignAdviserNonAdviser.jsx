@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import TeacherListDataTable from "../../components/AcademicComponents/TeacherListDataTable";
 
@@ -15,17 +14,13 @@ const AssignAdviserNonAdviser = () => {
         { label: "Assign Adviser and Non-Adviser", href: "/academic/assignadvisernonadviser" }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const slideVariants = {
         initial: { opacity: 0, x: 40 },
         animate: { opacity: 1, x: 0 },
         exit: { opacity: 0, x: -40 }
     };
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-auto">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
 
@@ -49,7 +44,7 @@ const AssignAdviserNonAdviser = () => {
                         </span>
                     </div>
 
-                    {/* ✅ Animated Content */}
+                    {/* âœ… Animated Content */}
                     <div className="mt-6 relative overflow-hidden">
                         <AnimatePresence mode="wait">
                             <motion.div
@@ -63,9 +58,7 @@ const AssignAdviserNonAdviser = () => {
                             </motion.div>
                         </AnimatePresence>
                     </div>
-
                 </div>
-            </div>
         </div>
     );
 };

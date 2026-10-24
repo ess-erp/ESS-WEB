@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from "react";
-import Sidebar from "../../components/SharedComponents/Sidebar";
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import SchoolYearDataTable from "../../components/SruComponents/SchoolYearDataTable";
 import SchoolYearActivitiesModal from "../../components/SruComponents/SchoolYearActivitiesModal";
@@ -16,8 +15,6 @@ const SchoolCalendar = () => {
         { label: 'Dashboard', href: '/sru/dashboard' },
         { label: 'School Calendar', href: '/sru/schoolcalendar' }
     ];
-
-    const [sidebarOpen, setSidebarOpen] = useState(true);
 
     // Modal state for viewing activities
     const [isActivitiesModalOpen, setIsActivitiesModalOpen] = useState(false);
@@ -38,9 +35,7 @@ const SchoolCalendar = () => {
 
     return (
 
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-y-auto">
+        <div className="flex-1 h-screen bg-gray-50 px-6 py-4 overflow-y-auto">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">School Calendar</h2>
@@ -63,7 +58,6 @@ const SchoolCalendar = () => {
                         </div>
                     </div>
                 </section>
-            </div>
 
             {/* Activities Modal */}
             <SchoolYearActivitiesModal

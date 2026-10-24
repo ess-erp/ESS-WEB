@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Calendar, DollarSign, Users, Calculator, FileText, CheckCircle, AlertCircle } from 'lucide-react';
-import Sidebar from '../../components/SharedComponents/Sidebar';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
@@ -16,7 +15,6 @@ const PayrollProcessing = () => {
         { label: 'Payroll Processing', href: '/hrd/payroll-processing' }
     ];
 
-    const [sidebarOpen, setSidebarOpen] = useState(true);
     const [selectedPeriod, setSelectedPeriod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
@@ -100,7 +98,7 @@ const PayrollProcessing = () => {
             name: 'Basic Salary',
             selector: row => row.basicSalary,
             sortable: true,
-            cell: row => `₱${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            cell: row => `â‚±${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
             width: '130px'
         },
         {
@@ -109,7 +107,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-green-600">
-                    ₱{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    â‚±{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '130px'
@@ -120,7 +118,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-red-600">
-                    ₱{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    â‚±{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '130px'
@@ -131,7 +129,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-bold text-blue-600">
-                    ₱{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    â‚±{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
@@ -182,9 +180,7 @@ const PayrollProcessing = () => {
     };
 
     return (
-        <div className={`flex transition-all duration-300 ${sidebarOpen ? "pl-[18.5rem]" : "pl-16"}`}>
-            <Sidebar isSidebarOpen={sidebarOpen} setIsSidebarOpen={setSidebarOpen} />
-            <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
+        <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
                 <div className="mb-4">
                     <Breadcrumb items={breadcrumbItems} />
                     <h2 className="text-sm font-bold text-black mt-2">Payroll Processing</h2>
@@ -278,7 +274,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-green-700 font-medium">Total Gross Pay</p>
                                 <p className="text-2xl font-bold text-green-900 mt-1">
-                                    ₱{(totalGrossPay / 1000).toFixed(1)}K
+                                    â‚±{(totalGrossPay / 1000).toFixed(1)}K
                                 </p>
                             </div>
                             <div className="bg-green-600 p-3 rounded-lg">
@@ -298,7 +294,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-red-700 font-medium">Total Deductions</p>
                                 <p className="text-2xl font-bold text-red-900 mt-1">
-                                    ₱{(totalDeductions / 1000).toFixed(1)}K
+                                    â‚±{(totalDeductions / 1000).toFixed(1)}K
                                 </p>
                             </div>
                             <div className="bg-red-600 p-3 rounded-lg">
@@ -318,7 +314,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-blue-700 font-medium">Total Net Pay</p>
                                 <p className="text-2xl font-bold text-blue-900 mt-1">
-                                    ₱{(totalNetPay / 1000).toFixed(1)}K
+                                    â‚±{(totalNetPay / 1000).toFixed(1)}K
                                 </p>
                             </div>
                             <div className="bg-blue-600 p-3 rounded-lg">
@@ -361,25 +357,25 @@ const PayrollProcessing = () => {
                         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                             <p className="text-sm text-blue-700 font-medium">SSS Contributions</p>
                             <p className="text-xl font-bold text-blue-900 mt-1">
-                                ₱{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                â‚±{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                             <p className="text-sm text-green-700 font-medium">PhilHealth Contributions</p>
                             <p className="text-xl font-bold text-green-900 mt-1">
-                                ₱{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                â‚±{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                             <p className="text-sm text-yellow-700 font-medium">Pag-IBIG Contributions</p>
                             <p className="text-xl font-bold text-yellow-900 mt-1">
-                                ₱{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                â‚±{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-red-50 rounded-lg p-4 border border-red-200">
                             <p className="text-sm text-red-700 font-medium">Withholding Tax</p>
                             <p className="text-xl font-bold text-red-900 mt-1">
-                                ₱{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                â‚±{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                     </div>
@@ -447,52 +443,52 @@ const PayrollProcessing = () => {
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">Salaries & Wages Expense</td>
                                                 <td className="px-4 py-3 text-sm text-right text-blue-600 font-semibold">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                             </tr>
                                             <tr className="bg-gray-50">
                                                 <td className="px-4 py-3 text-sm text-gray-900">SSS Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">PhilHealth Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-gray-50">
                                                 <td className="px-4 py-3 text-sm text-gray-900">Pag-IBIG Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">Withholding Tax Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-gray-50">
                                                 <td className="px-4 py-3 text-sm text-gray-900">Salaries Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-blue-50 font-bold">
                                                 <td className="px-4 py-3 text-sm text-gray-900">TOTALS:</td>
                                                 <td className="px-4 py-3 text-sm text-right text-blue-600">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -523,7 +519,6 @@ const PayrollProcessing = () => {
                 </div>
                     </div>
                 </section>
-            </div>
         </div>
     );
 };
