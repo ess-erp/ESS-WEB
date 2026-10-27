@@ -73,7 +73,7 @@ export const fetchCriteriaTableData = (employeeAppId,userId, page, pageSize) => 
     dispatch(fetchCriteriaTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/principal/get-criteria-table?employeeAppId${employeeAppId}&userId=${userId}&page=${page}&pageSize=${pageSize}`;
+        const url = `${baseUrl}/principal/get-criteria-table?employeeAppId=${employeeAppId}&userId=${userId}&page=${page}&pageSize=${pageSize}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -147,7 +147,7 @@ export const fetchInsertPrincipalScreeningData = (formData) => async(dispatch) =
         return ({ ok: true, data: res.data });
     }
     catch(error){
-        dispatch(fetchInsertPrincipalFailure(error.message));
+        dispatch(fetchInsertPrincipalScreeningFailure(error.message));
         return ({ ok: false, error });
     }
 }

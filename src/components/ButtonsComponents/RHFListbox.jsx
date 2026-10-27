@@ -58,18 +58,18 @@ const RHFListbox = ({
                                 <>
                                     <div className="relative pt-2 w-full">
                                         <Listbox.Button className="relative w-full rounded-lg border py-2 pl-3 pr-10 text-left shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                            {field.value ? field.value[labelKey] : "Select"}
+                                            <span>{field.value ? field.value[labelKey] : "Select"}</span>
                                             <ChevronUpDownIcon className="absolute right-2 top-2.5 h-5 w-5 text-gray-400" />
                                         </Listbox.Button>
 
-                                        {open && (
+                                        {open && list && list.length > 0 && (
                                             <Listbox.Options 
                                                 static
                                                 className="absolute z-[9999] mt-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg border border-gray-300"
                                             >
-                                                {list.map(item => (
+                                                {list.map((item, index) => (
                                                     <Listbox.Option
-                                                        key={item[labelKey]}
+                                                        key={`${name}-${index}`}
                                                         value={item}
                                                         className="cursor-pointer select-none py-2 pl-4 pr-4 hover:bg-blue-100"
                                                     >

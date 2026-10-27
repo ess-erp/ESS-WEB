@@ -99,6 +99,14 @@ const initialGeneralState = {
     // Payroll Processing
     calculatePayrollState: { loading: false, data: null, error: '' },
     postJournalEntryState: { loading: false, data: null, error: '' },
+    
+    // Leave Credit Management
+    employeeLeaveCreditsState: { loading: false, data: [], error: '', totalRecords: 0 },
+    updateLeaveCreditsState: { loading: false, data: null, error: '', success: false },
+    schoolCalendarDropdownState: { loading: false, data: [], error: '' },
+    
+    // Employee Resume
+    employeeResumeState: { loading: false, data: null, error: '' },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -441,8 +449,54 @@ const hrReducer = (state = initialGeneralState, action) => {
         case POST_JOURNAL_ENTRY_FAILURE:
             return { ...state, postJournalEntryState: { loading: false, data: null, error: action.payload } };
 
+        // ── Leave Credit Management ────────────────────────────────────────────
+        case 'FETCH_EMPLOYEE_LEAVE_CREDITS_REQUEST':
+            return { ...state, employeeLeaveCreditsState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case 'FETCH_EMPLOYEE_LEAVE_CREDITS_SUCCESS':
+            return {
+                ...state,
+                employeeLeaveCreditsState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: '',
+                    totalRecords: action.payload.totalRecords || 0
+                }
+            };
+        case 'FETCH_EMPLOYEE_LEAVE_CREDITS_FAILURE':
+            return { ...state, employeeLeaveCreditsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        case 'UPDATE_EMPLOYEE_LEAVE_CREDITS_REQUEST':
+            return { ...state, updateLeaveCreditsState: { loading: true, data: null, error: '', success: false } };
+        case 'UPDATE_EMPLOYEE_LEAVE_CREDITS_SUCCESS':
+            return { ...state, updateLeaveCreditsState: { loading: false, data: action.payload, error: '', success: true } };
+        case 'UPDATE_EMPLOYEE_LEAVE_CREDITS_FAILURE':
+            return { ...state, updateLeaveCreditsState: { loading: false, data: null, error: action.payload, success: false } };
+
+        case 'FETCH_SCHOOL_CALENDAR_DROPDOWN_REQUEST':
+            return { ...state, schoolCalendarDropdownState: { loading: true, data: [], error: '' } };
+        case 'FETCH_SCHOOL_CALENDAR_DROPDOWN_SUCCESS':
+            return {
+                ...state,
+                schoolCalendarDropdownState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: ''
+                }
+            };
+        case 'FETCH_SCHOOL_CALENDAR_DROPDOWN_FAILURE':
+            return { ...state, schoolCalendarDropdownState: { loading: false, data: [], error: action.payload } };
+
+        // ── Employee Resume ────────────────────────────────────────────────────
+        case 'FETCH_EMPLOYEE_RESUME_REQUEST':
+            return { ...state, employeeResumeState: { loading: true, data: null, error: '' } };
+        case 'FETCH_EMPLOYEE_RESUME_SUCCESS':
+            return { ...state, employeeResumeState: { loading: false, data: action.payload, error: '' } };
+        case 'FETCH_EMPLOYEE_RESUME_FAILURE':
+            return { ...state, employeeResumeState: { loading: false, data: null, error: action.payload } };
+
         default:
             return state;
     }
 }
 export default hrReducer;
+

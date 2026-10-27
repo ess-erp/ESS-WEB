@@ -67,7 +67,7 @@ const SssContributionTable = () => {
 
     const handleSaveEdit = async () => {
         const payload = {
-            id: selectedRow.Id ?? selectedRow.id,
+            id: selectedRow.SssId ?? selectedRow.sssId,
             rangeFrom: parseFloat(form.rangeFrom),
             rangeTo: parseFloat(form.rangeTo),
             employeeShare: parseFloat(form.employeeShare),
@@ -123,11 +123,7 @@ const SssContributionTable = () => {
     };
 
     const handleConfirmDelete = async () => {
-        const payload = {
-            id: selectedRow.Id ?? selectedRow.id,
-            isDeleted: true,
-        };
-        const result = await dispatch(updateSssTable(payload));
+        const result = await dispatch(updateSssTable(selectedRow.SssId));
         if (result.ok) {
             dispatch(showToast('success', 'SSS bracket deleted successfully'));
             setDeleteModal(false);

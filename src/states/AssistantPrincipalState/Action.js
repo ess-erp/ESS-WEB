@@ -147,7 +147,7 @@ export const fetchInsertApScreeningData = (formData) => async(dispatch) => {
         return ({ ok: true, data: res.data });
     }
     catch(error){
-        dispatch(fetchInsertApFailure(error.message));
+        dispatch(fetchInsertApScreeningFailure(error.message));
         return ({ ok: false, error });
     }
 }

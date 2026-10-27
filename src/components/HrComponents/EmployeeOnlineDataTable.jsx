@@ -21,6 +21,7 @@ const EmployeeOnlineDataTable = () => {
   const totalRows = tableState.data.totalRecords || 0;
   const loading = tableState.loading || false;
 
+  console.log(table);
   const statuses = [
     { label: "Pending", action: "P", icon: <FaClock className="text-red-500 text-xl" />, bg: "bg-yellow-100", hover: "hover:bg-yellow-200" },
     { label: "Hired", action: "Y", icon: <FaCheckCircle className="text-green-500 text-xl" />, bg: "bg-green-100", hover: "hover:bg-green-200" },
@@ -40,7 +41,7 @@ const EmployeeOnlineDataTable = () => {
   const columns = [
     { name: 'Application Number', selector: row => row.EmployeeAppNo, sortable: true },
     { name: 'Fullname', selector: row => `${row.Lname}, ${row.Fname} ${row.Mname || ''}`, sortable: true },
-    { name: 'Desired Position', selector: row => row.Position, sortable: true },
+    { name: 'Desired Position', selector: row => row.DesiredPosition, sortable: true },
     { name: 'Status', selector: row => row.ActiveStatus, sortable: true },
     { name: 'Date Created', selector: row => new Date(row.DateCreated).toLocaleDateString(), sortable: true },
     {

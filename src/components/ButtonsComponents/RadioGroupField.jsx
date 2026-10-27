@@ -37,7 +37,7 @@ const RadioGroupField = ({
                 </p>
             )}
 
-            <div className="flex items-center gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {options.map((opt) => (
                     <label
                         key={opt.value}
@@ -57,7 +57,7 @@ const RadioGroupField = ({
                             disabled={!isEditing}
                             className="text-blue-500 focus:ring-blue-500 border-gray-300"
                         />
-                        {opt.label}
+                        <span className="text-sm">{opt.label}</span>
                     </label>
                 ))}
             </div>

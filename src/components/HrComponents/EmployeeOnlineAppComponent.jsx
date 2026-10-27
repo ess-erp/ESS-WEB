@@ -33,14 +33,14 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { 
+    FaUser, FaRing, FaUsers, FaGraduationCap, FaInfoCircle, 
+    FaArrowRight, FaSave, FaMapMarkerAlt, FaBriefcase, FaFileAlt 
+} from 'react-icons/fa';
 import RHFListbox from "../ButtonsComponents/RHFListbox";
 import InputField from "../ButtonsComponents/InputField";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
 import {
-    fetchCampusData,
-    fetchDivisionData,
-    fetchLevelData,
-    fetchStrandData,
     fetchNationalityData,
     fetchReligionData,
     fetchProvinceData,
@@ -48,11 +48,11 @@ import {
     fetchBarangayData,
 } from "../../states/OnlineApplicationState/Action";
 import {
-    fetchStudentByIdData,
     fetchUpdateStudentInfoData,
 } from "../../states/AdmissionState/Action";
 import {
     fetchEmployeeApplicationInfoData,
+    fetchEmployeeResume,
 } from "../../states/HumanResourcesState/Action";
 import { getFormatDate, getDateInputValue } from "../../GlobalFunction/FormatDate";
 
@@ -154,8 +154,8 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
             Nickname: employeeData.Nickname ?? "",
             Gender: employeeData.Gender ?? "",
             TempEmail: employeeData.TempEmail ?? "",
-            Position: employeeData.Position ?? "",
-            Designation: employeeData.Designation ?? "",
+            DesiredPosition: employeeData.DesiredPosition ?? "",
+            EmployeeCategory: employeeData.EmployeeCategory ?? "",
             DateOfBirth: employeeData.DateOfBirth ?? "",
             PlaceOfBirth: employeeData.PlaceOfBirth ?? "",
             MobilePhoneNo: employeeData.MobilePhoneNo ?? "",
@@ -283,6 +283,18 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
     const [formData, setFormData] = useState(null);
 
+    // Function to handle viewing resume
+    const handleViewResume = async () => {
+        if (employeeData?.EmployeeId) {
+            const result = await dispatch(fetchEmployeeResume(employeeData.EmployeeId));
+            if (!result.ok) {
+                alert('Failed to open resume. Please try again.');
+            }
+        } else {
+            alert('No resume file available for this applicant.');
+        }
+    };
+
     const onSubmit = (data) => {
         setFormData(data);
         setIsModalOpen(true);
@@ -342,199 +354,237 @@ const EmployeeOnlineAppForm = ({ isEditing, appId, userId }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-                <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="EmployeeAppNo" label="Employee Application Number" register={register} isEditing={isEditing} displayValue={employeeData.EmployeeAppNo} />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Header Section with Status Badge */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow p-4 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-md font-bold">Employee Application Information</h3>
+                        <p className="text-green-100 text-md mt-1">Application No: <span className="font-semibold">{employeeData.EmployeeAppNo}</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* View Resume Button */}
+                        <button
+                            type="button"
+                            onClick={handleViewResume}
+                            className="px-3 py-1.5 bg-white/90 hover:bg-white text-green-700 text-xs font-medium rounded flex items-center gap-1.5 transition-all duration-200 shadow-sm hover:shadow"
+                        >
+                            <FaFileAlt className="text-xs" />
+                            <span>View Resume</span>
+                        </button>
+                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded text-xs font-medium">
+                            Status: {employeeData.ActiveStatus || 'Active'}
+                        </div>
+                    </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="Fname" label="First Name" register={register} isEditing={isEditing} displayValue={employeeData.Fname} />
-                    <InputField name="Mname" label="Middle Name" register={register} isEditing={isEditing} displayValue={employeeData.Mname} />
-                    <InputField name="Lname" label="Last Name" register={register} isEditing={isEditing} displayValue={employeeData.Lname} />
-                    <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData.Nickname} />
-                    <InputField name="TempEmail" label="Other Email" register={register} isEditing={isEditing} displayValue={employeeData.TempEmail} />
-                    <InputField name="Position" label="Desired Position" register={register} isEditing={isEditing} displayValue={employeeData.Position} />
-                    <InputField name="Gender" label="Gender" register={register} isEditing={isEditing} displayValue={employeeData.Gender} />
-                    <InputField name="DateOfBirth" label="Date of birth" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfBirth) : formatDate(employeeData.DateOfBirth)} {...(isEditing ? { type: "date" } : {})} />
-                    <InputField name="PlaceOfBirth" label="Place of birth" register={register} isEditing={isEditing} displayValue={employeeData.PlaceOfBirth} />
-                    <InputField name="MobilePhoneNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={employeeData.MobilePhoneNo} />
-                    <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={!isEditing} displayValue={employeeData.NationalityName} />
-                    <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={!isEditing} displayValue={employeeData.ReligionName} />
-                    <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={!isEditing} displayValue={employeeData.ProvinceName} />
-                    <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={!isEditing} displayValue={employeeData.CityName} />
-                    <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={!isEditing} displayValue={employeeData.BrgyName} />
-                    <InputField name="HomeStreet" label="Home Street No." register={register} isEditing={isEditing} displayValue={employeeData.HomeStreet} />
-                    {/*<RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={studentData.CampusName} />
-                    <RHFListbox name="Division" control={control} list={divisionList} label="Division" labelKey="DivName" isEditing={!isEditing} displayValue={studentData.DivName} />
-                    <RHFListbox name="Level" control={control} list={levelList} label="Level" labelKey="LevelName" isEditing={!isEditing} displayValue={studentData.LevelName} />
-
-                    {level?.LevelId === 15 && (
-                        <RHFListbox name="Strand" control={control} list={strandList} label="Strand" labelKey="StrandName" isEditing={!isEditing} displayValue={studentData.StrandName} />
-                    )}
-
-                    
-                    <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={!isEditing} displayValue={studentData.ProvinceName} />
-                    <RHFListbox name="City" control={control} list={cityList} label="City" labelKey="city_name" isEditing={!isEditing} displayValue={studentData.CityName} />
-                    <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={!isEditing} displayValue={studentData.BrgyName} />
-                    <InputField name="HomeStreet" label="Home Street No." register={register} isEditing={isEditing} displayValue={studentData.HomeStreet} />
-                    <InputField name="Student Type" label="Student Type" register={register} isEditing={isEditing} displayValue={studentData.StudentType} /> */}
-                </div>
-
             </div>
-            {employeeData?.CivilStatus != "single" && (
-                <>
-                    <div className="flex items-center pt-4">
-                        <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                            Spouse Information
-                        </h2>
-                        <div className="flex-grow">
-                            <hr className="border-t border-gray-400" />
+
+            {/* Applicant Information Card */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-green-50 px-4 py-2 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-green-600 p-1.5 rounded">
+                            <FaUser className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Applicant Information</h2>
+                    </div>
+                </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <InputField name="Fname" label="First Name" register={register} isEditing={isEditing} displayValue={employeeData.Fname} />
+                        <InputField name="Mname" label="Middle Name" register={register} isEditing={isEditing} displayValue={employeeData.Mname} />
+                        <InputField name="Lname" label="Last Name" register={register} isEditing={isEditing} displayValue={employeeData.Lname} />
+                        <InputField name="Nickname" label="Nickname" register={register} isEditing={isEditing} displayValue={employeeData.Nickname} />
+                        <InputField name="Gender" label="Gender" register={register} isEditing={isEditing} displayValue={employeeData.Gender} />
+                        <InputField name="DateOfBirth" label="Date of Birth" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfBirth) : formatDate(employeeData.DateOfBirth)} {...(isEditing ? { type: "date" } : {})} />
+                        <InputField name="PlaceOfBirth" label="Place of Birth" register={register} isEditing={isEditing} displayValue={employeeData.PlaceOfBirth} />
+                        <InputField name="TempEmail" label="Email Address" register={register} isEditing={isEditing} displayValue={employeeData.TempEmail} />
+                        <InputField name="MobilePhoneNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={employeeData.MobilePhoneNo} />
+                        <RHFListbox name="Nationality" control={control} list={nationalityList} label="Nationality" labelKey="NationalityName" isEditing={!isEditing} displayValue={employeeData.NationalityName} />
+                        <RHFListbox name="Religion" control={control} list={religionList} label="Religion" labelKey="ReligionName" isEditing={!isEditing} displayValue={employeeData.ReligionName} />
+                        <InputField name="DesiredPosition" label="Desired Position" register={register} isEditing={isEditing} displayValue={employeeData.DesiredPosition} />
+                    </div>
+                </div>
+            </div>
+
+            {/* Address Information Card */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gradient-to-r from-blue-50 to-green-50 px-4 py-2 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-blue-600 p-1.5 rounded">
+                            <FaMapMarkerAlt className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Address Information</h2>
+                    </div>
+                </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <RHFListbox name="Province" control={control} list={provinceList} label="Province" labelKey="province_name" isEditing={!isEditing} displayValue={employeeData.ProvinceName} />
+                        <RHFListbox name="City" control={control} list={cityList} label="City/Municipality" labelKey="city_name" isEditing={!isEditing} displayValue={employeeData.CityName} />
+                        <RHFListbox name="Barangay" control={control} list={brgyList} label="Barangay" labelKey="brgy_name" isEditing={!isEditing} displayValue={employeeData.BrgyName} />
+                        <div className="md:col-span-2 lg:col-span-3">
+                            <InputField name="HomeStreet" label="House No. / Street" register={register} isEditing={isEditing} displayValue={employeeData.HomeStreet} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Spouse Information Card - Conditional */}
+            {employeeData?.CivilStatus !== "single" && (
+                <div className="bg-white rounded-lg shadow overflow-hidden">
+                    <div className="bg-gradient-to-r from-pink-50 to-purple-50 px-4 py-2 border-b border-gray-200">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-pink-600 p-1.5 rounded">
+                                <FaRing className="text-white text-sm" />
+                            </div>
+                            <h2 className="text-base font-bold text-gray-800">Spouse Information</h2>
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <InputField name="NameOfSpouse" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.NameOfSpouse} />
+                            <InputField name="SpouseOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.SpouseOccupation} />
+                            <InputField name="NoOfyearsMarried" label="Years Married" register={register} isEditing={isEditing} displayValue={employeeData.NoOfyearsMarried} />
+                            <InputField name="NoOfChildren" label="Number of Children" register={register} isEditing={isEditing} displayValue={employeeData.NoOfChildren} />
+                            <InputField name="AgeEldestChild" label="Age of Eldest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeEldestChild} />
+                            <InputField name="AgeYoungestChild" label="Age of Youngest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeYoungestChild} />
+                            <InputField name="IsPregnant" label="Is Pregnant?" register={register} isEditing={isEditing} displayValue={employeeData.IsPregnant} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Parents Information Card */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-4 py-2 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-indigo-600 p-1.5 rounded">
+                            <FaUsers className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Parents Information</h2>
+                    </div>
+                </div>
+                <div className="p-4 space-y-4">
+                    {/* Father's Information */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-blue-600 text-white text-xs font-bold">
+                                F
+                            </div>
+                            <h3 className="text-sm font-semibold text-gray-700">Father's Information</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-8">
+                            <InputField name="FathersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.FathersFullname} />
+                            <InputField name="FathersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.FathersAge} />
+                            <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.FathersOccupation} />
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 pt-4">
-                        <InputField name="NameOfSpouse" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.NameOfSpouse} />
-                        <InputField name="SpouseOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.SpouseOccupation} />
-                        <InputField name="NoOfyearsMarried" label="No of Years Married" register={register} isEditing={isEditing} displayValue={employeeData.NoOfyearsMarried} />
-                        <InputField name="NoOfChildren" label="No of Children" register={register} isEditing={isEditing} displayValue={employeeData.NoOfChildren} />
-                        <InputField name="AgeEldestChild" label="Age of Eldest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeEldestChild} />
-                        <InputField name="AgeYoungestChild" label="Age of Youngest Child" register={register} isEditing={isEditing} displayValue={employeeData.AgeYoungestChild} />
-                        <InputField name="IsPregnant" label="Is pregnant?" register={register} isEditing={isEditing} displayValue={employeeData.IsPregnant} />
-                        {/* <InputField name="FathersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.FathersFname} />
-                <InputField name="FathersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.FathersMname} />
-                <InputField name="FathersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.FathersLname} />
-                <InputField name="FathersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.FathersEmail} />
-                <InputField name="FathersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.FathersMobileNo} />
-                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.FathersOccupation} /> */}
+                    <div className="border-t border-gray-200 my-3"></div>
+
+                    {/* Mother's Information */}
+                    <div>
+                        <div className="flex items-center gap-2 mb-3">
+                            <div className="w-6 h-6 flex items-center justify-center rounded-full bg-pink-600 text-white text-xs font-bold">
+                                M
+                            </div>
+                            <h3 className="text-sm font-semibold text-gray-700">Mother's Information</h3>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-8">
+                            <InputField name="MothersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.MothersFullname} />
+                            <InputField name="MothersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.MothersAge} />
+                            <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.MothersOccupation} />
+                            <InputField name="NoOfSiblings" label="Number of Siblings" register={register} isEditing={isEditing} displayValue={employeeData.NoOfSiblings} />
+                        </div>
                     </div>
-                </>
-            )}
-
-
-            <div className="flex items-center pt-4">
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Parents Information
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
                 </div>
             </div>
-            <div className="flex items-center pt-4">
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                    i
-                </div>
 
-                <h2 className="text-l font-bold text-green-700 whitespace-nowrap">
-                    Father's Information
-                </h2>
+            {/* Educational Background Card */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-2 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-purple-600 p-1.5 rounded">
+                            <FaGraduationCap className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Highest Educational Attainment</h2>
+                    </div>
+                </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="lg:col-span-2">
+                            <InputField name="SchoolName" label="School Name" register={register} isEditing={isEditing} displayValue={employeeData.SchoolName} />
+                        </div>
+                        <InputField name="From" label="From (Year)" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.From) : formatDate(employeeData.From)} {...(isEditing ? { type: "date" } : {})} />
+                        <InputField name="To" label="To (Year)" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.To) : formatDate(employeeData.To)} {...(isEditing ? { type: "date" } : {})} />
+                        <div className="lg:col-span-4">
+                            <InputField name="Degree" label="Degree/Course" register={register} isEditing={isEditing} displayValue={employeeData.Degree} />
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="FathersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.FathersFullname} />
-                <InputField name="FathersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.FathersAge} />
-                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.FathersOccupation} />
-                {/* <InputField name="FathersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.FathersFname} />
-                <InputField name="FathersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.FathersMname} />
-                <InputField name="FathersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.FathersLname} />
-                <InputField name="FathersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.FathersEmail} />
-                <InputField name="FathersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.FathersMobileNo} />
-                <InputField name="FathersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.FathersOccupation} /> */}
-            </div>
-            <div className="flex items-center pt-4">
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                    i
+            {/* Other Information Card */}
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 px-4 py-2 border-b border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-orange-600 p-1.5 rounded">
+                            <FaBriefcase className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Employment Information</h2>
+                    </div>
                 </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <InputField name="PrevEmployed" label="Previously Employed" register={register} isEditing={isEditing} displayValue={employeeData.PrevEmployed} />
+                        <InputField name="PlanToWorkAbroad" label="Plan to Work Abroad" register={register} isEditing={isEditing} displayValue={employeeData.PlanToWorkAbroad} />
+                        <InputField name="TargetYear" label="Target Year" register={register} isEditing={isEditing} displayValue={employeeData.TargetYear} />
+                        <InputField name="TeachingLicense" label="Teaching License No." register={register} isEditing={isEditing} displayValue={employeeData.TeachingLicense} />
+                        <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfExamination) : formatDate(employeeData.DateOfExamination)} {...(isEditing ? { type: "date" } : {})} />
+                    </div>
+                </div>
+            </div>
 
-                <h2 className="text-l font-bold text-green-700 whitespace-nowrap">
-                    Mother's Information
-                </h2>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="MothersFullname" label="Full Name" register={register} isEditing={isEditing} displayValue={employeeData.MothersFullname} />
-                <InputField name="MothersAge" label="Age" register={register} isEditing={isEditing} displayValue={employeeData.MothersAge} />
-                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={employeeData.MothersOccupation} />
-                <InputField name="NoOfSiblings" label="No of Siblings" register={register} isEditing={isEditing} displayValue={employeeData.NoOfSiblings} />
-                {/* <InputField name="MothersFname" label="First Name" register={register} isEditing={isEditing} displayValue={studentData.MothersFname} />
-                <InputField name="MothersMname" label="Middle Name" register={register} isEditing={isEditing} displayValue={studentData.MothersMname} />
-                <InputField name="MothersLname" label="Last Name" register={register} isEditing={isEditing} displayValue={studentData.MothersLname} />
-                <InputField name="MothersEmail" label="Email" register={register} isEditing={isEditing} displayValue={studentData.MothersEmail} />
-                <InputField name="MothersMobileNo" label="Mobile Phone No." register={register} isEditing={isEditing} displayValue={studentData.MothersMobileNo} />
-                <InputField name="MothersOccupation" label="Occupation" register={register} isEditing={isEditing} displayValue={studentData.MothersOccupation} /> */}
-            </div>
-            <div className="flex items-center pt-4">
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Highest Educational Attainment
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
-                </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="SchoolName" label="School Name" register={register} isEditing={isEditing} displayValue={employeeData.SchoolName} />
-                <InputField name="From" label="From" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.From) : formatDate(employeeData.From)} {...(isEditing ? { type: "date" } : {})} />
-                <InputField name="To" label="To" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.To) : formatDate(employeeData.To)} {...(isEditing ? { type: "date" } : {})} />
-                <InputField name="Degree" label="Degree" register={register} isEditing={isEditing} displayValue={employeeData.Degree} />
-            </div>
-            <div className="flex items-center pt-4">
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Other Information
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
-                </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4">
-                <InputField name="PrevEmployed" label="Prev Employed" register={register} isEditing={isEditing} displayValue={employeeData.PrevEmployed} />
-                <InputField name="PlanToWorkAbroad" label="Plan to Work Abroad " register={register} isEditing={isEditing} displayValue={employeeData.PlanToWorkAbroad} />
-                <InputField name="TargetYear" label="Target Year" register={register} isEditing={isEditing} displayValue={employeeData.TargetYear} />
-                <InputField name="TeachingLicense" label="Teaching License" register={register} isEditing={isEditing} displayValue={employeeData.TeachingLicense} />
-                <InputField name="DateOfExamination" label="Date of Examination" register={register} isEditing={isEditing} displayValue={isEditing ? toDateInputValue(employeeData.DateOfExamination) : formatDate(employeeData.DateOfExamination)} {...(isEditing ? { type: "date" } : {})} />
-            </div>
-            <div className="flex justify-end items-end pt-2">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-2 pt-2">
                 <button
-                    type="submit"
-                    className="px-6 py-2 mr-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-800 transition"
+                    type="button"
                     onClick={handleProceed}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                 >
-                    Proceed to hiring Process
+                    <span>Proceed to Hiring Process</span>
+                    <FaArrowRight className="text-xs" />
                 </button>
                 {isEditing && (
                     <button
                         type="submit"
-                        className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-800 transition"
                         onClick={handleSubmit(onSubmit)}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                     >
-                        Save
+                        <FaSave className="text-xs" />
+                        <span>Save Changes</span>
                     </button>
                 )}
-
             </div>
 
+            {/* Modals */}
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={<span className="font-bold text-lg text-red-700">Warning</span>}
-                body="Are you sure you want to submit?"
+                title={<span className="font-bold text-lg text-red-700">Confirm Submission</span>}
+                body="Are you sure you want to submit these changes?"
                 buttons={[
-                    { label: "Yes", type: "green", onClick: handleConfirmSubmit, },
-                    { label: "No", type: "red" },
+                    { label: "Yes, Submit", type: "green", onClick: handleConfirmSubmit },
+                    { label: "Cancel", type: "red", onClick: () => setIsModalOpen(false) },
                 ]}
             />
             <ModalComponent
                 isOpen={isSuccessModalOpen}
                 onClose={() => setIsSuccessModalOpen(false)}
-                title={
-                    <span className="font-bold text-lg text-green-700">
-                        Success
-                    </span>
-                }
-                body="Student Master File has been updated!"
+                title={<span className="font-bold text-lg text-green-700">Success!</span>}
+                body="Employee information has been updated successfully!"
                 buttons={[
-                    {
-                        label: "OK",
-                        type: "green",
-                        onClick: () => setIsSuccessModalOpen(false)
-                    },
+                    { label: "OK", type: "green", onClick: () => setIsSuccessModalOpen(false) },
                 ]}
             />
         </form>

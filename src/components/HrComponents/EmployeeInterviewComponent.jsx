@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
+import { FaUser, FaClipboardCheck, FaTable, FaBriefcase, FaCheckCircle } from 'react-icons/fa';
 import RHFListbox from "../ButtonsComponents/RHFListbox";
 import InputField from "../ButtonsComponents/InputField";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
@@ -42,9 +43,10 @@ const customStyles = {
     },
 };
 
-const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
+const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRoleId }) => {
 
     const currUserId = userId;
+    const currUserRoleId = userRoleId;
     const dispatch = useDispatch();
     const {
         register,
@@ -73,8 +75,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             ApFullname: "",
             PrincipalFullname: "",
             Campus: null,
-            SetPosition: null,
-            SetPositionName: null,
+            EmployeeCategory: null,
+            EmployeeCategoryName: null,
             Recommendation: null,
             Remarks: "",
             SacUser: null,
@@ -87,11 +89,13 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
     });
 
     const positionList = [
-        { SetPositionId: 1, SetPositionName: "Faculty" },
-        { SetPositionId: 2, SetPositionName: "Non-Teaching Staff" },
-        { SetPositionId: 3, SetPositionName: "Staff" },
-        { SetPositionId: 4, SetPositionName: "Others" }
+        { EmployeeCategoryId: 1, EmployeeCategory: "Faculty" },
+        { EmployeeCategoryId: 2, EmployeeCategory: "Non-Teaching Staff" },
+        { EmployeeCategoryId: 3, EmployeeCategory: "Staff" },
+        { EmployeeCategoryId: 4, EmployeeCategory: "Others" }
     ];
+    
+    console.log('positionList:', positionList);
 
     const recommendationList = [
         { RecommendationId: 1, RecommendationName: "Recommended for Teaching Demonstration (Faculty)" },
@@ -121,7 +125,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             EmployeeAppNo: employeeData.EmployeeAppNo ?? "",
             Fullname: `${employeeData.Fname ?? ""} ${employeeData.Mname ?? ""} ${employeeData.Lname ?? ""}`,
             Nickname: employeeData.Nickname ?? "",
-            Position: employeeData.Position ?? "",
+            DesiredPosition: employeeData.DesiredPosition ?? "",
             ApplicationThru: employeScreeningData.ApplicationThru ?? "",
             ApplicationThruOthers: employeScreeningData.ApplicationThruOthers ?? "",
             ApplicationType: employeScreeningData.ApplicationType ?? "",
@@ -131,8 +135,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             Remarks: "",
             Recommendation: "",
             Campus: null,
-            SetPosition: null,
-            SetPositionName: null,
+            EmployeeCategory: null,
+            EmployeeCategoryName: null,
             SacUser: null,
             // SacUserId: "",
             ApUser: null,
@@ -156,14 +160,14 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
     }, [campusList, employeeData?.CampusName, isEditing, setValue]);
 
     useEffect(() => {
-        if (!employeeData?.SetPositionName) return;
+        if (!employeeData?.EmployeeCategory) return;
 
         const position = positionList.find(
-            p => p.SetPositionName === employeeData.SetPositionName
+            p => p.EmployeeCategory === employeeData.EmployeeCategory
         );
 
         if (position) {
-            setValue("SetPosition", position);
+            setValue("EmployeeCategory", position);
         }
     }, [employeeData, setValue]);
 
@@ -175,13 +179,24 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
     const [criteriaList, setCriteriaList] = useState([]);
     const criteriaTableState = useSelector((state) => state.hr.criteriaTableState || {});
-    const criteriaTable = criteriaTableState.data.data || [];
-    const criteriaTableTotalRows = criteriaTableState.data.totalRecords || 0;
+    const criteriaTable = criteriaTableState.data?.data || criteriaTableState.data || [];
+    const criteriaTableTotalRows = criteriaTableState.data?.totalRecords || 0;
     const criteriaTableLoading = criteriaTableState.loading || false;
     const [criteriaTableCurrentPage, setCriteriaTableCurrentPage] = useState(1);
     const [criteriaTableRowsPerPage, setCriteriaTableRowsPerPage] = useState(10);
     const [isRatingExist, setIsRatingExist] = useState(false);
+    
+    console.log('employeeAppId:', employeeAppId);
+    console.log('criteriaTableState:', criteriaTableState);
+    console.log('criteriaTable:', criteriaTable);
+    console.log('criteriaTable length:', criteriaTable?.length);
+    
     useEffect(() => {
+        if (!employeeAppId) {
+            console.log('Skipping fetchCriteriaTableData: employeeAppId is not available');
+            return;
+        }
+        console.log('Fetching criteria table data for employeeAppId:', employeeAppId);
         dispatch(fetchCriteriaTableData(employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
     }, [employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
@@ -190,7 +205,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
         let nameOrderMap = null;
 
-        if (employeeData?.SetPositionName == "Faculty") {
+        if (employeeData?.EmployeeCategory == "Faculty") {
             nameOrderMap = {
                 "Initial Interview": 1,
                 "Teaching Demonstration": 2,
@@ -290,8 +305,14 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     type="radio"
                     name={`rating-${row.CriteriaChildId}`}
                     value="1"
-                    onChange={() => handleRatingChange(row.CriteriaChildId, 1)}
+                    onChange={(e) => {
+                        console.log('onChange triggered!', row.CriteriaChildId, e.target.value);
+                        handleRatingChange(row.CriteriaChildId, 1);
+                    }}
+                    onClick={() => console.log('onClick triggered!', row.CriteriaChildId)}
                     checked={ratings[row.CriteriaChildId] === 1}
+                    disabled={!isEditing}
+                    className="cursor-pointer w-4 h-4"
                 />
             )
         },
@@ -304,6 +325,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     value="2"
                     onChange={() => handleRatingChange(row.CriteriaChildId, 2)}
                     checked={ratings[row.CriteriaChildId] === 2}
+                    disabled={!isEditing}
+                    className="cursor-pointer"
                 />
             )
         },
@@ -316,6 +339,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     value="3"
                     onChange={() => handleRatingChange(row.CriteriaChildId, 3)}
                     checked={ratings[row.CriteriaChildId] === 3}
+                    disabled={!isEditing}
+                    className="cursor-pointer"
                 />
             )
         },
@@ -328,6 +353,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                     value="4"
                     onChange={() => handleRatingChange(row.CriteriaChildId, 4)}
                     checked={ratings[row.CriteriaChildId] === 4}
+                    disabled={!isEditing}
+                    className="cursor-pointer"
                 />
             )
         }
@@ -335,10 +362,15 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
 
 
     const handleRatingChange = (rowId, value) => {
-        setRatings(prev => ({
-            ...prev,
-            [rowId]: value
-        }));
+        console.log('Rating changed:', { rowId, value });
+        setRatings(prev => {
+            const newRatings = {
+                ...prev,
+                [rowId]: value
+            };
+            console.log('Updated ratings state:', newRatings);
+            return newRatings;
+        });
     };
 
 
@@ -387,76 +419,128 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
             SacUser,
             ApUser,
             PrincipalUser,
-            SetPosition,
+            EmployeeCategory,
             Recommendation,
             ...rest
         } = formData;
+        
+        console.log('Form submission started');
+        console.log('currUserRoleId:', currUserRoleId, 'type:', typeof currUserRoleId);
+        console.log('ratings state:', ratings);
+        console.log('criteriaTable:', criteriaTable);
+        
+        // Filter criteria with UserRoleId === 10 (HR/Initial Interview)
+        const hrCriteria = criteriaTable.filter(criteria => criteria.UserRoleId === 10);
+        console.log('HR Criteria (UserRoleId === 10):', hrCriteria);
+        
         const CriteriaRatingDtos = [];
 
-        criteriaTable.forEach(criteria => {
-            if (criteria.CriteriaTempName !== "Initial Interview") return;
+        // Process only HR criteria
+        hrCriteria.forEach(criteria => {
+            console.log('Processing HR criteria:', criteria.CriteriaId);
+            console.log('CriteriaChildTableDtos:', criteria.CriteriaChildTableDtos);
 
             criteria.CriteriaChildTableDtos.forEach(child => {
-                if (ratings[child.CriteriaChildId]) {
-                    CriteriaRatingDtos.push({
+                const childId = child.CriteriaChildId;
+                const rating = ratings[childId];
+                
+                console.log(`Checking child ${childId}:`, {
+                    CriteriaName: child.CriteriaName,
+                    CriteriaChildId: childId,
+                    RatingInState: rating,
+                    HasRating: !!rating
+                });
+                
+                if (rating) {
+                    const ratingDto = {
                         CriteriaId: criteria.CriteriaId,
-                        CriteriaChildId: child.CriteriaChildId,
-                        Rating: ratings[child.CriteriaChildId].toString()
-                    });
+                        CriteriaChildId: childId,
+                        Rating: rating.toString()
+                    };
+                    console.log('✅ Adding rating:', ratingDto);
+                    CriteriaRatingDtos.push(ratingDto);
+                } else {
+                    console.log('❌ No rating found for child:', childId);
                 }
             });
         });
+        
+        console.log('Total CriteriaRatingDtos collected:', CriteriaRatingDtos.length, CriteriaRatingDtos);
 
         const assignUsers = [];
 
         criteriaTable.forEach(criteria => {
             let userId = null;
+            let recommendation = null;
+            let remarks = null;
 
-            switch (criteria.CriteriaTempName) {
-                case "Initial Interview":
+            // Map role IDs to their corresponding form fields
+            // Only set recommendation/remarks for the current user's role (the one they're rating)
+            if (criteria.UserRoleId === currUserRoleId) {
+                // This is the criteria the current user is rating
+                recommendation = formData.Recommendation?.RecommendationName;
+                remarks = formData.Remarks;
+            }
+
+            switch (criteria.UserRoleId) {
+                case 10: // HR/Initial Interview
                     userId = currUserId;
                     break;
 
-                case "Teaching Demonstration":
+                case 11: // SAC/Teaching Demonstration
                     userId = formData.SacUser?.UserId;
                     break;
 
-                case "Assistant Principal Interview":
+                case 12: // Assistant Principal
                     userId = formData.ApUser?.UserId;
                     break;
 
-                case "Principal Interview":
+                case 13: // Principal
                     userId = formData.PrincipalUser?.UserId;
                     break;
 
-                case "Deparment Head Interview":
-                    userId = formData.DepartmentHeadUser?.UserId;
-                    break;
+                // case 14: // Department Head
+                //     userId = formData.DepartmentHeadUser?.UserId;
+                //     break;
 
                 default:
                     break;
             }
 
             if (userId) {
-                assignUsers.push({
+                const assignDto = {
                     CriteriaId: criteria.CriteriaId,
                     UserId: userId
-                });
+                };
+
+                // Add recommendation and remarks if this is the criteria being rated by current user
+                if (recommendation) {
+                    assignDto.Recommendation = recommendation;
+                }
+                if (remarks) {
+                    assignDto.Remarks = remarks;
+                }
+
+                assignUsers.push(assignDto);
             }
         });
 
         const payload = {
-            ...rest,
+            EmployeeId: formData.EmployeeId,
+            EmployeeAppId: formData.EmployeeAppId,
+            ApplicationThru: formData.ApplicationThru,
+            ApplicationThruOthers: formData.ApplicationThruOthers,
+            ApplicationType: formData.ApplicationType,
+            WorkExperience: formData.WorkExperience,
+            NoOfYearMonth: formData.NoOfYearMonth,
             CampusId: formData.Campus?.CampusId,
-            SetPositionName: formData.SetPosition?.SetPositionName,
-            Recommendation: formData.Recommendation?.RecommendationName,
+            EmployeeCategoryName: formData.EmployeeCategory?.EmployeeCategory,
             CreatedByUserId: currUserId,
             CriteriaRatingDtos: CriteriaRatingDtos,
-            AssignRoleDtos: assignUsers
-
+            AssignRoleDtos: assignUsers  // Now includes Recommendation and Remarks per criteria
         };
-        console.log(ratings);
-        console.log("SUBMIT PAYLOAD:", payload);
+        console.log('Ratings:', ratings);
+        console.log('SUBMIT PAYLOAD:', payload);
 
         const res = await dispatch(fetchUpdateEmployeeScreeningData(payload));
         if (res.ok) {
@@ -546,218 +630,204 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
         }
     };
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex items-center pt-4">
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                    i
-                </div>
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Applicant Information
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
-                </div>
-            </div>
-            <div>
-                <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="EmployeeAppNo" label="Employee Application Number" register={register} isEditing={isEditing} displayValue={employeeData?.EmployeeAppNo} />
-                </div>
-                <div className="grid grid-cols-3 gap-4 pt-4 items-end w-full">
-                    <InputField name="Fullname" label="Full Name" register={register} isEditing={isEditing} displayValue={`${employeeData.Fname ?? ""} ${employeeData.Mname ?? ""} ${employeeData.Lname ?? ""}`} />
-                    <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData?.Nickname} />
-                    <InputField name="Position" label="Desired Position" register={register} isEditing={false} displayValue={employeeData?.Position} />
-                    {/* <RHFListbox name="Campus" control={control} list={campusList} label="Campus" labelKey="CampusName" isEditing={!isEditing} displayValue={employeeData.CampusName} />
-                    <RHFListbox
-                        name="SetPositionName"
-                        control={control}
-                        list={positionList}
-                        label="Select Position"
-                        labelKey="SetPositionName"
-                        isEditing={false}
-                        displayValue={employeScreeningData.SetPositionName}
-                    /> */}
-                    <RHFListbox
-                        name="Campus"
-                        control={control}
-                        list={campusList}
-                        label="Campus"
-                        labelKey="CampusName"
-                        isEditing={!isEditing}
-                        displayValue={employeeData.CampusName}
-                    />
-
-                    <RHFListbox
-                        name="SetPosition"
-                        control={control}
-                        list={positionList}
-                        label="Select Position"
-                        labelKey="SetPositionName"
-                        isEditing={!isEditing}
-                        displayValue={employeeData.SetPositionName}
-                    />
-                    {employeScreeningData?.DateHired != null && (
-                        <>
-                            <InputField name="DateHired" label="Date Hired" register={register} isEditing={false} displayValue={employeScreeningData?.DateHired} />
-                        </>
-                    )}
-
-                </div>
-
-            </div>
-            <div className="flex items-center pt-4">
-                <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                    i
-                </div>
-                <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                    Screening
-                </h2>
-                <div className="flex-grow">
-                    <hr className="border-t border-gray-400" />
-                </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4 px-2">
-                <RadioGroupField
-                    name="ApplicationThru"
-                    label="Application Thru"
-                    register={register}
-                    isEditing={isEditing}
-                    required
-                    options={[
-                        { label: "Active File", value: "1" },
-                        { label: "Email", value: "2" },
-                        { label: "Dropped-Off", value: "3" },
-                        { label: "Job Fair", value: "4" },
-                        { label: "Others", value: "5" },
-                    ]}
-                    error={errors.ApplicationThru}
-                />
-                {selectedApplicationThru === "5" && (
-                    <InputField
-                        name="ApplicationThruOthers"
-                        label="Others"
-                        register={register}
-                        isEditing={isEditing}
-                        rules={{
-                            required:
-                                selectedApplicationThru === "5"
-                                    ? "Please specify others"
-                                    : false
-                        }}
-                        errors={errors.ApplicationThruOthers}
-                        errorMessage={errors.ApplicationThruOthers?.message}
-                    />
-                )}
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4 px-2">
-                <RadioGroupField
-                    name="ApplicationType"
-                    label="ESS Application"
-                    register={register}
-                    isEditing={isEditing}
-                    required
-                    options={[
-                        { label: "First Time Applicant", value: "1" },
-                        { label: "Previous Applicant", value: "2" },
-                        { label: "Returning Employee", value: "3" },
-                    ]}
-                    error={errors.ApplicationType}
-                />
-                {selectedApplicationType === "3" && (
-                    <InputField
-                        name="EmployeeNumber"
-                        label="Employee Number"
-                        register={register}
-                        isEditing={isEditing}
-                        displayValue={employeeData?.EmployeeNumber ?? ""}
-                    />
-                )}
-
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-4 px-2">
-                <RadioGroupField
-                    name="WorkExperience"
-                    label="Work Experience"
-                    register={register}
-                    isEditing={isEditing}
-                    required
-                    options={[
-                        { label: "Fresh Graduate", value: "1" },
-                        { label: "Experience in other industries", value: "2" },
-                        { label: "With Experience", value: "3" },
-                    ]}
-                    error={errors.WorkExperience}
-                />
-                {selectedWorkExperience === "3" && (
-                    <InputField
-                        name="NoOfYearMonth"
-                        label="No. of Years and Months"
-                        register={register}
-                        isEditing={isEditing}
-                        rules={{
-                            required:
-                                selectedWorkExperience === "3"
-                                    ? "Please specify work experience"
-                                    : false
-                        }}
-                        errors={errors.NoOfYearMonth}
-                        errorMessage={errors.NoOfYearMonth?.message}
-                    />
-                )}
-            </div>
-            {criteriaTable.map((criteria, index) => (
-                <div key={criteria.CriteriaId} className="mb-10">
-
-                    {/* TITLE */}
-                    <div className="flex items-center pt-4">
-                        <div className="w-6 h-6 flex items-center justify-center rounded-full bg-green-600 text-white text-sm font-bold mr-2">
-                            {index + 1}
-                        </div>
-
-                        <h2 className="text-xl font-bold text-green-700 mr-4 whitespace-nowrap">
-                            {criteria.CriteriaTempName}
-                        </h2>
-
-                        <div className="flex-grow">
-                            <hr className="border-t border-gray-400" />
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Header Section with Status Badge */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow p-4 text-white">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-md font-bold">Employee Interview Process</h3>
+                        <p className="text-green-100 text-md mt-1">Application No: <span className="font-semibold">{employeeData?.EmployeeAppNo}</span></p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded text-xs font-medium flex items-center gap-1.5">
+                            <FaCheckCircle className="text-xs" />
+                            <span>Editing On</span>
                         </div>
                     </div>
-                    {/* {criteria.UserRoleId != 10 && (
-                        <div className="flex justify-end items-end">
-                            <div className="w-80">
-                                <RHFListbox
-                                    name={getDropdownUser(criteria)}
-                                    control={control}
-                                    list={userLists[criteria.UserRoleId] || []}
-                                    label="Assign to"
-                                    labelKey={"Fullname"}
-                                    isEditing={false}
-                                    divClassName="w-full"
+                </div>
+            </div>
+
+            {/* Applicant Information Card */}
+            <div className="bg-white rounded-lg shadow pb-32">
+                <div className="bg-gradient-to-r from-blue-50 to-green-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-green-600 p-1.5 rounded">
+                            <FaUser className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Applicant Information</h2>
+                    </div>
+                </div>
+                <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <InputField name="EmployeeAppNo" label="Employee Application Number" register={register} isEditing={isEditing} displayValue={employeeData?.EmployeeAppNo} />
+                        <InputField name="Fullname" label="Full Name" register={register} isEditing={isEditing} displayValue={`${employeeData.Fname ?? ""} ${employeeData.Mname ?? ""} ${employeeData.Lname ?? ""}`} />
+                        <InputField name="Nickname" label="Nick Name" register={register} isEditing={isEditing} displayValue={employeeData?.Nickname} />
+                        <InputField name="DesiredPosition" label="Desired Position" register={register} isEditing={isEditing} displayValue={employeeData?.DesiredPosition} />
+                        <RHFListbox
+                            name="Campus"
+                            control={control}
+                            list={campusList}
+                            label="Campus"
+                            labelKey="CampusName"
+                            isEditing={!isEditing}
+                            displayValue={employeeData.CampusName}
+                        />
+                        <RHFListbox
+                            name="EmployeeCategory"
+                            control={control}
+                            list={positionList}
+                            label="Employee Category"
+                            labelKey="EmployeeCategory"
+                            isEditing={!isEditing}
+                            displayValue={employeeData.EmployeeCategory}
+                        />
+                        {employeScreeningData?.DateHired != null && (
+                            <InputField name="DateHired" label="Date Hired" register={register} isEditing={false} displayValue={employeScreeningData?.DateHired} />
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Screening Section Card */}
+            <div className="bg-white rounded-lg shadow">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                    <div className="flex items-center gap-2">
+                        <div className="bg-purple-600 p-1.5 rounded">
+                            <FaClipboardCheck className="text-white text-sm" />
+                        </div>
+                        <h2 className="text-base font-bold text-gray-800">Screening</h2>
+                    </div>
+                </div>
+                <div className="p-4 space-y-6">
+                    {/* Application Thru Section */}
+                    <div className="space-y-3">
+                        <RadioGroupField
+                            name="ApplicationThru"
+                            label="Application Thru"
+                            register={register}
+                            isEditing={isEditing}
+                            required
+                            options={[
+                                { label: "Active File", value: "1" },
+                                { label: "Email", value: "2" },
+                                { label: "Dropped-Off", value: "3" },
+                                { label: "Job Fair", value: "4" },
+                                { label: "Others", value: "5" },
+                            ]}
+                            error={errors.ApplicationThru}
+                        />
+                        {selectedApplicationThru === "5" && (
+                            <div className="pl-4 border-l-2 border-purple-300">
+                                <InputField
+                                    name="ApplicationThruOthers"
+                                    label="Please Specify"
+                                    register={register}
+                                    isEditing={isEditing}
+                                    rules={{
+                                        required:
+                                            selectedApplicationThru === "5"
+                                                ? "Please specify others"
+                                                : false
+                                    }}
+                                    errors={errors.ApplicationThruOthers}
+                                    errorMessage={errors.ApplicationThruOthers?.message}
                                 />
                             </div>
-                        </div>
-                    )} */}
-                    {!isRatingExist && (
-                        <>
-                            {criteria.UserRoleId != 10 && (
-                                <div className="flex justify-end items-end">
-                                    <div className="w-80">
-                                        <RHFListbox
-                                            name={getDropdownUser(criteria)}
-                                            control={control}
-                                            list={userLists[criteria.UserRoleId] || []}
-                                            label="Assign to"
-                                            labelKey={"Fullname"}
-                                            isEditing={false}
-                                            divClassName="w-full"
-                                        />
-                                    </div>
-                                </div>
-                            )
-                            }
-                        </>
+                        )}
+                    </div>
 
-                    )}
-                    <div className="pt-4">
+                    {/* ESS Application Type Section */}
+                    <div className="space-y-3">
+                        <RadioGroupField
+                            name="ApplicationType"
+                            label="ESS Application"
+                            register={register}
+                            isEditing={isEditing}
+                            required
+                            options={[
+                                { label: "First Time Applicant", value: "1" },
+                                { label: "Previous Applicant", value: "2" },
+                                { label: "Returning Employee", value: "3" },
+                            ]}
+                            error={errors.ApplicationType}
+                        />
+                        {selectedApplicationType === "3" && (
+                            <div className="pl-4 border-l-2 border-purple-300">
+                                <InputField
+                                    name="EmployeeNumber"
+                                    label="Employee Number"
+                                    register={register}
+                                    isEditing={isEditing}
+                                    displayValue={employeeData?.EmployeeNumber ?? ""}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Work Experience Section */}
+                    <div className="space-y-3">
+                        <RadioGroupField
+                            name="WorkExperience"
+                            label="Work Experience"
+                            register={register}
+                            isEditing={isEditing}
+                            required
+                            options={[
+                                { label: "Fresh Graduate", value: "1" },
+                                { label: "Experience in other industries", value: "2" },
+                                { label: "With Experience", value: "3" },
+                            ]}
+                            error={errors.WorkExperience}
+                        />
+                        {selectedWorkExperience === "3" && (
+                            <div className="pl-4 border-l-2 border-purple-300">
+                                <InputField
+                                    name="NoOfYearMonth"
+                                    label="No. of Years and Months"
+                                    register={register}
+                                    isEditing={isEditing}
+                                    rules={{
+                                        required:
+                                            selectedWorkExperience === "3"
+                                                ? "Please specify work experience"
+                                                : false
+                                    }}
+                                    errors={errors.NoOfYearMonth}
+                                    errorMessage={errors.NoOfYearMonth?.message}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Criteria Tables Section */}
+            {criteriaTable.map((criteria, index) => (
+                <div key={criteria.CriteriaId} className="bg-white rounded-lg shadow">
+                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-indigo-600 p-1.5 rounded">
+                                <FaTable className="text-white text-sm" />
+                            </div>
+                            <h2 className="text-base font-bold text-gray-800">{index + 1}. {criteria.CriteriaTempName}</h2>
+                        </div>
+                    </div>
+                    <div className="p-4">
+                        {!isRatingExist && criteria.UserRoleId != 10 && (
+                            <div className="mb-4 flex justify-end">
+                                <div className="w-full md:w-80">
+                                    <RHFListbox
+                                        name={getDropdownUser(criteria)}
+                                        control={control}
+                                        list={userLists[criteria.UserRoleId] || []}
+                                        label="Assign to"
+                                        labelKey={"Fullname"}
+                                        isEditing={false}
+                                        divClassName="w-full"
+                                    />
+                                </div>
+                            </div>
+                        )}
                         <DataTable
                             columns={criteriaColumn}
                             data={criteria.CriteriaChildTableDtos}
@@ -775,108 +845,89 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId }) => {
                             responsive
                             customStyles={customStyles}
                         />
-                    </div>
-                    {isRatingExist ? (
-                        <div className="grid grid-cols-4 gap-4 pt-4 items-end w-full">
-                            <InputField
-                                name={`Recommendation_${criteria.CriteriaId}`}
-                                label="Recommendation"
-                                register={register}
-                                isEditing={isEditing}
-                                displayValue={criteria.Recommendation}
-                            />
-                            <InputField
-                                name={`Remarks_${criteria.CriteriaId}`}
-                                label="Remarks"
-                                register={register}
-                                isEditing={isEditing}
-                                displayValue={criteria.Remarks}
-                            />
-                            <InputField
-                                name={`UserFullname_${criteria.CriteriaId}`}
-                                label="Submitted By"
-                                register={register}
-                                isEditing={isEditing}
-                                displayValue={criteria.UserFullname}
-                            />
-                            <InputField
-                                name={`DateCreated_${criteria.CriteriaId}`}
-                                label="Date Created"
-                                register={register}
-                                isEditing={isEditing}
-                                displayValue={criteria.DateCreated}
-                            />
-                        </div>
-                    ) : (
-                        <>
-                            {criteria.UserRoleId == 10 && (
-                                <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
-                                    <RHFListbox
-                                        name="Recommendation"
-                                        control={control}
-                                        list={recommendationList}
-                                        label="Recommendation"
-                                        labelKey="RecommendationName"
-                                        required
-                                        isEditing={false}
-                                    />
-                                    <InputField
-                                        name="Remarks"
-                                        label="Remarks"
-                                        register={register}
-                                        isEditing={isEditing}
-                                        displayValue={employeScreeningData.Remarks}
-                                    />
-                                </div>
-                            )}
-                        </>
-                    )}
-                    {/* {criteria.UserRoleId == 10 && (
-                        <>
-                            <div className="grid grid-cols-3 gap-3 pt-4 items-end w-full">
-                                <RHFListbox
-                                    name="Recommendation"
-                                    control={control}
-                                    list={recommendationList}
+                        {isRatingExist && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                                <InputField
+                                    name={`Recommendation_${criteria.CriteriaId}`}
                                     label="Recommendation"
-                                    labelKey="RecommendationName"
-                                    required
-                                    isEditing={false}
+                                    register={register}
+                                    isEditing={isEditing}
+                                    displayValue={criteria.Recommendation}
                                 />
                                 <InputField
-                                    name="Remarks"
+                                    name={`Remarks_${criteria.CriteriaId}`}
                                     label="Remarks"
                                     register={register}
                                     isEditing={isEditing}
-                                    displayValue={employeScreeningData.Remarks}
+                                    displayValue={criteria.Remarks}
+                                />
+                                <InputField
+                                    name={`UserFullname_${criteria.CriteriaId}`}
+                                    label="Submitted By"
+                                    register={register}
+                                isEditing={isEditing}
+                                    displayValue={criteria.UserFullname}
+                                />
+                                <InputField
+                                    name={`DateCreated_${criteria.CriteriaId}`}
+                                    label="Date Created"
+                                    register={register}
+                                    isEditing={isEditing}
+                                    displayValue={criteria.DateCreated}
                                 />
                             </div>
-                        </>
-                    )} */}
+                        )}
+                        {!isRatingExist && (
+                            <>
+                                {criteria.UserRoleId == 10 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                                        <RHFListbox
+                                            name="Recommendation"
+                                            control={control}
+                                            list={recommendationList}
+                                            label="Recommendation"
+                                            labelKey="RecommendationName"
+                                            required
+                                            isEditing={false}
+                                        />
+                                        <InputField
+                                            name="Remarks"
+                                            label="Remarks"
+                                            register={register}
+                                            isEditing={isEditing}
+                                            displayValue={employeScreeningData.Remarks}
+                                        />
+                                </div>
+                            )}
+                            </>
+                        )}
+                    </div>
                 </div>
             ))}
-            <div className="flex justify-end items-end p-4">
+
+            {/* Submit Button Section */}
+            <div className="flex justify-end gap-2">
                 {isEditing && (
                     <>
                         {isRatingExist && (
                             <button
                                 type="button"
-                                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition m-1"
+                                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                                 onClick={() => setIsHiringModalOpen(true)}
                             >
-                                Proceed to hiring
+                                <FaBriefcase className="text-sm" />
+                                <span>Proceed to Hiring</span>
                             </button>
                         )}
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-green-600 text-white font-medium rounded-lg shadow hover:bg-green-700 transition m-1"
+                            className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
                         >
-                            Submit
+                            <FaBriefcase className="text-sm" />
+                            <span>Submit Interview</span>
                         </button>
                     </>
-
                 )}
-
             </div>
 
             <ModalComponent

@@ -23,6 +23,7 @@ import {
     INSERT_PAYROLL_PERIOD_REQUEST, INSERT_PAYROLL_PERIOD_SUCCESS, INSERT_PAYROLL_PERIOD_FAILURE,
     CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
     POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
+    FETCH_EMPLOYEE_RESUME_REQUEST, FETCH_EMPLOYEE_RESUME_SUCCESS, FETCH_EMPLOYEE_RESUME_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -1216,6 +1217,164 @@ export const postJournalEntryData = (payrollPeriodId) => async (dispatch) => {
         return { ok: true, data: res.data, message: res.message };
     } catch (error) {
         dispatch(postJournalEntryFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+
+// ==================== Leave Credit Management Actions ====================
+
+// Fetch Employee Leave Credits
+export const fetchEmployeeLeaveCreditsRequest = () => ({ type: 'FETCH_EMPLOYEE_LEAVE_CREDITS_REQUEST' });
+export const fetchEmployeeLeaveCreditsSuccess = (data) => ({ type: 'FETCH_EMPLOYEE_LEAVE_CREDITS_SUCCESS', payload: data });
+export const fetchEmployeeLeaveCreditsFailure = (error) => ({ type: 'FETCH_EMPLOYEE_LEAVE_CREDITS_FAILURE', payload: error });
+
+export const fetchEmployeeLeaveCredits = (filters = {}) => async (dispatch) => {
+    dispatch(fetchEmployeeLeaveCreditsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-employee-leave-credits`;
+        
+        const payload = {
+            calendarId: filters.calendarId || null,
+            department: filters.department || "",
+            search: filters.search || "",
+            page: filters.page || 1,
+            pageSize: filters.pageSize || 10
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        
+        dispatch(fetchEmployeeLeaveCreditsSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    } catch (error) {
+        dispatch(fetchEmployeeLeaveCreditsFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// Update Employee Leave Credits
+export const updateEmployeeLeaveCreditsRequest = () => ({ type: 'UPDATE_EMPLOYEE_LEAVE_CREDITS_REQUEST' });
+export const updateEmployeeLeaveCreditsSuccess = (data) => ({ type: 'UPDATE_EMPLOYEE_LEAVE_CREDITS_SUCCESS', payload: data });
+export const updateEmployeeLeaveCreditsFailure = (error) => ({ type: 'UPDATE_EMPLOYEE_LEAVE_CREDITS_FAILURE', payload: error });
+
+/**
+ * Update employee leave credits
+ * @param {Object} payload - Update payload
+ * @param {number} payload.calendarId - School calendar ID
+ * @param {number} payload.employeeId - Employee ID
+ * @param {number} payload.leaveCreditMasterId - Master record ID
+ * @param {Array} payload.details - Array of leave credit details
+ * @param {number} payload.details[].leaveCreditChildId - Child record ID (optional for new)
+ * @param {string} payload.details[].leaveType - Leave type (e.g., "Work Leave", "Medical Leave")
+ * @param {number} payload.details[].allocatedDays - Total allocated days
+ * @param {number} payload.details[].usedDays - Days already used
+ * @param {string} payload.details[].activeStatus - Record status (e.g., "Active")
+ */
+export const updateEmployeeLeaveCredits = (payload) => async (dispatch) => {
+    dispatch(updateEmployeeLeaveCreditsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/update-employee-leave-credits`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+        
+        dispatch(updateEmployeeLeaveCreditsSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    } catch (error) {
+        dispatch(updateEmployeeLeaveCreditsFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// Fetch School Calendar Dropdown
+export const fetchSchoolCalendarDropdownRequest = () => ({ type: 'FETCH_SCHOOL_CALENDAR_DROPDOWN_REQUEST' });
+export const fetchSchoolCalendarDropdownSuccess = (data) => ({ type: 'FETCH_SCHOOL_CALENDAR_DROPDOWN_SUCCESS', payload: data });
+export const fetchSchoolCalendarDropdownFailure = (error) => ({ type: 'FETCH_SCHOOL_CALENDAR_DROPDOWN_FAILURE', payload: error });
+
+export const fetchSchoolCalendarDropdown = () => async (dispatch) => {
+    dispatch(fetchSchoolCalendarDropdownRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-school-calendars-dropdown`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        
+        dispatch(fetchSchoolCalendarDropdownSuccess(res));
+        return { ok: true, data: res.data };
+    } catch (error) {
+        dispatch(fetchSchoolCalendarDropdownFailure(error.message));
+        return { ok: false, error };
+    }
+};
+
+// Fetch Employee Resume
+export const fetchEmployeeResumeRequest = () => ({ type: FETCH_EMPLOYEE_RESUME_REQUEST });
+export const fetchEmployeeResumeSuccess = (data) => ({ type: FETCH_EMPLOYEE_RESUME_SUCCESS, payload: data });
+export const fetchEmployeeResumeFailure = (error) => ({ type: FETCH_EMPLOYEE_RESUME_FAILURE, payload: error });
+
+export const fetchEmployeeResume = (employeeId) => async (dispatch) => {
+    dispatch(fetchEmployeeResumeRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/view-employee-resume/${employeeId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch resume');
+        }
+
+        // Get the blob from the response
+        const blob = await response.blob();
+        
+        // Get content type from response headers
+        const contentType = response.headers.get('content-type');
+        
+        // Create a blob URL and open it in a new tab
+        const blobUrl = window.URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank');
+        
+        // Clean up the blob URL after a delay to ensure the window has opened
+        setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+        }, 100);
+
+        dispatch(fetchEmployeeResumeSuccess({ employeeId, contentType }));
+        return { ok: true, message: 'Resume opened successfully' };
+    } catch (error) {
+        dispatch(fetchEmployeeResumeFailure(error.message));
         return { ok: false, error: error.message };
     }
 };

@@ -60,7 +60,7 @@ const EmployeeInitialInterview = () => {
                                 </label>
                             </div>
                             {/* <EmployeeOnlineDataTable /> */}
-                            <EmployeeInterviewComponent isEditing={isEditing} employeeAppId={employeeAppId} userId={user[0].UserId} />
+                            <EmployeeInterviewComponent isEditing={isEditing} employeeAppId={employeeAppId} userId={user[0].UserId} userRoleId={user[0].RoleId} />
                         </div>
                     </div>
                 </section>
