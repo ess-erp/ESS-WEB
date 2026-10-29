@@ -98,7 +98,7 @@ const PayrollProcessing = () => {
             name: 'Basic Salary',
             selector: row => row.basicSalary,
             sortable: true,
-            cell: row => `â‚±${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            cell: row => `${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
             width: '130px'
         },
         {
@@ -107,7 +107,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-green-600">
-                    â‚±{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    {row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '130px'
@@ -118,7 +118,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-red-600">
-                    â‚±{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    {row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '130px'
@@ -129,7 +129,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-bold text-blue-600">
-                    â‚±{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    {row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
@@ -274,7 +274,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-green-700 font-medium">Total Gross Pay</p>
                                 <p className="text-2xl font-bold text-green-900 mt-1">
-                                    â‚±{(totalGrossPay / 1000).toFixed(1)}K
+                                    {(totalGrossPay / 1000).toFixed(1)}
                                 </p>
                             </div>
                             <div className="bg-green-600 p-3 rounded-lg">
@@ -294,7 +294,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-red-700 font-medium">Total Deductions</p>
                                 <p className="text-2xl font-bold text-red-900 mt-1">
-                                    â‚±{(totalDeductions / 1000).toFixed(1)}K
+                                    {(totalDeductions / 1000).toFixed(1)}
                                 </p>
                             </div>
                             <div className="bg-red-600 p-3 rounded-lg">
@@ -314,7 +314,7 @@ const PayrollProcessing = () => {
                             <div>
                                 <p className="text-sm text-blue-700 font-medium">Total Net Pay</p>
                                 <p className="text-2xl font-bold text-blue-900 mt-1">
-                                    â‚±{(totalNetPay / 1000).toFixed(1)}K
+                                    {(totalNetPay / 1000).toFixed(1)}
                                 </p>
                             </div>
                             <div className="bg-blue-600 p-3 rounded-lg">
@@ -357,25 +357,25 @@ const PayrollProcessing = () => {
                         <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                             <p className="text-sm text-blue-700 font-medium">SSS Contributions</p>
                             <p className="text-xl font-bold text-blue-900 mt-1">
-                                â‚±{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                {totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-green-50 rounded-lg p-4 border border-green-200">
                             <p className="text-sm text-green-700 font-medium">PhilHealth Contributions</p>
                             <p className="text-xl font-bold text-green-900 mt-1">
-                                â‚±{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                {totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                             <p className="text-sm text-yellow-700 font-medium">Pag-IBIG Contributions</p>
                             <p className="text-xl font-bold text-yellow-900 mt-1">
-                                â‚±{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                {totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                         <div className="bg-red-50 rounded-lg p-4 border border-red-200">
                             <p className="text-sm text-red-700 font-medium">Withholding Tax</p>
                             <p className="text-xl font-bold text-red-900 mt-1">
-                                â‚±{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                {totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                             </p>
                         </div>
                     </div>

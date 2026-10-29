@@ -1,5 +1,6 @@
 ﻿import { useEffect } from 'react';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
+import AnnouncementComponent from '../../components/AdmissionComponents/AnnouncementComponent';
 
 const Dashboard = () => {
     useEffect(() => {
@@ -24,6 +25,7 @@ const Dashboard = () => {
                             Welcome to Accountant Dashboard
                         </h1>
                     </div>
+                    <AnnouncementComponent />
                 </div>
             </section>
         </div>

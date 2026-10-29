@@ -8,25 +8,13 @@ import ModalComponent from "../ButtonsComponents/ModalComponent";
 import DataTable from "react-data-table-component";
 import RadioGroupField from "../ButtonsComponents/RadioGroupField";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
-import {
-    fetchCampusData,
-    fetchDivisionData,
-} from "../../states/OnlineApplicationState/Action";
+// Removed unused imports
 import {
     fetchEmployeeApplicationInfoData,
-    fetchEmployeeApplicationScreeningData,
     fetchCriteriaTableData,
-    fetchSacUserData,
-    fetchApUserData,
-    fetchPrincipalUserData,
     fetchUpdateEmployeeScreeningData,
 } from "../../states/PrincipalState/Action";
-import {
-    fetchDepartmentTemplateData,
-    fetchPositionTemplateData,
-    fetchGoldenRankTemplateData,
-    fetchInsertHiredEmployeeData,
-} from "../../states/HumanResourcesState/Action";
+// Removed unused imports
 
 const customStyles = {
     headRow: {
@@ -106,14 +94,14 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
 
     const employeeData = useSelector(state => state.principal.employeeInfoState?.data || {});
     const employeScreeningData = useSelector(state => state.principal.employeeScreeningState?.data || {});
-    const campusList = useSelector(state => state.online.campusState?.data || []);
+    // Commented out: depends on removed fetchCampusData
+    // const campusList = useSelector(state => state.online.campusState?.data || []);
+    const campusList = []; // Empty array since fetchCampusData was removed
 
     console.log(employeScreeningData);
 
     useEffect(() => {
         dispatch(fetchEmployeeApplicationInfoData(employeeAppId));
-        dispatch(fetchEmployeeApplicationScreeningData(employeeAppId));
-        dispatch(fetchCampusData());
     }, [dispatch, employeeAppId]);
     console.log(employeeData);
     useEffect(() => {
@@ -130,7 +118,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
             ApplicationThru: employeScreeningData.ApplicationThru ?? "",
             ApplicationThruOthers: employeScreeningData.ApplicationThruOthers ?? "",
             ApplicationType: employeScreeningData.ApplicationType ?? "",
-            EmployeeNumber: employeScreeningData.EmployeeNumber ?? "",
             WorkExperience: employeScreeningData.WorkExperience ?? "",
             NoOfYearMonth: employeScreeningData.NoOfYearMonth ?? "",
             Remarks: "",
@@ -198,7 +185,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
             return;
         }
         console.log('Fetching criteria table data for employeeAppId:', employeeAppId);
-        dispatch(fetchCriteriaTableData(employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
+        dispatch(fetchCriteriaTableData(employeeAppId, currUserId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
     }, [employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
     useEffect(() => {
@@ -221,7 +208,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
         }
 
         const hasRatings = criteriaTable?.some(master =>
-            master.CriteriaChildTableDtos?.some(child => child.Rating != null)
+            master.SacCriteriaChildDtos?.some(child => child.Rating != null)
         );
 
         console.log(hasRatings);
@@ -234,7 +221,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                     nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
                 )
                 .flatMap(master =>
-                    master.CriteriaChildTableDtos.map(child => ({
+                    master.SacCriteriaChildDtos.map(child => ({
                         ...child,
                         CriteriaId: master.CriteriaId,
                         CriteriaTempName: master.CriteriaTempName
@@ -247,7 +234,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                     nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
                 )
                 .flatMap(master =>
-                    master.CriteriaChildTableDtos.map(child => ({
+                    master.SacCriteriaChildDtos.map(child => ({
                         ...child,
                         CriteriaId: master.CriteriaId,
                         CriteriaTempName: master.CriteriaTempName,
@@ -266,7 +253,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
         const initialRatings = {};
 
         criteriaTable.forEach(master => {
-            master.CriteriaChildTableDtos.forEach(child => {
+            master.SacCriteriaChildDtos.forEach(child => {
                 if (child.Rating != null) {
                     initialRatings[child.CriteriaChildId] = Number(child.Rating);
                 }
@@ -292,6 +279,23 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
     console.log(criteriaTable);
 
     const [ratings, setRatings] = useState({});
+    
+    // Initialize ratings from existing data when criteriaTable changes
+    useEffect(() => {
+        if (!criteriaTable.length) return;
+
+        const initialRatings = {};
+
+        criteriaTable.forEach(master => {
+            master.SacCriteriaChildDtos?.forEach(child => {
+                if (child.Rating != null) {
+                    initialRatings[child.CriteriaChildId] = Number(child.Rating);
+                }
+            });
+        });
+
+        setRatings(initialRatings);
+    }, [criteriaTable]);
 
     const criteriaColumn = [
         {
@@ -375,24 +379,21 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
     };
 
 
-    const sacUserList = useSelector((state) => state.principal.sacUserState?.data || []);
-    const apUserList = useSelector((state) => state.principal.apUserState?.data || []);
-    const principalUserList = useSelector((state) => state.principal.principalUserState?.data || []);
+    // Commented out: These selectors depend on removed fetch calls
+    // const sacUserList = useSelector((state) => state.principal.sacUserState?.data || []);
+    // const apUserList = useSelector((state) => state.principal.apUserState?.data || []);
+    // const principalUserList = useSelector((state) => state.principal.principalUserState?.data || []);
 
-    useEffect(() => {
-        dispatch(fetchSacUserData(11));
-        dispatch(fetchApUserData(12));
-        dispatch(fetchPrincipalUserData(13));
-    }, [dispatch]);
+    // Removed: fetchSacUserData, fetchApUserData, fetchPrincipalUserData
 
-    console.log(sacUserList);
-    console.log(apUserList);
-    console.log(principalUserList);
-    const userLists = {
-        11: sacUserList,
-        12: apUserList,
-        13: principalUserList
-    };
+    // console.log(sacUserList);
+    // console.log(apUserList);
+    // console.log(principalUserList);
+    // const userLists = {
+    //     11: sacUserList,
+    //     12: apUserList,
+    //     13: principalUserList
+    // };
 
     const getDropdownUser = (criteria) => {
         if (criteria.UserRoleId === 11) return "SacUser";
@@ -439,9 +440,9 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
         // Process only HR criteria
         hrCriteria.forEach(criteria => {
             console.log('Processing HR criteria:', criteria.CriteriaId);
-            console.log('CriteriaChildTableDtos:', criteria.CriteriaChildTableDtos);
+            console.log('SacCriteriaChildDtos:', criteria.SacCriteriaChildDtos);
 
-            criteria.CriteriaChildTableDtos.forEach(child => {
+            criteria.SacCriteriaChildDtos.forEach(child => {
                 const childId = child.CriteriaChildId;
                 const rating = ratings[childId];
                 
@@ -552,17 +553,17 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
         }
     };
 
-    useEffect(() => {
-        dispatch(fetchDepartmentTemplateData());
-        dispatch(fetchPositionTemplateData());
-        dispatch(fetchGoldenRankTemplateData());
-        dispatch(fetchDivisionData());
-    }, [dispatch])
+    // Removed: fetchDepartmentTemplateData, fetchPositionTemplateData, fetchGoldenRankTemplateData, fetchDivisionData
 
-    const departmentList = useSelector((state) => state.hr.departmentState.data || []);
-    const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
-    const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
-    const divisionList = useSelector((state) => state.online.divisionState.data || []);
+    // Commented out: these selectors depend on removed fetch calls
+    // const departmentList = useSelector((state) => state.hr.departmentState.data || []);
+    // const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
+    // const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
+    // const divisionList = useSelector((state) => state.online.divisionState.data || []);
+    const departmentList = [];
+    const positionStatusList = [];
+    const goldenRankList = [];
+    const divisionList = [];
     const [depList, setDepList] = useState([]);
     const [posList, setPosList] = useState([]);
     const [golList, setGolList] = useState([]);
@@ -820,7 +821,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                                     <RHFListbox
                                         name={getDropdownUser(criteria)}
                                         control={control}
-                                        list={userLists[criteria.UserRoleId] || []}
+                                        list={[] /* userLists[criteria.UserRoleId] || [] */}
                                         label="Assign to"
                                         labelKey={"Fullname"}
                                         isEditing={false}
@@ -831,7 +832,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                         )}
                         <DataTable
                             columns={criteriaColumn}
-                            data={criteria.CriteriaChildTableDtos}
+                            data={criteria.SacCriteriaChildDtos}
                             progressPending={criteriaTableLoading}
                             pagination
                             paginationServer
