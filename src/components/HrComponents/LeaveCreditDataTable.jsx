@@ -23,8 +23,8 @@ const LeaveCreditDataTable = ({ onEdit }) => {
   const leaveCreditsState = useSelector((state) => state.hr.employeeLeaveCreditsState || {});
   const schoolCalendarState = useSelector((state) => state.hr.schoolCalendarDropdownState || {});
   
-  const employees = leaveCreditsState.data?.data || [];
-  const totalRows = leaveCreditsState.data?.totalRecords || 0;
+  const employees = leaveCreditsState.data || [];
+  const totalRows = leaveCreditsState.totalRecords || 0;
   const loading = leaveCreditsState.loading || false;
   
   const schoolCalendars = schoolCalendarState.data || [];
@@ -61,13 +61,13 @@ const LeaveCreditDataTable = ({ onEdit }) => {
   // Fetch employee leave credits whenever filters change
   useEffect(() => {
     if (selectedCalendarId) {
-      dispatch(fetchEmployeeLeaveCredits(
-        selectedCalendarId,
-        department,
-        filterText,
-        currentPage,
-        rowsPerPage
-      ));
+      dispatch(fetchEmployeeLeaveCredits({
+        calendarId: selectedCalendarId,
+        department: department,
+        search: filterText,
+        page: currentPage,
+        pageSize: rowsPerPage
+      }));
     }
   }, [selectedCalendarId, department, filterText, currentPage, rowsPerPage, dispatch]);
 

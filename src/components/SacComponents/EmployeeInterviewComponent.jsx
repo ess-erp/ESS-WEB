@@ -28,8 +28,17 @@ const customStyles = {
 const EmployeeInterviewComponent = ({ employeeAppId, userId }) => {
     const dispatch = useDispatch();
     const [ratings, setRatings] = useState({});
+    const [selectedRecommendation, setSelectedRecommendation] = useState(null);
+    const [remarks, setRemarks] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+    // Recommendation List
+    const recommendationList = [
+        { RecommendationId: 1, RecommendationName: "Recommended for Teaching Demonstration (Faculty)" },
+        { RecommendationId: 2, RecommendationName: "Recommended for Demonstration with reservations due to" },
+        { RecommendationId: 3, RecommendationName: "Not Recommended" },
+    ];
 
     // Redux States
     const employeeData = useSelector(state => state.sac.employeeInfoState?.data || {});
@@ -143,6 +152,19 @@ const EmployeeInterviewComponent = ({ employeeAppId, userId }) => {
 
     // Handle Submit
     const handleSubmit = () => {
+        // Validate all criteria have ratings
+        const missingRatings = criteriaChildList.filter(child => !ratings[child.CriteriaChildId]);
+        if (missingRatings.length > 0) {
+            alert('Please rate all criteria before submitting.');
+            return;
+        }
+
+        // Validate recommendation is selected
+        if (!selectedRecommendation) {
+            alert('Please select a recommendation before submitting.');
+            return;
+        }
+
         setIsModalOpen(true);
     };
 
@@ -167,6 +189,8 @@ const EmployeeInterviewComponent = ({ employeeAppId, userId }) => {
             EmployeeId: employeeData.EmployeeId,
             EmployeeAppId: employeeData.EmployeeAppId,
             CriteriaRatingDtos: CriteriaRatingDtos,
+            Recommendation: selectedRecommendation?.RecommendationName || "",
+            Remarks: remarks || "",
             CreatedByUserId: userId,
         };
 
@@ -274,6 +298,44 @@ const EmployeeInterviewComponent = ({ employeeAppId, userId }) => {
                                 <div className="p-4 text-gray-500">No criteria available</div>
                             }
                         />
+
+                        {/* Recommendation and Remarks Fields */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Recommendation <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={selectedRecommendation?.RecommendationId || ""}
+                                    onChange={(e) => {
+                                        const recommendation = recommendationList.find(
+                                            r => r.RecommendationId === parseInt(e.target.value)
+                                        );
+                                        setSelectedRecommendation(recommendation);
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                >
+                                    <option value="">Select Recommendation</option>
+                                    {recommendationList.map((rec) => (
+                                        <option key={rec.RecommendationId} value={rec.RecommendationId}>
+                                            {rec.RecommendationName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Remarks
+                                </label>
+                                <textarea
+                                    value={remarks}
+                                    onChange={(e) => setRemarks(e.target.value)}
+                                    rows={3}
+                                    placeholder="Enter remarks here..."
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

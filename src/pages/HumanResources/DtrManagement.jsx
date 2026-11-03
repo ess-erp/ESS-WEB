@@ -1,8 +1,12 @@
 ﻿import { useEffect, useState } from 'react';
+import { Plus } from 'lucide-react';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import DtrDataTable from '../../components/HrComponents/DtrDataTable';
+import ManualAttendanceModal from '../../components/HrComponents/ManualAttendanceModal';
 
 const DtrManagement = () => {
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+
     useEffect(() => {
         document.title = 'DTR Management | HRD';
     }, []);
@@ -11,6 +15,11 @@ const DtrManagement = () => {
         { label: 'Human Resources', href: '/hrd/dashboard' },
         { label: 'DTR Management',  href: '/hrd/dtr-management' },
     ];
+
+    const handleManualSuccess = () => {
+        // Refresh the DTR table
+        window.location.reload();
+    };
 
     return (
         <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
@@ -23,7 +32,7 @@ const DtrManagement = () => {
                     <div className="flex flex-col space-y-4 h-full w-full">
                         <hr className="border-t-1 border-solid border-gray-400 my-6" />
                         <div className="flex justify-center">
-                            <h2 className="text-2xl font-bold text-green-500 mt-2">
+                            <h2 className="text-2xl font-bold text-green-500">
                                 Daily Time Record (DTR) Management
                             </h2>
                         </div>
@@ -34,10 +43,19 @@ const DtrManagement = () => {
                             </span>
                         </div>
                         <div>
-                            <DtrDataTable />
+                            <DtrDataTable 
+                                onAddManualClick={() => setIsManualModalOpen(true)}
+                            />
                         </div>
                     </div>
                 </section>
+
+                {/* Manual Attendance Modal */}
+                <ManualAttendanceModal
+                    isOpen={isManualModalOpen}
+                    onClose={() => setIsManualModalOpen(false)}
+                    onSuccess={handleManualSuccess}
+                />
         </div>
     );
 };

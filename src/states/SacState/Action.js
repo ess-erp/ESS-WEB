@@ -104,7 +104,7 @@ export const fetchSubmitInterviewData = (formData) => async (dispatch) => {
     dispatch(fetchSubmitInterviewRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sac/submit-interview`;
+        const url = `${baseUrl}/sac/insert-sac-screening`;
 
         const response = await fetch(url, {
             method: 'POST',

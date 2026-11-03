@@ -48,6 +48,7 @@ import HrDeductionsManagement from "../pages/HumanResources/DeductionsManagement
 import PayrollProcessing from "../pages/HumanResources/PayrollProcessing";
 import EmployeePayrollList from "../pages/HumanResources/EmployeePayrollList";
 import PayrollSummaryReport from "../pages/HumanResources/PayrollSummaryReport";
+import EmployeeDataManagement from "../components/HrComponents/EmployeeDataManagementComponent";
 import ParentDashboard from "../pages/ParentPortal/Dashboard";
 import ParentEnrollStudent from "../pages/ParentPortal/EnrollStudent";
 import SacDashboard from "../pages/Sac/Dashboard";
@@ -439,6 +440,14 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
               <HrEmployeeList />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/employeedatamanagement/:employeeId"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <EmployeeDataManagement />
             </ProtectedRoutes>
           }
         />

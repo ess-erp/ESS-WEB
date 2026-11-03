@@ -24,6 +24,9 @@ import {
     CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
     POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
     FETCH_EMPLOYEE_RESUME_REQUEST, FETCH_EMPLOYEE_RESUME_SUCCESS, FETCH_EMPLOYEE_RESUME_FAILURE,
+    CREATE_MANUAL_ATTENDANCE_REQUEST, CREATE_MANUAL_ATTENDANCE_SUCCESS, CREATE_MANUAL_ATTENDANCE_FAILURE,
+    CREATE_MANUAL_LEAVE_REQUEST, CREATE_MANUAL_LEAVE_SUCCESS, CREATE_MANUAL_LEAVE_FAILURE,
+    FETCH_ALL_EMPLOYEES_REQUEST, FETCH_ALL_EMPLOYEES_SUCCESS, FETCH_ALL_EMPLOYEES_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -1375,6 +1378,410 @@ export const fetchEmployeeResume = (employeeId) => async (dispatch) => {
         return { ok: true, message: 'Resume opened successfully' };
     } catch (error) {
         dispatch(fetchEmployeeResumeFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MANUAL ATTENDANCE ENTRY
+// ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// MANUAL ATTENDANCE ENTRY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Create Manual Attendance Entry
+ * Allows HR to manually add attendance records
+ * 
+ * @param {Object} payload - Manual attendance data
+ * @param {string} payload.employeeId - Employee ID
+ * @param {string} payload.attendanceDate - Date in YYYY-MM-DD format
+ * @param {string} payload.timeIn - Time in HH:MM format
+ * @param {string} payload.timeOut - Time in HH:MM format
+ * @param {string} payload.remarks - Optional remarks
+ * @param {string} payload.status - PRESENT, LATE, HALF_DAY, or OVERTIME
+ */
+export const createManualAttendanceRequest = () => ({ type: CREATE_MANUAL_ATTENDANCE_REQUEST });
+export const createManualAttendanceSuccess = (data) => ({ type: CREATE_MANUAL_ATTENDANCE_SUCCESS, payload: data });
+export const createManualAttendanceFailure = (error) => ({ type: CREATE_MANUAL_ATTENDANCE_FAILURE, payload: error });
+
+export const createManualAttendance = (payload) => async (dispatch) => {
+    dispatch(createManualAttendanceRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/create-manual-attendance`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+            dispatch(createManualAttendanceSuccess(res));
+            return { ok: true, data: res.data };
+        } else {
+            dispatch(createManualAttendanceFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(createManualAttendanceFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MANUAL LEAVE FILING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Create Manual Leave Filing
+ * Allows HR to manually file leave applications for employees
+ * 
+ * @param {Object} payload - Manual leave data
+ * @param {string} payload.employeeId - Employee ID
+ * @param {string} payload.leaveTypeId - Leave type identifier
+ * @param {string} payload.startDate - Start date in YYYY-MM-DD format
+ * @param {string} payload.endDate - End date in YYYY-MM-DD format
+ * @param {number} payload.totalDays - Total number of leave days
+ * @param {string} payload.reason - Reason for leave
+ * @param {string} payload.status - PENDING, APPROVED, or REJECTED
+ */
+export const createManualLeaveRequest = () => ({ type: CREATE_MANUAL_LEAVE_REQUEST });
+export const createManualLeaveSuccess = (data) => ({ type: CREATE_MANUAL_LEAVE_SUCCESS, payload: data });
+export const createManualLeaveFailure = (error) => ({ type: CREATE_MANUAL_LEAVE_FAILURE, payload: error });
+
+export const createManualLeave = (payload) => async (dispatch) => {
+    dispatch(createManualLeaveRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/file-leave-application`;  // Updated to match backend endpoint
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.success || res.ok) {
+            dispatch(createManualLeaveSuccess(res));
+            return { ok: true, data: res.data };
+        } else {
+            dispatch(createManualLeaveFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(createManualLeaveFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FETCH ALL EMPLOYEES (for dropdown selections)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch all employees for dropdown/search selections
+ * Returns simplified list with EmployeeId, EmployeeNumber, and Fullname
+ */
+export const fetchAllEmployeesRequest = () => ({ type: FETCH_ALL_EMPLOYEES_REQUEST });
+export const fetchAllEmployeesSuccess = (data) => ({ type: FETCH_ALL_EMPLOYEES_SUCCESS, payload: data });
+export const fetchAllEmployeesFailure = (error) => ({ type: FETCH_ALL_EMPLOYEES_FAILURE, payload: error });
+
+export const fetchAllEmployees = () => async (dispatch) => {
+    dispatch(fetchAllEmployeesRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-all-employees-simple`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        dispatch(fetchAllEmployeesSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchAllEmployeesFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FETCH EMPLOYEE LEAVE BALANCE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch Employee Leave Balance
+ * Gets employee's leave credits with available types and remaining days
+ * 
+ * @param {number} employeeId - Employee ID
+ * @param {number} calendarId - Calendar/School Year ID
+ */
+export const fetchEmployeeLeaveBalance = (employeeId, calendarId) => async (dispatch) => {
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-employee-leave-balance?employeeId=${employeeId}&calendarId=${calendarId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+        return { ok: res.ok || true, data: res.data };
+    }
+    catch (error) {
+        console.error('Failed to fetch employee leave balance:', error);
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UNIFIED EMPLOYEE SEARCH (for datatables and dropdowns)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import {
+    SEARCH_EMPLOYEES_REQUEST,
+    SEARCH_EMPLOYEES_SUCCESS,
+    SEARCH_EMPLOYEES_FAILURE,
+    FETCH_LEAVE_APPLICATIONS_REQUEST,
+    FETCH_LEAVE_APPLICATIONS_SUCCESS,
+    FETCH_LEAVE_APPLICATIONS_FAILURE,
+    FETCH_DTR_RECORDS_REQUEST,
+    FETCH_DTR_RECORDS_SUCCESS,
+    FETCH_DTR_RECORDS_FAILURE,
+    FETCH_EMPLOYEE_LEAVE_BALANCE_REQUEST,
+    FETCH_EMPLOYEE_LEAVE_BALANCE_SUCCESS,
+    FETCH_EMPLOYEE_LEAVE_BALANCE_FAILURE,
+} from "./ActionType";
+
+/**
+ * Unified Employee Search
+ * Used by both datatables and dropdowns for consistent employee searching
+ * 
+ * Backend: POST /api/hr/get-all-employees
+ * DTO: GetAllEmployeesRequestDto { page, pageSize, search, departmentId, status }
+ * Response: { ok, data: EmployeeListDto[], totalRecords, message }
+ */
+export const searchEmployeesRequest = () => ({ type: SEARCH_EMPLOYEES_REQUEST });
+export const searchEmployeesSuccess = (data) => ({ type: SEARCH_EMPLOYEES_SUCCESS, payload: data });
+export const searchEmployeesFailure = (error) => ({ type: SEARCH_EMPLOYEES_FAILURE, payload: error });
+
+export const searchEmployees = (filters = {}) => async (dispatch) => {
+    dispatch(searchEmployeesRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-all-employees`;
+
+        const payload = {
+            page: filters.page || 1,
+            pageSize: filters.pageSize || 10,
+            search: filters.search || "",
+            departmentId: filters.departmentId || null,
+            status: filters.status || null,
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(searchEmployeesSuccess(res));
+            return { ok: true, data: res.data, totalRecords: res.totalRecords };
+        } else {
+            dispatch(searchEmployeesFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(searchEmployeesFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LEAVE APPLICATIONS DATATABLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch Leave Applications for Datatable
+ * Supports filtering by employee, status, date range, and search
+ * 
+ * Backend: POST /api/hr/get-leave-applications
+ * DTO: GetLeaveApplicationsRequestDto { employeeId?, applicationStatus?, startDate?, endDate?, page, pageSize, search? }
+ * Response: Paginated leave applications with employee details
+ */
+export const fetchLeaveApplicationsRequest = () => ({ type: FETCH_LEAVE_APPLICATIONS_REQUEST });
+export const fetchLeaveApplicationsSuccess = (data) => ({ type: FETCH_LEAVE_APPLICATIONS_SUCCESS, payload: data });
+export const fetchLeaveApplicationsFailure = (error) => ({ type: FETCH_LEAVE_APPLICATIONS_FAILURE, payload: error });
+
+export const fetchLeaveApplications = (filters = {}) => async (dispatch) => {
+    dispatch(fetchLeaveApplicationsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-leave-applications`;
+
+        const payload = {
+            employeeId: filters.employeeId || null,
+            applicationStatus: filters.applicationStatus || null,
+            startDate: filters.startDate || null,
+            endDate: filters.endDate || null,
+            page: filters.page || 1,
+            pageSize: filters.pageSize || 20,
+            search: filters.search || "",
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(fetchLeaveApplicationsSuccess(res));
+            return { ok: true, data: res.data, totalRecords: res.totalRecords };
+        } else {
+            dispatch(fetchLeaveApplicationsFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(fetchLeaveApplicationsFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DTR RECORDS DATATABLE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch DTR Records for Datatable
+ * Supports filtering by employee and date range
+ * 
+ * Backend: GET /api/hr/get-employee-dtr
+ * Query Params: { employeeId?, startDate?, endDate?, page, pageSize }
+ * Response: Paginated DTR records with employee details
+ */
+export const fetchDtrRecordsRequest = () => ({ type: FETCH_DTR_RECORDS_REQUEST });
+export const fetchDtrRecordsSuccess = (data) => ({ type: FETCH_DTR_RECORDS_SUCCESS, payload: data });
+export const fetchDtrRecordsFailure = (error) => ({ type: FETCH_DTR_RECORDS_FAILURE, payload: error });
+
+export const fetchDtrRecords = (filters = {}) => async (dispatch) => {
+    dispatch(fetchDtrRecordsRequest());
+    try {
+        const token = getToken();
+        
+        // Build query params for GET request
+        const params = new URLSearchParams();
+        if (filters.employeeId) params.append('employeeId', filters.employeeId);
+        if (filters.startDate) params.append('startDate', filters.startDate);
+        if (filters.endDate) params.append('endDate', filters.endDate);
+        params.append('page', filters.page || 1);
+        params.append('pageSize', filters.pageSize || 50);
+
+        const url = `${baseUrl}/hr/get-employee-dtr?${params.toString()}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(fetchDtrRecordsSuccess(res));
+            return { ok: true, data: res.data, totalRecords: res.totalRecords };
+        } else {
+            dispatch(fetchDtrRecordsFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(fetchDtrRecordsFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMPLOYEE LEAVE BALANCE (enhanced version with action types)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch Employee Leave Balance with Redux Actions
+ * Gets employee's leave credits with available types and remaining days
+ * 
+ * Backend: GET /api/hr/employee-leave-balance/{employeeId}/{calendarId}
+ * Response: EmployeeLeaveBalanceDetailDto with leave type breakdown
+ */
+export const fetchEmployeeLeaveBalanceRequest = () => ({ type: FETCH_EMPLOYEE_LEAVE_BALANCE_REQUEST });
+export const fetchEmployeeLeaveBalanceSuccess = (data) => ({ type: FETCH_EMPLOYEE_LEAVE_BALANCE_SUCCESS, payload: data });
+export const fetchEmployeeLeaveBalanceFailure = (error) => ({ type: FETCH_EMPLOYEE_LEAVE_BALANCE_FAILURE, payload: error });
+
+export const fetchEmployeeLeaveBalanceWithActions = (employeeId, calendarId) => async (dispatch) => {
+    dispatch(fetchEmployeeLeaveBalanceRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/employee-leave-balance/${employeeId}/${calendarId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(fetchEmployeeLeaveBalanceSuccess(res));
+            return { ok: true, data: res.data };
+        } else {
+            dispatch(fetchEmployeeLeaveBalanceFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(fetchEmployeeLeaveBalanceFailure(error.message));
         return { ok: false, error: error.message };
     }
 };

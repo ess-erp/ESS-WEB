@@ -40,6 +40,9 @@ import {
     INSERT_PAYROLL_PERIOD_REQUEST, INSERT_PAYROLL_PERIOD_SUCCESS, INSERT_PAYROLL_PERIOD_FAILURE,
     CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
     POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
+    CREATE_MANUAL_ATTENDANCE_REQUEST, CREATE_MANUAL_ATTENDANCE_SUCCESS, CREATE_MANUAL_ATTENDANCE_FAILURE,
+    CREATE_MANUAL_LEAVE_REQUEST, CREATE_MANUAL_LEAVE_SUCCESS, CREATE_MANUAL_LEAVE_FAILURE,
+    FETCH_ALL_EMPLOYEES_REQUEST, FETCH_ALL_EMPLOYEES_SUCCESS, FETCH_ALL_EMPLOYEES_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -107,6 +110,27 @@ const initialGeneralState = {
     
     // Employee Resume
     employeeResumeState: { loading: false, data: null, error: '' },
+    
+    // Manual Attendance Entry
+    createManualAttendanceState: { loading: false, data: null, error: '' },
+    
+    // Manual Leave Filing
+    createManualLeaveState: { loading: false, data: null, error: '' },
+    
+    // All Employees (for dropdowns)
+    allEmployeesState: { loading: false, data: [], error: '' },
+    
+    // Unified Employee Search (for datatables and dropdowns)
+    searchEmployeesState: { loading: false, data: [], error: '', totalRecords: 0 },
+    
+    // Leave Applications Datatable
+    leaveApplicationsState: { loading: false, data: [], error: '', totalRecords: 0 },
+    
+    // DTR Records Datatable
+    dtrRecordsState: { loading: false, data: [], error: '', totalRecords: 0 },
+    
+    // Employee Leave Balance (for leave filing workflow)
+    employeeLeaveBalanceState: { loading: false, data: null, error: '' },
 };
 
 const hrReducer = (state = initialGeneralState, action) => {
@@ -493,6 +517,86 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, employeeResumeState: { loading: false, data: action.payload, error: '' } };
         case 'FETCH_EMPLOYEE_RESUME_FAILURE':
             return { ...state, employeeResumeState: { loading: false, data: null, error: action.payload } };
+
+        // ─── Manual Attendance Entry ──────────────────────────────────────────────
+        case CREATE_MANUAL_ATTENDANCE_REQUEST:
+            return { ...state, createManualAttendanceState: { loading: true, data: null, error: '' } };
+        case CREATE_MANUAL_ATTENDANCE_SUCCESS:
+            return { ...state, createManualAttendanceState: { loading: false, data: action.payload, error: '' } };
+        case CREATE_MANUAL_ATTENDANCE_FAILURE:
+            return { ...state, createManualAttendanceState: { loading: false, data: null, error: action.payload } };
+
+        // ─── Manual Leave Filing ──────────────────────────────────────────────────
+        case CREATE_MANUAL_LEAVE_REQUEST:
+            return { ...state, createManualLeaveState: { loading: true, data: null, error: '' } };
+        case CREATE_MANUAL_LEAVE_SUCCESS:
+            return { ...state, createManualLeaveState: { loading: false, data: action.payload, error: '' } };
+        case CREATE_MANUAL_LEAVE_FAILURE:
+            return { ...state, createManualLeaveState: { loading: false, data: null, error: action.payload } };
+
+        // ─── Fetch All Employees ──────────────────────────────────────────────────
+        case FETCH_ALL_EMPLOYEES_REQUEST:
+            return { ...state, allEmployeesState: { loading: true, data: [], error: '' } };
+        case FETCH_ALL_EMPLOYEES_SUCCESS:
+            return { ...state, allEmployeesState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_ALL_EMPLOYEES_FAILURE:
+            return { ...state, allEmployeesState: { loading: false, data: [], error: action.payload } };
+
+        // ─── Search Employees (Unified) ──────────────────────────────────────────
+        case 'SEARCH_EMPLOYEES_REQUEST':
+            return { ...state, searchEmployeesState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case 'SEARCH_EMPLOYEES_SUCCESS':
+            return {
+                ...state,
+                searchEmployeesState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: '',
+                    totalRecords: action.payload.totalRecords || 0
+                }
+            };
+        case 'SEARCH_EMPLOYEES_FAILURE':
+            return { ...state, searchEmployeesState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        // ─── Leave Applications Datatable ────────────────────────────────────────
+        case 'FETCH_LEAVE_APPLICATIONS_REQUEST':
+            return { ...state, leaveApplicationsState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case 'FETCH_LEAVE_APPLICATIONS_SUCCESS':
+            return {
+                ...state,
+                leaveApplicationsState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: '',
+                    totalRecords: action.payload.totalRecords || 0
+                }
+            };
+        case 'FETCH_LEAVE_APPLICATIONS_FAILURE':
+            return { ...state, leaveApplicationsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        // ─── DTR Records Datatable ───────────────────────────────────────────────
+        case 'FETCH_DTR_RECORDS_REQUEST':
+            return { ...state, dtrRecordsState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case 'FETCH_DTR_RECORDS_SUCCESS':
+            return {
+                ...state,
+                dtrRecordsState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: '',
+                    totalRecords: action.payload.totalRecords || 0
+                }
+            };
+        case 'FETCH_DTR_RECORDS_FAILURE':
+            return { ...state, dtrRecordsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        // ─── Employee Leave Balance ──────────────────────────────────────────────
+        case 'FETCH_EMPLOYEE_LEAVE_BALANCE_REQUEST':
+            return { ...state, employeeLeaveBalanceState: { loading: true, data: null, error: '' } };
+        case 'FETCH_EMPLOYEE_LEAVE_BALANCE_SUCCESS':
+            return { ...state, employeeLeaveBalanceState: { loading: false, data: action.payload.data, error: '' } };
+        case 'FETCH_EMPLOYEE_LEAVE_BALANCE_FAILURE':
+            return { ...state, employeeLeaveBalanceState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;

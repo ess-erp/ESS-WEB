@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DataTable from 'react-data-table-component';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
 import SearchableSelect from '../ButtonsComponents/SearchableSelect';
-import { fetchLeaveFilings, updateLeaveStatus, submitLeaveFiling } from '../../states/HumanResourcesState/Action';
+import { fetchLeaveApplications, updateLeaveStatus, submitLeaveFiling } from '../../states/HumanResourcesState/Action';
 import { showToast } from '../../states/NotificationState/Action';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -83,11 +83,11 @@ const AnimatedRow = ({ children, isNew }) => (
 );
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const LeaveFilingDataTable = () => {
+const LeaveFilingDataTable = ({ onAddManualClick }) => {
     const dispatch = useDispatch();
 
     // ── Redux ─────────────────────────────────────────────────────────────────
-    const { loading, data: rawData, totalRecords } = useSelector((s) => s.hr.leaveFilingsState);
+    const { loading, data: rawData, totalRecords } = useSelector((s) => s.hr.leaveApplicationsState);
     const { loading: submitting } = useSelector((s) => s.hr.createLeaveFilingState);
     const { loading: updating }   = useSelector((s) => s.hr.updateLeaveStatusState);
     const leaveList = Array.isArray(rawData) ? rawData : [];
@@ -118,10 +118,12 @@ const LeaveFilingDataTable = () => {
 
     // ── Fetch ─────────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
-        dispatch(fetchLeaveFilings({
-            page, pageSize, search,
-            status:    statusFilter?.value || null,
-            leaveType: leaveType?.value    || null,
+        dispatch(fetchLeaveApplications({
+            page,
+            pageSize,
+            search,
+            applicationStatus: statusFilter?.value || null,
+            leaveType: leaveType?.value || null,
         }));
     }, [page, pageSize, search, statusFilter, leaveType, dispatch]);
 
@@ -325,12 +327,23 @@ const LeaveFilingDataTable = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-green-600 to-green-500 px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <FileText size={20} className="text-white" />
-                        <div>
-                            <h3 className="text-lg font-bold text-white">Leave Applications</h3>
-                            <p className="text-green-100 text-xs mt-0.5">Employee leave filing records</p>
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <FileText size={20} className="text-white" />
+                            <div>
+                                <h3 className="text-lg font-bold text-white">Leave Applications</h3>
+                                <p className="text-green-100 text-xs mt-0.5">Employee leave filing records</p>
+                            </div>
                         </div>
+                        {onAddManualClick && (
+                            <button
+                                onClick={onAddManualClick}
+                                className="flex items-center gap-2 px-4 py-2 bg-white text-green-600 rounded-lg hover:bg-green-50 font-medium transition-all shadow-md hover:shadow-lg"
+                            >
+                                <Plus size={18} />
+                                Add Manual Leave
+                            </button>
+                        )}
                     </div>
                 </div>
 

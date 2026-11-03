@@ -5,40 +5,7 @@ import { Search, X, Eye, Edit, Filter, ChevronDown, ChevronUp, Users } from 'luc
 import { motion, AnimatePresence } from 'framer-motion';
 import DataTable from 'react-data-table-component';
 import SearchableSelect from '../ButtonsComponents/SearchableSelect';
-import { fetchEmployeeList } from '../../states/HumanResourcesState/Action';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-const DEPARTMENTS = [
-    { value: '', label: 'All Departments' },
-    { value: 'Academic', label: 'Academic' },
-    { value: 'Administration', label: 'Administration' },
-    { value: 'Finance', label: 'Finance' },
-    { value: 'Human Resources', label: 'Human Resources' },
-    { value: 'Information Technology', label: 'Information Technology' },
-    { value: 'Maintenance', label: 'Maintenance' },
-];
-
-const STATUS_OPTS = [
-    { value: '', label: 'All Status' },
-    { value: 'Active', label: 'Active' },
-    { value: 'Inactive', label: 'Inactive' },
-];
-
-const statusConfig = {
-    Active: { bg: 'bg-green-100', text: 'text-green-700' },
-    Inactive: { bg: 'bg-gray-100', text: 'text-gray-600' },
-};
-
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-const StatusBadge = ({ status }) => {
-    const s = status ?? 'Active';
-    const cfg = statusConfig[s] ?? statusConfig.Active;
-    return (
-        <span className={`px-3 py-1 rounded-full text-xs font-bold ${cfg.bg} ${cfg.text}`}>
-            {s}
-        </span>
-    );
-};
+import { fetchEmployeeList, fetchDepartmentTemplateData } from '../../states/HumanResourcesState/Action';
 
 // ─── Table styles ─────────────────────────────────────────────────────────────
 const customStyles = {
@@ -71,13 +38,32 @@ const EmployeeListDataTable = () => {
     const { loading, data: rawData, totalRecords } = useSelector((s) => s.hr.employeeListState);
     const employeeList = Array.isArray(rawData) ? rawData : [];
 
+    const departmentList = useSelector((state) => state.hr.departmentState.data || []);
+    const [depList, setDepList] = useState([]);
+
     // ── Pagination & filters ──────────────────────────────────────────────────
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState('');
     const [department, setDepartment] = useState(null);
-    const [statusFilter, setStatusFilter] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
+
+    // ── Fetch Department List ─────────────────────────────────────────────────
+    useEffect(() => {
+        dispatch(fetchDepartmentTemplateData());
+    }, [dispatch]);
+
+    // ── Map Department Data ───────────────────────────────────────────────────
+    useEffect(() => {
+        const depMappedOptions = [
+            { value: null, label: 'All Departments' },
+            ...departmentList.map((i) => ({
+                value: i.DepChildId,
+                label: `${i.DepartmentCode} - ${i.DepartmentName}`,
+            }))
+        ];
+        setDepList(depMappedOptions);
+    }, [departmentList]);
 
     // ── Fetch ─────────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
@@ -87,10 +73,9 @@ const EmployeeListDataTable = () => {
                 pageSize,
                 search,
                 departmentId: department?.value || null,
-                status: statusFilter?.value || null,
             })
         );
-    }, [page, pageSize, search, department, statusFilter, dispatch]);
+    }, [page, pageSize, search, department, dispatch]);
 
     useEffect(() => {
         fetchData();
@@ -98,15 +83,19 @@ const EmployeeListDataTable = () => {
 
     // ── Handlers ──────────────────────────────────────────────────────────────
     const handleViewEmployee = (row) => {
-        const empId = row.EmployeeId ?? row.employeeId ?? row.id;
+        const empId = row.EmployeeId;
         // Navigate to employee form with ID in URL parameter
         navigate(`/hrd/employeeappform/${empId}`);
+    };
+
+    const handleEditEmployee = (row) => {
+        // Navigate to employee data management page
+        navigate(`/hrd/employeedatamanagement/${row.EmployeeId}`);
     };
 
     const handleClearFilters = () => {
         setSearch('');
         setDepartment(null);
-        setStatusFilter(null);
         setPage(1);
     };
 
@@ -114,68 +103,84 @@ const EmployeeListDataTable = () => {
     const columns = [
         {
             name: 'Employee No.',
-            selector: (r) => r.EmployeeNo ?? r.employeeNo ?? '—',
+            selector: (r) => r.EmployeeNumber ?? '—',
             sortable: true,
             width: '145px',
             cell: (r) => (
                 <span className="text-xs font-mono font-bold text-gray-900">
-                    {r.EmployeeNo ?? r.employeeNo ?? '—'}
+                    {r.EmployeeNumber ?? '—'}
                 </span>
             ),
         },
         {
             name: 'Full Name',
-            selector: (r) => r.FullName ?? r.fullName ?? '—',
+            selector: (r) => r.Fullname ?? '—',
             sortable: true,
             grow: 2,
             cell: (r) => {
-                // Format: Last Name, First Name M.I.
-                const fullName =
-                    r.FullName ??
-                    r.fullName ??
-                    (r.Lname && r.Fname
-                        ? `${r.Lname}, ${r.Fname} ${(r.Mname ?? '').charAt(0)}.`
-                        : '—');
+                const fullName = r.Fullname ?? '—';
                 return <span className="text-sm font-semibold text-gray-900">{fullName}</span>;
             },
         },
         {
             name: 'Email Address',
-            selector: (r) => r.Email ?? r.email ?? '—',
+            selector: (r) => r.Email ?? '—',
             sortable: true,
             minWidth: '220px',
             cell: (r) => (
                 <span className="text-xs text-gray-700">
-                    {r.Email ?? r.email ?? '—'}
+                    {r.Email ?? '—'}
                 </span>
             ),
         },
         {
             name: 'Department',
-            selector: (r) => r.Department ?? r.department ?? '—',
+            selector: (r) => r.DepartmentName ?? '—',
             sortable: true,
             minWidth: '160px',
             cell: (r) => (
                 <span className="text-xs text-gray-800 font-medium">
-                    {r.Department ?? r.department ?? '—'}
+                    {r.DepartmentName ?? '—'}
                 </span>
             ),
         },
         {
             name: 'Position / Role',
-            selector: (r) => r.Position ?? r.position ?? '—',
+            selector: (r) => r.Position ?? r.EmployeeCategory ?? '—',
             sortable: true,
             minWidth: '160px',
             cell: (r) => (
-                <span className="text-xs text-gray-700">{r.Position ?? r.position ?? '—'}</span>
+                <span className="text-xs text-gray-700">
+                    {r.Position ?? r.EmployeeCategory ?? '—'}
+                </span>
             ),
         },
         {
-            name: 'Status',
-            selector: (r) => r.Status ?? r.status ?? 'Active',
+            name: 'Campus',
+            selector: (r) => r.CampusName ?? '—',
             sortable: true,
-            width: '110px',
-            cell: (r) => <StatusBadge status={r.Status ?? r.status} />,
+            minWidth: '140px',
+            cell: (r) => (
+                <span className="text-xs text-gray-700">
+                    {r.CampusName ?? '—'}
+                </span>
+            ),
+        },
+        {
+            name: 'Date Hired',
+            selector: (r) => r.DateCreated,
+            sortable: true,
+            width: '120px',
+            cell: (r) => {
+                if (!r.DateHired) return <span className="text-xs text-gray-500">—</span>;
+                const date = new Date(r.DateCreated);
+                const formatted = date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+                return <span className="text-xs text-gray-700">{formatted}</span>;
+            },
         },
         {
             name: 'Actions',
@@ -185,10 +190,10 @@ const EmployeeListDataTable = () => {
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        handleViewEmployee(r);
+                        handleEditEmployee(r);
                     }}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
-                    title="View / Edit Employee"
+                    title="Edit Employee"
                 >
                     <Edit size={14} />
                     Edit
@@ -261,7 +266,7 @@ const EmployeeListDataTable = () => {
                             Filters
                             {showFilters ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                         </button>
-                        {(search || department || statusFilter) && (
+                        {(search || department) && (
                             <button
                                 onClick={handleClearFilters}
                                 className="flex items-center gap-1.5 px-3 py-2.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100"
@@ -280,21 +285,13 @@ const EmployeeListDataTable = () => {
                                 transition={{ duration: 0.2 }}
                                 className="mt-4 overflow-hidden"
                             >
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4">
                                     <SearchableSelect
                                         label="Department"
-                                        options={DEPARTMENTS}
+                                        options={depList}
                                         value={department}
                                         onChange={setDepartment}
                                         placeholder="All departments..."
-                                        showSearchIcon={false}
-                                    />
-                                    <SearchableSelect
-                                        label="Status"
-                                        options={STATUS_OPTS}
-                                        value={statusFilter}
-                                        onChange={setStatusFilter}
-                                        placeholder="All statuses..."
                                         showSearchIcon={false}
                                     />
                                 </div>
@@ -306,7 +303,7 @@ const EmployeeListDataTable = () => {
                 {/* DataTable */}
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={`${page}-${search}-${department?.value}-${statusFilter?.value}`}
+                        key={`${page}-${search}-${department?.value}`}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.25 }}

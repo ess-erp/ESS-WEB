@@ -2,11 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     Search, X, AlertTriangle,
-    Clock, LogIn, LogOut, Users, Calendar,
+    Clock, LogIn, LogOut, Users, Calendar, Plus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DataTable from 'react-data-table-component';
-import { fetchDtrLogs, postBiometricScan, dtrScanRateLimited } from '../../states/HumanResourcesState/Action';
+import { fetchDtrRecords, postBiometricScan, dtrScanRateLimited } from '../../states/HumanResourcesState/Action';
 import { showToast } from '../../states/NotificationState/Action';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -92,11 +92,11 @@ const ScanOverlay = ({ scanStatus }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-const DtrDataTable = () => {
+const DtrDataTable = ({ onAddManualClick }) => {
     const dispatch = useDispatch();
 
     // ── Redux ─────────────────────────────────────────────────────────────────
-    const { loading, data: logsData, totalRecords } = useSelector((s) => s.hr.dtrLogsState);
+    const { loading, data: logsData, totalRecords } = useSelector((s) => s.hr.dtrRecordsState);
     const { loading: scanning } = useSelector((s) => s.hr.postDtrScanState);
     const logs = Array.isArray(logsData) ? logsData : [];
 
@@ -124,7 +124,13 @@ const DtrDataTable = () => {
 
     // ── Fetch logs ────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
-        dispatch(fetchDtrLogs(page, pageSize, search, dateFilter));
+        dispatch(fetchDtrRecords({
+            page,
+            pageSize,
+            search,
+            startDate: dateFilter,
+            endDate: dateFilter,
+        }));
     }, [page, pageSize, search, dateFilter, dispatch]);
 
     useEffect(() => {
@@ -290,9 +296,20 @@ const DtrDataTable = () => {
                                 <p className="text-green-100 text-xs mt-0.5">Daily time record history</p>
                             </div>
                         </div>
-                        <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
-                            <p className="text-xs font-medium">Total Records</p>
-                            <p className="text-2xl font-bold">{totalRecords ?? logs.length}</p>
+                        <div className="flex items-center gap-3">
+                            {onAddManualClick && (
+                                <button
+                                    onClick={onAddManualClick}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white text-green-600 rounded-lg hover:bg-green-50 font-medium transition-all shadow-md hover:shadow-lg"
+                                >
+                                    <Plus size={18} />
+                                    Add Manual Attendance
+                                </button>
+                            )}
+                            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-white">
+                                <p className="text-xs font-medium">Total Records</p>
+                                <p className="text-2xl font-bold">{totalRecords ?? logs.length}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

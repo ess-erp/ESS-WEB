@@ -1,11 +1,14 @@
 ﻿import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CreditCard } from 'lucide-react';
+import { FileText, CreditCard, Plus } from 'lucide-react';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import LeaveFilingDataTable from '../../components/HrComponents/LeaveFilingDataTable';
 import LeaveCreditDataTable from '../../components/HrComponents/LeaveCreditDataTable';
+import ManualLeaveFilingModal from '../../components/HrComponents/ManualLeaveFilingModal';
 
 const LeaveFiling = () => {
+    const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+
     useEffect(() => {
         document.title = 'Notice of Filing of Leave | HRD';
     }, []);
@@ -23,6 +26,11 @@ const LeaveFiling = () => {
         { id: 'filings', label: 'Leave Applications', icon: FileText },
         { id: 'credits', label: 'Credit Management', icon: CreditCard },
     ];
+
+    const handleManualSuccess = () => {
+        // Refresh the leave table
+        window.location.reload();
+    };
 
     return (
         <div className="flex-1 min-h-screen bg-gray-50 px-6 py-4">
@@ -87,7 +95,9 @@ const LeaveFiling = () => {
                                         Manage employee leave applications, approvals, and balance records.
                                     </span>
                                 </div>
-                                <LeaveFilingDataTable />
+                                <LeaveFilingDataTable 
+                                    onAddManualClick={() => setIsManualModalOpen(true)}
+                                />
                             </div>
                         )}
 
@@ -107,6 +117,13 @@ const LeaveFiling = () => {
                     </motion.div>
                 </AnimatePresence>
             </section>
+
+            {/* Manual Leave Filing Modal */}
+            <ManualLeaveFilingModal
+                isOpen={isManualModalOpen}
+                onClose={() => setIsManualModalOpen(false)}
+                onSuccess={handleManualSuccess}
+            />
         </div>
     );
 };

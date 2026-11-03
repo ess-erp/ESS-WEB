@@ -32,25 +32,26 @@ const LeaveCreditUpdater = () => {
   // Handle Edit Click from DataTable
   const handleEditClick = (employee) => {
     setSelectedEmployee(employee);
-    setSelectedCalendarId(employee.calendarId || employee.CalendarId);
+    setSelectedCalendarId(employee.calendarId || employee.CalendarId || 1);
     
-    // Find work leave
-    const workLeave = employee.leaveDetails?.find(d => 
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('work')
-    );
+    // Find work leave - handle both data formats
+    const workLeave = employee.leaveDetails?.find(d => {
+      const leaveType = (d.leaveType || d.LeaveType || '').toLowerCase();
+      return leaveType.includes('work') || leaveType.includes('vacation');
+    });
     setEditWorkLeave({
-      allocated: workLeave?.allocatedDays || workLeave?.AllocatedDays || 0,
-      used: workLeave?.usedDays || workLeave?.UsedDays || 0
+      allocated: parseFloat(workLeave?.allocatedDays || workLeave?.AllocatedDays || 0),
+      used: parseFloat(workLeave?.usedDays || workLeave?.UsedDays || 0)
     });
     
-    // Find medical leave
-    const medicalLeave = employee.leaveDetails?.find(d => 
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('medical') ||
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('sick')
-    );
+    // Find medical/sick leave - handle both data formats
+    const medicalLeave = employee.leaveDetails?.find(d => {
+      const leaveType = (d.leaveType || d.LeaveType || '').toLowerCase();
+      return leaveType.includes('medical') || leaveType.includes('sick');
+    });
     setEditMedicalLeave({
-      allocated: medicalLeave?.allocatedDays || medicalLeave?.AllocatedDays || 0,
-      used: medicalLeave?.usedDays || medicalLeave?.UsedDays || 0
+      allocated: parseFloat(medicalLeave?.allocatedDays || medicalLeave?.AllocatedDays || 0),
+      used: parseFloat(medicalLeave?.usedDays || medicalLeave?.UsedDays || 0)
     });
     
     setIsEditModalOpen(true);
@@ -61,22 +62,29 @@ const LeaveCreditUpdater = () => {
     if (!selectedEmployee) return;
 
     // Validation
-    if (editWorkLeave.used > editWorkLeave.allocated) {
+    const workAllocated = parseFloat(editWorkLeave.allocated);
+    const workUsed = parseFloat(editWorkLeave.used);
+    const medicalAllocated = parseFloat(editMedicalLeave.allocated);
+    const medicalUsed = parseFloat(editMedicalLeave.used);
+
+    if (workUsed > workAllocated) {
       dispatch(showToast('error', 'Work Leave: Used days cannot exceed allocated days'));
       return;
     }
-    if (editMedicalLeave.used > editMedicalLeave.allocated) {
+    if (medicalUsed > medicalAllocated) {
       dispatch(showToast('error', 'Medical Leave: Used days cannot exceed allocated days'));
       return;
     }
 
-    const workLeaveDetail = selectedEmployee.leaveDetails?.find(d => 
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('work')
-    );
-    const medicalLeaveDetail = selectedEmployee.leaveDetails?.find(d => 
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('medical') ||
-      (d.leaveType || d.LeaveType)?.toLowerCase().includes('sick')
-    );
+    // Find leave detail records - handle both formats
+    const workLeaveDetail = selectedEmployee.leaveDetails?.find(d => {
+      const leaveType = (d.leaveType || d.LeaveType || '').toLowerCase();
+      return leaveType.includes('work') || leaveType.includes('vacation');
+    });
+    const medicalLeaveDetail = selectedEmployee.leaveDetails?.find(d => {
+      const leaveType = (d.leaveType || d.LeaveType || '').toLowerCase();
+      return leaveType.includes('medical') || leaveType.includes('sick');
+    });
 
     const payload = {
       calendarId: selectedCalendarId,
@@ -86,27 +94,33 @@ const LeaveCreditUpdater = () => {
         {
           leaveCreditChildId: workLeaveDetail?.leaveCreditChildId || workLeaveDetail?.LeaveCreditChildId,
           leaveType: 'Work Leave',
-          allocatedDays: editWorkLeave.allocated,
-          usedDays: editWorkLeave.used,
+          allocatedDays: workAllocated,
+          usedDays: workUsed,
           activeStatus: workLeaveDetail?.activeStatus || workLeaveDetail?.ActiveStatus || 'Y'
         },
         {
           leaveCreditChildId: medicalLeaveDetail?.leaveCreditChildId || medicalLeaveDetail?.LeaveCreditChildId,
           leaveType: 'Medical Leave',
-          allocatedDays: editMedicalLeave.allocated,
-          usedDays: editMedicalLeave.used,
+          allocatedDays: medicalAllocated,
+          usedDays: medicalUsed,
           activeStatus: medicalLeaveDetail?.activeStatus || medicalLeaveDetail?.ActiveStatus || 'Y'
         }
       ]
     };
 
     try {
-      await dispatch(updateEmployeeLeaveCredits(payload));
-      dispatch(showToast('success', 'Leave credits updated successfully'));
-      setIsEditModalOpen(false);
-      setSelectedEmployee(null);
+      const result = await dispatch(updateEmployeeLeaveCredits(payload));
+      if (result.ok) {
+        dispatch(showToast('success', 'Leave credits updated successfully'));
+        setIsEditModalOpen(false);
+        setSelectedEmployee(null);
+        // Refresh the data table here if you have a refresh function
+      } else {
+        dispatch(showToast('error', result.message || 'Failed to update leave credits'));
+      }
     } catch (error) {
       dispatch(showToast('error', 'Failed to update leave credits'));
+      console.error('Leave credit update error:', error);
     }
   };
 

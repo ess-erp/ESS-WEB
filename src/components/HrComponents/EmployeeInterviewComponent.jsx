@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { FaUser, FaClipboardCheck, FaTable, FaBriefcase, FaCheckCircle } from 'react-icons/fa';
@@ -11,10 +11,15 @@ import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 // Removed unused imports
 import {
     fetchEmployeeApplicationInfoData,
+    fetchEmployeeApplicationScreeningData,
     fetchCriteriaTableData,
     fetchUpdateEmployeeScreeningData,
+    fetchDepartmentTemplateData,
+    fetchPositionTemplateData,
+    fetchGoldenRankTemplateData,
+    fetchInsertHiredEmployeeData,
 } from "../../states/HumanResourcesState/Action";
-// Removed unused imports
+import { fetchDivisionData, fetchCampusData } from "../../states/OnlineApplicationState/Action";
 
 const customStyles = {
     headRow: {
@@ -94,14 +99,17 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
 
     const employeeData = useSelector(state => state.hr.employeeInfoState?.data || {});
     const employeScreeningData = useSelector(state => state.hr.employeeScreeningState?.data || {});
-    // Commented out: depends on removed fetchCampusData
-    // const campusList = useSelector(state => state.online.campusState?.data || []);
-    const campusList = []; // Empty array since fetchCampusData was removed
+    const campusList = useSelector(state => state.online.campusState?.data || []);
 
     console.log(employeScreeningData);
 
     useEffect(() => {
+        dispatch(fetchCampusData());
+    }, [dispatch]);
+
+    useEffect(() => {
         dispatch(fetchEmployeeApplicationInfoData(employeeAppId));
+        dispatch(fetchEmployeeApplicationScreeningData(employeeAppId));
     }, [dispatch, employeeAppId]);
     console.log(employeeData);
     useEffect(() => {
@@ -167,7 +175,9 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
 
     const [criteriaList, setCriteriaList] = useState([]);
     const criteriaTableState = useSelector((state) => state.hr.criteriaTableState || {});
-    const criteriaTable = criteriaTableState.data?.data || criteriaTableState.data || [];
+    const criteriaTable = useMemo(() => {
+        return criteriaTableState.data?.data || criteriaTableState.data || [];
+    }, [criteriaTableState.data]);
     const criteriaTableTotalRows = criteriaTableState.data?.totalRecords || 0;
     const criteriaTableLoading = criteriaTableState.loading || false;
     const [criteriaTableCurrentPage, setCriteriaTableCurrentPage] = useState(1);
@@ -180,116 +190,106 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
     console.log('criteriaTable length:', criteriaTable?.length);
     
     useEffect(() => {
-        if (!employeeAppId) {
-            console.log('Skipping fetchCriteriaTableData: employeeAppId is not available');
-            return;
-        }
-        console.log('Fetching criteria table data for employeeAppId:', employeeAppId);
-        dispatch(fetchCriteriaTableData(employeeAppId, currUserId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
+        if (!employeeAppId) return;
+
+        // if (criterialTable.length == 0) return;
+
+        dispatch(fetchCriteriaTableData(employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage));
     }, [employeeAppId, criteriaTableCurrentPage, criteriaTableRowsPerPage, dispatch]);
 
-    useEffect(() => {
-        if (!criteriaTable.length) return;
+    // useEffect(() => {
+    //     if (!criteriaTable.length) return;
 
-        let nameOrderMap = null;
+    //     let nameOrderMap = null;
 
-        if (employeeData?.EmployeeCategory == "Faculty") {
-            nameOrderMap = {
-                "Initial Interview": 1,
-                "Teaching Demonstration": 2,
-                "Assistant Principal Interview": 3,
-                "Principal Interview": 4
-            };
-        } else {
-            nameOrderMap = {
-                "Initial Interview": 1,
-                "Department Head Interview": 2
-            };
-        }
+    //     if (employeeData?.EmployeeCategory == "Faculty") {
+    //         nameOrderMap = {
+    //             "Initial Interview": 1,
+    //             "Teaching Demonstration": 2,
+    //             "Assistant Principal Interview": 3,
+    //             "Principal Interview": 4
+    //         };
+    //     } else {
+    //         nameOrderMap = {
+    //             "Initial Interview": 1,
+    //             "Department Head Interview": 2
+    //         };
+    //     }
 
-        const hasRatings = criteriaTable?.some(master =>
-            master.SacCriteriaChildDtos?.some(child => child.Rating != null)
-        );
+    //     // const hasRatings = criteriaTable?.some(master =>
+    //     //     master.CriteriaChildTableDtos?.some(child => child.Rating != null)
+    //     // );
 
-        console.log(hasRatings);
-        let flattened = [];
+    //     // console.log(hasRatings);
+    //     // let flattened = [];
 
-        if (!hasRatings) {
+    //     // if (!hasRatings) {
 
-            flattened = criteriaTable
-                .sort((a, b) =>
-                    nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
-                )
-                .flatMap(master =>
-                    master.SacCriteriaChildDtos.map(child => ({
-                        ...child,
-                        CriteriaId: master.CriteriaId,
-                        CriteriaTempName: master.CriteriaTempName
-                    }))
-                );
-            setIsRatingExist(false);
-        } else {
-            flattened = criteriaTable
-                .sort((a, b) =>
-                    nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
-                )
-                .flatMap(master =>
-                    master.SacCriteriaChildDtos.map(child => ({
-                        ...child,
-                        CriteriaId: master.CriteriaId,
-                        CriteriaTempName: master.CriteriaTempName,
-                        Rating: child.Rating // 👈 important
-                    }))
-                );
-            setIsRatingExist(true);
-        }
+    //     //     flattened = criteriaTable
+    //     //         .sort((a, b) =>
+    //     //             nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
+    //     //         )
+    //     //         .flatMap(master =>
+    //     //             master.CriteriaChildTableDtos.map(child => ({
+    //     //                 ...child,
+    //     //                 CriteriaId: master.CriteriaId,
+    //     //                 CriteriaTempName: master.CriteriaTempName
+    //     //             }))
+    //     //         );
+    //     //     setIsRatingExist(false);
+    //     // } else {
+    //     //     flattened = criteriaTable
+    //     //         .sort((a, b) =>
+    //     //             nameOrderMap[a.CriteriaTempName] - nameOrderMap[b.CriteriaTempName]
+    //     //         )
+    //     //         .flatMap(master =>
+    //     //             master.CriteriaChildTableDtos.map(child => ({
+    //     //                 ...child,
+    //     //                 CriteriaId: master.CriteriaId,
+    //     //                 CriteriaTempName: master.CriteriaTempName,
+    //     //                 Rating: child.Rating // 👈 important
+    //     //             }))
+    //     //         );
+    //     //     setIsRatingExist(true);
+    //     // }
 
-        setCriteriaList(flattened);
+    //     // setCriteriaList(flattened);
 
-    }, [criteriaTable, employeeData]);
-    useEffect(() => {
-        if (!criteriaTable.length) return;
+    // }, [criteriaTable, employeeData]);
 
-        const initialRatings = {};
-
-        criteriaTable.forEach(master => {
-            master.SacCriteriaChildDtos.forEach(child => {
-                if (child.Rating != null) {
-                    initialRatings[child.CriteriaChildId] = Number(child.Rating);
-                }
-            });
-        });
-
-        setRatings(initialRatings);
-    }, [criteriaTable]);
-
-    useEffect(() => {
-        if (!criteriaTable.length) return;
-
-        criteriaTable.forEach(criteria => {
-            setValue(`Recommendation_${criteria.CriteriaId}`, criteria.Recommendation || "");
-            setValue(`Remarks_${criteria.CriteriaId}`, criteria.Remarks || "");
-            setValue(`UserFullname_${criteria.CriteriaId}`, criteria.UserFullname || "");
-            setValue(`DateCreated_${criteria.CriteriaId}`, criteria.DateCreated || "");
-        });
-
-    }, [criteriaTable, setValue]);
-
-
-    console.log(criteriaTable);
-
-    const [ratings, setRatings] = useState({});
+    // const [ratings, setRatings] = useState({});
     
-    // Initialize ratings from existing data when criteriaTable changes
+    // // Initialize ratings from existing data when criteriaTable changes
+    // useEffect(() => {
+    //     if (criteriaTable.length == 0) return;
+
+    //     const initialRatings = {};
+
+    //     criteriaTable.forEach(master => {
+    //         master.CriteriaChildTableDtos?.forEach(child => {
+    //             if (child.Rating != null) {
+    //                 initialRatings[child.CriteriaChildId] = Number(child.Rating);
+    //             }
+    //         });
+    //     });
+
+    //     setRatings(initialRatings);
+    // }, [criteriaTable]);
+
+    console.log('Criteria Table:', criteriaTable);
+
+    // Step 3: Add state for ratings
+    const [ratings, setRatings] = useState({});
+
+    // Initialize ratings from backend data
     useEffect(() => {
         if (!criteriaTable.length) return;
 
         const initialRatings = {};
-
         criteriaTable.forEach(master => {
-            master.SacCriteriaChildDtos?.forEach(child => {
+            master.CriteriaChildTableDtos?.forEach(child => {
                 if (child.Rating != null) {
-                    initialRatings[child.CriteriaChildId] = Number(child.Rating);
+                    initialRatings[child.CriteriaChildId] = String(child.Rating);
                 }
             });
         });
@@ -297,86 +297,88 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
         setRatings(initialRatings);
     }, [criteriaTable]);
 
+    // Handler for rating changes
+    const handleRatingChange = (criteriaChildId, ratingValue) => {
+        setRatings(prev => ({
+            ...prev,
+            [criteriaChildId]: ratingValue
+        }));
+    };
+
+    // Step 4: Add interactive radio buttons
     const criteriaColumn = [
         {
             name: 'Criteria Name',
             selector: row => row.CriteriaName,
-            sortable: true
+            sortable: true,
+            wrap: true,
+            width: '40%'
         },
         {
-            name: 'Poor',
+            name: 'Poor (1)',
             cell: (row) => (
                 <input
                     type="radio"
                     name={`rating-${row.CriteriaChildId}`}
                     value="1"
-                    onChange={(e) => {
-                        console.log('onChange triggered!', row.CriteriaChildId, e.target.value);
-                        handleRatingChange(row.CriteriaChildId, 1);
-                    }}
-                    onClick={() => console.log('onClick triggered!', row.CriteriaChildId)}
-                    checked={ratings[row.CriteriaChildId] === 1}
+                    checked={ratings[row.CriteriaChildId] === "1"}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, "1")}
                     disabled={!isEditing}
                     className="cursor-pointer w-4 h-4"
                 />
-            )
+            ),
+            center: true,
+            width: '15%'
         },
         {
-            name: 'Marginal',
+            name: 'Marginal (2)',
             cell: (row) => (
                 <input
                     type="radio"
                     name={`rating-${row.CriteriaChildId}`}
                     value="2"
-                    onChange={() => handleRatingChange(row.CriteriaChildId, 2)}
-                    checked={ratings[row.CriteriaChildId] === 2}
+                    checked={ratings[row.CriteriaChildId] === "2"}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, "2")}
                     disabled={!isEditing}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-4 h-4"
                 />
-            )
+            ),
+            center: true,
+            width: '15%'
         },
         {
-            name: 'Good',
+            name: 'Good (3)',
             cell: (row) => (
                 <input
                     type="radio"
                     name={`rating-${row.CriteriaChildId}`}
                     value="3"
-                    onChange={() => handleRatingChange(row.CriteriaChildId, 3)}
-                    checked={ratings[row.CriteriaChildId] === 3}
+                    checked={ratings[row.CriteriaChildId] === "3"}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, "3")}
                     disabled={!isEditing}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-4 h-4"
                 />
-            )
+            ),
+            center: true,
+            width: '15%'
         },
         {
-            name: 'Excellent',
+            name: 'Excellent (4)',
             cell: (row) => (
                 <input
                     type="radio"
                     name={`rating-${row.CriteriaChildId}`}
                     value="4"
-                    onChange={() => handleRatingChange(row.CriteriaChildId, 4)}
-                    checked={ratings[row.CriteriaChildId] === 4}
+                    checked={ratings[row.CriteriaChildId] === "4"}
+                    onChange={() => handleRatingChange(row.CriteriaChildId, "4")}
                     disabled={!isEditing}
-                    className="cursor-pointer"
+                    className="cursor-pointer w-4 h-4"
                 />
-            )
+            ),
+            center: true,
+            width: '15%'
         }
     ];
-
-
-    const handleRatingChange = (rowId, value) => {
-        console.log('Rating changed:', { rowId, value });
-        setRatings(prev => {
-            const newRatings = {
-                ...prev,
-                [rowId]: value
-            };
-            console.log('Updated ratings state:', newRatings);
-            return newRatings;
-        });
-    };
 
 
     // Commented out: These selectors depend on removed fetch calls
@@ -395,175 +397,11 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
     //     13: principalUserList
     // };
 
-    const getDropdownUser = (criteria) => {
-        if (criteria.UserRoleId === 11) return "SacUser";
-        if (criteria.UserRoleId === 12) return "ApUser";
-        return "PrincipalUser";
-    };
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [formData, setFormData] = useState(null);
-    const [isHiringModalOpen, setIsHiringModalOpen] = useState(false);
-
-    const onSubmit = (data) => {
-        setFormData(data);
-        setIsModalOpen(true);
-        console.log(data);
-        console.log(formData);
-    };
-
-    const handleConfirmSubmit = async () => {
-        if (!formData) return;
-
-        const {
-            Campus,
-            SacUser,
-            ApUser,
-            PrincipalUser,
-            EmployeeCategory,
-            Recommendation,
-            ...rest
-        } = formData;
-        
-        console.log('Form submission started');
-        console.log('currUserRoleId:', currUserRoleId, 'type:', typeof currUserRoleId);
-        console.log('ratings state:', ratings);
-        console.log('criteriaTable:', criteriaTable);
-        
-        // Filter criteria with UserRoleId === 10 (HR/Initial Interview)
-        const hrCriteria = criteriaTable.filter(criteria => criteria.UserRoleId === 10);
-        console.log('HR Criteria (UserRoleId === 10):', hrCriteria);
-        
-        const CriteriaRatingDtos = [];
-
-        // Process only HR criteria
-        hrCriteria.forEach(criteria => {
-            console.log('Processing HR criteria:', criteria.CriteriaId);
-            console.log('SacCriteriaChildDtos:', criteria.SacCriteriaChildDtos);
-
-            criteria.SacCriteriaChildDtos.forEach(child => {
-                const childId = child.CriteriaChildId;
-                const rating = ratings[childId];
-                
-                console.log(`Checking child ${childId}:`, {
-                    CriteriaName: child.CriteriaName,
-                    CriteriaChildId: childId,
-                    RatingInState: rating,
-                    HasRating: !!rating
-                });
-                
-                if (rating) {
-                    const ratingDto = {
-                        CriteriaId: criteria.CriteriaId,
-                        CriteriaChildId: childId,
-                        Rating: rating.toString()
-                    };
-                    console.log('✅ Adding rating:', ratingDto);
-                    CriteriaRatingDtos.push(ratingDto);
-                } else {
-                    console.log('❌ No rating found for child:', childId);
-                }
-            });
-        });
-        
-        console.log('Total CriteriaRatingDtos collected:', CriteriaRatingDtos.length, CriteriaRatingDtos);
-
-        const assignUsers = [];
-
-        criteriaTable.forEach(criteria => {
-            let userId = null;
-            let recommendation = null;
-            let remarks = null;
-
-            // Map role IDs to their corresponding form fields
-            // Only set recommendation/remarks for the current user's role (the one they're rating)
-            if (criteria.UserRoleId === currUserRoleId) {
-                // This is the criteria the current user is rating
-                recommendation = formData.Recommendation?.RecommendationName;
-                remarks = formData.Remarks;
-            }
-
-            switch (criteria.UserRoleId) {
-                case 10: // HR/Initial Interview
-                    userId = currUserId;
-                    break;
-
-                case 11: // SAC/Teaching Demonstration
-                    userId = formData.SacUser?.UserId;
-                    break;
-
-                case 12: // Assistant Principal
-                    userId = formData.ApUser?.UserId;
-                    break;
-
-                case 13: // Principal
-                    userId = formData.PrincipalUser?.UserId;
-                    break;
-
-                // case 14: // Department Head
-                //     userId = formData.DepartmentHeadUser?.UserId;
-                //     break;
-
-                default:
-                    break;
-            }
-
-            if (userId) {
-                const assignDto = {
-                    CriteriaId: criteria.CriteriaId,
-                    UserId: userId
-                };
-
-                // Add recommendation and remarks if this is the criteria being rated by current user
-                if (recommendation) {
-                    assignDto.Recommendation = recommendation;
-                }
-                if (remarks) {
-                    assignDto.Remarks = remarks;
-                }
-
-                assignUsers.push(assignDto);
-            }
-        });
-
-        const payload = {
-            EmployeeId: formData.EmployeeId,
-            EmployeeAppId: formData.EmployeeAppId,
-            ApplicationThru: formData.ApplicationThru,
-            ApplicationThruOthers: formData.ApplicationThruOthers,
-            ApplicationType: formData.ApplicationType,
-            WorkExperience: formData.WorkExperience,
-            NoOfYearMonth: formData.NoOfYearMonth,
-            CampusId: formData.Campus?.CampusId,
-            EmployeeCategoryName: formData.EmployeeCategory?.EmployeeCategory,
-            CreatedByUserId: currUserId,
-            CriteriaRatingDtos: CriteriaRatingDtos,
-            AssignRoleDtos: assignUsers  // Now includes Recommendation and Remarks per criteria
-        };
-        console.log('Ratings:', ratings);
-        console.log('SUBMIT PAYLOAD:', payload);
-
-        const res = await dispatch(fetchUpdateEmployeeScreeningData(payload));
-        if (res.ok) {
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 3000);
-            }
-        }
-    };
-
-    // Removed: fetchDepartmentTemplateData, fetchPositionTemplateData, fetchGoldenRankTemplateData, fetchDivisionData
-
-    // Commented out: these selectors depend on removed fetch calls
-    // const departmentList = useSelector((state) => state.hr.departmentState.data || []);
-    // const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
-    // const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
-    // const divisionList = useSelector((state) => state.online.divisionState.data || []);
-    const departmentList = [];
-    const positionStatusList = [];
-    const goldenRankList = [];
-    const divisionList = [];
+    const departmentList = useSelector((state) => state.hr.departmentState.data || []);
+    const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
+    const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
+    const divisionList = useSelector((state) => state.online.divisionState.data || []);
+    
     const [depList, setDepList] = useState([]);
     const [posList, setPosList] = useState([]);
     const [golList, setGolList] = useState([]);
@@ -572,7 +410,13 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
     console.log(divisionList);
 
     useEffect(() => {
+        dispatch(fetchDepartmentTemplateData());
+        dispatch(fetchPositionTemplateData());
+        dispatch(fetchGoldenRankTemplateData());
+        dispatch(fetchDivisionData());
+    }, [dispatch]);
 
+    useEffect(() => {
         const depMappedOptions = departmentList.map((i) => ({
             value: i.DepChildId,
             label: `${i.DepartmentCode} - ${i.DepartmentName}`,
@@ -596,23 +440,232 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
             label: i.DivName,
         }));
         setDivList(divMappedOptions);
-
     }, [departmentList, positionStatusList, goldenRankList, divisionList]);
-
-    // const advList = [
-    //     { value: "Yes", label: "Yes" },
-    //     { value: "No", label: "No" },
-    // ];
 
     const [hiringData, setHiringData] = useState({
         DepartmentId: null,
         DivId: null,
         PositionId: null,
         GoldenRankId: null,
-        // IsAdviser: null,
     });
-    const handleSubmitHiring = async () => {
 
+    const getDropdownUser = (criteria) => {
+        if (criteria.UserRoleId === 11) return "SacUser";
+        if (criteria.UserRoleId === 12) return "ApUser";
+        return "PrincipalUser";
+    };
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+    const [formData, setFormData] = useState(null);
+    const [isHiringModalOpen, setIsHiringModalOpen] = useState(false);
+
+    const onSubmit = (data) => {
+        setFormData(data);
+        setIsModalOpen(true);
+        console.log(data);
+        console.log(formData);
+    };
+
+    const handleConfirmSubmit = async () => {
+        // if (!formData) return;
+
+        // const {
+        //     Campus,
+        //     SacUser,
+        //     ApUser,
+        //     PrincipalUser,
+        //     EmployeeCategory,
+        //     Recommendation,
+        //     ...rest
+        // } = formData;
+        
+        // console.log('Form submission started');
+        // console.log('currUserRoleId:', currUserRoleId, 'type:', typeof currUserRoleId);
+        // console.log('ratings state:', ratings);
+        // console.log('criteriaTable:', criteriaTable);
+        
+        // // Filter criteria with UserRoleId === 10 (HR/Initial Interview)
+        // const hrCriteria = criteriaTable.filter(criteria => criteria.UserRoleId === 10);
+        // console.log('HR Criteria (UserRoleId === 10):', hrCriteria);
+        
+        // const CriteriaRatingDtos = [];
+
+        // // Process only HR criteria
+        // hrCriteria.forEach(criteria => {
+        //     console.log('Processing HR criteria:', criteria.CriteriaId);
+        //     console.log('CriteriaChildTableDtos:', criteria.CriteriaChildTableDtos);
+
+        //     criteria.CriteriaChildTableDtos.forEach(child => {
+        //         const childId = child.CriteriaChildId;
+        //         const rating = ratings[childId];
+                
+        //         console.log(`Checking child ${childId}:`, {
+        //             CriteriaName: child.CriteriaName,
+        //             CriteriaChildId: childId,
+        //             RatingInState: rating,
+        //             HasRating: !!rating
+        //         });
+                
+        //         if (rating) {
+        //             const ratingDto = {
+        //                 CriteriaId: criteria.CriteriaId,
+        //                 CriteriaChildId: childId,
+        //                 Rating: rating.toString()
+        //             };
+        //             console.log('✅ Adding rating:', ratingDto);
+        //             CriteriaRatingDtos.push(ratingDto);
+        //         } else {
+        //             console.log('❌ No rating found for child:', childId);
+        //         }
+        //     });
+        // });
+        
+        // console.log('Total CriteriaRatingDtos collected:', CriteriaRatingDtos.length, CriteriaRatingDtos);
+
+        // const assignUsers = [];
+
+        // criteriaTable.forEach(criteria => {
+        //     let userId = null;
+        //     let recommendation = null;
+        //     let remarks = null;
+
+        //     // Map role IDs to their corresponding form fields
+        //     // Only set recommendation/remarks for the current user's role (the one they're rating)
+        //     if (criteria.UserRoleId === currUserRoleId) {
+        //         // This is the criteria the current user is rating
+        //         recommendation = formData.Recommendation?.RecommendationName;
+        //         remarks = formData.Remarks;
+        //     }
+
+        //     switch (criteria.UserRoleId) {
+        //         case 10: // HR/Initial Interview
+        //             userId = currUserId;
+        //             break;
+
+        //         case 11: // SAC/Teaching Demonstration
+        //             userId = formData.SacUser?.UserId;
+        //             break;
+
+        //         case 12: // Assistant Principal
+        //             userId = formData.ApUser?.UserId;
+        //             break;
+
+        //         case 13: // Principal
+        //             userId = formData.PrincipalUser?.UserId;
+        //             break;
+
+        //         // case 14: // Department Head
+        //         //     userId = formData.DepartmentHeadUser?.UserId;
+        //         //     break;
+
+        //         default:
+        //             break;
+        //     }
+
+        //     if (userId) {
+        //         const assignDto = {
+        //             CriteriaId: criteria.CriteriaId,
+        //             UserId: userId
+        //         };
+
+        //         // Add recommendation and remarks if this is the criteria being rated by current user
+        //         if (recommendation) {
+        //             assignDto.Recommendation = recommendation;
+        //         }
+        //         if (remarks) {
+        //             assignDto.Remarks = remarks;
+        //         }
+
+        //         assignUsers.push(assignDto);
+        //     }
+        // });
+
+        // const payload = {
+        //     EmployeeId: formData.EmployeeId,
+        //     EmployeeAppId: formData.EmployeeAppId,
+        //     ApplicationThru: formData.ApplicationThru,
+        //     ApplicationThruOthers: formData.ApplicationThruOthers,
+        //     ApplicationType: formData.ApplicationType,
+        //     WorkExperience: formData.WorkExperience,
+        //     NoOfYearMonth: formData.NoOfYearMonth,
+        //     CampusId: formData.Campus?.CampusId,
+        //     EmployeeCategoryName: formData.EmployeeCategory?.EmployeeCategory,
+        //     CreatedByUserId: currUserId,
+        //     CriteriaRatingDtos: CriteriaRatingDtos,
+        //     AssignRoleDtos: assignUsers  // Now includes Recommendation and Remarks per criteria
+        // };
+        // console.log('Ratings:', ratings);
+        // console.log('SUBMIT PAYLOAD:', payload);
+
+        // const res = await dispatch(fetchUpdateEmployeeScreeningData(payload));
+        // if (res.ok) {
+        //     setIsSuccessModalOpen(true);
+        //     if (isSuccessModalOpen == false) {
+        //         setTimeout(() => window.location.reload(), 3000);
+        //     }
+        // }
+    };
+
+    // Removed: fetchDepartmentTemplateData, fetchPositionTemplateData, fetchGoldenRankTemplateData, fetchDivisionData
+
+    // Commented out: these selectors depend on removed fetch calls
+    // const departmentList = useSelector((state) => state.hr.departmentState.data || []);
+    // const positionStatusList = useSelector((state) => state.hr.positionState.data || []);
+    // const goldenRankList = useSelector((state) => state.hr.goldenRankState.data || []);
+    // const divisionList = useSelector((state) => state.online.divisionState.data || []);
+    // const departmentList = [];
+    // const positionStatusList = [];
+    // const goldenRankList = [];
+    // const divisionList = [];
+    // const [depList, setDepList] = useState([]);
+    // const [posList, setPosList] = useState([]);
+    // const [golList, setGolList] = useState([]);
+    // const [divList, setDivList] = useState([]);
+
+    // console.log(divisionList);
+
+    // useEffect(() => {
+
+    //     const depMappedOptions = departmentList.map((i) => ({
+    //         value: i.DepChildId,
+    //         label: `${i.DepartmentCode} - ${i.DepartmentName}`,
+    //     }));
+    //     setDepList(depMappedOptions);
+
+    //     const posMappedOptions = positionStatusList.map((i) => ({
+    //         value: i.PosChildId,
+    //         label: `${i.PositionCode} - ${i.PositionName}`,
+    //     }));
+    //     setPosList(posMappedOptions);
+
+    //     const golMappedOptions = goldenRankList.map((i) => ({
+    //         value: i.GoldenRankChildId,
+    //         label: `${i.GoldenRankCode} - ${i.GoldenRankName}`,
+    //     }));
+    //     setGolList(golMappedOptions);
+
+    //     const divMappedOptions = divisionList.map((i) => ({
+    //         value: i.DivId,
+    //         label: i.DivName,
+    //     }));
+    //     setDivList(divMappedOptions);
+
+    // }, [departmentList, positionStatusList, goldenRankList, divisionList]);
+
+    // const advList = [
+    //     { value: "Yes", label: "Yes" },
+    //     { value: "No", label: "No" },
+    // ];
+
+    // const [hiringData, setHiringData] = useState({
+    //     DepartmentId: null,
+    //     DivId: null,
+    //     PositionId: null,
+    //     GoldenRankId: null,
+    //     // IsAdviser: null,
+    // });
+    const handleSubmitHiring = async () => {
         const payload = {
             EmployeeAppId: employeeAppId,
             DepChildId: hiringData.DepartmentId,
@@ -650,7 +703,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
             </div>
 
             {/* Applicant Information Card */}
-            <div className="bg-white rounded-lg shadow pb-32">
+            <div className="bg-white rounded-lg shadow">
                 <div className="bg-gradient-to-r from-blue-50 to-green-50 px-4 py-2 border-b border-gray-200 rounded-t-lg">
                     <div className="flex items-center gap-2">
                         <div className="bg-green-600 p-1.5 rounded">
@@ -815,7 +868,8 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                         </div>
                     </div>
                     <div className="p-4">
-                        {!isRatingExist && criteria.UserRoleId != 10 && (
+                        {/* Show "Assign to" dropdown only if NO data exists yet (not assigned) */}
+                        {!criteria.UserFullname && criteria.UserRoleId != 10 && (
                             <div className="mb-4 flex justify-end">
                                 <div className="w-full md:w-80">
                                     <RHFListbox
@@ -824,7 +878,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                                         list={[] /* userLists[criteria.UserRoleId] || [] */}
                                         label="Assign to"
                                         labelKey={"Fullname"}
-                                        isEditing={false}
+                                        isEditing={!isEditing}
                                         divClassName="w-full"
                                     />
                                 </div>
@@ -832,7 +886,7 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                         )}
                         <DataTable
                             columns={criteriaColumn}
-                            data={criteria.SacCriteriaChildDtos}
+                            data={criteria.CriteriaChildTableDtos}
                             progressPending={criteriaTableLoading}
                             pagination
                             paginationServer
@@ -847,62 +901,44 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                             responsive
                             customStyles={customStyles}
                         />
-                        {isRatingExist && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                                <InputField
-                                    name={`Recommendation_${criteria.CriteriaId}`}
-                                    label="Recommendation"
-                                    register={register}
-                                    isEditing={isEditing}
-                                    displayValue={criteria.Recommendation}
-                                />
-                                <InputField
-                                    name={`Remarks_${criteria.CriteriaId}`}
-                                    label="Remarks"
-                                    register={register}
-                                    isEditing={isEditing}
-                                    displayValue={criteria.Remarks}
-                                />
-                                <InputField
-                                    name={`UserFullname_${criteria.CriteriaId}`}
-                                    label="Submitted By"
-                                    register={register}
-                                isEditing={isEditing}
-                                    displayValue={criteria.UserFullname}
-                                />
-                                <InputField
-                                    name={`DateCreated_${criteria.CriteriaId}`}
-                                    label="Date Created"
-                                    register={register}
-                                    isEditing={isEditing}
-                                    displayValue={criteria.DateCreated}
-                                />
-                            </div>
-                        )}
-                        {!isRatingExist && (
-                            <>
-                                {criteria.UserRoleId == 10 && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                                        <RHFListbox
-                                            name="Recommendation"
-                                            control={control}
-                                            list={recommendationList}
-                                            label="Recommendation"
-                                            labelKey="RecommendationName"
-                                            required
-                                            isEditing={false}
-                                        />
-                                        <InputField
-                                            name="Remarks"
-                                            label="Remarks"
-                                            register={register}
-                                            isEditing={isEditing}
-                                            displayValue={employeScreeningData.Remarks}
-                                        />
+                        
+                        {/* Always show assigned user and recommendation/remarks */}
+                        <div className="mt-4 space-y-3">
+                            {/* Assigned User Info */}
+                            {criteria.UserFullname && (
+                                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded">
+                                    <p className="text-sm">
+                                        <span className="font-semibold text-gray-700">Assigned to:</span>{' '}
+                                        <span className="text-gray-900">{criteria.UserFullname}</span>
+                                        {criteria.DateCreated && (
+                                            <span className="ml-3 text-gray-600 text-xs">
+                                                ({new Date(criteria.DateCreated).toLocaleString()})
+                                            </span>
+                                        )}
+                                    </p>
                                 </div>
                             )}
-                            </>
-                        )}
+
+                            {/* Recommendation and Remarks */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Recommendation
+                                    </label>
+                                    <div className="p-2 bg-gray-50 border border-gray-300 rounded text-sm">
+                                        {criteria.Recommendation || 'Not yet provided'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Remarks
+                                    </label>
+                                    <div className="p-2 bg-gray-50 border border-gray-300 rounded text-sm">
+                                        {criteria.Remarks || 'No remarks'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             ))}
@@ -911,16 +947,26 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
             <div className="flex justify-end gap-2">
                 {isEditing && (
                     <>
-                        {isRatingExist && (
-                            <button
-                                type="button"
-                                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-                                onClick={() => setIsHiringModalOpen(true)}
-                            >
-                                <FaBriefcase className="text-sm" />
-                                <span>Proceed to Hiring</span>
-                            </button>
-                        )}
+                        {/* Show "Proceed to Hiring" button if Department Head or last criteria has data */}
+                        {(() => {
+                            // Find the last criteria (highest UserRoleId or specific role like Department Head)
+                            const lastCriteria = criteriaTable.reduce((max, curr) => 
+                                curr.UserRoleId > max.UserRoleId ? curr : max, 
+                                criteriaTable[0] || {}
+                            );
+                            
+                            // Show button if last criteria has UserFullname (meaning it has data)
+                            return lastCriteria?.UserFullname && (
+                                <button
+                                    type="button"
+                                    className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+                                    onClick={() => setIsHiringModalOpen(true)}
+                                >
+                                    <FaBriefcase className="text-sm" />
+                                    <span>Proceed to Hiring</span>
+                                </button>
+                            );
+                        })()}
                         <button
                             type="submit"
                             className="px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
@@ -965,22 +1011,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                 title={<span className="font-bold text-lg text-blue-700">For hiring process</span>}
                 body={
                     <div>
-                        {/* <div className="w-full flex justify-center pt-4">
-                            <div className="w-full max-w-[380px]">
-                                <SearchableSelect
-                                    options={advList}
-                                    value={advList.find(x => x.value === hiringData.IsAdviser)}
-                                    onChange={(selected) =>
-                                        setHiringData(prev => ({
-                                            ...prev,
-                                            IsAdviser: selected?.value || null
-                                        }))
-                                    }
-                                    placeholder="-- Select if Adviser or Non-Adviser --"
-                                    label="Select if Adviser or Non-Adviser"
-                                />
-                            </div>
-                        </div> */}
                         <div className="grid grid-cols-2 gap-2 pt-4 w-full">
                             <SearchableSelect
                                 options={depList}
@@ -1033,7 +1063,6 @@ const EmployeeInterviewComponent = ({ isEditing, employeeAppId, userId, userRole
                                 placeholder="-- Select Golden Ranking --"
                                 label="Assign Golden Ranking"
                             />
-
                         </div>
                     </div>
                 }
