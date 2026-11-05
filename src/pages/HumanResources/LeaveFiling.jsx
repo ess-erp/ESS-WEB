@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, CreditCard, Plus } from 'lucide-react';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import LeaveFilingDataTable from '../../components/HrComponents/LeaveFilingDataTable';
-import LeaveCreditDataTable from '../../components/HrComponents/LeaveCreditDataTable';
+import LeaveCreditUpdater from '../../components/HrComponents/LeaveCreditUpdater';
 import ManualLeaveFilingModal from '../../components/HrComponents/ManualLeaveFilingModal';
 
 const LeaveFiling = () => {
@@ -110,8 +110,8 @@ const LeaveFiling = () => {
                                     </span>
                                 </div>
                                 
-                                {/* Leave Credit DataTable */}
-                                <LeaveCreditDataTable />
+                                {/* Leave Credit Updater with DataTable and Edit Modal */}
+                                <LeaveCreditUpdater />
                             </div>
                         )}
                     </motion.div>

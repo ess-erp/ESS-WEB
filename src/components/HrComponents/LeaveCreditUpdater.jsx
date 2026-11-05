@@ -141,194 +141,219 @@ const LeaveCreditUpdater = () => {
 
   // Render Edit Modal Body
   const renderEditModalBody = () => (
-    <div className="space-y-6">
-      {/* Employee Info */}
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <h3 className="font-semibold text-gray-800">
-          {selectedEmployee?.employeeName || selectedEmployee?.EmployeeName}
-        </h3>
-        <p className="text-sm text-gray-600">
-          {selectedEmployee?.employeeNo || selectedEmployee?.EmployeeNo} | {selectedEmployee?.department || selectedEmployee?.Department}
-        </p>
-      </div>
-
-      {/* Work Leave Section */}
-      <div className="border rounded-lg p-4">
-        <h4 className="font-semibold text-gray-700 mb-3">Work Leave</h4>
-        
-        {/* Allocated Days */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Allocated Days
-          </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('work', 'allocated', -1)}
-              className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-            >
-              <FaMinus />
-            </button>
-            <input
-              type="number"
-              value={editWorkLeave.allocated}
-              onChange={(e) => setEditWorkLeave(prev => ({
-                ...prev,
-                allocated: Math.max(0, parseInt(e.target.value) || 0)
-              }))}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded text-center"
-              min="0"
-            />
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('work', 'allocated', 1)}
-              className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200"
-            >
-              <FaPlus />
-            </button>
+    <div className="space-y-5">
+      {/* Employee Info Header */}
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">
+              {selectedEmployee?.employeeName || selectedEmployee?.EmployeeName}
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              <span className="font-medium">{selectedEmployee?.employeeNo || selectedEmployee?.EmployeeNo}</span>
+              <span className="mx-2">•</span>
+              <span>{selectedEmployee?.department || selectedEmployee?.Department}</span>
+            </p>
           </div>
-        </div>
-
-        {/* Used Days */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Used Days
-          </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('work', 'used', -1)}
-              className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-            >
-              <FaMinus />
-            </button>
-            <input
-              type="number"
-              value={editWorkLeave.used}
-              onChange={(e) => setEditWorkLeave(prev => ({
-                ...prev,
-                used: Math.max(0, parseInt(e.target.value) || 0)
-              }))}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded text-center"
-              min="0"
-            />
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('work', 'used', 1)}
-              className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200"
-            >
-              <FaPlus />
-            </button>
-          </div>
-        </div>
-
-        {/* Remaining Display */}
-        <div className="mt-3 p-2 bg-gray-50 rounded text-center">
-          <span className="text-sm text-gray-600">Remaining: </span>
-          <span className="font-semibold text-gray-800">
-            {editWorkLeave.allocated - editWorkLeave.used} days
-          </span>
         </div>
       </div>
 
-      {/* Medical Leave Section */}
-      <div className="border rounded-lg p-4">
-        <h4 className="font-semibold text-gray-700 mb-3">Medical Leave</h4>
-        
-        {/* Allocated Days */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Allocated Days
-          </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('medical', 'allocated', -1)}
-              className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-            >
-              <FaMinus />
-            </button>
-            <input
-              type="number"
-              value={editMedicalLeave.allocated}
-              onChange={(e) => setEditMedicalLeave(prev => ({
-                ...prev,
-                allocated: Math.max(0, parseInt(e.target.value) || 0)
-              }))}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded text-center"
-              min="0"
-            />
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('medical', 'allocated', 1)}
-              className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200"
-            >
-              <FaPlus />
-            </button>
+      {/* Leave Types - Two Column Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Work Leave Section */}
+        <div className="border-2 border-blue-100 rounded-xl p-5 bg-white hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+            <h4 className="text-base font-bold text-gray-800">Work Leave</h4>
+          </div>
+          
+          {/* Allocated Days */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              Allocated Days
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('work', 'allocated', -1)}
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+              >
+                <FaMinus size={14} />
+              </button>
+              <input
+                type="number"
+                value={editWorkLeave.allocated}
+                onChange={(e) => setEditWorkLeave(prev => ({
+                  ...prev,
+                  allocated: Math.max(0, parseInt(e.target.value) || 0)
+                }))}
+                className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:border-blue-400 transition-colors"
+                min="0"
+              />
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('work', 'allocated', 1)}
+                className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <FaPlus size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Used Days */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              Used Days
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('work', 'used', -1)}
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+              >
+                <FaMinus size={14} />
+              </button>
+              <input
+                type="number"
+                value={editWorkLeave.used}
+                onChange={(e) => setEditWorkLeave(prev => ({
+                  ...prev,
+                  used: Math.max(0, parseInt(e.target.value) || 0)
+                }))}
+                className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:border-blue-400 transition-colors"
+                min="0"
+              />
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('work', 'used', 1)}
+                className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <FaPlus size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Remaining Display */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-600">Remaining:</span>
+              <span className="text-xl font-bold text-blue-600">
+                {editWorkLeave.allocated - editWorkLeave.used} days
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Used Days */}
-        <div>
-          <label className="block text-sm font-medium text-gray-600 mb-2">
-            Used Days
-          </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('medical', 'used', -1)}
-              className="p-2 bg-red-100 text-red-600 rounded hover:bg-red-200"
-            >
-              <FaMinus />
-            </button>
-            <input
-              type="number"
-              value={editMedicalLeave.used}
-              onChange={(e) => setEditMedicalLeave(prev => ({
-                ...prev,
-                used: Math.max(0, parseInt(e.target.value) || 0)
-              }))}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded text-center"
-              min="0"
-            />
-            <button
-              type="button"
-              onClick={() => adjustLeaveValue('medical', 'used', 1)}
-              className="p-2 bg-green-100 text-green-600 rounded hover:bg-green-200"
-            >
-              <FaPlus />
-            </button>
+        {/* Medical Leave Section */}
+        <div className="border-2 border-purple-100 rounded-xl p-5 bg-white hover:shadow-md transition-shadow">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+            <h4 className="text-base font-bold text-gray-800">Medical Leave</h4>
           </div>
-        </div>
+          
+          {/* Allocated Days */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              Allocated Days
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('medical', 'allocated', -1)}
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+              >
+                <FaMinus size={14} />
+              </button>
+              <input
+                type="number"
+                value={editMedicalLeave.allocated}
+                onChange={(e) => setEditMedicalLeave(prev => ({
+                  ...prev,
+                  allocated: Math.max(0, parseInt(e.target.value) || 0)
+                }))}
+                className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:border-purple-400 transition-colors"
+                min="0"
+              />
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('medical', 'allocated', 1)}
+                className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <FaPlus size={14} />
+              </button>
+            </div>
+          </div>
 
-        {/* Remaining Display */}
-        <div className="mt-3 p-2 bg-gray-50 rounded text-center">
-          <span className="text-sm text-gray-600">Remaining: </span>
-          <span className="font-semibold text-gray-800">
-            {editMedicalLeave.allocated - editMedicalLeave.used} days
-          </span>
+          {/* Used Days */}
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">
+              Used Days
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('medical', 'used', -1)}
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+              >
+                <FaMinus size={14} />
+              </button>
+              <input
+                type="number"
+                value={editMedicalLeave.used}
+                onChange={(e) => setEditMedicalLeave(prev => ({
+                  ...prev,
+                  used: Math.max(0, parseInt(e.target.value) || 0)
+                }))}
+                className="flex-1 px-4 py-2.5 border-2 border-gray-200 rounded-lg text-center font-bold text-lg focus:outline-none focus:border-purple-400 transition-colors"
+                min="0"
+              />
+              <button
+                type="button"
+                onClick={() => adjustLeaveValue('medical', 'used', 1)}
+                className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
+              >
+                <FaPlus size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Remaining Display */}
+          <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-100">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium text-gray-600">Remaining:</span>
+              <span className="text-xl font-bold text-purple-600">
+                {editMedicalLeave.allocated - editMedicalLeave.used} days
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Total Summary */}
-      <div className="bg-green-50 p-4 rounded-lg">
-        <div className="flex justify-between items-center">
-          <span className="font-semibold text-gray-700">Total Allocated:</span>
-          <span className="font-bold text-gray-800">
-            {editWorkLeave.allocated + editMedicalLeave.allocated} days
-          </span>
-        </div>
-        <div className="flex justify-between items-center mt-2">
-          <span className="font-semibold text-gray-700">Total Used:</span>
-          <span className="font-bold text-gray-800">
-            {editWorkLeave.used + editMedicalLeave.used} days
-          </span>
-        </div>
-        <div className="flex justify-between items-center mt-2">
-          <span className="font-semibold text-gray-700">Total Remaining:</span>
-          <span className="font-bold text-green-600">
-            {(editWorkLeave.allocated + editMedicalLeave.allocated) - (editWorkLeave.used + editMedicalLeave.used)} days
-          </span>
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 rounded-xl border border-green-200">
+        <h4 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">Summary</h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="text-center">
+            <p className="text-xs text-gray-600 mb-1">Total Allocated</p>
+            <p className="text-2xl font-bold text-gray-800">
+              {editWorkLeave.allocated + editMedicalLeave.allocated}
+            </p>
+            <p className="text-xs text-gray-500">days</p>
+          </div>
+          <div className="text-center border-x border-green-200">
+            <p className="text-xs text-gray-600 mb-1">Total Used</p>
+            <p className="text-2xl font-bold text-gray-800">
+              {editWorkLeave.used + editMedicalLeave.used}
+            </p>
+            <p className="text-xs text-gray-500">days</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xs text-gray-600 mb-1">Total Remaining</p>
+            <p className="text-2xl font-bold text-green-600">
+              {(editWorkLeave.allocated + editMedicalLeave.allocated) - (editWorkLeave.used + editMedicalLeave.used)}
+            </p>
+            <p className="text-xs text-gray-500">days</p>
+          </div>
         </div>
       </div>
     </div>
@@ -350,7 +375,7 @@ const LeaveCreditUpdater = () => {
         body={renderEditModalBody()}
         buttons={[
           { 
-            label: "Save", 
+            label: "Save Changes", 
             type: "green", 
             onClick: handleSaveCredits 
           },
@@ -363,6 +388,7 @@ const LeaveCreditUpdater = () => {
             } 
           }
         ]}
+        size="max-w-4xl"
       />
     </div>
   );

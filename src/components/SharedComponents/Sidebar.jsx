@@ -330,6 +330,11 @@ const Sidebar = () => {
       path: "/hrd/payroll-processing",
     },
     {
+      name: "Faculty Load Entry",
+      icon: BookPlus,
+      path: "/hrd/faculty-load-entry-prototype",
+    },
+    {
       name: "Employee Payroll",
       icon: Receipt,
       path: "/hrd/employee-payroll",

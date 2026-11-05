@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { FileText, Calendar, User, ClipboardList } from 'lucide-react';
@@ -31,10 +31,15 @@ const ManualLeaveFilingModal = ({ isOpen, onClose, onSuccess }) => {
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [employeeOptions, setEmployeeOptions] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [leaveTypeOptions, setLeaveTypeOptions] = useState([]);
     const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(false);
     const [selectedEmployeeBalance, setSelectedEmployeeBalance] = useState(null);
+
+    // Get employee list from Redux
+    const searchEmployeesState = useSelector((s) => s.hr.searchEmployeesState || {});
+    const employees = searchEmployeesState.data || [];
+    const employeesLoading = searchEmployeesState.loading || false;
 
     // Watch form fields
     const startDate = watch('startDate');
@@ -42,27 +47,41 @@ const ManualLeaveFilingModal = ({ isOpen, onClose, onSuccess }) => {
     const selectedEmployeeId = watch('employeeId');
     const selectedLeaveTypeId = watch('leaveCreditChildId');
 
-    // Fetch employees for dropdown
+    // Fetch employees with debounce for search
+    const fetchEmployees = useCallback(async (search = '') => {
+        await dispatch(searchEmployees({
+            page: 1,
+            pageSize: 50,
+            search: search,
+            status: 'Active',
+        }));
+    }, [dispatch]);
+
+    // Initial fetch when modal opens
     useEffect(() => {
         if (isOpen) {
-            const loadEmployees = async () => {
-                const result = await dispatch(searchEmployees({
-                    page: 1,
-                    pageSize: 100, // Get enough for dropdown
-                    search: '',
-                    status: 'Active', // Only active employees
-                }));
-                if (result.ok && result.data) {
-                    const options = result.data.map(emp => ({
-                        value: emp.employeeId || emp.EmployeeId,
-                        label: `${emp.employeeNumber || emp.EmployeeNumber} - ${emp.fullname || emp.Fullname}`,
-                    }));
-                    setEmployeeOptions(options);
-                }
-            };
-            loadEmployees();
+            fetchEmployees('');
         }
-    }, [isOpen, dispatch]);
+    }, [isOpen, fetchEmployees]);
+
+    // Search with debounce
+    useEffect(() => {
+        if (!isOpen) return;
+        
+        const timer = setTimeout(() => {
+            fetchEmployees(searchQuery);
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, isOpen, fetchEmployees]);
+
+    // Transform employees data for SearchableSelect
+    const employeeOptions = employees.map(emp => ({
+        value: emp.employeeId || emp.EmployeeId || emp.userId || emp.UserId,
+        label: `${emp.employeeNumber || emp.EmployeeNumber || emp.employeeNo || emp.EmployeeNo || 'N/A'} - ${emp.fullname || emp.Fullname || emp.fullName || emp.FullName || 'N/A'}`,
+        email: emp.email || emp.Email || '',
+        employeeNumber: emp.employeeNumber || emp.EmployeeNumber || emp.employeeNo || emp.EmployeeNo || '',
+    }));
 
     // Fetch employee leave balance when employee is selected
     useEffect(() => {
@@ -172,7 +191,10 @@ const ManualLeaveFilingModal = ({ isOpen, onClose, onSuccess }) => {
                             options={employeeOptions}
                             value={field.value}
                             onChange={field.onChange}
-                            placeholder="Search employee by number or name"
+                            onInputChange={(inputValue) => setSearchQuery(inputValue)}
+                            placeholder="Search by employee number, name, or email..."
+                            isLoading={employeesLoading}
+                            noOptionsMessage={() => searchQuery ? 'No employees found' : 'Start typing to search...'}
                         />
                     )}
                 />

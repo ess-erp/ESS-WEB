@@ -16,10 +16,27 @@ const SchoolYearDropdown = ({
         dispatch(fetchGetSchoolYearListData());
     }, [dispatch]);
 
+    // Debug: Log the state to see what's coming back
+    useEffect(() => {
+        console.log('SchoolYearDropdown State:', schoolYearListState);
+    }, [schoolYearListState]);
+
+    // Extract data from different possible response formats
+    const rawData = schoolYearListState.data;
+    let schoolYearData = [];
+    
+    if (Array.isArray(rawData)) {
+        schoolYearData = rawData;
+    } else if (rawData?.data && Array.isArray(rawData.data)) {
+        schoolYearData = rawData.data;
+    } else if (rawData?.Data && Array.isArray(rawData.Data)) {
+        schoolYearData = rawData.Data;
+    }
+
     // Build school year options from Redux state
     const schoolYears = [
-        ...(includeAll ? [{ value: "", label: "All School Years" }] : []),
-        ...(schoolYearListState.data || []).map(sy => ({
+        ...(includeAll ? [{ value: "", label: "All School Years" }] : [{ value: "", label: "Select School Year" }]),
+        ...schoolYearData.map(sy => ({
             value: sy.CalendarId || sy.calendarId,
             label: sy.SchoolYear || sy.schoolYear
         }))
@@ -30,6 +47,15 @@ const SchoolYearDropdown = ({
         return (
             <select className={className} disabled>
                 <option>Loading school years...</option>
+            </select>
+        );
+    }
+
+    // Error state
+    if (schoolYearListState.error) {
+        return (
+            <select className={className} disabled>
+                <option>Error loading school years</option>
             </select>
         );
     }

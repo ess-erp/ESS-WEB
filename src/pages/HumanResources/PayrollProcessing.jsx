@@ -1,14 +1,33 @@
 ﻿import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Calendar, DollarSign, Users, Calculator, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
 import { motion } from "framer-motion";
+import { 
+    calculatePayrollForPeriod, 
+    fetchPayrollDetails, 
+    postPayrollToJournal,
+    fetchPayrollPeriodDropdown 
+} from "../../states/HumanResourcesState/Action";
 
 const PayrollProcessing = () => {
+    const dispatch = useDispatch();
+    
+    // Redux state
+    const { 
+        calculatePayrollForPeriodState,
+        payrollDetailsState,
+        postPayrollToJournalState,
+        payrollPeriodDropdownState 
+    } = useSelector(state => state.hr);
+
     useEffect(() => {
         document.title = 'Payroll Processing | HRD';
-    }, []);
+        // Fetch payroll periods on mount
+        dispatch(fetchPayrollPeriodDropdown());
+    }, [dispatch]);
 
     const breadcrumbItems = [
         { label: 'Human Resources', href: '/hrd/dashboard' },
@@ -16,70 +35,91 @@ const PayrollProcessing = () => {
     ];
 
     const [selectedPeriod, setSelectedPeriod] = useState('');
-    const [isProcessing, setIsProcessing] = useState(false);
     const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
-    // Mock payroll data
-    const mockPayrollData = [
-        {
-            id: 1,
-            employeeId: 'EMP-2026-001',
-            employeeName: 'Juan Dela Cruz',
-            position: 'Senior Teacher',
-            department: 'High School',
-            basicSalary: 35000.00,
-            allowances: 5000.00,
-            grossPay: 40000.00,
-            sss: 1350.00,
-            philHealth: 900.00,
-            pagIbig: 200.00,
-            tax: 3500.00,
-            totalDeductions: 5950.00,
-            netPay: 34050.00,
-            status: 'Processed'
-        },
-        {
-            id: 2,
-            employeeId: 'EMP-2026-015',
-            employeeName: 'Maria Santos',
-            position: 'Department Head',
-            department: 'Elementary',
-            basicSalary: 45000.00,
-            allowances: 7000.00,
-            grossPay: 52000.00,
-            sss: 1350.00,
-            philHealth: 1200.00,
-            pagIbig: 200.00,
-            tax: 6800.00,
-            totalDeductions: 9550.00,
-            netPay: 42450.00,
-            status: 'Processed'
-        },
-        {
-            id: 3,
-            employeeId: 'EMP-2026-023',
-            employeeName: 'Pedro Garcia',
-            position: 'Teacher',
-            department: 'Junior High School',
-            basicSalary: 28000.00,
-            allowances: 3500.00,
-            grossPay: 31500.00,
-            sss: 1125.00,
-            philHealth: 750.00,
-            pagIbig: 200.00,
-            tax: 2100.00,
-            totalDeductions: 4175.00,
-            netPay: 27325.00,
-            status: 'Processed'
-        },
-    ];
+    // Get payroll data from Redux state
+    const payrollData = payrollDetailsState.data;
+    const payrollSummary = payrollData?.summary || {};
+    const mockPayrollData = payrollData?.lineItems || [];
 
+    // Calculate totals from real data or use summary totals
+    const totalGrossPay = payrollSummary.totalGrossPay || 0;
+    const totalDeductions = payrollSummary.totalDeductions || 0;
+    const totalNetPay = payrollSummary.totalNetPay || 0;
+    const totalSSS = payrollSummary.totalSss || 0;
+    const totalPhilHealth = payrollSummary.totalPhilHealth || 0;
+    const totalPagIbig = payrollSummary.totalPagIbig || 0;
+    const totalTax = payrollSummary.totalWithholdingTax || 0;
+    const isProcessing = calculatePayrollForPeriodState.loading;
+
+    // Handle period change - fetch payroll details when period is selected
+    useEffect(() => {
+        if (selectedPeriod) {
+            dispatch(fetchPayrollDetails({ periodId: parseInt(selectedPeriod) }));
+        }
+    }, [selectedPeriod, dispatch]);
+
+    const handleProcessPayroll = async () => {
+        if (!selectedPeriod) {
+            alert('Please select a payroll period');
+            return;
+        }
+
+        const result = await dispatch(calculatePayrollForPeriod({ 
+            periodId: parseInt(selectedPeriod),
+            calendarId: null // Add calendar selection if needed
+        }));
+
+        if (result.ok) {
+            alert(result.message || 'Payroll calculated successfully');
+            // Refresh payroll details
+            dispatch(fetchPayrollDetails({ periodId: parseInt(selectedPeriod) }));
+        } else {
+            alert(result.error || 'Failed to calculate payroll');
+        }
+    };
+
+    const handlePostToJournal = () => {
+        if (!selectedPeriod) {
+            alert('Please select a payroll period');
+            return;
+        }
+        setIsPostModalOpen(true);
+    };
+
+    const confirmPostToJournal = async () => {
+        // TODO: Get proper account mappings from settings/config
+        const accountMapping = {
+            SalariesExpense: 1,      // Replace with actual FeesChildId from COA
+            SssPayable: 2,
+            PhilHealthPayable: 3,
+            PagIbigPayable: 4,
+            TaxPayable: 5,
+            SalariesPayable: 6
+        };
+
+        const result = await dispatch(postPayrollToJournal({
+            periodId: parseInt(selectedPeriod),
+            calendarId: 1, // Replace with actual calendar ID
+            description: `Payroll for ${payrollSummary.periodName || 'selected period'}`,
+            accountMapping
+        }));
+
+        if (result.ok) {
+            alert(result.message || 'Payroll posted to journal successfully');
+            setIsPostModalOpen(false);
+            // Refresh payroll details
+            dispatch(fetchPayrollDetails({ periodId: parseInt(selectedPeriod) }));
+        } else {
+            alert(result.error || 'Failed to post payroll to journal');
+        }
+    };
     const columns = [
         {
-            name: 'Employee ID',
-            selector: row => row.employeeId,
+            name: 'Employee Number',
+            selector: row => row.employeeNumber,
             sortable: true,
-            width: '130px'
+            width: '150px'
         },
         {
             name: 'Employee Name',
@@ -98,8 +138,8 @@ const PayrollProcessing = () => {
             name: 'Basic Salary',
             selector: row => row.basicSalary,
             sortable: true,
-            cell: row => `${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
-            width: '130px'
+            cell: row => `₱${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            width: '140px'
         },
         {
             name: 'Gross Pay',
@@ -107,10 +147,10 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-green-600">
-                    {row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ₱{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
-            width: '130px'
+            width: '140px'
         },
         {
             name: 'Deductions',
@@ -118,10 +158,10 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-red-600">
-                    {row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ₱{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
-            width: '130px'
+            width: '140px'
         },
         {
             name: 'Net Pay',
@@ -129,50 +169,27 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-bold text-blue-600">
-                    {row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ₱{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
         },
         {
             name: 'Status',
-            selector: row => row.status,
+            selector: row => row.payrollStatus,
             sortable: true,
             cell: row => (
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
-                    {row.status}
+                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    row.payrollStatus === 'POSTED' ? 'bg-green-100 text-green-700' :
+                    row.payrollStatus === 'FINALIZED' ? 'bg-blue-100 text-blue-700' :
+                    'bg-yellow-100 text-yellow-700'
+                }`}>
+                    {row.payrollStatus}
                 </span>
             ),
-            width: '100px'
+            width: '120px'
         },
     ];
-
-    // Calculate totals
-    const totalGrossPay = mockPayrollData.reduce((sum, emp) => sum + emp.grossPay, 0);
-    const totalDeductions = mockPayrollData.reduce((sum, emp) => sum + emp.totalDeductions, 0);
-    const totalNetPay = mockPayrollData.reduce((sum, emp) => sum + emp.netPay, 0);
-    const totalSSS = mockPayrollData.reduce((sum, emp) => sum + emp.sss, 0);
-    const totalPhilHealth = mockPayrollData.reduce((sum, emp) => sum + emp.philHealth, 0);
-    const totalPagIbig = mockPayrollData.reduce((sum, emp) => sum + emp.pagIbig, 0);
-    const totalTax = mockPayrollData.reduce((sum, emp) => sum + emp.tax, 0);
-
-    const handleProcessPayroll = () => {
-        setIsProcessing(true);
-        setTimeout(() => {
-            setIsProcessing(false);
-            // Show success message
-        }, 2000);
-    };
-
-    const handlePostToJournal = () => {
-        setIsPostModalOpen(true);
-    };
-
-    const confirmPostToJournal = () => {
-        // TODO: Implement posting to journal entry
-        console.log('Posting payroll to journal entry...');
-        setIsPostModalOpen(false);
-    };
 
     const cardVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -443,7 +460,7 @@ const PayrollProcessing = () => {
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">Salaries & Wages Expense</td>
                                                 <td className="px-4 py-3 text-sm text-right text-blue-600 font-semibold">
-                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                             </tr>
@@ -451,44 +468,44 @@ const PayrollProcessing = () => {
                                                 <td className="px-4 py-3 text-sm text-gray-900">SSS Payable</td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    â‚±{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">PhilHealth Payable</td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    â‚±{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-gray-50">
                                                 <td className="px-4 py-3 text-sm text-gray-900">Pag-IBIG Payable</td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    â‚±{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td className="px-4 py-3 text-sm text-gray-900">Withholding Tax Payable</td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    â‚±{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-gray-50">
                                                 <td className="px-4 py-3 text-sm text-gray-900">Salaries Payable</td>
                                                 <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    â‚±{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                             <tr className="bg-blue-50 font-bold">
                                                 <td className="px-4 py-3 text-sm text-gray-900">TOTALS:</td>
                                                 <td className="px-4 py-3 text-sm text-right text-blue-600">
-                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                                 <td className="px-4 py-3 text-sm text-right text-green-600">
-                                                    â‚±{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                                                 </td>
                                             </tr>
                                         </tbody>

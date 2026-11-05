@@ -43,6 +43,11 @@ import {
     CREATE_MANUAL_ATTENDANCE_REQUEST, CREATE_MANUAL_ATTENDANCE_SUCCESS, CREATE_MANUAL_ATTENDANCE_FAILURE,
     CREATE_MANUAL_LEAVE_REQUEST, CREATE_MANUAL_LEAVE_SUCCESS, CREATE_MANUAL_LEAVE_FAILURE,
     FETCH_ALL_EMPLOYEES_REQUEST, FETCH_ALL_EMPLOYEES_SUCCESS, FETCH_ALL_EMPLOYEES_FAILURE,
+    CALCULATE_PAYROLL_FOR_PERIOD_REQUEST, CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS, CALCULATE_PAYROLL_FOR_PERIOD_FAILURE,
+    FETCH_PAYROLL_DETAILS_REQUEST, FETCH_PAYROLL_DETAILS_SUCCESS, FETCH_PAYROLL_DETAILS_FAILURE,
+    FINALIZE_PAYROLL_REQUEST, FINALIZE_PAYROLL_SUCCESS, FINALIZE_PAYROLL_FAILURE,
+    POST_PAYROLL_TO_JOURNAL_REQUEST, POST_PAYROLL_TO_JOURNAL_SUCCESS, POST_PAYROLL_TO_JOURNAL_FAILURE,
+    FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST, FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS, FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -98,6 +103,13 @@ const initialGeneralState = {
     updatePayrollPeriodState: { loading: false, data: null, error: '' },
     deletePayrollPeriodState: { loading: false, data: null, error: '' },
     insertPayrollPeriodState: { loading: false, data: null, error: '' },
+    
+    // Payroll Processing Module
+    calculatePayrollForPeriodState: { loading: false, data: null, error: '' },
+    payrollDetailsState: { loading: false, data: null, error: '' },
+    finalizePayrollState: { loading: false, data: null, error: '' },
+    postPayrollToJournalState: { loading: false, data: null, error: '' },
+    payrollJournalEntryState: { loading: false, data: null, error: '' },
     
     // Payroll Processing
     calculatePayrollState: { loading: false, data: null, error: '' },
@@ -597,6 +609,50 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, employeeLeaveBalanceState: { loading: false, data: action.payload.data, error: '' } };
         case 'FETCH_EMPLOYEE_LEAVE_BALANCE_FAILURE':
             return { ...state, employeeLeaveBalanceState: { loading: false, data: null, error: action.payload } };
+
+        // ══════════════════════════════════════════════════════════════════════════
+        // PAYROLL PROCESSING MODULE REDUCERS
+        // ══════════════════════════════════════════════════════════════════════════
+
+        // Calculate Payroll for Period
+        case CALCULATE_PAYROLL_FOR_PERIOD_REQUEST:
+            return { ...state, calculatePayrollForPeriodState: { loading: true, data: null, error: '' } };
+        case CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS:
+            return { ...state, calculatePayrollForPeriodState: { loading: false, data: action.payload, error: '' } };
+        case CALCULATE_PAYROLL_FOR_PERIOD_FAILURE:
+            return { ...state, calculatePayrollForPeriodState: { loading: false, data: null, error: action.payload } };
+
+        // Fetch Payroll Details
+        case FETCH_PAYROLL_DETAILS_REQUEST:
+            return { ...state, payrollDetailsState: { loading: true, data: null, error: '' } };
+        case FETCH_PAYROLL_DETAILS_SUCCESS:
+            return { ...state, payrollDetailsState: { loading: false, data: action.payload.data, error: '' } };
+        case FETCH_PAYROLL_DETAILS_FAILURE:
+            return { ...state, payrollDetailsState: { loading: false, data: null, error: action.payload } };
+
+        // Finalize Payroll
+        case FINALIZE_PAYROLL_REQUEST:
+            return { ...state, finalizePayrollState: { loading: true, data: null, error: '' } };
+        case FINALIZE_PAYROLL_SUCCESS:
+            return { ...state, finalizePayrollState: { loading: false, data: action.payload, error: '' } };
+        case FINALIZE_PAYROLL_FAILURE:
+            return { ...state, finalizePayrollState: { loading: false, data: null, error: action.payload } };
+
+        // Post Payroll to Journal
+        case POST_PAYROLL_TO_JOURNAL_REQUEST:
+            return { ...state, postPayrollToJournalState: { loading: true, data: null, error: '' } };
+        case POST_PAYROLL_TO_JOURNAL_SUCCESS:
+            return { ...state, postPayrollToJournalState: { loading: false, data: action.payload, error: '' } };
+        case POST_PAYROLL_TO_JOURNAL_FAILURE:
+            return { ...state, postPayrollToJournalState: { loading: false, data: null, error: action.payload } };
+
+        // Fetch Payroll Journal Entry
+        case FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST:
+            return { ...state, payrollJournalEntryState: { loading: true, data: null, error: '' } };
+        case FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS:
+            return { ...state, payrollJournalEntryState: { loading: false, data: action.payload.data, error: '' } };
+        case FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE:
+            return { ...state, payrollJournalEntryState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;

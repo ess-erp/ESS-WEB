@@ -3,7 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import DataTable from 'react-data-table-component';
 import { motion, AnimatePresence } from 'framer-motion';
 import BlueBtn from '../ButtonsComponents/BlueBtn';
-import { fetchEmployeeLeaveCredits, fetchSchoolCalendarDropdown } from '../../states/HumanResourcesState/Action';
+import SchoolYearDropdown from '../ButtonsComponents/SchoolYearDropdown';
+import { fetchEmployeeLeaveCredits } from '../../states/HumanResourcesState/Action';
 
 /**
  * LeaveCreditDataTable Component
@@ -21,18 +22,13 @@ const LeaveCreditDataTable = ({ onEdit }) => {
   
   // Redux state
   const leaveCreditsState = useSelector((state) => state.hr.employeeLeaveCreditsState || {});
-  const schoolCalendarState = useSelector((state) => state.hr.schoolCalendarDropdownState || {});
   
   const employees = leaveCreditsState.data || [];
   const totalRows = leaveCreditsState.totalRecords || 0;
   const loading = leaveCreditsState.loading || false;
-  
-  const schoolCalendars = schoolCalendarState.data || [];
-  const activeSchoolYear = schoolCalendars.find(sc => sc.IsActive)?.SchoolYear || 'N/A';
-  const activeCalendarId = schoolCalendars.find(sc => sc.IsActive)?.CalendarId || null;
 
   // Local state for filters
-  const [selectedCalendarId, setSelectedCalendarId] = useState(null);
+  const [selectedCalendarId, setSelectedCalendarId] = useState('');
   const [department, setDepartment] = useState('');
   const [filterText, setFilterText] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,18 +41,6 @@ const LeaveCreditDataTable = ({ onEdit }) => {
     { value: 'Non-Teaching', label: 'Non-Teaching' },
     { value: 'Administrative', label: 'Administrative' },
   ];
-
-  // Fetch school calendars on mount
-  useEffect(() => {
-    dispatch(fetchSchoolCalendarDropdown());
-  }, [dispatch]);
-
-  // Set active calendar as default when loaded
-  useEffect(() => {
-    if (activeCalendarId && !selectedCalendarId) {
-      setSelectedCalendarId(activeCalendarId);
-    }
-  }, [activeCalendarId, selectedCalendarId]);
 
   // Fetch employee leave credits whenever filters change
   useEffect(() => {
@@ -167,38 +151,27 @@ const LeaveCreditDataTable = ({ onEdit }) => {
   return (
     <div className="overflow-x-auto pt-2">
       <div className="p-6 bg-white rounded shadow">
-        {/* Header with Active School Year Badge */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold text-green-500">Employee Leave Credits</h2>
-            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-              Active SY: {activeSchoolYear}
-            </span>
-          </div>
+          <h2 className="text-xl font-bold text-green-500">Employee Leave Credits</h2>
         </div>
 
         {/* Filters Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* School Year Dropdown */}
+          {/* School Year Dropdown - Using Reusable Component */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               School Year
             </label>
-            <select
-              value={selectedCalendarId || ''}
+            <SchoolYearDropdown
+              value={selectedCalendarId}
               onChange={(e) => {
-                setSelectedCalendarId(Number(e.target.value));
+                setSelectedCalendarId(e.target.value);
                 setCurrentPage(1);
               }}
+              includeAll={false}
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select School Year</option>
-              {schoolCalendars.map((sc) => (
-                <option key={sc.CalendarId} value={sc.CalendarId}>
-                  {sc.SchoolYear} {sc.IsActive ? '(Active)' : ''}
-                </option>
-              ))}
-            </select>
+            />
           </div>
 
           {/* Department Filter */}

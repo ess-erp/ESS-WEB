@@ -1785,3 +1785,260 @@ export const fetchEmployeeLeaveBalanceWithActions = (employeeId, calendarId) => 
         return { ok: false, error: error.message };
     }
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAYROLL PROCESSING MODULE
+// ══════════════════════════════════════════════════════════════════════════════
+
+import {
+    CALCULATE_PAYROLL_FOR_PERIOD_REQUEST,
+    CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS,
+    CALCULATE_PAYROLL_FOR_PERIOD_FAILURE,
+    FETCH_PAYROLL_DETAILS_REQUEST,
+    FETCH_PAYROLL_DETAILS_SUCCESS,
+    FETCH_PAYROLL_DETAILS_FAILURE,
+    FINALIZE_PAYROLL_REQUEST,
+    FINALIZE_PAYROLL_SUCCESS,
+    FINALIZE_PAYROLL_FAILURE,
+    POST_PAYROLL_TO_JOURNAL_REQUEST,
+    POST_PAYROLL_TO_JOURNAL_SUCCESS,
+    POST_PAYROLL_TO_JOURNAL_FAILURE,
+    FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST,
+    FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS,
+    FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE,
+} from "./ActionType";
+
+/**
+ * Calculate Payroll for a Specific Period
+ * Processes payroll calculations for all or selected employees
+ * 
+ * Backend: POST /api/hr/calculate-payroll
+ * DTO: PayrollCalculationRequestDto { periodId, calendarId?, employeeIds? }
+ * Response: { ok, message, data: { payrollMasterId } }
+ */
+export const calculatePayrollForPeriodRequest = () => ({ type: CALCULATE_PAYROLL_FOR_PERIOD_REQUEST });
+export const calculatePayrollForPeriodSuccess = (data) => ({ type: CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS, payload: data });
+export const calculatePayrollForPeriodFailure = (error) => ({ type: CALCULATE_PAYROLL_FOR_PERIOD_FAILURE, payload: error });
+
+export const calculatePayrollForPeriod = (payrollData) => async (dispatch) => {
+    dispatch(calculatePayrollForPeriodRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/calculate-payroll`;
+
+        const payload = {
+            periodId: payrollData.periodId,
+            calendarId: payrollData.calendarId || null,
+            employeeIds: payrollData.employeeIds || null
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(calculatePayrollForPeriodSuccess(res));
+            return { ok: true, message: res.message, data: res.data };
+        } else {
+            dispatch(calculatePayrollForPeriodFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(calculatePayrollForPeriodFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Fetch Payroll Details for a Specific Period
+ * Gets payroll summary and line items with pagination
+ * 
+ * Backend: GET /api/hr/get-payroll-details
+ * Query Params: { periodId, page?, pageSize?, search? }
+ * Response: PayrollResponseDto { summary, lineItems[] }
+ */
+export const fetchPayrollDetailsRequest = () => ({ type: FETCH_PAYROLL_DETAILS_REQUEST });
+export const fetchPayrollDetailsSuccess = (data) => ({ type: FETCH_PAYROLL_DETAILS_SUCCESS, payload: data });
+export const fetchPayrollDetailsFailure = (error) => ({ type: FETCH_PAYROLL_DETAILS_FAILURE, payload: error });
+
+export const fetchPayrollDetails = (filters = {}) => async (dispatch) => {
+    dispatch(fetchPayrollDetailsRequest());
+    try {
+        const token = getToken();
+
+        const params = new URLSearchParams();
+        params.append('periodId', filters.periodId);
+        params.append('page', filters.page || 1);
+        params.append('pageSize', filters.pageSize || 50);
+        if (filters.search) params.append('search', filters.search);
+
+        const url = `${baseUrl}/hr/get-payroll-details?${params.toString()}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(fetchPayrollDetailsSuccess(res));
+            return { ok: true, data: res.data };
+        } else {
+            dispatch(fetchPayrollDetailsFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(fetchPayrollDetailsFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Finalize Payroll
+ * Locks the payroll from further edits
+ * 
+ * Backend: POST /api/hr/finalize-payroll
+ * DTO: FinalizePayrollRequestDto { periodId }
+ * Response: { ok, message }
+ */
+export const finalizePayrollRequest = () => ({ type: FINALIZE_PAYROLL_REQUEST });
+export const finalizePayrollSuccess = (data) => ({ type: FINALIZE_PAYROLL_SUCCESS, payload: data });
+export const finalizePayrollFailure = (error) => ({ type: FINALIZE_PAYROLL_FAILURE, payload: error });
+
+export const finalizePayroll = (periodId) => async (dispatch) => {
+    dispatch(finalizePayrollRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/finalize-payroll`;
+
+        const payload = { periodId };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(finalizePayrollSuccess(res));
+            return { ok: true, message: res.message };
+        } else {
+            dispatch(finalizePayrollFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(finalizePayrollFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Post Payroll to Journal Entry
+ * Creates double-entry bookkeeping records in the accounting system
+ * 
+ * Backend: POST /api/hr/post-payroll-to-journal
+ * DTO: PostPayrollToJournalRequestDto { periodId, calendarId, description?, accountMapping }
+ * Response: { ok, message, data: { journalId } }
+ */
+export const postPayrollToJournalRequest = () => ({ type: POST_PAYROLL_TO_JOURNAL_REQUEST });
+export const postPayrollToJournalSuccess = (data) => ({ type: POST_PAYROLL_TO_JOURNAL_SUCCESS, payload: data });
+export const postPayrollToJournalFailure = (error) => ({ type: POST_PAYROLL_TO_JOURNAL_FAILURE, payload: error });
+
+export const postPayrollToJournal = (journalData) => async (dispatch) => {
+    dispatch(postPayrollToJournalRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/post-payroll-to-journal`;
+
+        const payload = {
+            periodId: journalData.periodId,
+            calendarId: journalData.calendarId,
+            description: journalData.description || null,
+            accountMapping: journalData.accountMapping || {}
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(postPayrollToJournalSuccess(res));
+            return { ok: true, message: res.message, data: res.data };
+        } else {
+            dispatch(postPayrollToJournalFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(postPayrollToJournalFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Fetch Payroll Journal Entry
+ * Gets the journal entry details for a posted payroll
+ * 
+ * Backend: GET /api/hr/get-payroll-journal-entry
+ * Query Params: { periodId }
+ * Response: PayrollJournalResponseDto { journalId, periodId, journalLines[], totalDebit, totalCredit }
+ */
+export const fetchPayrollJournalEntryRequest = () => ({ type: FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST });
+export const fetchPayrollJournalEntrySuccess = (data) => ({ type: FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS, payload: data });
+export const fetchPayrollJournalEntryFailure = (error) => ({ type: FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE, payload: error });
+
+export const fetchPayrollJournalEntry = (periodId) => async (dispatch) => {
+    dispatch(fetchPayrollJournalEntryRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-payroll-journal-entry?periodId=${periodId}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const res = await response.json();
+
+        if (res.ok) {
+            dispatch(fetchPayrollJournalEntrySuccess(res));
+            return { ok: true, data: res.data };
+        } else {
+            dispatch(fetchPayrollJournalEntryFailure(res.message));
+            return { ok: false, error: res.message };
+        }
+    }
+    catch (error) {
+        dispatch(fetchPayrollJournalEntryFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};

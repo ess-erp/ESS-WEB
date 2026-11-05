@@ -45,6 +45,7 @@ import HrDtrManagement from "../pages/HumanResources/DtrManagement";
 import HrLeaveFiling from "../pages/HumanResources/LeaveFiling";
 import HrEmployeeList from "../pages/HumanResources/EmployeeList";
 import HrDeductionsManagement from "../pages/HumanResources/DeductionsManagement";
+import HrFacultyLoadEntryPrototype from "../pages/HumanResources/FacultyLoadEntryPrototype";
 import PayrollProcessing from "../pages/HumanResources/PayrollProcessing";
 import EmployeePayrollList from "../pages/HumanResources/EmployeePayrollList";
 import PayrollSummaryReport from "../pages/HumanResources/PayrollSummaryReport";
@@ -392,6 +393,14 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
               <PayrollProcessing />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/hrd/faculty-load-entry-prototype"
+          element={
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+              <HrFacultyLoadEntryPrototype />
             </ProtectedRoutes>
           }
         />
