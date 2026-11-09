@@ -124,14 +124,14 @@ const DtrDataTable = ({ onAddManualClick }) => {
 
     // ── Fetch logs ────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
-        dispatch(fetchDtrRecords({
+        dispatch(fetchDtrRecords(
+            null,  // employeeId
+            dateFilter,  // startDate
+            dateFilter,  // endDate
             page,
-            pageSize,
-            search,
-            startDate: dateFilter,
-            endDate: dateFilter,
-        }));
-    }, [page, pageSize, search, dateFilter, dispatch]);
+            pageSize
+        ));
+    }, [page, pageSize, dateFilter, dispatch]);
 
     useEffect(() => {
         fetchData();

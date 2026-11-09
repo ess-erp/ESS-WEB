@@ -67,7 +67,7 @@ const EmployeeDeductionsDataTable = () => {
 
     // Fetch data on mount
     useEffect(() => {
-        dispatch(fetchEmployeeDeductions({}));
+        dispatch(fetchEmployeeDeductions(1, 10, '', null, null));
     }, [dispatch]);
 
     const handleEdit = (row) => {
@@ -103,7 +103,7 @@ const EmployeeDeductionsDataTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Employee deduction updated successfully'));
             setEditModal(false);
-            dispatch(fetchEmployeeDeductions({}));
+            dispatch(fetchEmployeeDeductions(1, 10, '', null, null));
         } else {
             dispatch(showToast('error', result.message || 'Failed to update employee deduction'));
         }
@@ -140,7 +140,7 @@ const EmployeeDeductionsDataTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Employee deduction created successfully'));
             setAddModal(false);
-            dispatch(fetchEmployeeDeductions({}));
+            dispatch(fetchEmployeeDeductions(1, 10, '', null, null));
         } else {
             dispatch(showToast('error', result.message || 'Failed to create employee deduction'));
         }
@@ -157,7 +157,7 @@ const EmployeeDeductionsDataTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Employee deduction deleted successfully'));
             setDeleteModal(false);
-            dispatch(fetchEmployeeDeductions({}));
+            dispatch(fetchEmployeeDeductions(1, 10, '', null, null));
         } else {
             dispatch(showToast('error', result.message || 'Failed to delete employee deduction'));
         }

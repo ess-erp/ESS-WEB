@@ -90,6 +90,7 @@ import PurchasingRequestForm from "../pages/Purchasing/RequestForm";
 import PurchasingPurchaseOrder from "../pages/Purchasing/PurchaseOrder";
 import PurchasingSupplier from "../pages/Purchasing/Supplier";
 import PurchasingRfNumberSeries from "../pages/Purchasing/RfNumberSeries";
+import FinanceDashboard from "../pages/Finance/Dashboard";
 
 
 
@@ -793,6 +794,17 @@ const AppRoutes = () => (
         />
 
         {/* end of purchasing module */}
+
+        {/* start of finance module */}
+        <Route
+          path="/finance/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[4]}>
+              <FinanceDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of finance module */}
 
         {/* shared components */}
 

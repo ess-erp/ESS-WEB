@@ -328,15 +328,25 @@ export const fetchTransactionHistoryData = (StartDate, EndDate, page, pageSize, 
     dispatch(fetchTransactionHistoryRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/cashier/transaction-history-table?startDate=${StartDate}&endDate=${EndDate}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            startDate: StartDate || '',
+            endDate: EndDate || '',
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/cashier/transaction-history-table?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -345,8 +355,8 @@ export const fetchTransactionHistoryData = (StartDate, EndDate, page, pageSize, 
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
     catch (error) {
-        dispatch(fetchTransactionHistoryFailure(error));
-        return { ok: false, error };
+        dispatch(fetchTransactionHistoryFailure(error.message));
+        return { ok: false, error: error.message };
     };
 };
 

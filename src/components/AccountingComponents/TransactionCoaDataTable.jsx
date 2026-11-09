@@ -24,6 +24,7 @@ const TransactionCoaDataTable = () => {
     // Form state - multi-row transactions
     const [selectedSY, setSelectedSY] = useState("2024-2025");
     const [selectedCampus, setSelectedCampus] = useState(null);
+    const [requireAmount, setRequireAmount] = useState(false); // New state for amount requirement
     const [formRows, setFormRows] = useState([
         { 
             transactionCode: "", 
@@ -165,6 +166,7 @@ const TransactionCoaDataTable = () => {
         setEditingId(null);
         setSelectedSY("2024-2025");
         setSelectedCampus(null);
+        setRequireAmount(false); // Reset checkbox
         setFormRows([
             { 
                 transactionCode: "", 
@@ -268,10 +270,9 @@ const TransactionCoaDataTable = () => {
             if (!row.creditCoa) {
                 newErrors[`${i}-creditCoa`] = "Credit COA required";
             }
-            if (!row.feeAmount || parseFloat(row.feeAmount) <= 0) {
-                if (row.transactionType.trim().toLowerCase() !== "assessment plan") {
-                    newErrors[`${i}-feeAmount`] = "Amount required";
-                }
+            // Only validate amount if checkbox is checked
+            if (requireAmount && (!row.feeAmount || parseFloat(row.feeAmount) <= 0)) {
+                newErrors[`${i}-feeAmount`] = "Amount required";
             }
         });
 
@@ -467,6 +468,23 @@ const TransactionCoaDataTable = () => {
                                     </div>
                                 </div>
                             </div>
+                            
+                            {/* Amount Requirement Checkbox */}
+                            <div className="flex items-center gap-2 pt-2">
+                                <input
+                                    type="checkbox"
+                                    id="requireAmount"
+                                    checked={requireAmount}
+                                    onChange={(e) => setRequireAmount(e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2 cursor-pointer"
+                                />
+                                <label 
+                                    htmlFor="requireAmount" 
+                                    className="text-sm font-medium text-gray-700 cursor-pointer select-none"
+                                >
+                                    Require Amount field (if unchecked, Amount can be empty)
+                                </label>
+                            </div>
                         </div>
 
                         {/* Table Container with Single Horizontal Scroll */}
@@ -502,7 +520,7 @@ const TransactionCoaDataTable = () => {
                                                     Credit COA *
                                                 </div>
                                                 <div className="w-32 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 border-r border-gray-200">
-                                                    Amount
+                                                    Amount {requireAmount && <span className="text-red-500">*</span>}
                                                 </div>
                                                 <div className="w-20 px-2 py-2 text-xs font-semibold text-gray-700 bg-gray-50 text-center">
                                                     Action
@@ -622,13 +640,10 @@ const TransactionCoaDataTable = () => {
                                                                 onChange={(e) =>
                                                                     handleRowChange(index, "feeAmount", e.target.value)
                                                                 }
-                                                                placeholder={row.transactionType.trim().toLowerCase() === "assessment plan" ? "N/A" : "0.00"}
+                                                                placeholder="0.00"
                                                                 step="0.01"
-                                                                disabled={row.transactionType.trim().toLowerCase() === "assessment plan"}
                                                                 className={`w-full px-2 py-1.5 text-sm border rounded focus:outline-none focus:ring-2 ${
-                                                                    row.transactionType.trim().toLowerCase() === "assessment plan"
-                                                                        ? "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
-                                                                        : errors[`${index}-feeAmount`]
+                                                                    errors[`${index}-feeAmount`]
                                                                         ? "border-red-500 focus:ring-red-500"
                                                                         : "border-gray-300 focus:ring-blue-500"
                                                                 }`}

@@ -68,12 +68,13 @@ const EmployeeListDataTable = () => {
     // ── Fetch ─────────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
         dispatch(
-            fetchEmployeeList({
+            fetchEmployeeList(
                 page,
                 pageSize,
                 search,
-                departmentId: department?.value || null,
-            })
+                department?.value || null,
+                null // status filter
+            )
         );
     }, [page, pageSize, search, department, dispatch]);
 

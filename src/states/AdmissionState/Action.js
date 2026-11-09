@@ -38,19 +38,31 @@ export const fetchEnrollmentTableRequest = () => ({ type: FETCH_ENROLLMENTTABLE_
 export const fetchEnrollmentTableSuccess = (data) => ({ type: FETCH_ENROLLMENTTABLE_SUCCESS, payload: data });
 export const fetchEnrollmentTableFailure = (error) => ({ type: FETCH_ENROLLMENTTABLE_FAILURE, payload: error });
 
-export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pageSize, search,schoolYear) => async (dispatch) => {
+export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pageSize, search, schoolYear) => async (dispatch) => {
     dispatch(fetchEnrollmentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/enrollment-table?startDate=${StartDate}&endDate=${EndDate}&TableType=${TableType}&page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
+        const params = new URLSearchParams({
+            startDate: StartDate || '',
+            endDate: EndDate || '',
+            TableType: TableType,
+            page: page,
+            pageSize: pageSize,
+            search: search || '',
+            schoolYear: schoolYear || ''
+        });
+        const url = `${baseUrl}/admission/enrollment-table?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -59,8 +71,8 @@ export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pa
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
     catch (error) {
-        dispatch(fetchEnrollmentTableFailure(error));
-        return { ok: false, error };
+        dispatch(fetchEnrollmentTableFailure(error.message));
+        return { ok: false, error: error.message };
     };
 };
 
@@ -238,14 +250,23 @@ export const fetchTemplateTableData = (tableType, page, pageSize, search) => asy
     dispatch(fetchTemplateTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/template-table?tableType=${tableType}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            tableType: tableType,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/admission/template-table?${params}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -255,7 +276,7 @@ export const fetchTemplateTableData = (tableType, page, pageSize, search) => asy
     }
     catch (error) {
         dispatch(fetchTempalteTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 
 };
@@ -269,14 +290,24 @@ export const fetchRowTemplateTableData = (templateId, tempType, page, pageSize, 
     dispatch(fetchRowTemplateTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-row-template-table?templateId=${templateId}&tempType=${tempType}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            templateId: templateId,
+            tempType: tempType,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/admission/get-row-template-table?${params}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -286,7 +317,7 @@ export const fetchRowTemplateTableData = (templateId, tempType, page, pageSize, 
     }
     catch (error) {
         dispatch(fetchRowTemplateTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 
 };
@@ -331,14 +362,23 @@ export const fetchDocumentTableData = (appId, page, pageSize, search) => async (
     dispatch(fetchDocumentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-document-table?appId=${appId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            appId: appId,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/admission/get-document-table?${params}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -348,7 +388,7 @@ export const fetchDocumentTableData = (appId, page, pageSize, search) => async (
     }
     catch (error) {
         dispatch(fetchDocumentTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 
 };
@@ -402,14 +442,24 @@ export const fetchGpaTableData = (divId, appId, page, pageSize, search) => async
     dispatch(fetchGpaTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-gpa-table?divId=${divId}&appId=${appId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            divId: divId,
+            appId: appId,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/admission/get-gpa-table?${params}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -419,7 +469,7 @@ export const fetchGpaTableData = (divId, appId, page, pageSize, search) => async
     }
     catch (error) {
         dispatch(fetchGpaTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 
 };
@@ -590,14 +640,23 @@ export const fetchOthersTableData = (appId, page, pageSize, search) => async (di
     dispatch(fetchOthersTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/admission/get-others-table?appId=${appId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            appId: appId,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/admission/get-others-table?${params}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -607,7 +666,7 @@ export const fetchOthersTableData = (appId, page, pageSize, search) => async (di
     }
     catch (error) {
         dispatch(fetchOthersTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 
 };

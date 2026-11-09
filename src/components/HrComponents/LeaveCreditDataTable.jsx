@@ -45,13 +45,13 @@ const LeaveCreditDataTable = ({ onEdit }) => {
   // Fetch employee leave credits whenever filters change
   useEffect(() => {
     if (selectedCalendarId) {
-      dispatch(fetchEmployeeLeaveCredits({
-        calendarId: selectedCalendarId,
-        department: department,
-        search: filterText,
-        page: currentPage,
-        pageSize: rowsPerPage
-      }));
+      dispatch(fetchEmployeeLeaveCredits(
+        selectedCalendarId,
+        department,
+        filterText,
+        currentPage,
+        rowsPerPage
+      ));
     }
   }, [selectedCalendarId, department, filterText, currentPage, rowsPerPage, dispatch]);
 

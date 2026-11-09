@@ -102,3 +102,216 @@ The system supports multiple role-based access:
 - Dev server: `npm run dev`
 - Always run build to verify changes before committing
 - The project uses PowerShell on Windows
+
+
+---
+
+## 🏗️ Architecture & Code Structure Rules
+
+### Backend Controller Standards (C# .NET)
+
+**CRITICAL RULES:**
+
+✅ **Do NOT create new DTOs for simple query parameters**  
+✅ **Paginated table endpoints MUST accept raw query parameter signatures** instead of wrapping them in a request DTO  
+✅ **Use GET method with query parameters** for data retrieval endpoints
+
+**Correct Controller Signature Pattern:**
+
+```csharp
+[Authorize]
+[HttpGet]
+[Route("endpoint-name")]
+public async Task<IActionResult> GetEndpointName(
+    int page = 1, 
+    int pageSize = 10, 
+    string search = "", 
+    string schoolYear = "",
+    string status = ""
+)
+{
+    try
+    {
+        var result = await _service.GetEndpointName(page, pageSize, search, schoolYear, status);
+        return Ok(new
+        {
+            data = result.Data,
+            totalRecords = result.TotalRecords
+        });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, $"An error occurred: {ex.Message}");
+    }
+}
+```
+
+**Standard Response Format:**
+```csharp
+return Ok(new
+{
+    data = res.Data,           // Array of items
+    totalRecords = res.TotalRecords  // Total count for pagination
+});
+```
+
+### Frontend Redux/API Standards
+
+**CRITICAL RULES:**
+
+❌ **Do NOT use POST with JSON body for query parameters**  
+✅ **Use GET with query string parameters** for paginated data fetching  
+✅ **Match the backend controller signature exactly**
+
+**Correct Frontend Redux Action Pattern:**
+
+```javascript
+export const fetchDataList = (page = 1, pageSize = 10, search = '', schoolYear = '', status = '') => async (dispatch) => {
+    dispatch(fetchDataListRequest());
+    try {
+        const token = getToken();
+        
+        // ✅ Build query string parameters
+        const params = new URLSearchParams({
+            page: page.toString(),
+            pageSize: pageSize.toString(),
+            search: search || '',
+            schoolYear: schoolYear || '',
+            status: status || ''
+        });
+        
+        const url = `${baseUrl}/controller/endpoint-name?${params.toString()}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',  // ✅ Use GET, not POST
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        // ✅ Check HTTP response status
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        
+        dispatch(fetchDataListSuccess(res));
+        return { 
+            ok: true, 
+            data: res.data,                    // ✅ Access res.data
+            totalRecords: res.totalRecords     // ✅ Access res.totalRecords
+        };
+    }
+    catch (error) {
+        dispatch(fetchDataListFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+```
+
+**Incorrect Pattern to AVOID:**
+
+```javascript
+// ❌ WRONG: POST with JSON body for query params
+export const fetchDataList = (filters) => async (dispatch) => {
+    const response = await fetch(`${baseUrl}/endpoint`, {
+        method: 'POST',                    // ❌ Should be GET
+        body: JSON.stringify(filters)       // ❌ Should be query params
+    });
+};
+```
+
+### Response Handling Pattern
+
+**Backend Response Structure:**
+```json
+{
+    "data": [...],      // Array of items or single object
+    "totalRecords": 123  // Total count for pagination
+}
+```
+
+**Frontend Success Check:**
+```javascript
+// ✅ Check HTTP response status first (not res.ok from JSON)
+if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+}
+
+const res = await response.json();
+
+// ✅ Access data and totalRecords directly
+return { 
+    ok: true,                      // Our own success flag
+    data: res.data,                // Backend's data array
+    totalRecords: res.totalRecords // Backend's total count
+};
+```
+
+### DataTable Component Integration
+
+**Standard Pattern for DataTables:**
+
+```javascript
+// Component state
+const [page, setPage] = useState(1);
+const [pageSize, setPageSize] = useState(10);
+const [search, setSearch] = useState('');
+const [filters, setFilters] = useState({});
+
+// Redux selector
+const { loading, data, totalRecords } = useSelector((state) => state.module.dataListState);
+const items = Array.isArray(data) ? data : [];
+
+// Fetch on mount and filter changes
+useEffect(() => {
+    dispatch(fetchDataList(page, pageSize, search, filters.schoolYear, filters.status));
+}, [page, pageSize, search, filters, dispatch]);
+
+// DataTable props
+<DataTable
+    columns={columns}
+    data={items}
+    progressPending={loading}
+    pagination
+    paginationServer
+    paginationTotalRows={totalRecords}
+    paginationDefaultPage={page}
+    onChangePage={(newPage) => setPage(newPage)}
+    onChangeRowsPerPage={(newSize, page) => {
+        setPageSize(newSize);
+        setPage(page);
+    }}
+/>
+```
+
+### When to Use DTOs vs Query Params
+
+**Use Query Parameters (GET):**
+- ✅ Paginated list endpoints
+- ✅ Search/filter operations
+- ✅ Simple data retrieval
+- ✅ Read operations with < 5 parameters
+
+**Use Request DTOs (POST):**
+- ✅ Create/Update operations
+- ✅ Complex nested data structures
+- ✅ File uploads
+- ✅ Operations with > 5 parameters
+- ✅ Operations with complex validation rules
+
+---
+
+## Important Reminders
+
+1. **Always follow the GET + query params pattern** for datatable/list endpoints
+2. **Never create DTOs for simple pagination queries**
+3. **Always check `response.ok` (HTTP status) before parsing JSON**
+4. **Backend always returns `{ data, totalRecords }` structure**
+5. **Frontend should handle both camelCase and PascalCase** in responses
+6. **All endpoints must include try-catch with 500 error handling**
+7. **All API calls must include Authorization header with JWT token**
+
+---

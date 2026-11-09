@@ -49,15 +49,26 @@ export const fetchEnrollmentTableData = (StartDate, EndDate, page, pageSize, sea
     dispatch(fetchEnrollmentTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/student-master-table?startDate=${StartDate}&endDate=${EndDate}&page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
+        const params = new URLSearchParams({
+            startDate: StartDate || '',
+            endDate: EndDate || '',
+            page: page,
+            pageSize: pageSize,
+            search: search || '',
+            schoolYear: schoolYear || ''
+        });
+        const url = `${baseUrl}/sru/student-master-table?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -65,8 +76,8 @@ export const fetchEnrollmentTableData = (StartDate, EndDate, page, pageSize, sea
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     }
     catch (error) {
-        dispatch(fetchEnrollmentTableFailure(error));
-        return { ok: false, error };
+        dispatch(fetchEnrollmentTableFailure(error.message));
+        return { ok: false, error: error.message };
     };
 };
 
@@ -169,15 +180,24 @@ export const fetchGetSectionNameData = (page, pageSize, search, schoolYear = '')
     dispatch(fetchGetSectionNameRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-section-list?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || '',
+            schoolYear: schoolYear
+        });
+        const url = `${baseUrl}/sru/get-section-list?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -186,7 +206,7 @@ export const fetchGetSectionNameData = (page, pageSize, search, schoolYear = '')
     }
     catch (error) {
         dispatch(fetchGetSectionNameFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -198,15 +218,24 @@ export const fetchGetEnrolledStudentData = (levelId, page, pageSize, search) => 
     dispatch(fetchGetEnrolledStudentRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-enrolled-student-list?levelId=${levelId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            levelId: levelId,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/sru/get-enrolled-student-list?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -215,7 +244,7 @@ export const fetchGetEnrolledStudentData = (levelId, page, pageSize, search) => 
     }
     catch (error) {
         dispatch(fetchGetEnrolledStudentFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -258,15 +287,24 @@ export const fetchGetStudentSectionListData = (page, pageSize, search, schoolYea
     dispatch(fetchGetStudentSectionListRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-section-student-list?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || '',
+            schoolYear: schoolYear
+        });
+        const url = `${baseUrl}/sru/get-section-student-list?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -275,7 +313,7 @@ export const fetchGetStudentSectionListData = (page, pageSize, search, schoolYea
     }
     catch (error) {
         dispatch(fetchGetStudentSectionListFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -317,15 +355,23 @@ export const fetchGetHouseNameData = (page, pageSize, search) => async (dispatch
     dispatch(fetchGetHouseNameRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-house-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/sru/get-house-list?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -334,7 +380,7 @@ export const fetchGetHouseNameData = (page, pageSize, search) => async (dispatch
     }
     catch (error) {
         dispatch(fetchGetHouseNameFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -346,15 +392,24 @@ export const fetchGetHouseStudentData = (levelId, page, pageSize, search) => asy
     dispatch(fetchGetHouseStudentRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-house-student?levelId=${levelId}&page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            levelId: levelId,
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/sru/get-house-student?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -363,7 +418,7 @@ export const fetchGetHouseStudentData = (levelId, page, pageSize, search) => asy
     }
     catch (error) {
         dispatch(fetchGetHouseStudentFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -406,15 +461,23 @@ export const fetchGetStudentHouseListData = (page, pageSize, search) => async (d
     dispatch(fetchGetStudentHouseListRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-house-student-list?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/sru/get-house-student-list?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -423,7 +486,7 @@ export const fetchGetStudentHouseListData = (page, pageSize, search) => async (d
     }
     catch (error) {
         dispatch(fetchGetStudentHouseListFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 
@@ -436,15 +499,23 @@ export const fetchSchoolCalendarTableData = (page, pageSize, search) => async (d
     dispatch(fetchSchoolCalendarTableRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/sru/get-school-calendar-table?page=${page}&pageSize=${pageSize}&search=${search}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        const url = `${baseUrl}/sru/get-school-calendar-table?${params}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
 
@@ -453,7 +524,7 @@ export const fetchSchoolCalendarTableData = (page, pageSize, search) => async (d
     }
     catch (error) {
         dispatch(fetchSchoolCalendarTableFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     };
 };
 

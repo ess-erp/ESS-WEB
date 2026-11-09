@@ -33,21 +33,19 @@ import {
     UPDATE_EMPLOYEE_DEDUCTION_REQUEST, UPDATE_EMPLOYEE_DEDUCTION_SUCCESS, UPDATE_EMPLOYEE_DEDUCTION_FAILURE,
     DELETE_EMPLOYEE_DEDUCTION_REQUEST, DELETE_EMPLOYEE_DEDUCTION_SUCCESS, DELETE_EMPLOYEE_DEDUCTION_FAILURE,
     FETCH_PAYROLL_PERIODS_REQUEST, FETCH_PAYROLL_PERIODS_SUCCESS, FETCH_PAYROLL_PERIODS_FAILURE,
-    FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST, FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS, FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE,
+    FETCH_EMPLOYEE_PAYROLL_LIST_REQUEST, FETCH_EMPLOYEE_PAYROLL_LIST_SUCCESS, FETCH_EMPLOYEE_PAYROLL_LIST_FAILURE,
     CREATE_PAYROLL_PERIOD_REQUEST, CREATE_PAYROLL_PERIOD_SUCCESS, CREATE_PAYROLL_PERIOD_FAILURE,
     UPDATE_PAYROLL_PERIOD_REQUEST, UPDATE_PAYROLL_PERIOD_SUCCESS, UPDATE_PAYROLL_PERIOD_FAILURE,
     DELETE_PAYROLL_PERIOD_REQUEST, DELETE_PAYROLL_PERIOD_SUCCESS, DELETE_PAYROLL_PERIOD_FAILURE,
     INSERT_PAYROLL_PERIOD_REQUEST, INSERT_PAYROLL_PERIOD_SUCCESS, INSERT_PAYROLL_PERIOD_FAILURE,
     CALCULATE_PAYROLL_REQUEST, CALCULATE_PAYROLL_SUCCESS, CALCULATE_PAYROLL_FAILURE,
-    POST_JOURNAL_ENTRY_REQUEST, POST_JOURNAL_ENTRY_SUCCESS, POST_JOURNAL_ENTRY_FAILURE,
     CREATE_MANUAL_ATTENDANCE_REQUEST, CREATE_MANUAL_ATTENDANCE_SUCCESS, CREATE_MANUAL_ATTENDANCE_FAILURE,
     CREATE_MANUAL_LEAVE_REQUEST, CREATE_MANUAL_LEAVE_SUCCESS, CREATE_MANUAL_LEAVE_FAILURE,
     FETCH_ALL_EMPLOYEES_REQUEST, FETCH_ALL_EMPLOYEES_SUCCESS, FETCH_ALL_EMPLOYEES_FAILURE,
     CALCULATE_PAYROLL_FOR_PERIOD_REQUEST, CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS, CALCULATE_PAYROLL_FOR_PERIOD_FAILURE,
     FETCH_PAYROLL_DETAILS_REQUEST, FETCH_PAYROLL_DETAILS_SUCCESS, FETCH_PAYROLL_DETAILS_FAILURE,
     FINALIZE_PAYROLL_REQUEST, FINALIZE_PAYROLL_SUCCESS, FINALIZE_PAYROLL_FAILURE,
-    POST_PAYROLL_TO_JOURNAL_REQUEST, POST_PAYROLL_TO_JOURNAL_SUCCESS, POST_PAYROLL_TO_JOURNAL_FAILURE,
-    FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST, FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS, FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE,
+    SUBMIT_PAYROLL_FOR_APPROVAL_REQUEST, SUBMIT_PAYROLL_FOR_APPROVAL_SUCCESS, SUBMIT_PAYROLL_FOR_APPROVAL_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -98,7 +96,7 @@ const initialGeneralState = {
     
     // Payroll Period Templates
     payrollPeriodsState:    { loading: false, data: [], error: '', totalRecords: 0 },
-    payrollPeriodDropdownState: { loading: false, data: [], error: '' },
+    employeePayrollListState: { loading: false, data: [], error: '', totalRecords: 0 },
     createPayrollPeriodState: { loading: false, data: null, error: '' },
     updatePayrollPeriodState: { loading: false, data: null, error: '' },
     deletePayrollPeriodState: { loading: false, data: null, error: '' },
@@ -108,12 +106,10 @@ const initialGeneralState = {
     calculatePayrollForPeriodState: { loading: false, data: null, error: '' },
     payrollDetailsState: { loading: false, data: null, error: '' },
     finalizePayrollState: { loading: false, data: null, error: '' },
-    postPayrollToJournalState: { loading: false, data: null, error: '' },
-    payrollJournalEntryState: { loading: false, data: null, error: '' },
+    submitPayrollForApprovalState: { loading: false, data: null, error: '' },
     
     // Payroll Processing
     calculatePayrollState: { loading: false, data: null, error: '' },
-    postJournalEntryState: { loading: false, data: null, error: '' },
     
     // Leave Credit Management
     employeeLeaveCreditsState: { loading: false, data: [], error: '', totalRecords: 0 },
@@ -428,19 +424,20 @@ const hrReducer = (state = initialGeneralState, action) => {
         case FETCH_PAYROLL_PERIODS_FAILURE:
             return { ...state, payrollPeriodsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
 
-        case FETCH_PAYROLL_PERIOD_DROPDOWN_REQUEST:
-            return { ...state, payrollPeriodDropdownState: { loading: true, data: [], error: '' } };
-        case FETCH_PAYROLL_PERIOD_DROPDOWN_SUCCESS:
+        case FETCH_EMPLOYEE_PAYROLL_LIST_REQUEST:
+            return { ...state, employeePayrollListState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case FETCH_EMPLOYEE_PAYROLL_LIST_SUCCESS:
             return {
                 ...state,
-                payrollPeriodDropdownState: {
+                employeePayrollListState: {
                     loading: false,
                     data: action.payload?.data ?? action.payload ?? [],
-                    error: ''
+                    error: '',
+                    totalRecords: action.payload?.totalRecords ?? 0
                 }
             };
-        case FETCH_PAYROLL_PERIOD_DROPDOWN_FAILURE:
-            return { ...state, payrollPeriodDropdownState: { loading: false, data: [], error: action.payload } };
+        case FETCH_EMPLOYEE_PAYROLL_LIST_FAILURE:
+            return { ...state, employeePayrollListState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
 
         case CREATE_PAYROLL_PERIOD_REQUEST:
             return { ...state, createPayrollPeriodState: { loading: true, data: null, error: '' } };
@@ -477,13 +474,6 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, calculatePayrollState: { loading: false, data: action.payload, error: '' } };
         case CALCULATE_PAYROLL_FAILURE:
             return { ...state, calculatePayrollState: { loading: false, data: null, error: action.payload } };
-
-        case POST_JOURNAL_ENTRY_REQUEST:
-            return { ...state, postJournalEntryState: { loading: true, data: null, error: '' } };
-        case POST_JOURNAL_ENTRY_SUCCESS:
-            return { ...state, postJournalEntryState: { loading: false, data: action.payload, error: '' } };
-        case POST_JOURNAL_ENTRY_FAILURE:
-            return { ...state, postJournalEntryState: { loading: false, data: null, error: action.payload } };
 
         // ── Leave Credit Management ────────────────────────────────────────────
         case 'FETCH_EMPLOYEE_LEAVE_CREDITS_REQUEST':
@@ -638,21 +628,13 @@ const hrReducer = (state = initialGeneralState, action) => {
         case FINALIZE_PAYROLL_FAILURE:
             return { ...state, finalizePayrollState: { loading: false, data: null, error: action.payload } };
 
-        // Post Payroll to Journal
-        case POST_PAYROLL_TO_JOURNAL_REQUEST:
-            return { ...state, postPayrollToJournalState: { loading: true, data: null, error: '' } };
-        case POST_PAYROLL_TO_JOURNAL_SUCCESS:
-            return { ...state, postPayrollToJournalState: { loading: false, data: action.payload, error: '' } };
-        case POST_PAYROLL_TO_JOURNAL_FAILURE:
-            return { ...state, postPayrollToJournalState: { loading: false, data: null, error: action.payload } };
-
-        // Fetch Payroll Journal Entry
-        case FETCH_PAYROLL_JOURNAL_ENTRY_REQUEST:
-            return { ...state, payrollJournalEntryState: { loading: true, data: null, error: '' } };
-        case FETCH_PAYROLL_JOURNAL_ENTRY_SUCCESS:
-            return { ...state, payrollJournalEntryState: { loading: false, data: action.payload.data, error: '' } };
-        case FETCH_PAYROLL_JOURNAL_ENTRY_FAILURE:
-            return { ...state, payrollJournalEntryState: { loading: false, data: null, error: action.payload } };
+        // Submit Payroll for Approval
+        case SUBMIT_PAYROLL_FOR_APPROVAL_REQUEST:
+            return { ...state, submitPayrollForApprovalState: { loading: true, data: null, error: '' } };
+        case SUBMIT_PAYROLL_FOR_APPROVAL_SUCCESS:
+            return { ...state, submitPayrollForApprovalState: { loading: false, data: action.payload, error: '' } };
+        case SUBMIT_PAYROLL_FOR_APPROVAL_FAILURE:
+            return { ...state, submitPayrollForApprovalState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;

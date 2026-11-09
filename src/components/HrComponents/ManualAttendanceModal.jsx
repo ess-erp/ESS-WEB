@@ -41,6 +41,7 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
     // Watch time fields to calculate hours
     const timeIn = watch('timeIn');
     const timeOut = watch('timeOut');
+    console.log(searchEmployeesState);
 
     // Calculate total hours worked
     const calculateHours = (timeInStr, timeOutStr) => {
@@ -55,12 +56,13 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
 
     // Fetch employees with debounce for search
     const fetchEmployees = useCallback(async (search = '') => {
-        await dispatch(searchEmployees({
-            page: 1,
-            pageSize: 50, // Limit for dropdown
-            search: search,
-            status: 'Active', // Only active employees
-        }));
+        await dispatch(searchEmployees(
+            1,     // page
+            50,    // pageSize (Limit for dropdown)
+            search,
+            null,  // departmentId
+            'Active'  // status - Only active employees
+        ));
     }, [dispatch]);
 
     // Initial fetch when modal opens

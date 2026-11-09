@@ -48,15 +48,23 @@ export const fetchGetCoaData = (page, pageSize, search) => async (dispatch) => {
     dispatch(fetchGetCoaRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-coa?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`, {
-            method: 'POST', headers: authHeaders(token),
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
         });
+        const res = await fetch(`${baseUrl}/accounting/get-coa?${params}`, {
+            method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetCoaSuccess(data));
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchGetCoaFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -201,16 +209,24 @@ export const fetchGetCoaCashierData = (page, pageSize, search) => async (dispatc
     dispatch(fetchGetCoaCashierRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-coa-cashier-list?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`, {
-            method: 'POST', headers: authHeaders(token),
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
         });
+        const res = await fetch(`${baseUrl}/accounting/get-coa-cashier-list?${params}`, {
+            method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const response = await res.json();
         console.log(response);
         dispatch(fetchGetCoaCashierSuccess(response));
         return { ok: true, data: response.data, totalRecords: response.totalRecords };
     } catch (err) {
         dispatch(fetchGetCoaCashierFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -270,15 +286,23 @@ export const fetchGetStudentLedger = (page, pageSize, search, studentId = null) 
     dispatch(fetchGetStudentLedgerRequest());
     try {
         const token = getToken();
-        let url = `${baseUrl}/accounting/get-student-ledger?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
-        if (studentId) url += `&studentId=${studentId}`;
-        const res = await fetch(url, { method: 'POST', headers: authHeaders(token) });
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        if (studentId) params.append('studentId', studentId);
+        const url = `${baseUrl}/accounting/get-student-ledger?${params}`;
+        const res = await fetch(url, { method: 'GET', headers: { 'Authorization': `Bearer ${token}` } });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetStudentLedgerSuccess(data));
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchGetStudentLedgerFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -334,19 +358,28 @@ export const fetchGetJournalData = (page, pageSize, search, userId, userType, ca
     dispatch(fetchGetJournalRequest());
     try {
         const token = getToken();
-        let url = `${baseUrl}/accounting/get-journal-entries?page=${page}&pageSize=${pageSize}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (userId) url += `&userId=${userId}`;
-        if (userType) url += `&userType=${encodeURIComponent(userType)}`;
-        if (calendarId) url += `&calendarId=${calendarId}`;
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize
+        });
+        if (search) params.append('search', search);
+        if (userId) params.append('userId', userId);
+        if (userType) params.append('userType', userType);
+        if (calendarId) params.append('calendarId', calendarId);
         
-        const res = await fetch(url, { method: 'POST', headers: authHeaders(token) });
+        const res = await fetch(`${baseUrl}/accounting/get-journal-entries?${params}`, { 
+            method: 'GET', 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetJournalSuccess(data));
         return { ok: true, data: data.Data || data.data, totalRecords: data.TotalRecords || data.totalRecords };
     } catch (err) {
         dispatch(fetchGetJournalFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -531,15 +564,23 @@ export const fetchGetSiSeriesData = (page, pageSize, search) => async (dispatch)
     dispatch(fetchGetSiSeriesRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-si-series?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`, {
-            method: 'POST', headers: authHeaders(token),
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
         });
+        const res = await fetch(`${baseUrl}/accounting/get-si-series?${params}`, {
+            method: 'GET', headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetSiSeriesSuccess(data));
         return { ok: true, data: data.Data, totalRecords: data.TotalRecords };
     } catch (err) {
         dispatch(fetchGetSiSeriesFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -620,17 +661,27 @@ export const fetchGetCashierTransactionsData = (page, pageSize, search, dateFrom
     dispatch(fetchGetCashierTransactionsRequest());
     try {
         const token = getToken();
-        let url = `${baseUrl}/accounting/get-cashier-transactions?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
-        if (dateFrom) url += `&dateFrom=${dateFrom}`;
-        if (dateTo)   url += `&dateTo=${dateTo}`;
-        if (status)   url += `&status=${status}`;
-        const res = await fetch(url, { method: 'POST', headers: authHeaders(token) });
+        const params = new URLSearchParams({
+            page: page,
+            pageSize: pageSize,
+            search: search || ''
+        });
+        if (dateFrom) params.append('dateFrom', dateFrom);
+        if (dateTo) params.append('dateTo', dateTo);
+        if (status) params.append('status', status);
+        const res = await fetch(`${baseUrl}/accounting/get-cashier-transactions?${params}`, { 
+            method: 'GET', 
+            headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetCashierTransactionsSuccess(data));
         return { ok: true, data: data.data, totalRecords: data.totalRecords };
     } catch (err) {
         dispatch(fetchGetCashierTransactionsFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -708,16 +759,25 @@ export const fetchTemplateTableData = (selectedStatus, page = 1, pageSize = 10, 
     dispatch(fetchTemplateTableDataRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-templates?status=${selectedStatus}&page=${page}&pageSize=${pageSize}&search=${search}`, {
-            method: 'POST',
-            headers: authHeaders(token),
+        const params = new URLSearchParams({
+            status: selectedStatus,
+            page: page,
+            pageSize: pageSize,
+            search: search
         });
+        const res = await fetch(`${baseUrl}/accounting/get-templates?${params}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchTemplateTableDataSuccess(data));
         return { ok: true, data: data.data || data, totalRecords: data.totalRecords || data.length };
     } catch (err) {
         dispatch(fetchTemplateTableDataFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -896,15 +956,18 @@ export const fetchGetTransactionTypes = (page = 1, pageSize = 10, schoolYear = '
         }
         
         const res = await fetch(`${baseUrl}/accounting/get-transaction-types?${queryParams}`, {
-            method: 'POST',
-            headers: authHeaders(token),
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` },
         });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGetTransactionTypesSuccess(data));
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchGetTransactionTypesFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -1049,15 +1112,18 @@ export const fetchAllStudentLedgers = (filters = {}) => async (dispatch) => {
         if (activeStatus) params.append('activeStatus', activeStatus);
 
         const res = await fetch(`${baseUrl}/accounting/get-all-student-ledgers?${params}`, {
-            method: 'POST',
-            headers: authHeaders(token),
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` },
         });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchAllStudentLedgersSuccess(data));
         return { ok: true, data: data.Data || data.data || data, totalRecords: data.TotalRecords || data.totalRecords || 0 };
     } catch (err) {
         dispatch(fetchAllStudentLedgersFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -1149,29 +1215,33 @@ export const fetchFinancialReportSuccess = (data) => ({ type: FETCH_FINANCIAL_RE
 export const fetchFinancialReportFailure = (error) => ({ type: FETCH_FINANCIAL_REPORT_FAILURE, payload: error });
 
 // reportType: 'daily-collection' | 'aging' | 'income'
-// filters:    { dateFrom: string, dateTo: string }
-// Endpoint:   POST /accounting/get-financial-report
+// filters:    { dateFrom: string, dateTo: string, page, pageSize }
+// Endpoint:   GET /accounting/get-financial-report
 export const fetchFinancialReport = (reportType, filters = {}) => async (dispatch) => {
     dispatch(fetchFinancialReportRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-financial-report`, {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify({
-                ReportType: reportType,
-                DateFrom:   filters.dateFrom  ?? null,
-                DateTo:     filters.dateTo    ?? null,
-                Page:       filters.page      ?? 1,
-                PageSize:   filters.pageSize  ?? 10,
-            }),
+        const params = new URLSearchParams({
+            reportType: reportType,
+            page: (filters.page ?? 1).toString(),
+            pageSize: (filters.pageSize ?? 10).toString()
         });
+        if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+        if (filters.dateTo) params.append('dateTo', filters.dateTo);
+        
+        const res = await fetch(`${baseUrl}/accounting/get-financial-report?${params}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchFinancialReportSuccess(data));
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchFinancialReportFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };
 
@@ -1186,27 +1256,30 @@ export const fetchGeneralLedgerFailure = (error) => ({ type: 'FETCH_GENERAL_LEDG
 
 // fetchGeneralLedger — paginated, filterable general ledger list
 // Returns all GL entries with search, date range, account, and school year filtering
-// Endpoint: POST /accounting/get-general-ledger
+// Endpoint: GET /accounting/get-general-ledger
 export const fetchGeneralLedger = (filters = {}) => async (dispatch) => {
     dispatch(fetchGeneralLedgerRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/accounting/get-general-ledger`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-                Search: filters.search || '',
-                SchoolYearId: filters.schoolYearId || null,
-                AccountId: filters.accountId || null,
-                DateFrom: filters.dateFrom || null,
-                DateTo: filters.dateTo || null,
-                Page: filters.page || 1,
-                PageSize: filters.pageSize || 10,
-            }),
+        const params = new URLSearchParams({
+            search: filters.search || '',
+            page: (filters.page || 1).toString(),
+            pageSize: (filters.pageSize || 10).toString()
         });
+        if (filters.schoolYearId) params.append('schoolYearId', filters.schoolYearId.toString());
+        if (filters.accountId) params.append('accountId', filters.accountId.toString());
+        if (filters.dateFrom) params.append('dateFrom', filters.dateFrom);
+        if (filters.dateTo) params.append('dateTo', filters.dateTo);
+        
+        const res = await fetch(`${import.meta.env.VITE_API_DOMAIN}/accounting/get-general-ledger?${params}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
         const data = await res.json();
         dispatch(fetchGeneralLedgerSuccess(data));
         return { 
@@ -1217,6 +1290,6 @@ export const fetchGeneralLedger = (filters = {}) => async (dispatch) => {
         };
     } catch (err) {
         dispatch(fetchGeneralLedgerFailure(err.message));
-        return { ok: false, err };
+        return { ok: false, err: err.message };
     }
 };

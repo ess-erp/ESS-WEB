@@ -49,12 +49,13 @@ const ManualLeaveFilingModal = ({ isOpen, onClose, onSuccess }) => {
 
     // Fetch employees with debounce for search
     const fetchEmployees = useCallback(async (search = '') => {
-        await dispatch(searchEmployees({
-            page: 1,
-            pageSize: 50,
-            search: search,
-            status: 'Active',
-        }));
+        await dispatch(searchEmployees(
+            1,     // page
+            50,    // pageSize
+            search,
+            null,  // departmentId
+            'Active'  // status
+        ));
     }, [dispatch]);
 
     // Initial fetch when modal opens

@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Calendar, DollarSign, Users, Calculator, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import Breadcrumb from "../../components/SharedComponents/Breadcrumb";
@@ -7,9 +7,9 @@ import ModalComponent from "../../components/ButtonsComponents/ModalComponent";
 import { motion } from "framer-motion";
 import { 
     calculatePayrollForPeriod, 
-    fetchPayrollDetails, 
-    postPayrollToJournal,
-    fetchPayrollPeriodDropdown 
+    fetchPayrollDetails,
+    submitPayrollForApproval,
+    fetchPayrollPeriodsData,
 } from "../../states/HumanResourcesState/Action";
 
 const PayrollProcessing = () => {
@@ -17,16 +17,16 @@ const PayrollProcessing = () => {
     
     // Redux state
     const { 
-        calculatePayrollForPeriodState,
-        payrollDetailsState,
-        postPayrollToJournalState,
-        payrollPeriodDropdownState 
-    } = useSelector(state => state.hr);
+        calculatePayrollForPeriodState = { loading: false, data: null, error: '' },
+        payrollDetailsState = { loading: false, data: null, error: '' },
+        submitPayrollForApprovalState = { loading: false, data: null, error: '' },
+        payrollPeriodsState = { loading: false, data: [], error: '', totalRecords: 0 }
+    } = useSelector(state => state.hr || {});
 
     useEffect(() => {
         document.title = 'Payroll Processing | HRD';
         // Fetch payroll periods on mount
-        dispatch(fetchPayrollPeriodDropdown());
+        dispatch(fetchPayrollPeriodsData());
     }, [dispatch]);
 
     const breadcrumbItems = [
@@ -35,7 +35,6 @@ const PayrollProcessing = () => {
     ];
 
     const [selectedPeriod, setSelectedPeriod] = useState('');
-    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
     // Get payroll data from Redux state
     const payrollData = payrollDetailsState.data;
@@ -79,41 +78,30 @@ const PayrollProcessing = () => {
         }
     };
 
-    const handlePostToJournal = () => {
+    const handleSubmitForApproval = async () => {
         if (!selectedPeriod) {
             alert('Please select a payroll period');
             return;
         }
-        setIsPostModalOpen(true);
-    };
 
-    const confirmPostToJournal = async () => {
-        // TODO: Get proper account mappings from settings/config
-        const accountMapping = {
-            SalariesExpense: 1,      // Replace with actual FeesChildId from COA
-            SssPayable: 2,
-            PhilHealthPayable: 3,
-            PagIbigPayable: 4,
-            TaxPayable: 5,
-            SalariesPayable: 6
-        };
+        if (!window.confirm('Are you sure you want to submit this payroll for Finance Head approval?')) {
+            return;
+        }
 
-        const result = await dispatch(postPayrollToJournal({
+        const result = await dispatch(submitPayrollForApproval({
             periodId: parseInt(selectedPeriod),
-            calendarId: 1, // Replace with actual calendar ID
-            description: `Payroll for ${payrollSummary.periodName || 'selected period'}`,
-            accountMapping
+            remarks: '' // Optional remarks
         }));
 
         if (result.ok) {
-            alert(result.message || 'Payroll posted to journal successfully');
-            setIsPostModalOpen(false);
-            // Refresh payroll details
+            alert(result.message || 'Payroll submitted for approval successfully');
+            // Optionally refresh the payroll details
             dispatch(fetchPayrollDetails({ periodId: parseInt(selectedPeriod) }));
         } else {
-            alert(result.error || 'Failed to post payroll to journal');
+            alert(result.error || 'Failed to submit payroll for approval');
         }
     };
+
     const columns = [
         {
             name: 'Employee Number',
@@ -138,7 +126,7 @@ const PayrollProcessing = () => {
             name: 'Basic Salary',
             selector: row => row.basicSalary,
             sortable: true,
-            cell: row => `₱${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
+            cell: row => `?${row.basicSalary.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`,
             width: '140px'
         },
         {
@@ -147,7 +135,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-green-600">
-                    ₱{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ?{row.grossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
@@ -158,7 +146,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-semibold text-red-600">
-                    ₱{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ?{row.totalDeductions.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
@@ -169,7 +157,7 @@ const PayrollProcessing = () => {
             sortable: true,
             cell: row => (
                 <span className="font-bold text-blue-600">
-                    ₱{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                    ?{row.netPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
                 </span>
             ),
             width: '140px'
@@ -267,12 +255,21 @@ const PayrollProcessing = () => {
                         </div>
                         <div className="flex items-end">
                             <button
-                                onClick={handlePostToJournal}
-                                disabled={!selectedPeriod}
+                                onClick={handleSubmitForApproval}
+                                disabled={!selectedPeriod || !payrollData || submitPayrollForApprovalState.loading}
                                 className="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                                <FileText size={18} />
-                                Post to Journal Entry
+                                {submitPayrollForApprovalState.loading ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle size={18} />
+                                        Submit for Approval
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -423,116 +420,6 @@ const PayrollProcessing = () => {
                         }
                     />
                 </motion.div>
-
-                {/* Post to Journal Entry Modal */}
-                <ModalComponent
-                    isOpen={isPostModalOpen}
-                    onClose={() => setIsPostModalOpen(false)}
-                    title="Post Payroll to Journal Entry"
-                    size="w-full max-w-2xl"
-                    body={
-                        <div className="space-y-6">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <div className="flex items-start gap-3">
-                                    <FileText className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
-                                    <div>
-                                        <h4 className="text-sm font-bold text-blue-900 mb-1">Journal Entry Mapping</h4>
-                                        <p className="text-xs text-blue-800">
-                                            This action will create a journal entry posting payroll expenses and liabilities to your Chart of Accounts.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-3">
-                                <h4 className="font-semibold text-gray-900">Accounts to be Posted:</h4>
-                                
-                                <div className="border border-gray-200 rounded-lg overflow-hidden">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase">Account</th>
-                                                <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Debit</th>
-                                                <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase">Credit</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            <tr>
-                                                <td className="px-4 py-3 text-sm text-gray-900">Salaries & Wages Expense</td>
-                                                <td className="px-4 py-3 text-sm text-right text-blue-600 font-semibold">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                            </tr>
-                                            <tr className="bg-gray-50">
-                                                <td className="px-4 py-3 text-sm text-gray-900">SSS Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalSSS.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="px-4 py-3 text-sm text-gray-900">PhilHealth Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalPhilHealth.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr className="bg-gray-50">
-                                                <td className="px-4 py-3 text-sm text-gray-900">Pag-IBIG Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalPagIbig.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td className="px-4 py-3 text-sm text-gray-900">Withholding Tax Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalTax.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr className="bg-gray-50">
-                                                <td className="px-4 py-3 text-sm text-gray-900">Salaries Payable</td>
-                                                <td className="px-4 py-3 text-sm text-right text-gray-400">â€”</td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600 font-semibold">
-                                                    ₱{totalNetPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                            <tr className="bg-blue-50 font-bold">
-                                                <td className="px-4 py-3 text-sm text-gray-900">TOTALS:</td>
-                                                <td className="px-4 py-3 text-sm text-right text-blue-600">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-right text-green-600">
-                                                    ₱{totalGrossPay.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <p className="text-xs text-yellow-800">
-                                    <strong>Note:</strong> This will create an unposted journal entry. You can review and post it from the Journal Entry module.
-                                </p>
-                            </div>
-                        </div>
-                    }
-                    buttons={[
-                        {
-                            label: "Confirm & Post",
-                            type: "green",
-                            onClick: confirmPostToJournal
-                        },
-                        {
-                            label: "Cancel",
-                            type: "red",
-                            onClick: () => setIsPostModalOpen(false)
-                        }
-                    ]}
-                />
                 </div>
                     </div>
                 </section>

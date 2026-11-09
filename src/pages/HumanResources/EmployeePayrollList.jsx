@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import DataTable from 'react-data-table-component';
 import {
@@ -10,81 +11,25 @@ import {
   Calendar,
   DollarSign,
   TrendingUp,
-  Users
+  Users,
+  Filter
 } from 'lucide-react';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import ModalComponent from '../../components/ButtonsComponents/ModalComponent';
-
-// Mock employee payroll data
-const mockPayrollData = [
-  {
-    id: 1,
-    employeeNo: 'EMP-001',
-    employeeName: 'Juan Dela Cruz',
-    position: 'Senior Teacher',
-    department: 'Academic Department',
-    basicSalary: 35000,
-    allowances: 5000,
-    deductions: 3500,
-    netPay: 36500,
-    payPeriod: 'January 1-15, 2026',
-    status: 'Paid'
-  },
-  {
-    id: 2,
-    employeeNo: 'EMP-002',
-    employeeName: 'Maria Santos',
-    position: 'Department Head',
-    department: 'Academic Department',
-    basicSalary: 45000,
-    allowances: 7000,
-    deductions: 4800,
-    netPay: 47200,
-    payPeriod: 'January 1-15, 2026',
-    status: 'Paid'
-  },
-  {
-    id: 3,
-    employeeNo: 'EMP-003',
-    employeeName: 'Pedro Garcia',
-    position: 'Teacher',
-    department: 'Academic Department',
-    basicSalary: 28000,
-    allowances: 3500,
-    deductions: 2800,
-    netPay: 28700,
-    payPeriod: 'January 1-15, 2026',
-    status: 'Paid'
-  },
-  {
-    id: 4,
-    employeeNo: 'EMP-004',
-    employeeName: 'Ana Reyes',
-    position: 'HR Manager',
-    department: 'Human Resources',
-    basicSalary: 42000,
-    allowances: 6000,
-    deductions: 4200,
-    netPay: 43800,
-    payPeriod: 'January 1-15, 2026',
-    status: 'Paid'
-  },
-  {
-    id: 5,
-    employeeNo: 'EMP-005',
-    employeeName: 'Carlos Mendoza',
-    position: 'IT Support',
-    department: 'Information Technology',
-    basicSalary: 32000,
-    allowances: 4000,
-    deductions: 3200,
-    netPay: 32800,
-    payPeriod: 'January 1-15, 2026',
-    status: 'Processing'
-  }
-];
+import { fetchEmployeePayrollList, fetchPayrollPeriodsData } from '../../states/HumanResourcesState/Action';
+import { showToast } from '../../states/NotificationState/Action';
 
 const EmployeePayrollList = () => {
+  const dispatch = useDispatch();
+  
+  // Redux state
+  const { 
+    employeePayrollListState = { loading: false, data: [], totalRecords: 0, error: '' }, 
+    payrollPeriodsState = { loading: false, data: [], error: '', totalRecords: 0 }
+  } = useSelector(
+    (state) => state.humanResourcesState || {}
+  );
+
   useEffect(() => {
     document.title = 'Employee Payroll | HRD';
   }, []);
@@ -97,21 +42,68 @@ const EmployeePayrollList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showPayslipModal, setShowPayslipModal] = useState(false);
-  const [filteredData, setFilteredData] = useState(mockPayrollData);
+  const [selectedPeriodId, setSelectedPeriodId] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
 
-  // Handle search
+  // Fetch payroll periods dropdown on mount
+  useEffect(() => {
+    dispatch(fetchPayrollPeriodsData());
+  }, [dispatch]);
+
+  // Fetch employee payroll list when filters change
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchEmployeePayrollList(
+          currentPage,
+          perPage,
+          searchTerm || '',
+          selectedPeriodId || null,
+          null, // departmentId
+          null  // status
+        ));
+      } catch (error) {
+        dispatch(showToast({
+          message: error.message || 'Failed to fetch employee payroll list',
+          type: 'error'
+        }));
+      }
+    };
+
+    fetchData();
+  }, [dispatch, currentPage, perPage, selectedPeriodId]);
+
+  // Handle search with debounce
   const handleSearch = (e) => {
-    const value = e.target.value.toLowerCase();
+    const value = e.target.value;
     setSearchTerm(value);
+    setCurrentPage(1); // Reset to first page on search
+  };
 
-    const filtered = mockPayrollData.filter(
-      (item) =>
-        item.employeeName.toLowerCase().includes(value) ||
-        item.employeeNo.toLowerCase().includes(value) ||
-        item.position.toLowerCase().includes(value) ||
-        item.department.toLowerCase().includes(value)
-    );
-    setFilteredData(filtered);
+  // Trigger search on Enter or after typing stops
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm !== undefined) {
+        dispatch(fetchEmployeePayrollList(
+          1,
+          perPage,
+          searchTerm || '',
+          selectedPeriodId || null,
+          null, // departmentId
+          null  // status
+        ));
+        setCurrentPage(1);
+      }
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  // Handle period filter change
+  const handlePeriodChange = (e) => {
+    setSelectedPeriodId(e.target.value);
+    setCurrentPage(1);
   };
 
   // View payslip
@@ -122,78 +114,110 @@ const EmployeePayrollList = () => {
 
   // Send payslip via email
   const handleSendEmail = (employee) => {
-    alert(`Sending payslip to ${employee.employeeName}'s email...`);
+    dispatch(showToast({
+      message: `Sending payslip to ${employee.employeeName}'s email...`,
+      type: 'success'
+    }));
+    // TODO: Implement actual email sending API call
   };
 
   // Download payslip
   const handleDownload = (employee) => {
-    alert(`Downloading payslip for ${employee.employeeName}...`);
+    dispatch(showToast({
+      message: `Downloading payslip for ${employee.employeeName}...`,
+      type: 'success'
+    }));
+    // TODO: Implement actual PDF download API call
   };
 
+  // Get payroll data from Redux state
+  const payrollData = employeePayrollListState?.data || [];
+  const totalRecords = employeePayrollListState?.totalRecords || 0;
+  const isLoading = employeePayrollListState?.loading || false;
+
   // Calculate summary statistics
-  const totalEmployees = filteredData.length;
-  const totalGrossPay = filteredData.reduce((sum, emp) => sum + emp.basicSalary + emp.allowances, 0);
-  const totalNetPay = filteredData.reduce((sum, emp) => sum + emp.netPay, 0);
-  const totalDeductions = filteredData.reduce((sum, emp) => sum + emp.deductions, 0);
+  const totalEmployees = payrollData.length;
+  const totalGrossPay = payrollData.reduce((sum, emp) => sum + (emp.grossPay || 0), 0);
+  const totalNetPay = payrollData.reduce((sum, emp) => sum + (emp.netPay || 0), 0);
+  const totalDeductions = payrollData.reduce((sum, emp) => sum + (emp.totalDeductions || 0), 0);
+
+  // Handle pagination change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePerRowsChange = (newPerPage, page) => {
+    setPerPage(newPerPage);
+    setCurrentPage(page);
+  };
 
   // DataTable columns
   const columns = [
     {
       name: 'Employee No',
-      selector: (row) => row.employeeNo,
+      selector: (row) => row.employeeNumber || '',
       sortable: true,
-      width: '120px',
+      width: '130px',
     },
     {
       name: 'Employee Name',
-      selector: (row) => row.employeeName,
+      selector: (row) => row.employeeName || '',
       sortable: true,
-      width: '180px',
+      width: '200px',
     },
     {
       name: 'Position',
-      selector: (row) => row.position,
+      selector: (row) => row.position || '',
       sortable: true,
       width: '150px',
     },
     {
       name: 'Department',
-      selector: (row) => row.department,
+      selector: (row) => row.department || '',
       sortable: true,
       width: '180px',
     },
     {
-      name: 'Basic Salary',
-      selector: (row) => row.basicSalary,
+      name: 'Pay Period',
+      selector: (row) => row.payrollPeriod || '',
       sortable: true,
-      format: (row) => `₱${row.basicSalary.toLocaleString()}`,
+      width: '150px',
+    },
+    {
+      name: 'Gross Pay',
+      selector: (row) => row.grossPay || 0,
+      sortable: true,
+      format: (row) => `₱${(row.grossPay || 0).toLocaleString()}`,
       width: '130px',
     },
     {
       name: 'Net Pay',
-      selector: (row) => row.netPay,
+      selector: (row) => row.netPay || 0,
       sortable: true,
-      format: (row) => `₱${row.netPay.toLocaleString()}`,
+      format: (row) => `₱${(row.netPay || 0).toLocaleString()}`,
       width: '130px',
       cell: (row) => (
         <span className="font-semibold text-green-600">
-          ₱{row.netPay.toLocaleString()}
+          ₱{(row.netPay || 0).toLocaleString()}
         </span>
       ),
     },
     {
       name: 'Status',
-      selector: (row) => row.status,
+      selector: (row) => row.status || '',
       sortable: true,
       width: '110px',
       cell: (row) => (
         <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${row.status === 'Paid'
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            row.status === 'A' || row.status === 'Paid'
               ? 'bg-green-100 text-green-700'
-              : 'bg-yellow-100 text-yellow-700'
-            }`}
+              : row.status === 'P' || row.status === 'Processing'
+              ? 'bg-yellow-100 text-yellow-700'
+              : 'bg-gray-100 text-gray-700'
+          }`}
         >
-          {row.status}
+          {row.status === 'A' ? 'Paid' : row.status === 'P' ? 'Processing' : row.status}
         </span>
       ),
     },
@@ -363,6 +387,24 @@ const EmployeePayrollList = () => {
                       />
                     </div>
                   </div>
+                  <div className="md:w-64">
+                    <div className="relative">
+                      <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                      <select
+                        value={selectedPeriodId}
+                        onChange={handlePeriodChange}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent appearance-none"
+                        disabled={payrollPeriodsState?.loading}
+                      >
+                        <option value="">All Pay Periods</option>
+                        {payrollPeriodsState?.data?.map((period) => (
+                          <option key={period.PeriodId} value={period.PeriodId}>
+                            {period.PeriodName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
 
@@ -375,10 +417,16 @@ const EmployeePayrollList = () => {
               >
                 <DataTable
                   columns={columns}
-                  data={filteredData}
+                  data={payrollData}
+                  progressPending={isLoading}
                   pagination
-                  paginationPerPage={10}
+                  paginationServer
+                  paginationTotalRows={totalRecords}
+                  paginationDefaultPage={currentPage}
+                  paginationPerPage={perPage}
                   paginationRowsPerPageOptions={[10, 20, 30, 50]}
+                  onChangePage={handlePageChange}
+                  onChangeRowsPerPage={handlePerRowsChange}
                   highlightOnHover
                   customStyles={customStyles}
                   noDataComponent={
@@ -394,7 +442,11 @@ const EmployeePayrollList = () => {
                       >
                         <FileText size={64} className="mx-auto text-gray-300 mb-4" />
                       </motion.div>
-                      <p className="text-gray-500 text-lg">No employee payroll records found</p>
+                      <p className="text-gray-500 text-lg">
+                        {employeePayrollListState?.error 
+                          ? `Error: ${employeePayrollListState.error}` 
+                          : 'No employee payroll records found'}
+                      </p>
                     </motion.div>
                   }
                 />
@@ -422,7 +474,7 @@ const EmployeePayrollList = () => {
                     <div className="grid grid-cols-2 gap-6 mb-6">
                       <div>
                         <p className="text-sm text-gray-600">Employee Number</p>
-                        <p className="font-semibold text-gray-800">{selectedEmployee.employeeNo}</p>
+                        <p className="font-semibold text-gray-800">{selectedEmployee.employeeNumber}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Employee Name</p>
@@ -436,6 +488,14 @@ const EmployeePayrollList = () => {
                         <p className="text-sm text-gray-600">Department</p>
                         <p className="font-semibold text-gray-800">{selectedEmployee.department}</p>
                       </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Pay Period</p>
+                        <p className="font-semibold text-gray-800">{selectedEmployee.payrollPeriod}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Status</p>
+                        <p className="font-semibold text-gray-800">{selectedEmployee.status === 'A' ? 'Paid' : selectedEmployee.status === 'P' ? 'Processing' : selectedEmployee.status}</p>
+                      </div>
                     </div>
 
                     {/* Earnings and Deductions */}
@@ -448,17 +508,13 @@ const EmployeePayrollList = () => {
                         </h3>
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-gray-700">Basic Salary</span>
-                            <span className="font-semibold">₱{selectedEmployee.basicSalary.toLocaleString()}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-700">Allowances</span>
-                            <span className="font-semibold">₱{selectedEmployee.allowances.toLocaleString()}</span>
+                            <span className="text-gray-700">Gross Pay</span>
+                            <span className="font-semibold">₱{(selectedEmployee.grossPay || 0).toLocaleString()}</span>
                           </div>
                           <div className="border-t pt-3 flex justify-between">
-                            <span className="font-bold text-green-700">Gross Pay</span>
+                            <span className="font-bold text-green-700">Total Earnings</span>
                             <span className="font-bold text-green-700">
-                              ₱{(selectedEmployee.basicSalary + selectedEmployee.allowances).toLocaleString()}
+                              ₱{(selectedEmployee.grossPay || 0).toLocaleString()}
                             </span>
                           </div>
                         </div>
@@ -472,24 +528,12 @@ const EmployeePayrollList = () => {
                         </h3>
                         <div className="space-y-3">
                           <div className="flex justify-between">
-                            <span className="text-gray-700">SSS</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.35).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-700">PhilHealth</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.30).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-700">Pag-IBIG</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.20).toFixed(2)}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-700">Withholding Tax</span>
-                            <span className="font-semibold">₱{(selectedEmployee.deductions * 0.15).toFixed(2)}</span>
+                            <span className="text-gray-700">Total Deductions</span>
+                            <span className="font-semibold">₱{(selectedEmployee.totalDeductions || 0).toLocaleString()}</span>
                           </div>
                           <div className="border-t pt-3 flex justify-between">
                             <span className="font-bold text-red-700">Total Deductions</span>
-                            <span className="font-bold text-red-700">₱{selectedEmployee.deductions.toLocaleString()}</span>
+                            <span className="font-bold text-red-700">₱{(selectedEmployee.totalDeductions || 0).toLocaleString()}</span>
                           </div>
                         </div>
                       </div>
@@ -498,7 +542,12 @@ const EmployeePayrollList = () => {
                     {/* Net Pay */}
                     <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white text-center">
                       <p className="text-lg mb-2">Net Pay</p>
-                      <p className="text-4xl font-bold">₱{selectedEmployee.netPay.toLocaleString()}</p>
+                      <p className="text-4xl font-bold">₱{(selectedEmployee.netPay || 0).toLocaleString()}</p>
+                      {selectedEmployee.payDate && (
+                        <p className="text-sm mt-2 opacity-90">
+                          Pay Date: {new Date(selectedEmployee.payDate).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
 
                     {/* Action Buttons */}

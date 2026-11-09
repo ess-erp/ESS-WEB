@@ -118,14 +118,16 @@ const LeaveFilingDataTable = ({ onAddManualClick }) => {
 
     // ── Fetch ─────────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
-        dispatch(fetchLeaveApplications({
+        dispatch(fetchLeaveApplications(
+            null,  // employeeId
+            statusFilter?.value || null,  // applicationStatus
+            null,  // startDate
+            null,  // endDate
             page,
             pageSize,
-            search,
-            applicationStatus: statusFilter?.value || null,
-            leaveType: leaveType?.value || null,
-        }));
-    }, [page, pageSize, search, statusFilter, leaveType, dispatch]);
+            search
+        ));
+    }, [page, pageSize, search, statusFilter, dispatch]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
