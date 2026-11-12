@@ -345,11 +345,19 @@ const hrReducer = (state = initialGeneralState, action) => {
 
         // ── PhilHealth Premium Matrix ─────────────────────────────────────────
         case FETCH_PHILHEALTH_TABLE_REQUEST:
-            return { ...state, philhealthTableState: { loading: true, data: {}, error: '' } };
+            return { ...state, philhealthTableState: { loading: true, data: [], totalRecords: 0, error: '' } };
         case FETCH_PHILHEALTH_TABLE_SUCCESS:
-            return { ...state, philhealthTableState: { loading: false, data: action.payload?.data ?? action.payload ?? {}, error: '' } };
+            return { 
+                ...state, 
+                philhealthTableState: { 
+                    loading: false, 
+                    data: action.payload?.data ?? action.payload ?? [], 
+                    totalRecords: action.payload?.totalCount ?? action.payload?.totalRecords ?? 0,
+                    error: '' 
+                } 
+            };
         case FETCH_PHILHEALTH_TABLE_FAILURE:
-            return { ...state, philhealthTableState: { loading: false, data: {}, error: action.payload } };
+            return { ...state, philhealthTableState: { loading: false, data: [], totalRecords: 0, error: action.payload } };
         case UPDATE_PHILHEALTH_TABLE_REQUEST:
             return { ...state, updatePhilhealthTableState: { loading: true, data: null, error: '' } };
         case UPDATE_PHILHEALTH_TABLE_SUCCESS:
@@ -359,11 +367,19 @@ const hrReducer = (state = initialGeneralState, action) => {
 
         // ── Pag-IBIG Contribution Table ───────────────────────────────────────
         case FETCH_PAGIBIG_TABLE_REQUEST:
-            return { ...state, pagibigTableState: { loading: true, data: {}, error: '' } };
+            return { ...state, pagibigTableState: { loading: true, data: [], totalRecords: 0, error: '' } };
         case FETCH_PAGIBIG_TABLE_SUCCESS:
-            return { ...state, pagibigTableState: { loading: false, data: action.payload?.data ?? action.payload ?? {}, error: '' } };
+            return { 
+                ...state, 
+                pagibigTableState: { 
+                    loading: false, 
+                    data: action.payload?.data ?? action.payload ?? [], 
+                    totalRecords: action.payload?.totalCount ?? action.payload?.totalRecords ?? 0,
+                    error: '' 
+                } 
+            };
         case FETCH_PAGIBIG_TABLE_FAILURE:
-            return { ...state, pagibigTableState: { loading: false, data: {}, error: action.payload } };
+            return { ...state, pagibigTableState: { loading: false, data: [], totalRecords: 0, error: action.payload } };
         case UPDATE_PAGIBIG_TABLE_REQUEST:
             return { ...state, updatePagibigTableState: { loading: true, data: null, error: '' } };
         case UPDATE_PAGIBIG_TABLE_SUCCESS:
@@ -635,6 +651,50 @@ const hrReducer = (state = initialGeneralState, action) => {
             return { ...state, submitPayrollForApprovalState: { loading: false, data: action.payload, error: '' } };
         case SUBMIT_PAYROLL_FOR_APPROVAL_FAILURE:
             return { ...state, submitPayrollForApprovalState: { loading: false, data: null, error: action.payload } };
+
+        // ══════════════════════════════════════════════════════════════════════════════
+        // NEW PAYROLL PROCESSING REDUCERS (2026-08-26)
+        // ══════════════════════════════════════════════════════════════════════════════
+        
+        // Calculate Payroll (New Version)
+        case 'NEW_CALCULATE_PAYROLL_REQUEST':
+            return { ...state, newCalculatePayrollState: { loading: true, data: null, error: '' } };
+        case 'NEW_CALCULATE_PAYROLL_SUCCESS':
+            return { ...state, newCalculatePayrollState: { loading: false, data: action.payload, error: '' } };
+        case 'NEW_CALCULATE_PAYROLL_FAILURE':
+            return { ...state, newCalculatePayrollState: { loading: false, data: null, error: action.payload } };
+        
+        // Fetch Payroll Summary (New)
+        case 'NEW_FETCH_PAYROLL_SUMMARY_REQUEST':
+            return { ...state, newPayrollSummaryState: { loading: true, data: null, error: '' } };
+        case 'NEW_FETCH_PAYROLL_SUMMARY_SUCCESS':
+            return { ...state, newPayrollSummaryState: { loading: false, data: action.payload, error: '' } };
+        case 'NEW_FETCH_PAYROLL_SUMMARY_FAILURE':
+            return { ...state, newPayrollSummaryState: { loading: false, data: null, error: action.payload } };
+        
+        // Fetch Employee Payroll Details (New)
+        case 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_REQUEST':
+            return { ...state, newEmployeePayrollDetailsState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_SUCCESS':
+            return { 
+                ...state, 
+                newEmployeePayrollDetailsState: { 
+                    loading: false, 
+                    data: Array.isArray(action.payload) ? action.payload : action.payload?.data || [], 
+                    error: '', 
+                    totalRecords: action.payload?.totalRecords || (Array.isArray(action.payload) ? action.payload.length : 0)
+                } 
+            };
+        case 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_FAILURE':
+            return { ...state, newEmployeePayrollDetailsState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        // ── Save Payroll Records ───────────────────────────────────────────────
+        case 'SAVE_PAYROLL_RECORDS_REQUEST':
+            return { ...state, savePayrollRecordsState: { loading: true, data: null, error: '' } };
+        case 'SAVE_PAYROLL_RECORDS_SUCCESS':
+            return { ...state, savePayrollRecordsState: { loading: false, data: action.payload, error: '' } };
+        case 'SAVE_PAYROLL_RECORDS_FAILURE':
+            return { ...state, savePayrollRecordsState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;

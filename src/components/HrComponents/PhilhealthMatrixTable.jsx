@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Edit, Trash2, Hospital } from 'lucide-react';
+import { Plus, Edit, Trash2, Hospital, Search, X } from 'lucide-react';
 import DataTable from 'react-data-table-component';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
 import { fetchPhilhealthTable, updatePhilhealthTable } from '../../states/HumanResourcesState/Action';
@@ -24,10 +24,16 @@ const customStyles = {
 
 const PhilhealthMatrixTable = () => {
     const dispatch = useDispatch();
-    const { loading, data: philhealthData } = useSelector((s) => s.hr.philhealthTableState);
+    const { loading, data: philhealthData, totalRecords } = useSelector((s) => s.hr.philhealthTableState);
     const { loading: saving } = useSelector((s) => s.hr.updatePhilhealthTableState);
 
-    const [tableData, setTableData] = useState({});
+    console.log(philhealthData);
+
+    // Pagination & Search state
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState('');
+
     const [editModal, setEditModal] = useState(false);
     const [addModal, setAddModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -40,32 +46,30 @@ const PhilhealthMatrixTable = () => {
         erSplitRatio: '',
     });
 
-    useEffect(() => {
-        dispatch(fetchPhilhealthTable());
-    }, [dispatch]);
+    // Fetch data with pagination
+    const fetchData = useCallback(() => {
+        dispatch(fetchPhilhealthTable(page, pageSize, search));
+    }, [page, pageSize, search, dispatch]);
 
     useEffect(() => {
-        if (philhealthData && typeof philhealthData === 'object') {
-            setTableData(philhealthData);
-        }
-    }, [philhealthData]);
+        fetchData();
+    }, [fetchData]);
 
-    const handleEdit = () => {
-        if (!tableData || !tableData.Id) return;
-        setSelectedRow(tableData);
+    const handleEdit = (row) => {
+        setSelectedRow(row);
         setForm({
-            ratePercentage: tableData.RatePercentage ?? tableData.ratePercentage ?? '',
-            minSalary: tableData.MinSalary ?? tableData.minSalary ?? '',
-            maxSalary: tableData.MaxSalary ?? tableData.maxSalary ?? '',
-            eeSplitRatio: tableData.EeSplitRatio ?? tableData.eeSplitRatio ?? '',
-            erSplitRatio: tableData.ErSplitRatio ?? tableData.erSplitRatio ?? '',
+            ratePercentage: row.RatePercentage ?? row.ratePercentage ?? '',
+            minSalary: row.MinSalary ?? row.minSalary ?? '',
+            maxSalary: row.MaxSalary ?? row.maxSalary ?? '',
+            eeSplitRatio: row.EeSplitRatio ?? row.eeSplitRatio ?? '',
+            erSplitRatio: row.ErSplitRatio ?? row.erSplitRatio ?? '',
         });
         setEditModal(true);
     };
 
     const handleSaveEdit = async () => {
         const payload = {
-            id: tableData.Id ?? tableData.id,
+            id: selectedRow.Id ?? selectedRow.id,
             ratePercentage: parseFloat(form.ratePercentage),
             minSalary: parseFloat(form.minSalary),
             maxSalary: parseFloat(form.maxSalary),
@@ -78,7 +82,7 @@ const PhilhealthMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'PhilHealth configuration updated successfully'));
             setEditModal(false);
-            dispatch(fetchPhilhealthTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to update PhilHealth configuration'));
         }
@@ -110,21 +114,20 @@ const PhilhealthMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'PhilHealth configuration added successfully'));
             setAddModal(false);
-            dispatch(fetchPhilhealthTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to add PhilHealth configuration'));
         }
     };
 
-    const handleDelete = () => {
-        if (!tableData || !tableData.Id) return;
-        setSelectedRow(tableData);
+    const handleDelete = (row) => {
+        setSelectedRow(row);
         setDeleteModal(true);
     };
 
     const handleConfirmDelete = async () => {
         const payload = {
-            id: tableData.Id ?? tableData.id,
+            id: selectedRow.Id ?? selectedRow.id,
             isDeleted: true,
         };
         
@@ -132,58 +135,75 @@ const PhilhealthMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'PhilHealth configuration deleted successfully'));
             setDeleteModal(false);
-            dispatch(fetchPhilhealthTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to delete PhilHealth configuration'));
         }
     };
 
-    // Display single row if data exists
-    const displayData = tableData && tableData.Id ? [tableData] : [];
+    // Extract data array from the response object
+    const displayData = Array.isArray(philhealthData?.Data) 
+        ? philhealthData.Data 
+        : Array.isArray(philhealthData) 
+        ? philhealthData 
+        : [];
+    
+    console.log('PhilHealth Debug:', { 
+        philhealthData, 
+        displayData, 
+        isArray: Array.isArray(displayData),
+        totalRecords,
+        length: displayData.length 
+    });
 
     const columns = [
         {
             name: 'Premium Rate (%)',
-            selector: (r) => r.RatePercentage ?? r.ratePercentage,
-            format: (r) => `${r.RatePercentage ?? r.ratePercentage}%`,
+            selector: (r) => r.PremiumRate ?? r.PremiumRate ?? 0,
+            format: (r) => `${r.PremiumRate ?? r.PremiumRate ?? 0}%`,
             width: '150px',
+            sortable: true,
         },
         {
             name: 'Min Salary Cap',
-            selector: (r) => r.MinSalary ?? r.minSalary,
-            format: (r) => `₱${(r.MinSalary ?? r.minSalary).toLocaleString()}`,
+            selector: (r) => r.MinSalaryCap ?? r.minSalaryCap ?? 0,
+            format: (r) => `₱${(r.MinSalaryCap ?? r.minSalaryCap ?? 0).toLocaleString()}`,
             width: '180px',
+            sortable: true,
         },
         {
             name: 'Max Salary Cap',
-            selector: (r) => r.MaxSalary ?? r.maxSalary,
-            format: (r) => `₱${(r.MaxSalary ?? r.maxSalary).toLocaleString()}`,
+            selector: (r) => r.MaxSalaryCap ?? r.maxSalaryCap ?? 0,
+            format: (r) => `₱${(r.MaxSalaryCap ?? r.maxSalaryCap ?? 0).toLocaleString()}`,
             width: '180px',
+            sortable: true,
         },
         {
             name: 'Employee Split',
-            selector: (r) => r.EeSplitRatio ?? r.eeSplitRatio,
-            format: (r) => `${((r.EeSplitRatio ?? r.eeSplitRatio) * 100).toFixed(0)}%`,
+            selector: (r) => r.EmployeeSplitRatio ?? r.employeeSplitRatio ?? 0,
+            format: (r) => `${((r.EmployeeSplitRatio ?? r.employeeSplitRatio ?? 0) * 100).toFixed(0)}%`,
             width: '150px',
+            sortable: true,
         },
         {
             name: 'Employer Split',
-            selector: (r) => r.ErSplitRatio ?? r.erSplitRatio,
-            format: (r) => `${((r.ErSplitRatio ?? r.erSplitRatio) * 100).toFixed(0)}%`,
+            selector: (r) => r.EmployerSplitRatio ?? r.employerSplitRatio ?? 0,
+            format: (r) => `${((r.EmployerSplitRatio ?? r.employerSplitRatio ?? 0) * 100).toFixed(0)}%`,
             width: '150px',
+            sortable: true,
         },
         {
             name: 'Status',
-            selector: (r) => r.Status ?? r.status,
+            selector: (r) => r.ActiveStatus ?? r.activeStatus ?? 'N/A',
             cell: (r) => (
                 <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        (r.Status ?? r.status) === 'ACTIVE'
+                        (r.ActiveStatus ?? r.activeStatus) === 'ACTIVE'
                             ? 'bg-green-100 text-green-700'
                             : 'bg-gray-100 text-gray-700'
                     }`}
                 >
-                    {r.Status ?? r.status}
+                    {r.ActiveStatus ?? r.activeStatus ?? 'N/A'}
                 </span>
             ),
             width: '120px',
@@ -193,14 +213,14 @@ const PhilhealthMatrixTable = () => {
             cell: (r) => (
                 <div className="flex gap-2">
                     <button
-                        onClick={() => handleEdit()}
+                        onClick={() => handleEdit(r)}
                         className="p-1.5 text-green-600 hover:bg-green-50 rounded transition"
                         title="Edit"
                     >
                         <Edit size={15} />
                     </button>
                     <button
-                        onClick={() => handleDelete()}
+                        onClick={() => handleDelete(r)}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                         title="Delete"
                     >
@@ -209,6 +229,7 @@ const PhilhealthMatrixTable = () => {
                 </div>
             ),
             width: '110px',
+            ignoreRowClick: true,
         },
     ];
 
@@ -236,11 +257,39 @@ const PhilhealthMatrixTable = () => {
                 </p>
             </div>
 
+            {/* Search Box */}
+            <div className="bg-white rounded-lg p-4 border">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        placeholder="Search PhilHealth configurations..."
+                        className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => { setSearch(''); setPage(1); }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                        >
+                            <X size={15} className="text-gray-400 hover:text-gray-600" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={displayData}
                     progressPending={loading}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={totalRecords ?? 0}
+                    paginationDefaultPage={page}
+                    onChangePage={(newPage) => setPage(newPage)}
+                    onChangeRowsPerPage={(newSize, newPage) => { setPageSize(newSize); setPage(newPage); }}
                     customStyles={customStyles}
                     noDataComponent={
                         <div className="py-8 text-center text-gray-500">No PhilHealth configuration found</div>

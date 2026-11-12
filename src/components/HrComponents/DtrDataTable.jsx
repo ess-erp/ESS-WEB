@@ -104,7 +104,8 @@ const DtrDataTable = ({ onAddManualClick }) => {
     const [page, setPage]         = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch]     = useState('');
-    const [dateFilter, setDateFilter] = useState(new Date().toISOString().split('T')[0]);
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+    const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
 
     // ── Biometric scan state ──────────────────────────────────────────────────
     const [scanInput, setScanInput]   = useState('');     // Employee No. / ID typed or scanned
@@ -125,13 +126,13 @@ const DtrDataTable = ({ onAddManualClick }) => {
     // ── Fetch logs ────────────────────────────────────────────────────────────
     const fetchData = useCallback(() => {
         dispatch(fetchDtrRecords(
-            null,  // employeeId
-            dateFilter,  // startDate
-            dateFilter,  // endDate
+            search,      // search query
+            startDate,   // startDate
+            endDate,     // endDate
             page,
             pageSize
         ));
-    }, [page, pageSize, dateFilter, dispatch]);
+    }, [page, pageSize, search, startDate, endDate, dispatch]);
 
     useEffect(() => {
         fetchData();
@@ -210,49 +211,82 @@ const DtrDataTable = ({ onAddManualClick }) => {
     const columns = [
         {
             name: 'Employee No.',
-            selector: (r) => r.EmployeeNo ?? r.employeeNo ?? '—',
+            selector: (r) => r.EmployeeNumber ?? r.employeeNumber ?? '—',
             sortable: true,
             width: '150px',
             cell: (r) => (
                 <span className="text-xs font-mono font-bold text-gray-900">
-                    {r.EmployeeNo ?? r.employeeNo ?? '—'}
+                    {r.EmployeeNumber ?? r.employeeNumber ?? '—'}
                 </span>
             ),
         },
         {
             name: 'Employee Full Name',
-            selector: (r) => r.FullName ?? r.fullName ?? '—',
+            selector: (r) => r.EmployeeName ?? r.employeeName ?? '—',
             sortable: true,
             grow: 2,
             cell: (r) => (
                 <span className="text-sm font-semibold text-gray-900">
-                    {r.FullName ?? r.fullName ?? '—'}
+                    {r.EmployeeName ?? r.employeeName ?? '—'}
                 </span>
             ),
         },
         {
-            name: 'Date & Time In',
-            selector: (r) => r.TimeIn ?? r.timeIn,
+            name: 'Attendance Date',
+            selector: (r) => r.AttendanceDate ?? r.attendanceDate,
             sortable: true,
-            minWidth: '190px',
-            cell: (r) => (
-                <div className="flex items-center gap-2 py-1">
-                    <LogIn size={14} className="text-green-600 flex-shrink-0" />
-                    <span className="text-xs text-gray-800">{fmtDateTime(r.TimeIn ?? r.timeIn)}</span>
-                </div>
-            ),
+            width: '140px',
+            cell: (r) => {
+                const date = r.AttendanceDate ?? r.attendanceDate;
+                return date ? (
+                    <span className="text-xs text-gray-800">
+                        {new Date(date).toLocaleDateString('en-PH', { 
+                            year: 'numeric', 
+                            month: '2-digit', 
+                            day: '2-digit' 
+                        })}
+                    </span>
+                ) : '—';
+            },
         },
         {
-            name: 'Date & Time Out',
+            name: 'Time In',
+            selector: (r) => r.TimeIn ?? r.timeIn,
+            sortable: true,
+            minWidth: '130px',
+            cell: (r) => {
+                const val = r.TimeIn ?? r.timeIn;
+                return val ? (
+                    <div className="flex items-center gap-2 py-1">
+                        <LogIn size={14} className="text-green-600 flex-shrink-0" />
+                        <span className="text-xs text-gray-800">
+                            {new Date(val).toLocaleTimeString('en-PH', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                hour12: true 
+                            })}
+                        </span>
+                    </div>
+                ) : '—';
+            },
+        },
+        {
+            name: 'Time Out',
             selector: (r) => r.TimeOut ?? r.timeOut,
             sortable: true,
-            minWidth: '190px',
+            minWidth: '130px',
             cell: (r) => {
                 const val = r.TimeOut ?? r.timeOut;
                 return val ? (
                     <div className="flex items-center gap-2 py-1">
                         <LogOut size={14} className="text-blue-600 flex-shrink-0" />
-                        <span className="text-xs text-gray-800">{fmtDateTime(val)}</span>
+                        <span className="text-xs text-gray-800">
+                            {new Date(val).toLocaleTimeString('en-PH', { 
+                                hour: '2-digit', 
+                                minute: '2-digit',
+                                hour12: true 
+                            })}
+                        </span>
                     </div>
                 ) : (
                     <span className="text-xs text-green-600 font-semibold italic">Active / On Duty</span>
@@ -260,11 +294,29 @@ const DtrDataTable = ({ onAddManualClick }) => {
             },
         },
         {
-            name: 'Status',
-            selector: (r) => r.Status ?? r.status ?? 'IN',
+            name: 'Total Hours',
+            selector: (r) => r.TotalHours ?? r.totalHours ?? 0,
             sortable: true,
             width: '120px',
-            cell: (r) => <StatusBadge status={r.Status ?? r.status ?? 'IN'} />,
+            cell: (r) => {
+                const hours = r.TotalHours ?? r.totalHours;
+                return hours ? (
+                    <span className="text-xs font-semibold text-purple-700">
+                        {parseFloat(hours).toFixed(2)} hrs
+                    </span>
+                ) : '—';
+            },
+        },
+        {
+            name: 'Remarks',
+            selector: (r) => r.Remarks ?? r.remarks ?? '—',
+            sortable: false,
+            grow: 1,
+            cell: (r) => (
+                <span className="text-xs text-gray-600 italic">
+                    {r.Remarks ?? r.remarks ?? '—'}
+                </span>
+            ),
         },
     ];
 
@@ -333,13 +385,23 @@ const DtrDataTable = ({ onAddManualClick }) => {
                                 </button>
                             )}
                         </div>
-                        {/* Date filter */}
+                        {/* Start Date filter */}
                         <div className="relative">
                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                             <input
                                 type="date"
-                                value={dateFilter}
-                                onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
+                                value={startDate}
+                                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                                className="pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                            />
+                        </div>
+                        {/* End Date filter */}
+                        <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
                                 className="pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                             />
                         </div>
@@ -349,7 +411,7 @@ const DtrDataTable = ({ onAddManualClick }) => {
                 {/* DataTable — AnimatePresence triggers re-animation on page/filter change */}
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={`${page}-${search}-${dateFilter}`}
+                        key={`${page}-${search}-${startDate}-${endDate}`}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.25 }}

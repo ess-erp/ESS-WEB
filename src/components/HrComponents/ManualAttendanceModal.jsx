@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
-import { Clock, Calendar, User, FileText, Timer } from 'lucide-react';
+import { Clock, Calendar, User, FileText } from 'lucide-react';
 import SearchableSelect from '../ButtonsComponents/SearchableSelect';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
 import { createManualAttendance, searchEmployees } from '../../states/HumanResourcesState/Action';
@@ -19,13 +19,12 @@ const ATTENDANCE_STATUS = [
  */
 const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
     const dispatch = useDispatch();
-    const { register, handleSubmit, control, formState: { errors }, reset, watch } = useForm({
+    const { register, handleSubmit, control, formState: { errors }, reset } = useForm({
         defaultValues: {
             employeeId: '',
             attendanceDate: new Date().toISOString().split('T')[0],
             timeIn: '08:00',
             timeOut: '17:00',
-            overtimeHours: 0,
             remarks: '',
         },
     });
@@ -38,21 +37,7 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
     const employees = searchEmployeesState.data || [];
     const employeesLoading = searchEmployeesState.loading || false;
 
-    // Watch time fields to calculate hours
-    const timeIn = watch('timeIn');
-    const timeOut = watch('timeOut');
     console.log(searchEmployeesState);
-
-    // Calculate total hours worked
-    const calculateHours = (timeInStr, timeOutStr) => {
-        if (!timeInStr || !timeOutStr) return 0;
-        const [inHour, inMin] = timeInStr.split(':').map(Number);
-        const [outHour, outMin] = timeOutStr.split(':').map(Number);
-        const totalMinutes = (outHour * 60 + outMin) - (inHour * 60 + inMin);
-        return (totalMinutes / 60).toFixed(2);
-    };
-
-    const totalHours = calculateHours(timeIn, timeOut);
 
     // Fetch employees with debounce for search
     const fetchEmployees = useCallback(async (search = '') => {
@@ -95,13 +80,11 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
         setIsSubmitting(true);
         
         const payload = {
-            userId: data.employeeId,  // Backend uses userId, not employeeId
-            attendanceDate: data.attendanceDate,
-            timeIn: data.timeIn + ":00",  // Add seconds to match backend format
-            timeOut: data.timeOut + ":00",  // Add seconds to match backend format
-            totalHoursWorked: parseFloat(calculateHours(data.timeIn, data.timeOut)),
-            totalOvertimeHours: parseFloat(data.overtimeHours) || 0.0,
-            remarks: data.remarks || 'Manual entry by HR',
+            EmployeeId: data.employeeId,
+            AttendanceDate: data.attendanceDate,
+            TimeIn: data.timeIn + ":00",
+            TimeOut: data.timeOut + ":00",
+            Remarks: data.remarks || 'Manual entry by HR',
         };
 
         try {
@@ -139,8 +122,8 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
                     render={({ field }) => (
                         <SearchableSelect
                             options={employeeOptions}
-                            value={field.value}
-                            onChange={field.onChange}
+                            value={employeeOptions.find(opt => opt.value === field.value) || null}
+                            onChange={(selected) => field.onChange(selected?.value || '')}
                             onInputChange={(inputValue) => setSearchQuery(inputValue)}
                             placeholder="Search by employee number, name, or email..."
                             isLoading={employeesLoading}
@@ -201,38 +184,6 @@ const ManualAttendanceModal = ({ isOpen, onClose, onSuccess }) => {
                     {errors.timeOut && (
                         <p className="text-red-500 text-sm mt-1">{errors.timeOut.message}</p>
                     )}
-                </div>
-            </div>
-
-            {/* Hours Display and Overtime */}
-            <div className="grid grid-cols-2 gap-4">
-                {/* Total Hours (Calculated) */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Timer className="inline mr-2" size={16} />
-                        Total Hours
-                    </label>
-                    <input
-                        type="text"
-                        value={`${totalHours} hours`}
-                        readOnly
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-                    />
-                </div>
-
-                {/* Overtime Hours */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        <Timer className="inline mr-2" size={16} />
-                        Overtime Hours
-                    </label>
-                    <input
-                        type="number"
-                        step="0.5"
-                        min="0"
-                        {...register('overtimeHours')}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    />
                 </div>
             </div>
 

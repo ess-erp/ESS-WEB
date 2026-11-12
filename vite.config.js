@@ -8,5 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  
+  server: {
+    allowedHosts: true, // <-- Add this line
+  },
 })

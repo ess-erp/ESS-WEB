@@ -718,17 +718,29 @@ export const fetchPhilhealthTableRequest = () => ({ type: FETCH_PHILHEALTH_TABLE
 export const fetchPhilhealthTableSuccess = (data) => ({ type: FETCH_PHILHEALTH_TABLE_SUCCESS, payload: data });
 export const fetchPhilhealthTableFailure = (error) => ({ type: FETCH_PHILHEALTH_TABLE_FAILURE, payload: error });
 
-export const fetchPhilhealthTable = () => async (dispatch) => {
+/**
+ * Fetch PhilHealth Table with Pagination
+ * @param {number} page - Page number
+ * @param {number} pageSize - Items per page
+ * @param {string} search - Search query
+ */
+export const fetchPhilhealthTable = (page = 1, pageSize = 10, search = '') => async (dispatch) => {
     dispatch(fetchPhilhealthTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/hr/get-philhealth-table`, {
+        
+        let url = `${baseUrl}/hr/get-philhealth-table?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+        
+        const res = await fetch(url, {
             method: 'GET',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
         });
         const data = await res.json();
         dispatch(fetchPhilhealthTableSuccess(data));
-        return { ok: true, data: data.data ?? data };
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
     } catch (err) {
         dispatch(fetchPhilhealthTableFailure(err.message));
         return { ok: false, err };
@@ -741,17 +753,29 @@ export const fetchPagibigTableRequest = () => ({ type: FETCH_PAGIBIG_TABLE_REQUE
 export const fetchPagibigTableSuccess = (data) => ({ type: FETCH_PAGIBIG_TABLE_SUCCESS, payload: data });
 export const fetchPagibigTableFailure = (error) => ({ type: FETCH_PAGIBIG_TABLE_FAILURE, payload: error });
 
-export const fetchPagibigTable = () => async (dispatch) => {
+/**
+ * Fetch Pag-IBIG Table with Pagination
+ * @param {number} page - Page number
+ * @param {number} pageSize - Items per page
+ * @param {string} search - Search query
+ */
+export const fetchPagibigTable = (page = 1, pageSize = 10, search = '') => async (dispatch) => {
     dispatch(fetchPagibigTableRequest());
     try {
         const token = getToken();
-        const res = await fetch(`${baseUrl}/hr/get-pagibig-table`, {
+        
+        let url = `${baseUrl}/hr/get-pagibig-table?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+        
+        const res = await fetch(url, {
             method: 'GET',
-            headers: { Authorization: `Bearer ${token}` },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
         });
         const data = await res.json();
         dispatch(fetchPagibigTableSuccess(data));
-        return { ok: true, data: data.data ?? data };
+        return { ok: true, data: data.data ?? data, totalRecords: data.totalRecords ?? 0 };
     } catch (err) {
         dispatch(fetchPagibigTableFailure(err.message));
         return { ok: false, err };
@@ -1176,26 +1200,27 @@ export const fetchDtrRecordsSuccess = (data) => ({ type: FETCH_DTR_RECORDS_SUCCE
 export const fetchDtrRecordsFailure = (error) => ({ type: FETCH_DTR_RECORDS_FAILURE, payload: error });
 
 /**
- * Fetch DTR Records (Refactored to positional parameters)
- * @param {number|null} employeeId - Employee ID filter
+ * Fetch DTR Records
+ * @param {string|null} search - Search query for employee name or number
  * @param {string|null} startDate - Start date filter
  * @param {string|null} endDate - End date filter
  * @param {number} page - Page number
  * @param {number} pageSize - Items per page
  */
-export const fetchDtrRecords = (employeeId = null, startDate = null, endDate = null, page = 1, pageSize = 50) => async (dispatch) => {
+export const fetchDtrRecords = (search = '', startDate = null, endDate = null, page = 1, pageSize = 50) => async (dispatch) => {
     dispatch(fetchDtrRecordsRequest());
     try {
         const token = getToken();
         
-        const params = new URLSearchParams();
-        if (employeeId) params.append('employeeId', employeeId.toString());
-        if (startDate) params.append('startDate', startDate);
-        if (endDate) params.append('endDate', endDate);
-        params.append('page', page.toString());
-        params.append('pageSize', pageSize.toString());
-
-        const url = `${baseUrl}/hr/get-employee-dtr?${params.toString()}`;
+        // Build URL with query parameters
+        let url = `${baseUrl}/hr/get-employee-dtr?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+        
+        if (startDate) {
+            url += `&startDate=${encodeURIComponent(startDate)}`;
+        }
+        if (endDate) {
+            url += `&endDate=${encodeURIComponent(endDate)}`;
+        }
 
         const response = await fetch(url, {
             method: 'GET',
@@ -1275,9 +1300,14 @@ export const fetchPayrollDetails = (periodId, page = 1, pageSize = 50, search = 
     try {
         const token = getToken();
 
+        // Support being called with an object { periodId } OR positional args
+        const pid = (typeof periodId === 'object' && periodId !== null)
+            ? periodId.periodId
+            : periodId;
+
         const params = new URLSearchParams({
-            periodId: periodId.toString(),
-            page: page.toString(),
+            periodId: pid.toString(),
+            page:     page.toString(),
             pageSize: pageSize.toString()
         });
         if (search) params.append('search', search);
@@ -1953,25 +1983,18 @@ export const calculatePayrollForPeriodRequest = () => ({ type: CALCULATE_PAYROLL
 export const calculatePayrollForPeriodSuccess = (data) => ({ type: CALCULATE_PAYROLL_FOR_PERIOD_SUCCESS, payload: data });
 export const calculatePayrollForPeriodFailure = (error) => ({ type: CALCULATE_PAYROLL_FOR_PERIOD_FAILURE, payload: error });
 
-export const calculatePayrollForPeriod = (payrollData) => async (dispatch) => {
+export const calculatePayrollForPeriod = (periodId) => async (dispatch) => {
     dispatch(calculatePayrollForPeriodRequest());
     try {
         const token = getToken();
-        const url = `${baseUrl}/hr/calculate-payroll`;
-
-        const payload = {
-            periodId: payrollData.periodId,
-            calendarId: payrollData.calendarId || null,
-            employeeIds: payrollData.employeeIds || null
-        };
+        const url = `${baseUrl}/hr/calculate-payroll?periodId=${periodId}`;
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
+            }
         });
 
         if (!response.ok) {
@@ -1980,7 +2003,6 @@ export const calculatePayrollForPeriod = (payrollData) => async (dispatch) => {
         }
 
         const res = await response.json();
-        
         dispatch(calculatePayrollForPeriodSuccess(res));
         return { ok: true, message: res.message, data: res.data };
     }
@@ -2070,6 +2092,177 @@ export const submitPayrollForApproval = (payload) => async (dispatch) => {
     }
     catch (error) {
         dispatch(submitPayrollForApprovalFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NEW PAYROLL PROCESSING FUNCTIONS (2026-08-26)
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Calculate Payroll (New Version) ───────────────────────────────────────────
+export const newCalculatePayrollRequest = () => ({ type: 'NEW_CALCULATE_PAYROLL_REQUEST' });
+export const newCalculatePayrollSuccess = (data) => ({ type: 'NEW_CALCULATE_PAYROLL_SUCCESS', payload: data });
+export const newCalculatePayrollFailure = (error) => ({ type: 'NEW_CALCULATE_PAYROLL_FAILURE', payload: error });
+
+/**
+ * Calculate Payroll for a specific period (NEW VERSION)
+ * Triggers backend calculation of all employee payroll for the period
+ * 
+ * @param {number} periodId - Payroll Period ID
+ * @returns {Object} { ok: boolean, message: string, data: object }
+ */
+export const calculatePayroll = (periodId) => async (dispatch) => {
+    dispatch(newCalculatePayrollRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/calculate-payroll`;
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ periodId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(newCalculatePayrollSuccess(res));
+        
+        return { ok: true, message: res.message || 'Payroll calculated successfully', data: res.data };
+    } catch (error) {
+        dispatch(newCalculatePayrollFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ── Fetch Payroll Summary (New) ───────────────────────────────────────────────
+export const newFetchPayrollSummaryRequest = () => ({ type: 'NEW_FETCH_PAYROLL_SUMMARY_REQUEST' });
+export const newFetchPayrollSummarySuccess = (data) => ({ type: 'NEW_FETCH_PAYROLL_SUMMARY_SUCCESS', payload: data });
+export const newFetchPayrollSummaryFailure = (error) => ({ type: 'NEW_FETCH_PAYROLL_SUMMARY_FAILURE', payload: error });
+
+/**
+ * Fetch Payroll Summary Totals (NEW VERSION)
+ * Gets aggregated totals for gross pay, deductions, net pay, and statutory contributions
+ * 
+ * @param {number} periodId - Payroll Period ID
+ * @returns {Object} { ok: boolean, data: object }
+ */
+export const fetchPayrollSummary = (periodId) => async (dispatch) => {
+    dispatch(newFetchPayrollSummaryRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-payroll-summary?periodId=${periodId}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(newFetchPayrollSummarySuccess(res.data));
+        
+        return { ok: true, data: res.data };
+    } catch (error) {
+        dispatch(newFetchPayrollSummaryFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ── Fetch Employee Payroll Details (New) ──────────────────────────────────────
+export const newFetchEmployeePayrollDetailsRequest = () => ({ type: 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_REQUEST' });
+export const newFetchEmployeePayrollDetailsSuccess = (data) => ({ type: 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_SUCCESS', payload: data });
+export const newFetchEmployeePayrollDetailsFailure = (error) => ({ type: 'NEW_FETCH_EMPLOYEE_PAYROLL_DETAILS_FAILURE', payload: error });
+
+/**
+ * Fetch Employee Payroll Details List (NEW VERSION)
+ * Gets detailed payroll information for each employee in the period
+ * 
+ * @param {number} periodId - Payroll Period ID
+ * @returns {Object} { ok: boolean, data: array }
+ */
+export const fetchEmployeePayrollDetails = (periodId) => async (dispatch) => {
+    dispatch(newFetchEmployeePayrollDetailsRequest());
+    
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/get-employee-payroll-list?periodId=${periodId}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(newFetchEmployeePayrollDetailsSuccess(res.data));
+        
+        return { ok: true, data: res.data };
+    } catch (error) {
+        dispatch(newFetchEmployeePayrollDetailsFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// ── Save Payroll Records ──────────────────────────────────────────────────────
+export const savePayrollRecordsRequest = () => ({ type: 'SAVE_PAYROLL_RECORDS_REQUEST' });
+export const savePayrollRecordsSuccess = (data) => ({ type: 'SAVE_PAYROLL_RECORDS_SUCCESS', payload: data });
+export const savePayrollRecordsFailure = (error) => ({ type: 'SAVE_PAYROLL_RECORDS_FAILURE', payload: error });
+
+/**
+ * Save the generated payroll records list for a period
+ * @param {number} periodId  - Payroll Period ID
+ * @param {Array}  records   - Array of payroll record objects from calculatePayrollForPeriod
+ */
+export const savePayrollRecords = (periodId, records) => async (dispatch) => {
+    dispatch(savePayrollRecordsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/hr/save-payroll-records`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ periodId, records })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(savePayrollRecordsSuccess(res));
+        return { ok: true, message: res.message, data: res.data };
+    } catch (error) {
+        dispatch(savePayrollRecordsFailure(error.message));
         return { ok: false, error: error.message };
     }
 };

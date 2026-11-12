@@ -83,6 +83,7 @@ import AccountingFeeAssessment from "../pages/Accounting/FeeAssessment";
 import AccountingStudentLedger from "../pages/Accounting/StudentLedger";
 import AccountingFinancialReports from "../pages/Accounting/FinancialReports";
 import AccountingGeneralLedger from "../pages/Accounting/GeneralLedger";
+import AccountingPayrollProcessApproval from "../pages/Accounting/PayrollProcessApproval";
 import AccountingCashBankManagement from "../pages/Accounting/CashBankManagement";
 import PurchasingDashboard from "../pages/Purchasing/Dashboard";
 import PurchasingInventoryManagement from "../pages/Purchasing/InventoryManagement";
@@ -731,6 +732,15 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[18]}>
               <AccountingCashBankManagement />
+            </ProtectedRoutes>
+          }
+        />
+
+        <Route
+          path="/accounting/payroll-process-approval"
+          element={
+            <ProtectedRoutes allowedRoles={[18]}>
+              <AccountingPayrollProcessApproval />
             </ProtectedRoutes>
           }
         />

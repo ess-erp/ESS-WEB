@@ -18,6 +18,7 @@ import {
   Calculator,
   Hash,
   Building2,
+  CheckCircle,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -504,6 +505,11 @@ const Sidebar = () => {
       name: "Fee Assessment",
       icon: FileText,
       path: "/accounting/fee-assessment",
+    },
+    {
+      name: "Payroll Approval",
+      icon: CheckCircle,
+      path: "/accounting/payroll-process-approval",
     },
     ...sharedMenu,
   ];

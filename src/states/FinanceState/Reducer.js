@@ -23,6 +23,15 @@ import {
     EXPORT_PAYROLL_REPORT_REQUEST,
     EXPORT_PAYROLL_REPORT_SUCCESS,
     EXPORT_PAYROLL_REPORT_FAILURE,
+    FETCH_PAYROLL_APPROVAL_TABLE_REQUEST,
+    FETCH_PAYROLL_APPROVAL_TABLE_SUCCESS,
+    FETCH_PAYROLL_APPROVAL_TABLE_FAILURE,
+    APPROVE_PAYROLL_RECORD_REQUEST,
+    APPROVE_PAYROLL_RECORD_SUCCESS,
+    APPROVE_PAYROLL_RECORD_FAILURE,
+    REJECT_PAYROLL_RECORD_REQUEST,
+    REJECT_PAYROLL_RECORD_SUCCESS,
+    REJECT_PAYROLL_RECORD_FAILURE,
 } from "./ActionType";
 
 // ── Initial State ──────────────────────────────────────────────────────────────
@@ -263,6 +272,28 @@ const financeReducer = (state = initialState, action) => {
             };
 
         // ── Default ────────────────────────────────────────────────────────────
+
+        // ── Payroll Approval (Payroll Process Approval page) ──────────────────
+        case FETCH_PAYROLL_APPROVAL_TABLE_REQUEST:
+            return { ...state, payrollApprovalTableState: { loading: true,  data: [], error: '', totalRecords: 0 } };
+        case FETCH_PAYROLL_APPROVAL_TABLE_SUCCESS:
+            return { ...state, payrollApprovalTableState: { loading: false, data: action.payload?.data || [], error: '', totalRecords: action.payload?.totalCount ?? action.payload?.totalRecords ?? 0 } };
+        case FETCH_PAYROLL_APPROVAL_TABLE_FAILURE:
+            return { ...state, payrollApprovalTableState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        case APPROVE_PAYROLL_RECORD_REQUEST:
+            return { ...state, approvePayrollState: { loading: true,  data: null, error: '' } };
+        case APPROVE_PAYROLL_RECORD_SUCCESS:
+            return { ...state, approvePayrollState: { loading: false, data: action.payload, error: '' } };
+        case APPROVE_PAYROLL_RECORD_FAILURE:
+            return { ...state, approvePayrollState: { loading: false, data: null, error: action.payload } };
+
+        case REJECT_PAYROLL_RECORD_REQUEST:
+            return { ...state, rejectPayrollState: { loading: true,  data: null, error: '' } };
+        case REJECT_PAYROLL_RECORD_SUCCESS:
+            return { ...state, rejectPayrollState: { loading: false, data: action.payload, error: '' } };
+        case REJECT_PAYROLL_RECORD_FAILURE:
+            return { ...state, rejectPayrollState: { loading: false, data: null, error: action.payload } };
         default:
             return state;
     }

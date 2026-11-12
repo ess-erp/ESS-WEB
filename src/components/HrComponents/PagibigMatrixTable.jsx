@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Plus, Edit, Trash2, Home } from 'lucide-react';
+import { Plus, Edit, Trash2, Home, Search, X } from 'lucide-react';
 import DataTable from 'react-data-table-component';
 import ModalComponent from '../ButtonsComponents/ModalComponent';
 import { fetchPagibigTable, updatePagibigTable } from '../../states/HumanResourcesState/Action';
@@ -24,10 +24,14 @@ const customStyles = {
 
 const PagibigMatrixTable = () => {
     const dispatch = useDispatch();
-    const { loading, data: pagibigData } = useSelector((s) => s.hr.pagibigTableState);
+    const { loading, data: pagibigData, totalRecords } = useSelector((s) => s.hr.pagibigTableState);
     const { loading: saving } = useSelector((s) => s.hr.updatePagibigTableState);
 
-    const [tableData, setTableData] = useState({});
+    // Pagination & Search state
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState('');
+
     const [editModal, setEditModal] = useState(false);
     const [addModal, setAddModal] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -39,31 +43,29 @@ const PagibigMatrixTable = () => {
         erRate: '',
     });
 
-    useEffect(() => {
-        dispatch(fetchPagibigTable());
-    }, [dispatch]);
+    // Fetch data with pagination
+    const fetchData = useCallback(() => {
+        dispatch(fetchPagibigTable(page, pageSize, search));
+    }, [page, pageSize, search, dispatch]);
 
     useEffect(() => {
-        if (pagibigData && typeof pagibigData === 'object') {
-            setTableData(pagibigData);
-        }
-    }, [pagibigData]);
+        fetchData();
+    }, [fetchData]);
 
-    const handleEdit = () => {
-        if (!tableData || !tableData.Id) return;
-        setSelectedRow(tableData);
+    const handleEdit = (row) => {
+        setSelectedRow(row);
         setForm({
-            maxSalaryCap: tableData.MaxSalaryCap ?? tableData.maxSalaryCap ?? '',
-            eeRateBelow1500: tableData.EeRateBelow1500 ?? tableData.eeRateBelow1500 ?? '',
-            eeRateAbove1500: tableData.EeRateAbove1500 ?? tableData.eeRateAbove1500 ?? '',
-            erRate: tableData.ErRate ?? tableData.erRate ?? '',
+            maxSalaryCap: row.MaxSalaryCap ?? row.maxSalaryCap ?? '',
+            eeRateBelow1500: row.EeRateBelow1500 ?? row.eeRateBelow1500 ?? '',
+            eeRateAbove1500: row.EeRateAbove1500 ?? row.eeRateAbove1500 ?? '',
+            erRate: row.ErRate ?? row.erRate ?? '',
         });
         setEditModal(true);
     };
 
     const handleSaveEdit = async () => {
         const payload = {
-            id: tableData.Id ?? tableData.id,
+            id: selectedRow.Id ?? selectedRow.id,
             maxSalaryCap: parseFloat(form.maxSalaryCap),
             eeRateBelow1500: parseFloat(form.eeRateBelow1500),
             eeRateAbove1500: parseFloat(form.eeRateAbove1500),
@@ -75,7 +77,7 @@ const PagibigMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Pag-IBIG configuration updated successfully'));
             setEditModal(false);
-            dispatch(fetchPagibigTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to update Pag-IBIG configuration'));
         }
@@ -105,21 +107,20 @@ const PagibigMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Pag-IBIG configuration added successfully'));
             setAddModal(false);
-            dispatch(fetchPagibigTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to add Pag-IBIG configuration'));
         }
     };
 
-    const handleDelete = () => {
-        if (!tableData || !tableData.Id) return;
-        setSelectedRow(tableData);
+    const handleDelete = (row) => {
+        setSelectedRow(row);
         setDeleteModal(true);
     };
 
     const handleConfirmDelete = async () => {
         const payload = {
-            id: tableData.Id ?? tableData.id,
+            id: selectedRow.Id ?? selectedRow.id,
             isDeleted: true,
         };
         
@@ -127,14 +128,20 @@ const PagibigMatrixTable = () => {
         if (result.ok) {
             dispatch(showToast('success', 'Pag-IBIG configuration deleted successfully'));
             setDeleteModal(false);
-            dispatch(fetchPagibigTable());
+            fetchData();
         } else {
             dispatch(showToast('error', 'Failed to delete Pag-IBIG configuration'));
         }
     };
 
-    // Display single row if data exists
-    const displayData = tableData && tableData.Id ? [tableData] : [];
+    // Extract data array from the response object
+    const displayData = Array.isArray(pagibigData?.Data) 
+        ? pagibigData.Data 
+        : Array.isArray(pagibigData) 
+        ? pagibigData 
+        : [];
+
+    console.log(pagibigData);
 
     const columns = [
         {
@@ -163,16 +170,16 @@ const PagibigMatrixTable = () => {
         },
         {
             name: 'Status',
-            selector: (r) => r.Status ?? r.status,
+            selector: (r) => r.ActiveStatus ?? r.activeStatus,
             cell: (r) => (
                 <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        (r.Status ?? r.status) === 'ACTIVE'
+                        (r.ActiveStatus ?? r.activeStatus) === 'ACTIVE'
                             ? 'bg-green-100 text-green-700'
                             : 'bg-gray-100 text-gray-700'
                     }`}
                 >
-                    {r.Status ?? r.status}
+                    {r.ActiveStatus ?? r.activeStatus}
                 </span>
             ),
             width: '120px',
@@ -182,14 +189,14 @@ const PagibigMatrixTable = () => {
             cell: (r) => (
                 <div className="flex gap-2">
                     <button
-                        onClick={() => handleEdit()}
+                        onClick={() => handleEdit(r)}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                         title="Edit"
                     >
                         <Edit size={15} />
                     </button>
                     <button
-                        onClick={() => handleDelete()}
+                        onClick={() => handleDelete(r)}
                         className="p-1.5 text-red-600 hover:bg-red-50 rounded transition"
                         title="Delete"
                     >
@@ -225,11 +232,39 @@ const PagibigMatrixTable = () => {
                 </p>
             </div>
 
+            {/* Search Box */}
+            <div className="bg-white rounded-lg p-4 border">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        placeholder="Search Pag-IBIG configurations..."
+                        className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                    />
+                    {search && (
+                        <button
+                            onClick={() => { setSearch(''); setPage(1); }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                        >
+                            <X size={15} className="text-gray-400 hover:text-gray-600" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-md border overflow-hidden">
                 <DataTable
                     columns={columns}
                     data={displayData}
                     progressPending={loading}
+                    pagination
+                    paginationServer
+                    paginationTotalRows={totalRecords ?? 0}
+                    paginationDefaultPage={page}
+                    onChangePage={(newPage) => setPage(newPage)}
+                    onChangeRowsPerPage={(newSize, newPage) => { setPageSize(newSize); setPage(newPage); }}
                     customStyles={customStyles}
                     noDataComponent={
                         <div className="py-8 text-center text-gray-500">No Pag-IBIG configuration found</div>
