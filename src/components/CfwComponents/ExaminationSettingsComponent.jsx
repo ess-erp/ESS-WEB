@@ -26,7 +26,8 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
         const savedUser = localStorage.getItem("userData");
         return savedUser ? JSON.parse(savedUser) : null;
     });
-
+    console.log(levelId);
+    console.log(AppId);
     // ============================================================================
     // REDUX SELECTORS - Dropdown Options
     // ============================================================================
@@ -70,7 +71,13 @@ const ExaminationSettingsComponent = ({ AppId, levelId }) => {
     // INITIAL DATA FETCH - Runs once on mount
     // ============================================================================
     useEffect(() => {
-        console.log('🔄 Initial fetch with AppId:', AppId, 'levelId:', levelId);
+        // Validate props before making API calls
+        if (!AppId || !levelId) {
+            console.log('⏳ ExaminationSettings: Waiting for valid AppId and levelId...', { AppId, levelId });
+            return;
+        }
+
+        console.log('🔄 ExaminationSettings: Fetching initial data with AppId:', AppId, 'levelId:', levelId);
         
         // Fetch dropdown options
         dispatch(fetchExamSettingsCodeData(levelId));

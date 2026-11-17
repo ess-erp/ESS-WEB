@@ -130,13 +130,13 @@ const Login = () => {
   return (
 
 
-    <section className="bg-[url('/assets/img/White-Background.png')] bg-cover bg-center bg-no-repeat h-screen flex items-center justify-center">
+    <section className="bg-[url('/assets/img/White-Background.png')] bg-cover bg-center bg-no-repeat min-h-screen flex items-center justify-center p-4">
       {loading && (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-50">
           <img
             src="/assets/img/ESS-Logo.png"
             alt="Loading..."
-            className="mb-6"
+            className="mb-6 w-32 h-auto"
           />
 
           <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-blue-500 border-solid"></div>
@@ -144,30 +144,49 @@ const Login = () => {
           <p className="mt-4 text-gray-600 font-medium">Loading...</p>
         </div>
       )}
-      <div className="container mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-10">
+      <div className="container mx-auto px-4">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10">
 
           {/* Left Image */}
-          <div className="w-full md:w-1/2 flex flex-col items-center">
+          <div className="w-full lg:w-1/2 flex flex-col items-center">
             <img
               src="/assets/img/seton-logo.png"
               alt="Login visual"
-              className="max-w-[680px] max-h-[350px] object-cover rounded"
+              className="w-full max-w-[400px] lg:max-w-[680px] h-auto object-contain rounded"
             />
 
             <div className="text-center mt-4 px-4">
-              <h2 className="text-xl font-bold text-green-800 mb-2">This is the Elizabeth Seton School ERP System.</h2>
-              <p className="text-gray-600">Join us and be part of our amazing community.</p>
-              <p className="text-gray-600">Enroll your child by using this Online Application.</p>
+              <h2 className="text-lg sm:text-xl font-bold text-green-800 mb-2">This is the Elizabeth Seton School ERP System.</h2>
+              <p className="text-sm sm:text-base text-gray-600">Join us and be part of our amazing community.</p>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">Enroll your child by using the Online Application.</p>
+              <button
+                onClick={() => navigate('/registration')}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-xs sm:text-sm font-semibold rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-out"
+              >
+                <span>Start Your Application</span>
+                <svg 
+                  className="w-4 h-4" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M13 7l5 5m0 0l-5 5m5-5H6" 
+                  />
+                </svg>
+              </button>
             </div>
           </div>
 
 
           {/* Right Login Form */}
-          <div className="w-full md:w-1/2 max-w-md">
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-green-800">Welcome To Elizabeth Seton School</h2>
-              <p className="text-gray-600 mt-2">Please enter your details to sign in</p>
+          <div className="w-full lg:w-1/2 max-w-md">
+            <div className="mb-6 sm:mb-8 text-center">
+              <h2 className="text-xl sm:text-2xl font-bold text-green-800">Welcome To Elizabeth Seton School</h2>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">Please enter your details to sign in</p>
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -298,7 +317,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="mt-6 gap-3">
+            <div className="mt-4 sm:mt-6 gap-3">
               {/* <button
                 type="button"
                 className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"

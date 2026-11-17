@@ -7,6 +7,7 @@ import {
     FETCH_LIST_OF_STUDENT_PER_TERM_REQUEST, FETCH_LIST_OF_STUDENT_PER_TERM_SUCCESS, FETCH_LIST_OF_STUDENT_PER_TERM_FAILURE,
     FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
     FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
+    FETCH_SCHOOL_CALENDAR_STATUS_REQUEST, FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS, FETCH_SCHOOL_CALENDAR_STATUS_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -23,7 +24,7 @@ export const fetchListOfSectionData = (teacherId,page, pageSize, search) => asyn
         const url = `${baseUrl}/teacher/get-faculty-load-teacher-id?teacherId=${teacherId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -52,7 +53,7 @@ export const fetchRowSectionTableData = (loadId, page, pageSize, search) => asyn
         const url = `${baseUrl}/teacher/get-row-section-table?loadId=${loadId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -81,7 +82,7 @@ export const fetchRowStudentTableData = (loadId, page, pageSize, search) => asyn
         const url = `${baseUrl}/teacher/get-row-student-table?loadId=${loadId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -110,7 +111,7 @@ export const fetchListOfSectionUserData = (userId,page, pageSize, search) => asy
         const url = `${baseUrl}/teacher/get-list-of-section-user?userId=${userId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -139,7 +140,7 @@ export const fetchTeacherSubjectLoadData = (loadId,userId,page, pageSize, search
         const url = `${baseUrl}/teacher/get-teacher-subject-load?loadId=${loadId}&userId=${userId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -168,7 +169,7 @@ export const fetchListOfStudentPerTermData = (loadId, subjectId, subjectType, pa
         const url = `${baseUrl}/teacher/get-list-of-student-per-term?loadId=${loadId}&subjectId=${subjectId}&subjectType=${subjectType}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -243,5 +244,40 @@ export const fetchFinalizeEncodedGradesData = (formData) => async (dispatch) => 
     catch (error) {
         dispatch(fetchFinalizeEncodedGradesFailure(error.message));
         return { ok: false, error };
+    }
+};
+
+
+// School Calendar Status Check
+export const fetchSchoolCalendarStatusRequest = () => ({ type: FETCH_SCHOOL_CALENDAR_STATUS_REQUEST });
+export const fetchSchoolCalendarStatusSuccess = (data) => ({ type: FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS, payload: data });
+export const fetchSchoolCalendarStatusFailure = (error) => ({ type: FETCH_SCHOOL_CALENDAR_STATUS_FAILURE, payload: error });
+
+export const fetchSchoolCalendarStatus = () => async (dispatch) => {
+    dispatch(fetchSchoolCalendarStatusRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/teacher/get-school-calendar-status`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(fetchSchoolCalendarStatusSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(fetchSchoolCalendarStatusFailure(error.message));
+        return { ok: false, error: error.message };
     }
 };

@@ -87,12 +87,17 @@ export const fetchStudentByIdData = (appId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/admission/get-student-appid?appId=${appId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
 
         const res = await response.json();
         console.log(res);
@@ -100,8 +105,9 @@ export const fetchStudentByIdData = (appId) => async (dispatch) => {
         return { ok: true, data: res };
     }
     catch (error) {
+        console.error('Error fetching student by ID:', error);
         dispatch(fetchStudentByIdFailure(error.message));
-        return { ok: false, error };
+        return { ok: false, error: error.message };
     }
 };
 
@@ -682,7 +688,7 @@ export const fetchTestPermitData = (othersTableId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/admission/get-test-permit?othersTableId=${othersTableId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -736,7 +742,7 @@ export const fetchAdmissionTestResultData = (othersTableId) => async (dispatch) 
         const token = getToken();
         const url = `${baseUrl}/admission/get-admission-test-result?othersTableId=${othersTableId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'applicatio/json',
                 'Authorization': `Bearer ${token}`,
@@ -791,7 +797,7 @@ export const fetchGeneratedLetterData = (othersTableId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/admission/get-generated-letter?othersTableId=${othersTableId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -846,7 +852,7 @@ export const fetchReligionWaverData = (appId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/admission/get-religion-waver-student-id?appId=${appId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

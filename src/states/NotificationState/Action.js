@@ -35,7 +35,7 @@ export const fetchNotificationListData = (userId, page, pageSize) => async (disp
         const url = `${baseUrl}/shared/get-notification-list?userId=${userId}&page=${page}&pageSize=${pageSize}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -64,7 +64,7 @@ export const fetchNotificationCountData = (userId) => async (dispatch) => {
         const url = `${baseUrl}/shared/get-notification-count?userId=${userId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-type': 'application/json',
                 'Authorization': `Bearer ${token}`,

@@ -39,7 +39,7 @@ export const fetchEnrollmentTableData = (StartDate, EndDate, TableType, page, pa
         const url = `${baseUrl}/cfw/enrollment-table?startDate=${StartDate}&endDate=${EndDate}&TableType=${TableType}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -102,7 +102,7 @@ export const fetchExamRoomTemplateData = (campusId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/cfw/get-examroom-created?campusId=${campusId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -164,7 +164,7 @@ export const fetchTemplateTableData = (status, page, pageSize, search) => async 
         const token = getToken();
         const url = `${baseUrl}/cfw/get-template-table?status=${status}&page=${page}&pageSize=${pageSize}&search=${search}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -221,7 +221,7 @@ export const fetchRowTemplateTableData = (tempId, tempType) => async (dispatch) 
         const token = getToken();
         const url = `${baseUrl}/cfw/get-row-template-data?tempId=${tempId}&tempType=${tempType}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -345,7 +345,7 @@ export const fetchGeneralSubjectTableData = (status, page, pageSize, search) => 
         const token = getToken();
         const url = `${baseUrl}/cfw/get-general-subject-table?status=${status}&page=${page}&pageSize=${pageSize}&search=${search}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'applcation/json',
                 'Authorization': `Bearer ${token}`,
@@ -400,7 +400,7 @@ export const fetchTemplateRowModalData = (tempId, tempType, page, pageSize, sear
         const token = getToken();
         const url = `${baseUrl}/cfw/get-template-row-modal?tempId=${tempId}&tempType=${tempType}&page=${page}&pageSize=${pageSize}&search=${search}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -458,12 +458,13 @@ export const fetchExamSettingsCodeData = (levelId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/cfw/get-exam-settings-code?levelId=${levelId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
             },
         });
+
         const res = await response.json();
 
         dispatch(fetchExamSettingsCodeSuccess(res));
@@ -471,7 +472,7 @@ export const fetchExamSettingsCodeData = (levelId) => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchExamSettingsCodeFailure(error.message));
-        return ({ ok: false, error });
+        return ({ ok: false, error: error.message });
     }
 };
 
@@ -485,20 +486,22 @@ export const fetchExamScheduleCreatedData = (levelId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/cfw/get-exam-room-schedule?levelId=${levelId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
         const res = await response.json();
 
         dispatch(fetchExamScheduleCreatedSuccess(res));
         return ({ ok: true, data: res.data });
     }
     catch (error) {
+        console.error('Error fetching exam schedule:', error);
         dispatch(fetchExamScheduleCreatedFailure(error.message));
-        return ({ ok: false, error });
+        return ({ ok: false, error: error.message });
     }
 };
 
@@ -513,20 +516,22 @@ export const fetchExamSettingsCodeByStudentIdData = (AppId) => async (dispatch) 
         const token = getToken();
         const url = `${baseUrl}/cfw/get-exam-setting-code-by-studentid?AppId=${AppId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
         });
+
         const res = await response.json();
 
         dispatch(fetcExamSettingsCodeByStudentIdSuccess(res));
         return ({ ok: true, data: res.data });
     }
     catch (error) {
+        console.error('Error fetching exam settings by student ID:', error);
         dispatch(fetcExamSettingsCodeByStudentIdFailure(error.message));
-        return ({ ok: false, error });
+        return ({ ok: false, error: error.message });
     }
 };
 
@@ -541,7 +546,7 @@ export const fetchAllUserByUserRoleData = (userRoleId) => async (dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/cfw/get-all-user-by-user-role?userRoleId=${userRoleId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -597,7 +602,7 @@ export const fetchExamRawScoreTableData = (AppId, page, pageSize) => async (disp
         const token = getToken();
         const url = `${baseUrl}/cfw/get-exam-raw-score-table?AppId=${AppId}&page=${page}&pageSize=${pageSize}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -654,7 +659,7 @@ export const fetchRawScoreByStudentData = (studentId) => async(dispatch) => {
         const token = getToken();
         const url = `${baseUrl}/cfw/get-raw-score-student?studentId=${studentId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

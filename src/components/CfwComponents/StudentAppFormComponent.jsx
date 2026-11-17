@@ -16,7 +16,7 @@ import {
     fetchLevelData,
     fetchStrandData,
     fetchNationalityData,
-    fetchReligionData,  
+    fetchReligionData,
     fetchProvinceData,
     fetchCityData,
     fetchBarangayData,
@@ -28,9 +28,16 @@ const StudentAppFormComponent = () => {
     const query = new URLSearchParams(search);
     const dispatch = useDispatch();
     const studentDataState = useSelector((state) => state.admission.studentDataState || {});
-    const studentData = studentDataState.data || [];
-    const AppId = query.get("AppId");
+    const studentData = studentDataState.data || {};
+    const TempAppId = query.get("AppId");
+    useEffect(() => {
+        // Only fetch if AppId is valid (not null, not empty string, not 'null' string)
+        if (TempAppId && TempAppId !== 'null' && TempAppId.trim() !== '') {
+            dispatch(fetchStudentByIdData(TempAppId));
+        }
+    }, [dispatch, TempAppId]);
 
+    console.log(studentData);
     const campusState = useSelector((state) => state.online.campusState || {});
     const divisionState = useSelector((state) => state.online.divisionState || {});
     const levelState = useSelector((state) => state.online.levelState || {});
@@ -142,17 +149,6 @@ const StudentAppFormComponent = () => {
         }));
     };
 
-    console.log(studentData);
-
-    useEffect(() => {
-        if (AppId) {
-            dispatch(fetchStudentByIdData(AppId));
-        }
-    }, [dispatch, AppId]);
-
-    console.log(studentData);
-    console.log(formData);
-
     const [active, setActive] = useState("one");
 
 
@@ -172,7 +168,6 @@ const StudentAppFormComponent = () => {
         setIsModalOpen(true);
         console.log(formData);
     };
-
 
     return (
         <>
@@ -1005,9 +1000,9 @@ const StudentAppFormComponent = () => {
                 </div>
             </div>
             <div className="bg-yellow-50 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mt-4" role="alert">
-                    <strong className="font-bold">Note: </strong>
-                    <span className="block sm:inline">Please click the button below to change the panel.</span>
-                </div>
+                <strong className="font-bold">Note: </strong>
+                <span className="block sm:inline">Please click the button below to change the panel.</span>
+            </div>
             <div className="flex justify-center gap-4 mb-6 pt-4">
                 <OutlineGreenBtn label="Examination Settings" onClick={() => setActive("one")} className="w-72 py-4 text-xl" />
                 <OutlineGreenBtn label="Examination Result" onClick={() => setActive("two")} className="w-72 py-4 text-xl" />
@@ -1017,8 +1012,8 @@ const StudentAppFormComponent = () => {
             <div className="relative min-h-[150px]"> {/* min-h ensures smooth height */}
                 <AnimatePresence mode="wait">
 
-
-                    {active === "one" && (
+                    {/* Only render ExaminationSettings when we have valid data */}
+                    {active === "one" && studentData?.AppId && studentData?.LevelId && (
                         <motion.div
                             key="one"
                             initial={{ x: 50, opacity: 0 }}
@@ -1031,7 +1026,29 @@ const StudentAppFormComponent = () => {
                         </motion.div>
                     )}
 
-                    {active === "two" && (
+                    {/* Show loading state when data is not ready */}
+                    {active === "one" && (!studentData?.AppId || !studentData?.LevelId) && (
+                        <motion.div
+                            key="loading-one"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            <div className="flex flex-col items-center justify-center gap-3 py-12">
+                                <svg className="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                <span className="text-gray-600 text-lg">Loading examination settings...</span>
+                                <span className="text-gray-500 text-sm">Please wait while we fetch student data.</span>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Only render ExaminationResult when we have valid AppId */}
+                    {active === "two" && studentData?.AppId && (
                         <motion.div
                             key="two"
                             initial={{ x: 50, opacity: 0 }}
@@ -1041,6 +1058,26 @@ const StudentAppFormComponent = () => {
                             className="absolute w-full bg-white p-6 shadow rounded-lg"
                         >
                             <ExaminationResultComponent AppId={studentData.AppId} />
+                        </motion.div>
+                    )}
+
+                    {/* Show loading state for examination result */}
+                    {active === "two" && !studentData?.AppId && (
+                        <motion.div
+                            key="loading-two"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="absolute w-full bg-white p-6 shadow rounded-lg"
+                        >
+                            <div className="flex flex-col items-center justify-center gap-3 py-12">
+                                <svg className="animate-spin h-8 w-8 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                                </svg>
+                                <span className="text-gray-600 text-lg">Loading examination results...</span>
+                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>

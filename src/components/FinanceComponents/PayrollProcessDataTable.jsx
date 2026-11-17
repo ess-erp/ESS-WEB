@@ -1,22 +1,23 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
-import { Eye, CheckCircle, XCircle, FileDown } from "lucide-react";
-import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
-import GreenBtn from "../ButtonsComponents/GreenBtn";
-import RedBtn from "../ButtonsComponents/RedBtn";
-import YellowBtn from "../ButtonsComponents/YellowBtn";
+import { 
+    CheckCircle, 
+    XCircle,
+    Search,
+    X,
+    Briefcase
+} from "lucide-react";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import PayrollDetailsModal from "./PayrollDetailsModal";
 import {
     fetchPayrollProcessTable,
     approvePayrollBatch,
     rejectPayrollBatch,
-    exportPayrollReport,
 } from "../../states/FinanceState/Action";
 import { showToast } from "../../states/NotificationState/Action";
 
 const PayrollProcessDataTable = ({ statusFilter = '' }) => {
+    console.log(statusFilter);
     const dispatch = useDispatch();
 
     // Redux state
@@ -27,26 +28,18 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState("");
-
+    const [actionLoading, setActionLoading] = useState({});
+    
     // Modal states
     const [selectedBatch, setSelectedBatch] = useState(null);
-    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
     const [approveModalOpen, setApproveModalOpen] = useState(false);
     const [rejectModalOpen, setRejectModalOpen] = useState(false);
-    
-    // Form states
-    const [approvalRemarks, setApprovalRemarks] = useState("");
     const [rejectionReason, setRejectionReason] = useState("");
-    const [actionLoading, setActionLoading] = useState(false);
 
-    // Fetch data
-    const fetchData = useCallback(() => {
+    // Fetch data on mount and when dependencies change
+    useEffect(() => {
         dispatch(fetchPayrollProcessTable(page, pageSize, search, statusFilter));
     }, [dispatch, page, pageSize, search, statusFilter]);
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
 
     // Handlers
     const handlePageChange = (newPage) => {
@@ -63,14 +56,8 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
         setPage(1); // Reset to first page on search
     };
 
-    const handleViewDetails = (row) => {
-        setSelectedBatch(row);
-        setDetailsModalOpen(true);
-    };
-
     const handleApproveClick = (row) => {
         setSelectedBatch(row);
-        setApprovalRemarks("");
         setApproveModalOpen(true);
     };
 
@@ -83,22 +70,24 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
     const handleApproveSubmit = async () => {
         if (!selectedBatch) return;
 
-        setActionLoading(true);
-        const result = await dispatch(
-            approvePayrollBatch({
-                batchId: selectedBatch.BatchId || selectedBatch.batchId,
-                remarks: approvalRemarks,
-            })
-        );
+        setActionLoading(prev => ({ ...prev, [selectedBatch.PayrollMasterId]: 'approve' }));
+        const remarks = "Approved by Finance Head";
+        const result = await dispatch(approvePayrollBatch(selectedBatch.PayrollMasterId, remarks));
 
         if (result.ok) {
             dispatch(showToast("success", result.message || "Payroll batch approved successfully"));
             setApproveModalOpen(false);
-            fetchData(); // Refresh table
+            // Refresh table
+            dispatch(fetchPayrollProcessTable(page, pageSize, search, statusFilter));
         } else {
             dispatch(showToast("error", result.error || "Failed to approve payroll batch"));
         }
-        setActionLoading(false);
+        
+        setActionLoading(prev => {
+            const newState = { ...prev };
+            delete newState[selectedBatch.PayrollMasterId];
+            return newState;
+        });
     };
 
     const handleRejectSubmit = async () => {
@@ -107,37 +96,34 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
             return;
         }
 
-        setActionLoading(true);
+        setActionLoading(prev => ({ ...prev, [selectedBatch.PayrollMasterId]: 'reject' }));
+        
         const result = await dispatch(
             rejectPayrollBatch({
-                batchId: selectedBatch.BatchId || selectedBatch.batchId,
-                reason: rejectionReason,
+                batchId: selectedBatch.PayrollMasterId,
+                reason: rejectionReason.trim(),
             })
         );
 
         if (result.ok) {
             dispatch(showToast("success", result.message || "Payroll batch rejected successfully"));
             setRejectModalOpen(false);
-            fetchData(); // Refresh table
+            // Refresh table
+            dispatch(fetchPayrollProcessTable(page, pageSize, search, statusFilter));
         } else {
             dispatch(showToast("error", result.error || "Failed to reject payroll batch"));
         }
-        setActionLoading(false);
+        
+        setActionLoading(prev => {
+            const newState = { ...prev };
+            delete newState[selectedBatch.PayrollMasterId];
+            return newState;
+        });
     };
 
-    const handleExportReport = async (row, format = 'excel') => {
-        const result = await dispatch(
-            exportPayrollReport({
-                batchId: row.BatchId || row.batchId,
-                format: format,
-            })
-        );
-
-        if (result.ok) {
-            dispatch(showToast("success", result.message || "Report exported successfully"));
-        } else {
-            dispatch(showToast("error", result.error || "Failed to export report"));
-        }
+    const handleClearFilters = () => {
+        setSearch("");
+        setPage(1);
     };
 
     // Format currency
@@ -148,102 +134,137 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
         }).format(amount || 0);
     };
 
-    // Table columns
+    // Table columns - matching PayrollBatchDto from backend
     const columns = [
         {
             name: "Batch ID",
-            selector: (row) => row.BatchId || row.batchId,
+            selector: (row) => row.PayrollMasterId,
             sortable: true,
             width: "100px",
             cell: (row) => (
                 <span className="font-semibold text-gray-800">
-                    #{row.BatchId || row.batchId}
+                    #{row.PayrollMasterId}
                 </span>
             ),
         },
         {
-            name: "Period / Description",
-            selector: (row) => row.PeriodDescription || row.periodDescription,
+            name: "Period",
+            selector: (row) => row.PeriodName,
             sortable: true,
             wrap: true,
-            width: "200px",
+            width: "180px",
             cell: (row) => (
-                <div>
-                    <div className="font-medium text-gray-900">
-                        {row.PeriodDescription || row.periodDescription}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                        {row.SchoolYear || row.schoolYear}
-                    </div>
+                <div className="font-medium text-gray-900">
+                    {row.PeriodName}
                 </div>
             ),
         },
         {
-            name: "Department",
-            selector: (row) => row.Department || row.department || "All",
-            sortable: true,
-            width: "150px",
-        },
-        {
-            name: "Employees",
-            selector: (row) => row.TotalEmployees || row.totalEmployees,
+            name: "Employee Count",
+            selector: (row) => row.EmployeeCount,
             sortable: true,
             center: true,
-            width: "100px",
+            width: "140px",
             cell: (row) => (
                 <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm">
-                    {row.TotalEmployees || row.totalEmployees}
+                    {row.EmployeeCount}
                 </span>
             ),
         },
         {
-            name: "Total Amount",
-            selector: (row) => row.TotalAmount || row.totalAmount,
+            name: "Gross Pay",
+            selector: (row) => row.TotalGrossPay,
+            sortable: true,
+            right: true,
+            width: "140px",
+            cell: (row) => (
+                <span className="font-semibold text-gray-700">
+                    {formatCurrency(row.TotalGrossPay)}
+                </span>
+            ),
+        },
+        {
+            name: "Deductions",
+            selector: (row) => row.TotalDeductions,
+            sortable: true,
+            right: true,
+            width: "140px",
+            cell: (row) => (
+                <span className="font-semibold text-red-600">
+                    {formatCurrency(row.TotalDeductions)}
+                </span>
+            ),
+        },
+        {
+            name: "Net Pay",
+            selector: (row) => row.TotalNetPay,
             sortable: true,
             right: true,
             width: "150px",
             cell: (row) => (
                 <span className="font-bold text-green-700">
-                    {formatCurrency(row.TotalAmount || row.totalAmount)}
+                    {formatCurrency(row.TotalNetPay)}
                 </span>
             ),
         },
         {
             name: "Status",
-            selector: (row) => row.Status || row.status,
+            selector: (row) => row.PayrollStatus,
             sortable: true,
             center: true,
             width: "120px",
             cell: (row) => {
-                const status = row.Status || row.status;
+                // PayrollStatus: P=Pending, Y=Approved, C=Cancelled/Rejected
+                // ActiveStatus: true/false
+                const payrollStatus = row.PayrollStatus;
+                const isActive = row.ActiveStatus;
+                
+                let statusText = "";
                 let statusClass = "";
-                switch (status?.toLowerCase()) {
-                    case "pending":
-                        statusClass = "bg-yellow-100 text-yellow-800";
-                        break;
-                    case "approved":
-                        statusClass = "bg-green-100 text-green-800";
-                        break;
-                    case "rejected":
-                        statusClass = "bg-red-100 text-red-800";
-                        break;
-                    default:
-                        statusClass = "bg-gray-100 text-gray-800";
+                
+                if (!isActive) {
+                    statusText = "Inactive";
+                    statusClass = "bg-gray-100 text-gray-800";
+                } else if (isActive === "P") {
+                    statusText = "Pending";
+                    statusClass = "bg-yellow-100 text-yellow-800";
+                } else if (isActive === "Y") {
+                    statusText = "Approved";
+                    statusClass = "bg-green-100 text-green-800";
+                } else if (isActive === "C") {
+                    statusText = "Rejected";
+                    statusClass = "bg-red-100 text-red-800";
+                } else {
+                    statusText = "Unknown";
+                    statusClass = "bg-gray-100 text-gray-800";
                 }
+                
                 return (
                     <span className={`px-3 py-1 rounded-full font-semibold text-xs uppercase ${statusClass}`}>
-                        {status}
+                        {statusText}
                     </span>
                 );
             },
         },
         {
+            name: "Created By",
+            selector: (row) => row.CreatedByFullName,
+            sortable: true,
+            width: "150px",
+            wrap: true,
+            cell: (row) => (
+                <div className="text-sm text-gray-700">
+                    {row.CreatedByFullName || '-'}
+                </div>
+            ),
+        },
+        {
             name: "Created Date",
-            selector: (row) => row.CreatedDate || row.createdDate,
+            selector: (row) => row.DateCreated,
             sortable: true,
             width: "130px",
             cell: (row) => {
-                const date = row.CreatedDate || row.createdDate;
+                const date = row.DateCreated;
                 return date ? new Date(date).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
@@ -254,32 +275,24 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
         {
             name: "Actions",
             center: true,
-            width: "280px",
+            width: "180px",
             cell: (row) => {
-                const status = (row.Status || row.status)?.toLowerCase();
-                const isPending = status === "pending";
+                // Check if pending: PayrollStatus === "P" and ActiveStatus === true
+                const isPending = row.ActiveStatus === "P";
+                const isLoadingApprove = actionLoading[row.PayrollMasterId] === 'approve';
+                const isLoadingReject = actionLoading[row.PayrollMasterId] === 'reject';
 
                 return (
                     <div className="flex gap-2 items-center justify-center">
-                        {/* View Details Button */}
-                        <button
-                            onClick={() => handleViewDetails(row)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                            title="View Details"
-                        >
-                            <Eye size={16} />
-                            <span>View</span>
-                        </button>
-
                         {/* Approve Button - Only for Pending */}
                         {isPending && (
                             <button
                                 onClick={() => handleApproveClick(row)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                                disabled={isLoadingApprove || isLoadingReject}
+                                className="px-3 py-1.5 text-xs font-semibold text-white bg-green-600 rounded hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                                 title="Approve Payroll"
                             >
-                                <CheckCircle size={16} />
-                                <span>Approve</span>
+                                {isLoadingApprove ? 'Approving...' : 'Approve'}
                             </button>
                         )}
 
@@ -287,22 +300,18 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
                         {isPending && (
                             <button
                                 onClick={() => handleRejectClick(row)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                                disabled={isLoadingApprove || isLoadingReject}
+                                className="px-3 py-1.5 text-xs font-semibold text-white bg-red-600 rounded hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                                 title="Reject Payroll"
                             >
-                                <XCircle size={16} />
-                                <span>Reject</span>
+                                {isLoadingReject ? 'Rejecting...' : 'Reject'}
                             </button>
                         )}
 
-                        {/* Export Button */}
-                        <button
-                            onClick={() => handleExportReport(row, 'excel')}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                            title="Export Report"
-                        >
-                            <FileDown size={16} />
-                        </button>
+                        {/* Show dash if not pending */}
+                        {!isPending && (
+                            <span className="text-xs text-gray-400">-</span>
+                        )}
                     </div>
                 );
             },
@@ -313,191 +322,239 @@ const PayrollProcessDataTable = ({ statusFilter = '' }) => {
     const customStyles = {
         headRow: {
             style: {
-                backgroundColor: "#f8fafc",
-                borderBottomWidth: "2px",
-                borderBottomColor: "#e2e8f0",
-                fontSize: "14px",
+                backgroundColor: "#f9fafb",
+                borderBottom: "2px solid #e5e7eb",
+                minHeight: "48px",
+            },
+        },
+        headCells: {
+            style: {
+                fontSize: "11px",
                 fontWeight: "700",
-                color: "#1e293b",
+                textTransform: "uppercase",
+                color: "#6b7280",
+                paddingLeft: "16px",
+                paddingRight: "16px",
             },
         },
         rows: {
             style: {
                 minHeight: "60px",
-                fontSize: "14px",
                 "&:hover": {
-                    backgroundColor: "#f1f5f9",
+                    backgroundColor: "#f0fdf4",
                     cursor: "pointer",
                 },
+            },
+        },
+        cells: {
+            style: {
+                paddingLeft: "16px",
+                paddingRight: "16px",
             },
         },
     };
 
     return (
-        <div className="w-full">
-            {/* Search Bar */}
-            <div className="mb-4 flex items-center gap-4">
-                <div className="flex-1 max-w-md">
-                    <input
-                        type="text"
-                        placeholder="Search by batch ID, period, or department..."
-                        value={search}
-                        onChange={handleSearch}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="text-sm text-gray-600">
-                    Total Records: <span className="font-semibold">{totalRecords}</span>
-                </div>
-            </div>
-
-            {/* Data Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                <DataTable
-                    columns={columns}
-                    data={tableData || []}
-                    progressPending={loading}
-                    pagination
-                    paginationServer
-                    paginationTotalRows={totalRecords}
-                    onChangeRowsPerPage={handlePerRowsChange}
-                    onChangePage={handlePageChange}
-                    paginationPerPage={pageSize}
-                    paginationRowsPerPageOptions={[10, 25, 50, 100]}
-                    customStyles={customStyles}
-                    highlightOnHover
-                    pointerOnHover
-                    responsive
-                    noDataComponent={
-                        <div className="py-8 text-center text-gray-500">
-                            No payroll batches found
+        <div className="w-full pt-2">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-green-600 to-green-500 px-4 sm:px-6 py-4 sm:py-5">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex-1">
+                            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                                <Briefcase size={20} className="sm:w-6 sm:h-6" />
+                                Payroll Batch Approval Workflow
+                            </h2>
+                            <p className="text-green-100 text-xs sm:text-sm mt-1">
+                                Review and approve payroll batches generated by the HR department
+                            </p>
                         </div>
-                    }
-                />
-            </div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-3 sm:px-4 py-2 text-white">
+                                <p className="text-[10px] sm:text-xs font-medium">Total Records</p>
+                                <p className="text-xl sm:text-2xl font-bold">{totalRecords}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            {/* Payroll Details Modal */}
-            {detailsModalOpen && selectedBatch && (
-                <PayrollDetailsModal
-                    isOpen={detailsModalOpen}
-                    onClose={() => setDetailsModalOpen(false)}
-                    batchId={selectedBatch.BatchId || selectedBatch.batchId}
-                    batchDetails={selectedBatch}
-                />
-            )}
+                {/* Filters Section */}
+                <div className="border-b border-gray-200 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
+                        {/* Search */}
+                        <div className="relative flex-1 min-w-full sm:min-w-[200px]">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Search by batch ID, period, or department..."
+                                value={search}
+                                onChange={handleSearch}
+                                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                            />
+                        </div>
+
+                        <div className="flex gap-2">
+                            {/* Clear Filters */}
+                            {search && (
+                                <button
+                                    onClick={handleClearFilters}
+                                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+                                >
+                                    <X size={16} />
+                                    <span className="hidden sm:inline">Clear</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* DataTable */}
+                <div className="overflow-x-auto">
+                    <div className="min-w-full inline-block align-middle">
+                        <DataTable
+                            columns={columns}
+                            data={tableData || []}
+                            progressPending={loading}
+                            pagination
+                            paginationServer
+                            paginationTotalRows={totalRecords}
+                            onChangeRowsPerPage={handlePerRowsChange}
+                            onChangePage={handlePageChange}
+                            paginationPerPage={pageSize}
+                            paginationRowsPerPageOptions={[10, 25, 50, 100]}
+                            customStyles={customStyles}
+                            highlightOnHover
+                            pointerOnHover
+                            responsive
+                            noDataComponent={
+                                <div className="py-12 sm:py-16 text-center px-4">
+                                    <Briefcase className="mx-auto text-gray-300 mb-4" size={48} />
+                                    <p className="text-gray-500 font-medium text-base sm:text-lg">No payroll batches found</p>
+                                    <p className="text-gray-400 text-xs sm:text-sm mt-2 max-w-md mx-auto">
+                                        Payroll batches submitted by HR will appear here for approval.
+                                    </p>
+                                </div>
+                            }
+                        />
+                    </div>
+                </div>
+            </div>
 
             {/* Approve Confirmation Modal */}
             <ModalComponent
                 isOpen={approveModalOpen}
                 onClose={() => setApproveModalOpen(false)}
                 title="Approve Payroll Batch"
-            >
-                <div className="space-y-4">
-                    <p className="text-gray-700">
-                        Are you sure you want to approve this payroll batch?
-                    </p>
-                    {selectedBatch && (
-                        <div className="bg-blue-50 p-4 rounded-lg space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Batch ID:</span>
-                                <span className="font-semibold">#{selectedBatch.BatchId || selectedBatch.batchId}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Period:</span>
-                                <span className="font-semibold">{selectedBatch.PeriodDescription || selectedBatch.periodDescription}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Total Amount:</span>
-                                <span className="font-semibold text-green-700">
-                                    {formatCurrency(selectedBatch.TotalAmount || selectedBatch.totalAmount)}
-                                </span>
-                            </div>
+                size="w-full max-w-md"
+                body={
+                    <div className="space-y-4 text-left">
+                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                            <p className="text-sm text-yellow-700 font-medium">
+                                ⚠ Warning: This action cannot be undone
+                            </p>
                         </div>
-                    )}
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Remarks (Optional)
-                        </label>
-                        <textarea
-                            value={approvalRemarks}
-                            onChange={(e) => setApprovalRemarks(e.target.value)}
-                            rows={3}
-                            placeholder="Add any approval remarks..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
+                        <p className="text-gray-700 text-sm">
+                            Are you sure you want to approve this payroll batch? Once approved, this action cannot be reversed.
+                        </p>
+                        {selectedBatch && (
+                            <div className="bg-blue-50 p-4 rounded-lg space-y-2 text-sm border border-blue-200">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Batch ID:</span>
+                                    <span className="font-semibold">#{selectedBatch.PayrollMasterId}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Period:</span>
+                                    <span className="font-semibold">{selectedBatch.PeriodName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Employees:</span>
+                                    <span className="font-semibold">{selectedBatch.EmployeeCount}</span>
+                                </div>
+                                <div className="flex justify-between border-t border-blue-200 pt-2">
+                                    <span className="text-gray-600 font-semibold">Total Net Pay:</span>
+                                    <span className="font-bold text-green-700">{formatCurrency(selectedBatch.TotalNetPay)}</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
-
-                    <div className="flex gap-3 justify-end pt-4">
-                        <OutlineBlueBtn
-                            onClick={() => setApproveModalOpen(false)}
-                            disabled={actionLoading}
-                        >
-                            Cancel
-                        </OutlineBlueBtn>
-                        <GreenBtn
-                            onClick={handleApproveSubmit}
-                            disabled={actionLoading}
-                        >
-                            {actionLoading ? "Approving..." : "Approve Payroll"}
-                        </GreenBtn>
-                    </div>
-                </div>
-            </ModalComponent>
+                }
+                buttons={[
+                    {
+                        label: "Cancel",
+                        type: "default",
+                        closeOnClick: true,
+                        onClick: () => setApproveModalOpen(false),
+                    },
+                    {
+                        label: actionLoading[selectedBatch?.PayrollMasterId] === 'approve' ? "Approving..." : "Confirm Approval",
+                        type: "green",
+                        closeOnClick: false,
+                        onClick: handleApproveSubmit,
+                    },
+                ]}
+            />
 
             {/* Reject Confirmation Modal */}
             <ModalComponent
                 isOpen={rejectModalOpen}
                 onClose={() => setRejectModalOpen(false)}
                 title="Reject Payroll Batch"
-            >
-                <div className="space-y-4">
-                    <p className="text-gray-700">
-                        Please provide a reason for rejecting this payroll batch.
-                    </p>
-                    {selectedBatch && (
-                        <div className="bg-red-50 p-4 rounded-lg space-y-2 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Batch ID:</span>
-                                <span className="font-semibold">#{selectedBatch.BatchId || selectedBatch.batchId}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600">Period:</span>
-                                <span className="font-semibold">{selectedBatch.PeriodDescription || selectedBatch.periodDescription}</span>
-                            </div>
+                size="w-full max-w-md"
+                body={
+                    <div className="space-y-4 text-left">
+                        <div className="bg-red-50 border-l-4 border-red-400 p-3 rounded">
+                            <p className="text-sm text-red-700 font-medium">
+                                ✕ Warning: This will reject the payroll batch
+                            </p>
                         </div>
-                    )}
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Rejection Reason <span className="text-red-500">*</span>
-                        </label>
-                        <textarea
-                            value={rejectionReason}
-                            onChange={(e) => setRejectionReason(e.target.value)}
-                            rows={4}
-                            placeholder="Explain why this payroll batch is being rejected..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                            required
-                        />
+                        <p className="text-gray-700 text-sm">
+                            Please provide a reason for rejecting this payroll batch. This will be sent back to HR for revision.
+                        </p>
+                        {selectedBatch && (
+                            <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm border border-gray-200">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Batch ID:</span>
+                                    <span className="font-semibold">#{selectedBatch.PayrollMasterId}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Period:</span>
+                                    <span className="font-semibold">{selectedBatch.PeriodName}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Employees:</span>
+                                    <span className="font-semibold">{selectedBatch.EmployeeCount}</span>
+                                </div>
+                            </div>
+                        )}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Rejection Reason <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                rows={3}
+                                placeholder="e.g., incorrect calculations, missing documentation..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                            />
+                        </div>
                     </div>
-
-                    <div className="flex gap-3 justify-end pt-4">
-                        <OutlineBlueBtn
-                            onClick={() => setRejectModalOpen(false)}
-                            disabled={actionLoading}
-                        >
-                            Cancel
-                        </OutlineBlueBtn>
-                        <RedBtn
-                            onClick={handleRejectSubmit}
-                            disabled={actionLoading || !rejectionReason.trim()}
-                        >
-                            {actionLoading ? "Rejecting..." : "Reject Payroll"}
-                        </RedBtn>
-                    </div>
-                </div>
-            </ModalComponent>
+                }
+                buttons={[
+                    {
+                        label: "Cancel",
+                        type: "default",
+                        closeOnClick: true,
+                        onClick: () => setRejectModalOpen(false),
+                    },
+                    {
+                        label: actionLoading[selectedBatch?.PayrollMasterId] === 'reject' ? "Rejecting..." : "Confirm Rejection",
+                        type: "red",
+                        closeOnClick: false,
+                        onClick: handleRejectSubmit,
+                    },
+                ]}
+            />
         </div>
     );
 };

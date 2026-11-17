@@ -104,63 +104,87 @@ const FacultyEntryComponent = () => {
         { name: 'End Time', selector: row => formatToAMPM(row.EndTime), sortable: true, wrap: true, grow: 3 },
         {
             name: 'Assign Teacher',
-            cell: (row) => (
-                <SearchableSelect
-                    options={nonAdviserList}
-                    value={nonAdviserList.find(
-                        option =>
-                            option.value ===
-                            teacherAssignments.find(
-                                x => x.SubjectId === row.SubjectId
-                            )?.EmployeeId
-                    )}
-                    onChange={(selected) =>
-                        handleTeacherChange(row.SubjectId, selected)
-                    }
-                    placeholder="-- Select Teacher --"
-                />
-            ),
-            sortable: true,
+            cell: (row) => {
+                const isDouble = !!dualTeacher[row.SubjectId];
+                return (
+                    <div className="flex flex-col gap-1 w-full py-1">
+                        {/* Radio buttons */}
+                        <div className="flex gap-3 text-xs text-gray-600 justify-end">
+                            <label className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name={`teachercount-${row.SubjectId}`}
+                                    checked={!isDouble}
+                                    onChange={() => toggleDualTeacher(row.SubjectId, false)}
+                                />
+                                1 Teacher
+                            </label>
+                            <label className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                    type="radio"
+                                    name={`teachercount-${row.SubjectId}`}
+                                    checked={isDouble}
+                                    onChange={() => toggleDualTeacher(row.SubjectId, true)}
+                                />
+                                2 Teachers
+                            </label>
+                        </div>
+                        {/* Dropdowns — stacked, one per row */}
+                        <div className="flex flex-col gap-1.5 w-full">
+                            <SearchableSelect
+                                options={nonAdviserList}
+                                value={getTeacherValue(row.SubjectId, 1)}
+                                onChange={(selected) => handleTeacherChange(row.SubjectId, selected, 1)}
+                                placeholder="-- Teacher 1 --"
+                                showSearchIcon={false}
+                                width="100%"
+                            />
+                            {isDouble && (
+                                <SearchableSelect
+                                    options={nonAdviserList}
+                                    value={getTeacherValue(row.SubjectId, 2)}
+                                    onChange={(selected) => handleTeacherChange(row.SubjectId, selected, 2)}
+                                    placeholder="-- Teacher 2 --"
+                                    showSearchIcon={false}
+                                    width="100%"
+                                />
+                            )}
+                        </div>
+                    </div>
+                );
+            },
             wrap: true,
             grow: 5,
-        },
-        {
-            name: 'Term Available',
-            cell: (row) => (
-                <div className="flex gap-3 m-1">
-                    {["Term1", "Term2", "Term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t] === "true" || row[t] === true}
-                                readOnly
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            sortable: true,
-            wrap: true,
-            grow: 3,
-            style: {
-                whiteSpace: 'normal'
-            }
+            style: { paddingTop: '4px', paddingBottom: '4px' },
         },
     ];
 
     const [teacherAssignments, setTeacherAssignments] = useState([]);
-    const handleTeacherChange = (subjectId, selected) => {
+    const [dualTeacher, setDualTeacher] = useState({}); // { [subjectId]: boolean }
+
+    const toggleDualTeacher = (subjectId, value) => {
+        setDualTeacher(prev => ({ ...prev, [subjectId]: value }));
+        // Clear second teacher if switching back to single
+        if (!value) {
+            setTeacherAssignments(prev =>
+                prev.map(item =>
+                    item.SubjectId === subjectId
+                        ? { ...item, EmployeeId2: null }
+                        : item
+                )
+            );
+        }
+    };
+
+    const handleTeacherChange = (subjectId, selected, slot = 1) => {
         setTeacherAssignments(prev => {
             const existing = prev.find(x => x.SubjectId === subjectId);
+            const field = slot === 1 ? 'EmployeeId' : 'EmployeeId2';
 
             if (existing) {
                 return prev.map(item =>
                     item.SubjectId === subjectId
-                        ? {
-                            ...item,
-                            EmployeeId: selected?.value
-                        }
+                        ? { ...item, [field]: selected?.value ?? null }
                         : item
                 );
             }
@@ -169,10 +193,17 @@ const FacultyEntryComponent = () => {
                 ...prev,
                 {
                     SubjectId: subjectId,
-                    EmployeeId: selected?.value
+                    EmployeeId: slot === 1 ? (selected?.value ?? null) : null,
+                    EmployeeId2: slot === 2 ? (selected?.value ?? null) : null,
                 }
             ];
         });
+    };
+
+    const getTeacherValue = (subjectId, slot = 1) => {
+        const field = slot === 1 ? 'EmployeeId' : 'EmployeeId2';
+        const empId = teacherAssignments.find(x => x.SubjectId === subjectId)?.[field];
+        return nonAdviserList.find(o => o.value === empId) ?? null;
     };
 
     const [successModalBody, setSuccessModalBody] = useState("");
@@ -192,7 +223,15 @@ const FacultyEntryComponent = () => {
             MainSecId: selectedSection?.value,
             AdviserId: selectedAdviser?.value,
             CreatedByUserId: userId,
-            NonAdviserDtos: teacherAssignments
+            TeacherDtos: teacherAssignments
+                .filter(s => s.EmployeeId)   // only rows where at least teacher 1 is assigned
+                .flatMap(s => {
+                    const entries = [{ SubjectId: s.SubjectId, EmployeeId: s.EmployeeId }];
+                    if (s.EmployeeId2) {
+                        entries.push({ SubjectId: s.SubjectId, EmployeeId: s.EmployeeId2 });
+                    }
+                    return entries;
+                })
         };
 
         console.log(payload);
@@ -346,29 +385,6 @@ const FacultyEntryComponent = () => {
         { name: 'Room', selector: row => row.Room, sortable: true },
         { name: 'Start Time', selector: row => formatToAMPM(row.StartTime), sortable: true, wrap: true, grow: 3 },
         { name: 'End Time', selector: row => formatToAMPM(row.EndTime), sortable: true, wrap: true, grow: 3 },
-        {
-            name: 'Term Available',
-            cell: (row) => (
-                <div className="flex gap-3 m-1">
-                    {["Term1", "Term2", "Term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t] === "true" || row[t] === true}
-                                readOnly
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            sortable: true,
-            wrap: true,
-            grow: 3,
-            style: {
-                whiteSpace: 'normal'
-            }
-        },
         { name: 'Date Created', selector: row => formatDate(row.DateCreated), sortable: true , wrap: true},
     ];
 
@@ -379,7 +395,7 @@ const FacultyEntryComponent = () => {
             <div className="bg-white rounded-lg shadow border border-gray-200">
 
                 <div className="px-4 py-3 border-b bg-gray-50 rounded-t-lg">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-lg font-bold text-green-600">
                                 Faculty Load Master List
@@ -388,34 +404,34 @@ const FacultyEntryComponent = () => {
                                 List of faculty load for this school year.
                             </p>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-3">
-                        <OutlineBlueBtn
-                            label="Add new"
-                            onClick={openAddNewModal}
-                        />
+                        <div className="flex items-center gap-3">
+                            <OutlineBlueBtn
+                                label="Add new"
+                                onClick={openAddNewModal}
+                            />
 
-                        <SchoolYearDropdown
-                            value={selectedSchoolYear}
-                            onChange={(e) => {
-                                setSelectedSchoolYear(e.target.value);
-                                setFacultyLoadTableCurrentPage(1);
-                            }}
-                            className="px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            includeAll={true}
-                        />
+                            <SchoolYearDropdown
+                                value={selectedSchoolYear}
+                                onChange={(e) => {
+                                    setSelectedSchoolYear(e.target.value);
+                                    setFacultyLoadTableCurrentPage(1);
+                                }}
+                                className="px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                includeAll={true}
+                            />
 
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="px-3 py-2 border border-gray-300 rounded flex-1 max-w-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={facultyLoadTableSearchFilter}
-                            onChange={(e) => {
-                                setFacultyLoadTableFilterText(e.target.value);
-                                setFacultyLoadTableCurrentPage(1);
-                            }}
-                        />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                className="px-3 py-2 border border-gray-300 rounded w-48 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={facultyLoadTableSearchFilter}
+                                onChange={(e) => {
+                                    setFacultyLoadTableFilterText(e.target.value);
+                                    setFacultyLoadTableCurrentPage(1);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
                 <div className="w-full">
@@ -434,6 +450,12 @@ const FacultyEntryComponent = () => {
                         }}
                         highlightOnHover
                         responsive
+                        persistTableHead
+                        noDataComponent={
+                            <div className="py-8 text-center text-gray-500 text-sm">
+                                There are no records to display
+                            </div>
+                        }
                     />
                 </div>
 

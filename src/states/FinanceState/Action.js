@@ -1,39 +1,21 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // FINANCE STATE - ACTION CREATORS
 // ══════════════════════════════════════════════════════════════════════════════
-// For Finance Head Dashboard and Payroll Process Management
-// User Role: Finance Head (userRoleId = 20)
+// For Finance Head Payroll Process Management
+// User Role: Finance Head (userRoleId = 4)
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Action Type Imports (Consolidated) ────────────────────────────────────────
+// ── Action Type Imports ────────────────────────────────────────────────────────
 import {
-    FETCH_FINANCE_DASHBOARD_SUMMARY_REQUEST,
-    FETCH_FINANCE_DASHBOARD_SUMMARY_SUCCESS,
-    FETCH_FINANCE_DASHBOARD_SUMMARY_FAILURE,
     FETCH_PAYROLL_PROCESS_TABLE_REQUEST,
     FETCH_PAYROLL_PROCESS_TABLE_SUCCESS,
     FETCH_PAYROLL_PROCESS_TABLE_FAILURE,
-    FETCH_PAYROLL_BATCH_DETAILS_REQUEST,
-    FETCH_PAYROLL_BATCH_DETAILS_SUCCESS,
-    FETCH_PAYROLL_BATCH_DETAILS_FAILURE,
     APPROVE_PAYROLL_BATCH_REQUEST,
     APPROVE_PAYROLL_BATCH_SUCCESS,
     APPROVE_PAYROLL_BATCH_FAILURE,
     REJECT_PAYROLL_BATCH_REQUEST,
     REJECT_PAYROLL_BATCH_SUCCESS,
     REJECT_PAYROLL_BATCH_FAILURE,
-    EXPORT_PAYROLL_REPORT_REQUEST,
-    EXPORT_PAYROLL_REPORT_SUCCESS,
-    EXPORT_PAYROLL_REPORT_FAILURE,
-    FETCH_PAYROLL_APPROVAL_TABLE_REQUEST,
-    FETCH_PAYROLL_APPROVAL_TABLE_SUCCESS,
-    FETCH_PAYROLL_APPROVAL_TABLE_FAILURE,
-    APPROVE_PAYROLL_RECORD_REQUEST,
-    APPROVE_PAYROLL_RECORD_SUCCESS,
-    APPROVE_PAYROLL_RECORD_FAILURE,
-    REJECT_PAYROLL_RECORD_REQUEST,
-    REJECT_PAYROLL_RECORD_SUCCESS,
-    REJECT_PAYROLL_RECORD_FAILURE,
 } from "./ActionType";
 
 import { getToken } from "../../services/tokenServices";
@@ -41,62 +23,8 @@ import { getToken } from "../../services/tokenServices";
 const baseUrl = import.meta.env.VITE_BASE_URL;
 
 // ══════════════════════════════════════════════════════════════════════════════
-// SECTION 1: FETCH / GET ACTIONS (Data Retrieval)
+// FETCH PAYROLL PROCESS TABLE
 // ══════════════════════════════════════════════════════════════════════════════
-// All data fetching operations use POSITIONAL PARAMETERS
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ── Fetch Dashboard Summary Metrics ────────────────────────────────────────────
-
-export const fetchFinanceDashboardSummaryRequest = () => ({ 
-    type: FETCH_FINANCE_DASHBOARD_SUMMARY_REQUEST 
-});
-
-export const fetchFinanceDashboardSummarySuccess = (data) => ({ 
-    type: FETCH_FINANCE_DASHBOARD_SUMMARY_SUCCESS, 
-    payload: data 
-});
-
-export const fetchFinanceDashboardSummaryFailure = (error) => ({ 
-    type: FETCH_FINANCE_DASHBOARD_SUMMARY_FAILURE, 
-    payload: error 
-});
-
-/**
- * Fetch Finance Dashboard Summary Metrics
- * Returns: Total Pending Payrolls, Total Budget Required, Total Employees Processed
- * 
- * @returns {Object} { ok: boolean, data: object }
- */
-export const fetchFinanceDashboardSummary = () => async (dispatch) => {
-    dispatch(fetchFinanceDashboardSummaryRequest());
-    try {
-        const token = getToken();
-        const url = `${baseUrl}/hr/dashboard-summary`;
-
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        const res = await response.json();
-        dispatch(fetchFinanceDashboardSummarySuccess(res));
-        return { ok: true, data: res.data };
-    } catch (error) {
-        dispatch(fetchFinanceDashboardSummaryFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
-// ── Fetch Payroll Process Table ────────────────────────────────────────────────
 
 export const fetchPayrollProcessTableRequest = () => ({ 
     type: FETCH_PAYROLL_PROCESS_TABLE_REQUEST 
@@ -113,8 +41,9 @@ export const fetchPayrollProcessTableFailure = (error) => ({
 });
 
 /**
- * Fetch Payroll Process Table (Using Positional Parameters - No DTO Wrapper)
+ * Fetch Payroll Process Table
  * Displays generated payroll batches sent to Finance Head for approval
+ * Uses query parameters: ?page=1&pageSize=10&search=&status=
  * 
  * @param {number} page - Page number (default: 1)
  * @param {number} pageSize - Items per page (default: 10)
@@ -123,6 +52,7 @@ export const fetchPayrollProcessTableFailure = (error) => ({
  * @returns {Object} { ok: boolean, data: array, totalRecords: number }
  */
 export const fetchPayrollProcessTable = (page = 1, pageSize = 10, search = '', status = '') => async (dispatch) => {
+    console.log('🔥 fetchPayrollProcessTable CALLED:', { page, pageSize, search, status });
     dispatch(fetchPayrollProcessTableRequest());
     try {
         const token = getToken();
@@ -147,8 +77,9 @@ export const fetchPayrollProcessTable = (page = 1, pageSize = 10, search = '', s
             const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
-
+        console.log(response);
         const res = await response.json();
+        console.log(res);
         dispatch(fetchPayrollProcessTableSuccess(res));
         return { ok: true, data: res.data, totalRecords: res.totalRecords };
     } catch (error) {
@@ -157,71 +88,9 @@ export const fetchPayrollProcessTable = (page = 1, pageSize = 10, search = '', s
     }
 };
 
-// ── Fetch Payroll Batch Details ────────────────────────────────────────────────
-
-export const fetchPayrollBatchDetailsRequest = () => ({ 
-    type: FETCH_PAYROLL_BATCH_DETAILS_REQUEST 
-});
-
-export const fetchPayrollBatchDetailsSuccess = (data) => ({ 
-    type: FETCH_PAYROLL_BATCH_DETAILS_SUCCESS, 
-    payload: data 
-});
-
-export const fetchPayrollBatchDetailsFailure = (error) => ({ 
-    type: FETCH_PAYROLL_BATCH_DETAILS_FAILURE, 
-    payload: error 
-});
-
-/**
- * Fetch Payroll Batch Details (For Modal View)
- * Returns itemized breakdown of employee payroll entries, deductions, allowances, and net pay
- * 
- * @param {number} batchId - Payroll batch ID
- * @param {number} page - Page number for pagination within modal (default: 1)
- * @param {number} pageSize - Items per page (default: 50)
- * @returns {Object} { ok: boolean, data: object }
- */
-export const fetchPayrollBatchDetails = (batchId, page = 1, pageSize = 50) => async (dispatch) => {
-    dispatch(fetchPayrollBatchDetailsRequest());
-    try {
-        const token = getToken();
-        const params = new URLSearchParams({
-            page: page.toString(),
-            pageSize: pageSize.toString()
-        });
-        
-        const url = `${baseUrl}/hr/payroll-batch-details/${batchId}?${params}`;
-
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        const res = await response.json();
-        dispatch(fetchPayrollBatchDetailsSuccess(res));
-        return { ok: true, data: res.data };
-    } catch (error) {
-        dispatch(fetchPayrollBatchDetailsFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
 // ══════════════════════════════════════════════════════════════════════════════
-// SECTION 2: MUTATION ACTIONS (CREATE / UPDATE / DELETE)
+// APPROVE PAYROLL BATCH
 // ══════════════════════════════════════════════════════════════════════════════
-// All data modification operations use PAYLOAD/OBJECT parameters
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ── Approve Payroll Batch ──────────────────────────────────────────────────────
 
 export const approvePayrollBatchRequest = () => ({ 
     type: APPROVE_PAYROLL_BATCH_REQUEST 
@@ -246,11 +115,12 @@ export const approvePayrollBatchFailure = (error) => ({
  * @param {string} payload.remarks - Optional approval remarks
  * @returns {Object} { ok: boolean, message: string }
  */
-export const approvePayrollBatch = (payload) => async (dispatch) => {
+export const approvePayrollBatch = (payrollMasterId, remarks) => async (dispatch) => {
     dispatch(approvePayrollBatchRequest());
     try {
+        console.log(payrollMasterId);
         const token = getToken();
-        const url = `${baseUrl}/hr/approve-payroll`;
+        const url = `${baseUrl}/hr/approve-payroll?payrollMasterId=${payrollMasterId}&remarks=${remarks}`;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -258,14 +128,7 @@ export const approvePayrollBatch = (payload) => async (dispatch) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(payload)
         });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
         const res = await response.json();
         dispatch(approvePayrollBatchSuccess(res));
         return { ok: true, message: res.message || 'Payroll batch approved successfully' };
@@ -275,7 +138,9 @@ export const approvePayrollBatch = (payload) => async (dispatch) => {
     }
 };
 
-// ── Reject Payroll Batch ───────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// REJECT PAYROLL BATCH
+// ══════════════════════════════════════════════════════════════════════════════
 
 export const rejectPayrollBatchRequest = () => ({ 
     type: REJECT_PAYROLL_BATCH_REQUEST 
@@ -325,158 +190,6 @@ export const rejectPayrollBatch = (payload) => async (dispatch) => {
         return { ok: true, message: res.message || 'Payroll batch rejected successfully' };
     } catch (error) {
         dispatch(rejectPayrollBatchFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
-// ── Export Payroll Report ──────────────────────────────────────────────────────
-
-export const exportPayrollReportRequest = () => ({ 
-    type: EXPORT_PAYROLL_REPORT_REQUEST 
-});
-
-export const exportPayrollReportSuccess = (data) => ({ 
-    type: EXPORT_PAYROLL_REPORT_SUCCESS, 
-    payload: data 
-});
-
-export const exportPayrollReportFailure = (error) => ({ 
-    type: EXPORT_PAYROLL_REPORT_FAILURE, 
-    payload: error 
-});
-
-/**
- * Export Payroll Report
- * Generates and downloads Excel/PDF report for the selected payroll batch
- * 
- * @param {Object} payload - Export data
- * @param {number} payload.batchId - Payroll batch ID
- * @param {string} payload.format - Export format: 'excel' or 'pdf'
- * @returns {Object} { ok: boolean, message: string, fileUrl: string }
- */
-export const exportPayrollReport = (payload) => async (dispatch) => {
-    dispatch(exportPayrollReportRequest());
-    try {
-        const token = getToken();
-        const url = `${baseUrl}/hr/export-payroll-report`;
-
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        // Check if response is a file blob or JSON
-        const contentType = response.headers.get('content-type');
-        
-        if (contentType && contentType.includes('application/json')) {
-            const res = await response.json();
-            dispatch(exportPayrollReportSuccess(res));
-            return { ok: true, message: res.message, fileUrl: res.fileUrl };
-        } else {
-            // Handle blob response (direct file download)
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = downloadUrl;
-            link.download = `Payroll_Report_${payload.batchId}.${payload.format === 'pdf' ? 'pdf' : 'xlsx'}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(downloadUrl);
-
-            dispatch(exportPayrollReportSuccess({ message: 'Report downloaded successfully' }));
-            return { ok: true, message: 'Report downloaded successfully' };
-        }
-    } catch (error) {
-        dispatch(exportPayrollReportFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
-// ── Payroll Approval (Payroll Process Approval page) ─────────────────────────
-export const fetchPayrollApprovalTableRequest = () => ({ type: FETCH_PAYROLL_APPROVAL_TABLE_REQUEST });
-export const fetchPayrollApprovalTableSuccess = (data) => ({ type: FETCH_PAYROLL_APPROVAL_TABLE_SUCCESS, payload: data });
-export const fetchPayrollApprovalTableFailure = (error) => ({ type: FETCH_PAYROLL_APPROVAL_TABLE_FAILURE, payload: error });
-
-export const fetchPayrollApprovalTable = (page = 1, pageSize = 10, search = '', status = '') => async (dispatch) => {
-    dispatch(fetchPayrollApprovalTableRequest());
-    try {
-        const token = getToken();
-        const url = `${baseUrl}/accounting/get-payroll-approval-list?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`;
-        const res = await fetch(url, {
-            method: 'GET',
-            headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || `HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        dispatch(fetchPayrollApprovalTableSuccess(data));
-        return { ok: true, data: data.data, totalRecords: data.totalCount ?? data.totalRecords ?? 0 };
-    } catch (error) {
-        dispatch(fetchPayrollApprovalTableFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
-export const approvePayrollRecordRequest = () => ({ type: APPROVE_PAYROLL_RECORD_REQUEST });
-export const approvePayrollRecordSuccess = (data) => ({ type: APPROVE_PAYROLL_RECORD_SUCCESS, payload: data });
-export const approvePayrollRecordFailure = (error) => ({ type: APPROVE_PAYROLL_RECORD_FAILURE, payload: error });
-
-export const approvePayrollRecord = (periodId, remarks = '') => async (dispatch) => {
-    dispatch(approvePayrollRecordRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/approve-payroll`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ periodId, remarks })
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || `HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        dispatch(approvePayrollRecordSuccess(data));
-        return { ok: true, message: data.message };
-    } catch (error) {
-        dispatch(approvePayrollRecordFailure(error.message));
-        return { ok: false, error: error.message };
-    }
-};
-
-export const rejectPayrollRecordRequest = () => ({ type: REJECT_PAYROLL_RECORD_REQUEST });
-export const rejectPayrollRecordSuccess = (data) => ({ type: REJECT_PAYROLL_RECORD_SUCCESS, payload: data });
-export const rejectPayrollRecordFailure = (error) => ({ type: REJECT_PAYROLL_RECORD_FAILURE, payload: error });
-
-export const rejectPayrollRecord = (periodId, reason) => async (dispatch) => {
-    dispatch(rejectPayrollRecordRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/reject-payroll`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ periodId, reason })
-        });
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({}));
-            throw new Error(err.message || `HTTP error! status: ${res.status}`);
-        }
-        const data = await res.json();
-        dispatch(rejectPayrollRecordSuccess(data));
-        return { ok: true, message: data.message };
-    } catch (error) {
-        dispatch(rejectPayrollRecordFailure(error.message));
         return { ok: false, error: error.message };
     }
 };

@@ -2,7 +2,8 @@
 import { useDispatch } from 'react-redux';
 import Breadcrumb from '../../components/SharedComponents/Breadcrumb';
 import GeneralLedgerDataTable from '../../components/AccountingComponents/GeneralLedgerDataTable';
-import { fetchGetSchoolYearListData, fetchGetCoaFlatData } from '../../states/AccountingState/Action';
+import { fetchGetCoaFlatData } from '../../states/AccountingState/Action';
+import { fetchGetSchoolYearListData } from '../../states/SharedState/Action';
 
 const GeneralLedger = () => {
     const dispatch = useDispatch();

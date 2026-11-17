@@ -92,6 +92,7 @@ import PurchasingPurchaseOrder from "../pages/Purchasing/PurchaseOrder";
 import PurchasingSupplier from "../pages/Purchasing/Supplier";
 import PurchasingRfNumberSeries from "../pages/Purchasing/RfNumberSeries";
 import FinanceDashboard from "../pages/Finance/Dashboard";
+import FinancePayrollBatches from "../pages/Finance/PayrollBatches";
 
 
 
@@ -811,6 +812,14 @@ const AppRoutes = () => (
           element={
             <ProtectedRoutes allowedRoles={[4]}>
               <FinanceDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/finance/payroll-batches"
+          element={
+            <ProtectedRoutes allowedRoles={[4]}>
+              <FinancePayrollBatches />
             </ProtectedRoutes>
           }
         />

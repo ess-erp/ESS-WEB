@@ -7,6 +7,7 @@ import {
     FETCH_LIST_OF_STUDENT_PER_TERM_REQUEST, FETCH_LIST_OF_STUDENT_PER_TERM_SUCCESS, FETCH_LIST_OF_STUDENT_PER_TERM_FAILURE,
     FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
     FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
+    FETCH_SCHOOL_CALENDAR_STATUS_REQUEST, FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS, FETCH_SCHOOL_CALENDAR_STATUS_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -24,6 +25,7 @@ const initialDataState = {
     teacherSubjectLoadState: { ...initialState },
     linkOfStudentPerTermState: { ...initialState },
     insertEncodedGradesState: { ...initialState },
+    schoolCalendarStatusState: { ...initialState },
 };
 
 const teacherReducer = (state = initialDataState, action) => {
@@ -77,6 +79,13 @@ const teacherReducer = (state = initialDataState, action) => {
             return { ...state, insertEncodedGradesState: { loading: false, data: action.payload, error: '' } };
         case FETCH_INSERT_ENCODED_GRADES_FAILURE:
             return { ...state, insertEncodedGradesState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SCHOOL_CALENDAR_STATUS_REQUEST:
+            return { ...state, schoolCalendarStatusState: { loading: true, data: [], error: '' } };
+        case FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS:
+            return { ...state, schoolCalendarStatusState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SCHOOL_CALENDAR_STATUS_FAILURE:
+            return { ...state, schoolCalendarStatusState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

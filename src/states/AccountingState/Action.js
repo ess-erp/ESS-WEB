@@ -186,7 +186,7 @@ export const fetchGetCoaFlatData = () => async (dispatch) => {
     try {
         const token = getToken();
         const res = await fetch(`${baseUrl}/accounting/get-coa-flat`, {
-            method: 'POST', headers: authHeaders(token),
+            method: 'GET', headers: authHeaders(token),
         });
         const data = await res.json();
         dispatch(fetchGetCoaFlatSuccess(data));
@@ -703,35 +703,6 @@ export const fetchPostCashierJournalData = (formData) => async (dispatch) => {
         return { ok: true, data };
     } catch (err) {
         dispatch(fetchPostCashierJournalFailure(err.message));
-        return { ok: false, err };
-    }
-};
-
-// ============================================================================
-// School Year Dropdown
-// ============================================================================
-import {
-    FETCH_GET_SCHOOL_YEAR_LIST_REQUEST, 
-    FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, 
-    FETCH_GET_SCHOOL_YEAR_LIST_FAILURE,
-} from './ActionType';
-
-export const fetchGetSchoolYearListRequest = () => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_REQUEST });
-export const fetchGetSchoolYearListSuccess = (data) => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, payload: data });
-export const fetchGetSchoolYearListFailure = (error) => ({ type: FETCH_GET_SCHOOL_YEAR_LIST_FAILURE, payload: error });
-
-export const fetchGetSchoolYearListData = () => async (dispatch) => {
-    dispatch(fetchGetSchoolYearListRequest());
-    try {
-        const token = getToken();
-        const res = await fetch(`${baseUrl}/accounting/get-school-year-list`, {
-            method: 'POST', headers: authHeaders(token),
-        });
-        const data = await res.json();
-        dispatch(fetchGetSchoolYearListSuccess(data));
-        return { ok: true, data };
-    } catch (err) {
-        dispatch(fetchGetSchoolYearListFailure(err.message));
         return { ok: false, err };
     }
 };
@@ -1294,3 +1265,99 @@ export const fetchGeneralLedger = (filters = {}) => async (dispatch) => {
     }
 };
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+// PAYROLL APPROVAL ACTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+// User Role: Accounting (userRoleId = 18)
+// ══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Fetch Payroll Approval Table
+ * @param {number} page - Page number
+ * @param {number} pageSize - Items per page
+ * @param {string} search - Search term
+ * @param {string} status - Status filter
+ */
+export const fetchPayrollApprovalTable = (page = 1, pageSize = 10, search = '', status = '') => async (dispatch) => {
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/accounting/get-payroll-approval-list?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`;
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return { ok: true, data: data.data, totalRecords: data.totalCount ?? data.totalRecords ?? 0 };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Approve Payroll Record
+ * @param {number} periodId - Payroll period ID
+ * @param {string} remarks - Optional approval remarks
+ */
+export const approvePayrollRecord = (periodId, remarks = '') => async (dispatch) => {
+    try {
+        const token = getToken();
+        const response = await fetch(`${baseUrl}/accounting/approve-payroll`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ periodId, remarks })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return { ok: true, message: data.message };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+};
+
+/**
+ * Reject Payroll Record
+ * @param {number} periodId - Payroll period ID
+ * @param {string} reason - Rejection reason (required)
+ */
+export const rejectPayrollRecord = (periodId, reason) => async (dispatch) => {
+    try {
+        const token = getToken();
+        const response = await fetch(`${baseUrl}/accounting/reject-payroll`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify({ periodId, reason })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return { ok: true, message: data.message };
+    } catch (error) {
+        return { ok: false, error: error.message };
+    }
+};

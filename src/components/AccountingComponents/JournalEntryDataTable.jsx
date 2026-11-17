@@ -22,12 +22,12 @@ import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import ViewJournalModalComponent from "./ViewJournalModalComponent";
 import { 
     fetchGetJournalData, 
-    fetchGetSchoolYearListData, 
     fetchGetJournalDetailData, 
     fetchPostJournalData, 
     fetchEditJournalAmountsData, 
     fetchUpdateJournalStatusData
  } from "../../states/AccountingState/Action";
+import { fetchGetSchoolYearListData } from "../../states/SharedState/Action";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const fmt = (n) =>
@@ -49,7 +49,7 @@ const JournalEntryDataTable = () => {
 
     // State
     const journalState = useSelector((s) => s.accounting.journalState);
-    const schoolYearListState = useSelector((s) => s.accounting.schoolYearListState);
+    const schoolYearListState = useSelector((s) => s.shared.schoolYearListState);
     const journalDetailState = useSelector((s) => s.accounting.journalDetailState);
     
     // Extract data properly from the response

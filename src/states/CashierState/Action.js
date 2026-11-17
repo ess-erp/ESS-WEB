@@ -29,7 +29,7 @@ export const fetchTransactionTypeData = () => async (dispatch) => {
         const url = `${baseUrl}/cashier/get-transaction-type`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -58,7 +58,7 @@ export const fetchStudentAppData = (status) => async (dispatch) => {
         const url = `${baseUrl}/cashier/get-student-dropdown?status=${status}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -83,7 +83,7 @@ export const fetchEnrolledStudentsData = () => async (dispatch) => {
         const url = `${baseUrl}/cashier/get-student-dropdown?status=Y`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -122,7 +122,7 @@ export const fetchOrNumberData = (userId) => async (dispatch) => {
         const url = `${baseUrl}/cashier/get-or-number?userId=${userId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -150,7 +150,7 @@ export const fetchPrintReceiptData = (formData) => async (dispatch) => {
         const url = `${baseUrl}/cashier/print-receipt`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -211,7 +211,7 @@ export const fetchGetDailyBalanceData = (userId) => async (dispatch) => {
         const url = `${baseUrl}/cashier/current-balance?userId=${userId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -271,7 +271,7 @@ export const fetchGetRealtimeDailyBalanceData = (userId) => async (dispatch) => 
         const url = `${baseUrl}/cashier/get-realtime-balance?userId=${userId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -302,7 +302,7 @@ export const fetchGetTuitionFeeData = (studentId,levelId) => async (dispatch) =>
         const url = `${baseUrl}/cashier/get-tuition-fee?studentId=${studentId}&levelId=${levelId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -371,7 +371,7 @@ export const fetchStudentAppAssessmentData = (appId) => async (dispatch) => {
         const url = `${baseUrl}/cashier/get-assessment-plan?appId=${appId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -397,7 +397,7 @@ export const fetchGetCashierMiscBreakdownData = (levelId) => async (dispatch) =>
         const token = getToken();
         const url = `${baseUrl}/cashier/get-misc-breakdown?levelId=${levelId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         });
         const res = await response.json();

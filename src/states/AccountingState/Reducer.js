@@ -40,8 +40,6 @@ import {
     // Cashier Transaction Journal
     FETCH_GET_CASHIER_TRANSACTIONS_REQUEST, FETCH_GET_CASHIER_TRANSACTIONS_SUCCESS, FETCH_GET_CASHIER_TRANSACTIONS_FAILURE,
     FETCH_POST_CASHIER_JOURNAL_REQUEST, FETCH_POST_CASHIER_JOURNAL_SUCCESS, FETCH_POST_CASHIER_JOURNAL_FAILURE,
-    // School Year Dropdown
-    FETCH_GET_SCHOOL_YEAR_LIST_REQUEST, FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS, FETCH_GET_SCHOOL_YEAR_LIST_FAILURE,
     // Templates / Fees (migrated from Finance)
     FETCH_TEMPLATE_TABLE_DATA_REQUEST, FETCH_TEMPLATE_TABLE_DATA_SUCCESS, FETCH_TEMPLATE_TABLE_DATA_FAILURE,
     FETCH_UPDATE_TEMPLATE_REQUEST, FETCH_UPDATE_TEMPLATE_SUCCESS, FETCH_UPDATE_TEMPLATE_FAILURE,
@@ -106,8 +104,6 @@ const initialState = {
     // Cashier Transaction Journal
     cashierTransactionsState: { ...s },
     postCashierJournalState: { ...s },
-    // School Year Dropdown
-    schoolYearListState: { ...s },
     // Templates / Fees (migrated from Finance)
     templateTableState: { ...s },
     updateTemplateState: { ...s },
@@ -307,11 +303,6 @@ const accountingReducer = (state = initialState, action) => {
         case FETCH_POST_CASHIER_JOURNAL_REQUEST: return { ...state, postCashierJournalState: req() };
         case FETCH_POST_CASHIER_JOURNAL_SUCCESS: return { ...state, postCashierJournalState: ok(action.payload) };
         case FETCH_POST_CASHIER_JOURNAL_FAILURE: return { ...state, postCashierJournalState: err(action.payload) };
-
-        // ── School Year Dropdown ──────────────────────────────────────────────
-        case FETCH_GET_SCHOOL_YEAR_LIST_REQUEST: return { ...state, schoolYearListState: req() };
-        case FETCH_GET_SCHOOL_YEAR_LIST_SUCCESS: return { ...state, schoolYearListState: ok(action.payload) };
-        case FETCH_GET_SCHOOL_YEAR_LIST_FAILURE: return { ...state, schoolYearListState: err(action.payload) };
 
         // ── Templates / Fees (migrated from Finance) ──────────────────────────
         case FETCH_TEMPLATE_TABLE_DATA_REQUEST:

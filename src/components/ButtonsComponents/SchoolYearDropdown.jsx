@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchGetSchoolYearListData } from '../../states/AccountingState/Action';
+import { fetchGetSchoolYearListData } from '../../states/SharedState/Action';
 
 const SchoolYearDropdown = ({ 
     value, 
@@ -9,7 +9,7 @@ const SchoolYearDropdown = ({
     includeAll = true 
 }) => {
     const dispatch = useDispatch();
-    const schoolYearListState = useSelector((s) => s.accounting.schoolYearListState);
+    const schoolYearListState = useSelector((s) => s.shared.schoolYearListState);
 
     // Fetch school years on mount
     useEffect(() => {

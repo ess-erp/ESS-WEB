@@ -540,7 +540,7 @@ export const fetchSchoolCalendarActivityData = () => async (dispatch) => {
         const url = `${baseUrl}/sru/get-school-calendary-activity`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -865,7 +865,7 @@ export const fetchSchoolCalendarMasterData = (page, pageSize, search) => async (
         const url = `${baseUrl}/sru/get-school-calendar-table?page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,
@@ -928,7 +928,7 @@ export const fetchSchoolCalendarChildData = (calendarId, page, pageSize, search)
         const url = `${baseUrl}/sru/get-row-school-calendar-table?calendarId=${calendarId}&page=${page}&pageSize=${pageSize}&search=${search ?? ''}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

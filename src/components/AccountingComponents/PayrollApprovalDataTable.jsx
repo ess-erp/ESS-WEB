@@ -7,7 +7,7 @@ import {
     fetchPayrollApprovalTable,
     approvePayrollRecord,
     rejectPayrollRecord,
-} from '../../states/FinanceState/Action';
+} from '../../states/AccountingState/Action';
 import { showToast } from '../../states/NotificationState/Action';
 
 // ─── Currency helper ──────────────────────────────────────────────────────────

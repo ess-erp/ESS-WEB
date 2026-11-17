@@ -74,7 +74,7 @@ export const fetchGeneralOfferedSubjectData = (page, pageSize, search, schoolYea
         const url = `${baseUrl}/academic/get-general-offered-subject?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -134,7 +134,7 @@ export const fetchNonCurriculumSubjectData = (page, pageSize, search, schoolYear
         const url = `${baseUrl}/academic/get-non-curriculum-subject?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -193,7 +193,7 @@ export const fetchSectionListData = () => async (dispatch) => {
         const url = `${baseUrl}/academic/get-section-list`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -222,7 +222,7 @@ export const fetchNonCurriculumData = (page, pageSize, search) => async (dispatc
         const url = `${baseUrl}/academic/get-non-curriculum?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -251,7 +251,7 @@ export const fetchCurriculumAndNonCurriculumSubjectData = (page, pageSize, searc
         const url = `${baseUrl}/academic/get-curriculum-and-non-curriculum?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -310,7 +310,7 @@ export const fetchSubjectScheduleTableData = (page, pageSize, search) => async (
         const url = `${baseUrl}/academic/get-subject-schedule-table?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -339,7 +339,7 @@ export const fetchMasterSubjectScheduleTableData = (mainSecId, page, pageSize, s
         const url = `${baseUrl}/academic/get-master-subject-schedule-table?mainSecId=${mainSecId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -368,7 +368,7 @@ export const fetchSectionSubjectScheduleTableData = (sectionId, page, pageSize, 
         const url = `${baseUrl}/academic/get-section-subject-schedule-table?sectionId=${sectionId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -397,7 +397,7 @@ export const fetchTeacherListData = (status) => async (dispatch) => {
         const url = `${baseUrl}/academic/get-teacher-list?status=${status}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -426,7 +426,7 @@ export const fetchTeacherTableData = (page, pageSize, search) => async (dispatch
         const url = `${baseUrl}/academic/get-teacher-table?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -485,7 +485,7 @@ export const fetchTeacherAlreadyAssignData = (page, pageSize, search) => async (
         const url = `${baseUrl}/academic/get-teacher-already-assign?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -544,7 +544,7 @@ export const fetchFacultyLoadTableData = (page, pageSize, search, schoolYear = "
         const url = `${baseUrl}/academic/get-faculty-load-table?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -573,7 +573,7 @@ export const fetchFacultyLoadRowTableData = (loadId, page, pageSize, search) => 
         const url = `${baseUrl}/academic/get-faculty-load-row-table?loadId=${loadId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -661,7 +661,7 @@ export const fetchCurriculumPerLevelData = (page, pageSize, search, schoolYear =
         const url = `${baseUrl}/academic/get-curriculum-per-level?page=${page}&pageSize=${pageSize}&search=${search}&schoolYear=${schoolYear}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -690,7 +690,7 @@ export const fetchCurriculumListData = (levelId) => async (dispatch) => {
         const url = `${baseUrl}/academic/get-curriculum-list?levelId=${levelId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -719,7 +719,7 @@ export const fetchCurriculumTableData = (curId, page, pageSize, search) => async
         const url = `${baseUrl}/academic/get-curriculum-table?curId=${curId}&page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`

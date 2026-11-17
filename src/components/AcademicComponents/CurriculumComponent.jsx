@@ -5,7 +5,7 @@ import ModalComponent from "../ButtonsComponents/ModalComponent";
 import OutlineBlueBtn from "../ButtonsComponents/OutlineBlueBtn";
 import SearchableSelect from "../ButtonsComponents/SearchableSelect";
 import SchoolYearDropdown from "../ButtonsComponents/SchoolYearDropdown";
-import { Pencil, Eye, Trash2, Plus, } from "lucide-react";
+import { Pencil, Eye, Trash2, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import {
     fetchCurriculumAndNonCurriculumSubjectData,
     // fetchSectionListData,
@@ -193,7 +193,7 @@ const CurriculumComponent = () => {
         }
     ];
 
-    // Expandable component for sub-subjects
+    // Expandable component for sub-subjects in Subject Master List
     const ExpandedSubjectComponent = ({ data }) => {
         if (!data.SubSubjects || data.SubSubjects.length === 0) {
             return null;
@@ -204,8 +204,8 @@ const CurriculumComponent = () => {
                 <h4 className="text-sm font-semibold text-gray-700 mb-3">Sub-Subjects:</h4>
                 <div className="grid grid-cols-1 gap-2">
                     {data.SubSubjects.map((sub, index) => (
-                        <div 
-                            key={index} 
+                        <div
+                            key={index}
                             className="flex items-center justify-between bg-white p-3 rounded border border-gray-200"
                         >
                             <div className="flex gap-4">
@@ -216,12 +216,7 @@ const CurriculumComponent = () => {
                                     Unit: {sub.SubjectUnit}
                                 </span>
                             </div>
-                            <button
-                                onClick={() => handleAddSubSubject(data, sub)}
-                                className="bg-green-500 text-white px-2 py-1 rounded text-xs"
-                            >
-                                <Plus size={14} />
-                            </button>
+                            {/* No + button here — parent + adds all sub-subjects automatically */}
                         </div>
                     ))}
                 </div>
@@ -256,15 +251,23 @@ const CurriculumComponent = () => {
     };
 
     const [addedSubjects, setAddedSubjects] = useState([]);
+    const [collapsedParents, setCollapsedParents] = useState({});
+    const [masterListCollapsed, setMasterListCollapsed] = useState({});
+
+    const toggleParent = (subjectId) => {
+        setCollapsedParents(prev => ({ ...prev, [subjectId]: !prev[subjectId] }));
+    };
+
+    const toggleMasterRow = (subjectId) => {
+        setMasterListCollapsed(prev => ({ ...prev, [subjectId]: !prev[subjectId] }));
+    };
 
     const handleAddSubject = (row) => {
-        const exists = addedSubjects.some(
-            s => s.RowId === row.RowId
-        );
+        const exists = addedSubjects.some(s => s.RowId === row.RowId && !s.IsSubSubject);
         if (exists) return;
 
-        setAddedSubjects(prev => [
-            ...prev,
+        const newEntries = [
+            // Parent subject
             {
                 RowId: row.RowId,
                 SubjectId: row.SubjectId,
@@ -272,14 +275,27 @@ const CurriculumComponent = () => {
                 SubjectName: row.SubjectName,
                 SubjectType: row.SubjectType,
                 SubjectUnit: row.SubjectUnit,
+                IsSubSubject: false,
                 term1: true,
                 term2: true,
                 term3: true,
-                // Room: "",
-                // StartTime: "",
-                // EndTime: ""
-            }
-        ]);
+            },
+            // All sub-subjects auto-added under the parent with radio (T1 default)
+            ...((row.SubSubjects || []).map(sub => ({
+                RowId: row.RowId,
+                SubjectId: row.SubjectId,
+                SubSubjectId: sub.SubSubjectId,
+                SubjectCode: row.SubjectCode,
+                SubjectName: sub.SubjectName,
+                SubjectType: row.SubjectType,
+                SubjectUnit: sub.SubjectUnit,
+                ParentSubjectId: row.SubjectId,
+                IsSubSubject: true,
+                termAssigned: "term1", // radio: T1 / T2 / T3
+            })))
+        ];
+
+        setAddedSubjects(prev => [...prev, ...newEntries]);
 
         setInactiveGeneralOfferedSubject(prev =>
             prev.filter(s => s.RowId !== row.RowId)
@@ -311,6 +327,16 @@ const CurriculumComponent = () => {
             )
         );
     };
+
+    const handleSubTermChange = (index, termValue) => {
+        setAddedSubjects(prev =>
+            prev.map((item, i) =>
+                i === index
+                    ? { ...item, termAssigned: termValue }
+                    : item
+            )
+        );
+    };
     const handleInputChange = (index, field, value) => {
         setAddedSubjects(prev =>
             prev.map((item, i) =>
@@ -320,100 +346,135 @@ const CurriculumComponent = () => {
             )
         );
     };
-    const addedColumns = [
-        {
-            name: "Subject Code",
-            selector: row => row.SubjectCode
-        },
-        {
-            name: "Subject Name",
-            selector: row => row.SubjectName
-        },
-        {
-            name: "Subject Type",
-            selector: row => row.SubjectType
-        },
-          {
-            name: "Subject Unit",
-            selector: row => row.SubjectUnit
-        },
-        // {
-        //     name: "Room",
-        //     cell: (row, index) => (
-        //         <div>
-        //             <input
-        //                 type="text"
-        //                 value={row.Room || ""}
-        //                 placeholder="Room"
-        //                 onChange={(e) =>
-        //                     handleInputChange(index, "Room", e.target.value)
-        //                 }
-        //                 className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-        //             />
-        //         </div>
-        //     )
-        // },
-        // {
-        //     name: "Start Time",
-        //     cell: (row, index) => (
-        //         <div className="m-1">
-        //             <input
-        //                 type="time"
-        //                 value={row.StartTime || ""}
-        //                 onChange={(e) =>
-        //                     handleInputChange(index, "StartTime", e.target.value)
-        //                 }
-        //                 className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-        //             />
-        //         </div>
-        //     )
-        // },
-        // {
-        //     name: "End Time",
-        //     cell: (row, index) => (
-        //         <div className="m-1">
-        //             <input
-        //                 type="time"
-        //                 value={row.EndTime || ""}
-        //                 onChange={(e) =>
-        //                     handleInputChange(index, "EndTime", e.target.value)
-        //                 }
-        //                 className="shadow-xs border text-sm rounded-lg block w-full p-2.5 bg-white-100"
-        //             />
-        //         </div>
-        //     )
-        // },
-        {
-            name: "Term Availability",
-            cell: (row, index) => (
-                <div className="flex gap-3 m-1">
-                    {["term1", "term2", "term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t]}
-                                onChange={() => handleCheckboxChange(index, t)}
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            wrap: true
-        },
+    // Only parent rows for the main list
+    const parentSubjects = addedSubjects.filter(s => !s.IsSubSubject);
 
-        {
-            name: "Action",
-            cell: (row, index) => (
-                <button
-                    onClick={() => handleRemoveSubject(row, index)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-sm"
-                >
-                    <Trash2 size={16} />
-                </button>
-            )
+    // Collapsable Added Subjects Table — COA-style design
+    const AddedSubjectsTable = () => {
+        if (addedSubjects.length === 0) {
+            return (
+                <div className="py-6 text-center text-gray-400 text-sm">No subjects added yet</div>
+            );
         }
-    ];
+
+        return (
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+                {/* Header */}
+                <div className="grid bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500 px-3 py-2"
+                    style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 0.7fr 2fr 0.5fr' }}>
+                    <span></span>
+                    <span>Subject Code</span>
+                    <span>Subject Name</span>
+                    <span>Subject Type</span>
+                    <span>Unit</span>
+                    <span>Term Availability</span>
+                    <span>Action</span>
+                </div>
+
+                {parentSubjects.map((row) => {
+                    const parentRealIndex = addedSubjects.indexOf(row);
+                    const subSubjects = addedSubjects.filter(
+                        s => s.IsSubSubject && s.ParentSubjectId === row.SubjectId
+                    );
+                    const hasSubSubjects = subSubjects.length > 0;
+                    const isCollapsed = !!collapsedParents[row.SubjectId];
+
+                    return (
+                        <div key={`parent-${row.SubjectId}`}>
+                            {/* Parent Row */}
+                            <div
+                                className="grid items-center px-3 py-2.5 border-b border-gray-100 hover:bg-gray-50 text-sm font-semibold text-gray-800"
+                                style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 0.7fr 2fr 0.5fr' }}
+                            >
+                                {/* Collapse toggle */}
+                                <span className="flex items-center justify-center">
+                                    {hasSubSubjects ? (
+                                        <button
+                                            onClick={() => toggleParent(row.SubjectId)}
+                                            className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-green-600 transition-colors"
+                                            title={isCollapsed ? "Expand" : "Collapse"}
+                                        >
+                                            {isCollapsed
+                                                ? <ChevronRight size={14} strokeWidth={2.5} />
+                                                : <ChevronDown size={14} strokeWidth={2.5} />
+                                            }
+                                        </button>
+                                    ) : (
+                                        <span className="w-5" />
+                                    )}
+                                </span>
+                                <span>{row.SubjectCode || '-'}</span>
+                                <span>{row.SubjectName}</span>
+                                <span>{row.SubjectType}</span>
+                                <span>{row.SubjectUnit}</span>
+                                {/* Parent: checkboxes for term availability */}
+                                <div className="flex gap-3">
+                                    {["term1", "term2", "term3"].map((t, i) => (
+                                        <label key={t} className="flex items-center gap-1 text-xs font-normal cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                checked={!!row[t]}
+                                                onChange={() => handleCheckboxChange(parentRealIndex, t)}
+                                            />
+                                            T{i + 1}
+                                        </label>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => handleRemoveSubject(row, parentRealIndex)}
+                                    className="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                                >
+                                    <Trash2 size={13} />
+                                </button>
+                            </div>
+
+                            {/* Sub-Subject Rows */}
+                            {hasSubSubjects && !isCollapsed && subSubjects.map((sub) => {
+                                const subRealIndex = addedSubjects.indexOf(sub);
+                                return (
+                                    <div
+                                        key={`sub-${sub.SubSubjectId}`}
+                                        className="grid items-center px-3 py-2 border-b border-gray-100 text-xs text-gray-600 bg-gray-50"
+                                        style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 0.7fr 2fr 0.5fr' }}
+                                    >
+                                        {/* Child indicator — matches COA ">" style */}
+                                        <span className="flex items-center justify-center text-gray-400">
+                                            <ChevronRight size={12} />
+                                        </span>
+                                        <span className="pl-2 text-gray-500">{sub.SubjectName}</span>
+                                        <span className="text-gray-400">—</span>
+                                        <span>{sub.SubjectType}</span>
+                                        <span>{sub.SubjectUnit}</span>
+                                        {/* Sub-subject: radio — single term assignment */}
+                                        <div className="flex gap-3">
+                                            {["term1", "term2", "term3"].map((t, i) => (
+                                                <label key={t} className="flex items-center gap-1 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name={`subterm-${sub.SubSubjectId}`}
+                                                        value={t}
+                                                        checked={sub.termAssigned === t}
+                                                        onChange={() => handleSubTermChange(subRealIndex, t)}
+                                                    />
+                                                    T{i + 1}
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <button
+                                            onClick={() => handleRemoveSubject(sub, subRealIndex)}
+                                            className="bg-red-400 text-white px-2 py-1 rounded text-xs"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
+            </div>
+        );
+    };
 
     const [successModalBody, setSuccessModalBody] = useState("");
     const [successModalTitle, setSuccessModalTitle] = useState("");
@@ -424,22 +485,29 @@ const CurriculumComponent = () => {
 
     const handleSubmitModal = async () => {
         const payload = {
-            // SecId: selectedSection?.value,
             TempName: tempName,
             LevelId: selectedLevel?.value,
             CampusId: selectedCampus?.value,
             CreatedByUserId: userId,
-            CurriculumSubjectChildDtos: addedSubjects.map(s => ({
-                RowId: s.RowId,
-                SubjectId: s.SubjectId,
-                SubjectType: s.SubjectType,
-                // Room: s.Room,
-                // StartTime: s.StartTime,
-                // EndTime: s.EndTime,
-                Term1: s.term1 ? "true" : "false",
-                Term2: s.term2 ? "true" : "false",
-                Term3: s.term3 ? "true" : "false",
-            }))
+            CurriculumSubjectChildDtos: addedSubjects
+                .filter(s => !s.IsSubSubject)   // only parent subjects
+                .map(s => ({
+                    RowId: s.RowId,
+                    SubjectId: s.SubjectId,
+                    SubjectType: s.SubjectType,
+                    Term1: s.term1 ? "true" : "false",
+                    Term2: s.term2 ? "true" : "false",
+                    Term3: s.term3 ? "true" : "false",
+                    // Sub-subjects that belong to this parent
+                    SubSubjectDtos: addedSubjects
+                        .filter(sub => sub.IsSubSubject && sub.ParentSubjectId === s.SubjectId)
+                        .map(sub => ({
+                            SubSubjectId: sub.SubSubjectId,
+                            Term1: sub.termAssigned === "term1" ? "true" : "false",
+                            Term2: sub.termAssigned === "term2" ? "true" : "false",
+                            Term3: sub.termAssigned === "term3" ? "true" : "false",
+                        })),
+                }))
         };
 
         console.log(payload);
@@ -614,26 +682,108 @@ const CurriculumComponent = () => {
                                 />
                             </div>
                             <div className="w-full overflow-x-auto">
-                                <DataTable
-                                    columns={subjectColumns}
-                                    data={generalOfferedSubject}
-                                    progressPending={generealOfferedLoading}
-                                    pagination
-                                    paginationServer
-                                    paginationTotalRows={generealOfferedTotalRows}
-                                    paginationDefaultPage={generalOfferedCurrentPage}
-                                    onChangePage={(page) => setGeneralOfferedCurrentPage(page)}
-                                    onChangeRowsPerPage={(newPerPage, page) => {
-                                        setGeneralOfferedRowsPerPage(newPerPage);
-                                        setGeneralOfferedCurrentPage(page);
-                                    }}
-                                    expandableRows
-                                    expandableRowsComponent={ExpandedSubjectComponent}
-                                    expandableRowExpanded={row => row.SubSubjects && row.SubSubjects.length > 0}
-                                    expandableRowsHideExpander={row => !row.SubSubjects || row.SubSubjects.length === 0}
-                                    highlightOnHover
-                                    responsive
-                                />
+                                {/* Custom collapsable Subject Master List table */}
+                                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                    {/* Header */}
+                                    <div className="grid bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-500 px-3 py-2"
+                                        style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 1fr 80px' }}>
+                                        <span></span>
+                                        <span>Subject Code</span>
+                                        <span>Subject Name</span>
+                                        <span>Subject Type</span>
+                                        <span>Subject Unit</span>
+                                        <span>Action</span>
+                                    </div>
+
+                                    {generealOfferedLoading ? (
+                                        <div className="py-6 text-center text-gray-400 text-sm">Loading...</div>
+                                    ) : generalOfferedSubject.length === 0 ? (
+                                        <div className="py-6 text-center text-gray-400 text-sm">No subjects found</div>
+                                    ) : (
+                                        generalOfferedSubject.map((row) => {
+                                            const hasSubSubjects = row.SubSubjects && row.SubSubjects.length > 0;
+                                            const isCollapsed = !masterListCollapsed[row.SubjectId]; // default collapsed
+
+                                            return (
+                                                <div key={`master-${row.SubjectId || row.RowId}`}>
+                                                    {/* Parent Row */}
+                                                    <div
+                                                        className="grid items-center px-3 py-2.5 border-b border-gray-100 hover:bg-gray-50 text-sm font-semibold text-gray-800"
+                                                        style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 1fr 80px' }}
+                                                    >
+                                                        <span className="flex items-center justify-center">
+                                                            {hasSubSubjects ? (
+                                                                <button
+                                                                    onClick={() => toggleMasterRow(row.SubjectId)}
+                                                                    className="w-5 h-5 flex items-center justify-center text-gray-500 hover:text-green-600 transition-colors"
+                                                                    title={isCollapsed ? "Expand" : "Collapse"}
+                                                                >
+                                                                    {isCollapsed
+                                                                        ? <ChevronRight size={14} strokeWidth={2.5} />
+                                                                        : <ChevronDown size={14} strokeWidth={2.5} />
+                                                                    }
+                                                                </button>
+                                                            ) : (
+                                                                <span className="w-5" />
+                                                            )}
+                                                        </span>
+                                                        <span className="text-green-700">{row.SubjectCode || ''}</span>
+                                                        <span>{row.SubjectName}</span>
+                                                        <span className="text-blue-600">{row.SubjectType}</span>
+                                                        <span>{row.SubjectUnit}</span>
+                                                        <button
+                                                            onClick={() => handleAddSubject(row)}
+                                                            className="bg-blue-500 text-white px-2 py-1 rounded text-sm w-fit"
+                                                        >
+                                                            <Plus size={16} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Sub-Subject Rows — info only, no action button */}
+                                                    {hasSubSubjects && !isCollapsed && row.SubSubjects.map((sub, idx) => (
+                                                        <div
+                                                            key={`mastersub-${sub.SubSubjectId || idx}`}
+                                                            className="grid items-center px-3 py-2 border-b border-gray-100 bg-gray-50 text-xs text-gray-600"
+                                                            style={{ gridTemplateColumns: '28px 1.5fr 2fr 1.5fr 1fr 80px' }}
+                                                        >
+                                                            <span></span>
+                                                            <span className="pl-6 text-gray-400">—</span>
+                                                            <span className="pl-2">{sub.SubjectName}</span>
+                                                            <span>{row.SubjectType}</span>
+                                                            <span>{sub.SubjectUnit}</span>
+                                                            <span></span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })
+                                    )}
+
+                                    {/* Pagination footer */}
+                                    <div className="flex items-center justify-end gap-4 px-4 py-2 border-t border-gray-200 bg-gray-50 text-xs text-gray-500">
+                                        <span>Rows per page:</span>
+                                        <select
+                                            value={generalOfferedRowsPerPage}
+                                            onChange={(e) => {
+                                                setGeneralOfferedRowsPerPage(Number(e.target.value));
+                                                setGeneralOfferedCurrentPage(1);
+                                            }}
+                                            className="border border-gray-300 rounded px-1 py-0.5 text-xs"
+                                        >
+                                            {[10, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
+                                        </select>
+                                        <span>
+                                            {((generalOfferedCurrentPage - 1) * generalOfferedRowsPerPage) + 1}–
+                                            {Math.min(generalOfferedCurrentPage * generalOfferedRowsPerPage, generealOfferedTotalRows)} of {generealOfferedTotalRows}
+                                        </span>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => setGeneralOfferedCurrentPage(1)} disabled={generalOfferedCurrentPage === 1} className="px-1.5 py-0.5 rounded border border-gray-300 disabled:opacity-40">«</button>
+                                            <button onClick={() => setGeneralOfferedCurrentPage(p => p - 1)} disabled={generalOfferedCurrentPage === 1} className="px-1.5 py-0.5 rounded border border-gray-300 disabled:opacity-40">‹</button>
+                                            <button onClick={() => setGeneralOfferedCurrentPage(p => p + 1)} disabled={generalOfferedCurrentPage * generalOfferedRowsPerPage >= generealOfferedTotalRows} className="px-1.5 py-0.5 rounded border border-gray-300 disabled:opacity-40">›</button>
+                                            <button onClick={() => setGeneralOfferedCurrentPage(Math.ceil(generealOfferedTotalRows / generalOfferedRowsPerPage))} disabled={generalOfferedCurrentPage * generalOfferedRowsPerPage >= generealOfferedTotalRows} className="px-1.5 py-0.5 rounded border border-gray-300 disabled:opacity-40">»</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <hr className="my-4 border-t border-gray-300" />
@@ -696,17 +846,7 @@ const CurriculumComponent = () => {
                                 </div> */}
                             </div>
                             <div className="w-full overflow-y-auto max-h-[300px]">
-                                <DataTable
-                                    columns={addedColumns}
-                                    data={addedSubjects}
-                                    highlightOnHover
-                                    striped
-                                    responsive
-                                    dense
-                                    fixedHeader
-                                    fixedHeaderScrollHeight="260px"
-                                    noDataComponent="No subjects added yet"
-                                />
+                                <AddedSubjectsTable />
                             </div>
                         </div>
                     </div>

@@ -36,7 +36,7 @@ import { useSidebar } from "../../context/SidebarContext";
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar, openSubmenus, toggleSubmenu } = useSidebar();
   const isSidebarOpen = !isCollapsed;
-  
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("userData");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -548,6 +548,20 @@ const Sidebar = () => {
     ...sharedMenu,
   ];
 
+  const financeMenu = [
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/finance/dashboard",
+    },
+    {
+      name: "Payroll Process Management",
+      icon: Receipt,
+      path: "/finance/payroll-batches",
+    },
+    ...sharedMenu,
+  ];
+
 
 
   /* =========================================================
@@ -558,6 +572,7 @@ const Sidebar = () => {
     1: admissionMenu,
     2: cfwMenu,
     3: cashierMenu,
+    4: financeMenu,
     5: sruMenu,
     6: academicMenu,
     7: hrMenu,
@@ -571,6 +586,7 @@ const Sidebar = () => {
     17: parentMenu,
     18: accountingMenu,
     19: purchasingMenu,
+
   };
 
 

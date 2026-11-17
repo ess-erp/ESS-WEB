@@ -211,31 +211,6 @@ const SubjectScheduleLoadEntryComponent = () => {
                 </div>
             )
         },
-        {
-            name: 'Term Available',
-            cell: (row) => (
-                <div className="flex gap-3 m-1">
-                    {["Term1", "Term2", "Term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={row[t] === "true" || row[t] === true}
-                                readOnly
-                                className="cursor-pointer"
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            sortable: true,
-            wrap: true,
-            grow: 3,
-            style: {
-                whiteSpace: 'normal',
-                paddingLeft: '12px' // <-- Keeps checkboxes aligned neatly
-            }
-        }
     ];
 
     const handleInputChange = (index, field, value) => {
@@ -271,9 +246,6 @@ const SubjectScheduleLoadEntryComponent = () => {
                 Room: s.Room || "",
                 StartTime: s.StartTime || "",
                 EndTime: s.EndTime || "",
-                // Term1: (s.Term1 === "true" || s.Term1 === true) ? "true" : "false",
-                // Term2: (s.Term2 === "true" || s.Term2 === true) ? "true" : "false",
-                // Term3: (s.Term3 === "true" || s.Term3 === true) ? "true" : "false",
             }))
         };
 
@@ -339,29 +311,6 @@ const SubjectScheduleLoadEntryComponent = () => {
         { name: 'Room', selector: row => row.Room, sortable: true, wrap: true, grow: 3 },
         { name: 'Start Time', selector: row => formatToAMPM(row.StartTime), sortable: true, wrap: true, grow: 3 },
         { name: 'End Time', selector: row => formatToAMPM(row.EndTime), sortable: true, wrap: true, grow: 3 },
-        {
-            name: 'Term Available',
-            cell: (row) => (
-                <div className="flex gap-3 m-1">
-                    {["Term1", "Term2", "Term3"].map((t, i) => (
-                        <label key={t} className="flex items-center gap-1">
-                            <input
-                                type="checkbox"
-                                checked={row[t] === "true" || row[t] === true}
-                                readOnly
-                            />
-                            T{i + 1}
-                        </label>
-                    ))}
-                </div>
-            ),
-            sortable: true,
-            wrap: true,
-            grow: 3,
-            style: {
-                whiteSpace: 'normal'
-            }
-        }
     ];
     return (
         // <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
