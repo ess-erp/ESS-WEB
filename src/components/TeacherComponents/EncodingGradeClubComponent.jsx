@@ -192,37 +192,28 @@ const EncodingGradeClubComponent = () => {
     
     // School Calendar Status State
     const schoolCalendarStatusState = useSelector((state) => state.teacher.schoolCalendarStatusState || {});
-    const calendarStatus = schoolCalendarStatusState.data.data || null;
-    const [isEncodingLocked, setIsEncodingLocked] = useState(false);
+    const calendarStatus = schoolCalendarStatusState.data?.data ?? schoolCalendarStatusState.data ?? null;
+    const [isEncodingLocked, setIsEncodingLocked] = useState(true);
     
+    // Derive the active term string from the calendar (e.g. "1st Term")
+    const activeTerm = calendarStatus?.ActiveTerm ?? null;
+
     // Fetch school calendar status on component mount
     useEffect(() => {
         dispatch(fetchSchoolCalendarStatus());
     }, [dispatch]);
 
-    console.log(schoolCalendarStatusState);
-    
-    // Check if encoding is locked based on calendar dates
+    // Lock/unlock encoding based on calendar IsEncodingPeriod flag
     useEffect(() => {
-        // TEMPORARY: Disable lock feature for testing
-        setIsEncodingLocked(false);
-        
-        /* Original logic - commented out for testing
         if (calendarStatus) {
-            // Backend returns IsEncodingPeriod boolean directly
-            // true = encoding allowed, false = locked
-            const isLocked = calendarStatus.isEncodingPeriod === false;
-            setIsEncodingLocked(isLocked);
-            
-            // Debug log
-            console.log('Calendar Status:', calendarStatus);
-            console.log('IsEncodingPeriod:', calendarStatus.isEncodingPeriod);
-            console.log('Is Locked:', isLocked);
+            // IsEncodingPeriod: true  → encoding open
+            // IsEncodingPeriod: false → encoding locked
+            const locked = calendarStatus.IsEncodingPeriod === false;
+            setIsEncodingLocked(locked);
         } else {
-            // If no calendar data, allow encoding by default
-            setIsEncodingLocked(false);
+            // No calendar data yet — keep locked
+            setIsEncodingLocked(true);
         }
-        */
     }, [calendarStatus]);
     
     const studentColumn = useMemo(() => [
@@ -272,12 +263,7 @@ const EncodingGradeClubComponent = () => {
                 );
             })(),
             cell: (row) => {
-                const isActive = row.TermActivated === "Term1" || row.TermActivated === "1st Term";
-                
-                // Debug log for first row
-                if (row.StudentNumber === studentTable[0]?.StudentNumber) {
-                    console.log('1st Term - TermActivated:', row.TermActivated, 'isActive:', isActive, 'isEncodingLocked:', isEncodingLocked);
-                }
+                const isActive = activeTerm === "1st Term";
 
                 return (
                     <div className="flex flex-col items-start min-w-[90px]">
@@ -332,7 +318,7 @@ const EncodingGradeClubComponent = () => {
                 );
             })(),
             cell: (row) => {
-                const isActive = row.TermActivated === "Term2" || row.TermActivated === "2nd Term";
+                const isActive = activeTerm === "2nd Term";
 
                 return (
                     <div className="flex flex-col items-start min-w-[90px]">
@@ -386,7 +372,7 @@ const EncodingGradeClubComponent = () => {
                 );
             })(),
             cell: (row) => {
-                const isActive = row.TermActivated === "Term3" || row.TermActivated === "3rd Term";
+                const isActive = activeTerm === "3rd Term";
 
                 return (
                     <div className="flex flex-col items-start min-w-[90px]">
@@ -587,19 +573,9 @@ const EncodingGradeClubComponent = () => {
 
     const handleSubmitModal = async () => {
         const missing = studentList.filter((s) => {
-
-            if (s.TermActivated === "Term1") {
-                return !s.FirstGrading;
-            }
-
-            if (s.TermActivated === "Term2") {
-                return !s.SecondGrading;
-            }
-
-            if (s.TermActivated === "Term3") {
-                return !s.ThirdGrading;
-            }
-
+            if (activeTerm === "1st Term") return !s.FirstGrading;
+            if (activeTerm === "2nd Term") return !s.SecondGrading;
+            if (activeTerm === "3rd Term") return !s.ThirdGrading;
             return false;
         });
 
@@ -614,23 +590,15 @@ const EncodingGradeClubComponent = () => {
         // BUILD CLEAN PAYLOAD
         const payload = {
             LoadId: studentList[0]?.LoadId,
-            TermActivated: studentList[0]?.TermActivated,
+            TermActivated: activeTerm,
             CreatedByUserid: userId,
             NoOfSchoolDays: noOfSchoolDays,
 
             InsertEncodeGradeChildDtos: studentList.map((s) => {
-
                 let grade = null;
-
-                if (s.TermActivated === "Term1") {
-                    grade = s.FirstGrading;
-                }
-                else if (s.TermActivated === "Term2") {
-                    grade = s.SecondGrading;
-                }
-                else if (s.TermActivated === "Term3") {
-                    grade = s.ThirdGrading;
-                }
+                if (activeTerm === "1st Term") grade = s.FirstGrading;
+                else if (activeTerm === "2nd Term") grade = s.SecondGrading;
+                else if (activeTerm === "3rd Term") grade = s.ThirdGrading;
 
                 // Get active sub-subject for the current term (for subjects like MAPEH)
                 let activeSubSubjectId = null;
@@ -671,24 +639,16 @@ const EncodingGradeClubComponent = () => {
         setShowEncodingTable(false);
         const payload = {
             LoadId: studentList[0]?.LoadId,
-            TermActivated: studentList[0]?.TermActivated,
+            TermActivated: activeTerm,
             CreatedByUserid: userId,
             // NoOfSchoolDays: noOfSchoolDays,
             IsValidated: "Y",
 
             InsertEncodeGradeChildDtos: studentList.map((s) => {
-
                 let grade = null;
-
-                if (s.TermActivated === "Term1") {
-                    grade = s.FirstGrading;
-                }
-                else if (s.TermActivated === "Term2") {
-                    grade = s.SecondGrading;
-                }
-                else if (s.TermActivated === "Term3") {
-                    grade = s.ThirdGrading;
-                }
+                if (activeTerm === "1st Term") grade = s.FirstGrading;
+                else if (activeTerm === "2nd Term") grade = s.SecondGrading;
+                else if (activeTerm === "3rd Term") grade = s.ThirdGrading;
 
                 // Get active sub-subject for the current term (for subjects like MAPEH)
                 let activeSubSubjectId = null;

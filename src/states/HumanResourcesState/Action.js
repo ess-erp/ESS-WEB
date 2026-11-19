@@ -500,7 +500,7 @@ export const fetchDepartmentTemplateData = () => async (dispatch) => {
         const url = `${baseUrl}/hr/get-department-template`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -667,7 +667,7 @@ export const fetchEmployeeList = (page = 1, pageSize = 10, search = '', departme
     try {
         const token = getToken();
         const res = await fetch(`${baseUrl}/hr/get-all-employees`, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
