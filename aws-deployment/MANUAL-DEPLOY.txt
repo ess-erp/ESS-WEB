@@ -1,0 +1,32 @@
+ESS-WEB Manual Deployment Commands
+===================================
+
+Open Command Prompt and run these commands ONE AT A TIME:
+
+1. Navigate to project
+   cd f:\ERP-2026\ESS-WEB
+
+2. Set variables (copy all 4 lines together)
+   set ACCOUNT_ID=083646823613
+   set REGION=ap-southeast-1
+   set REPO=ess-web
+   set ECR_URI=%ACCOUNT_ID%.dkr.ecr.%REGION%.amazonaws.com/%REPO%
+
+3. Build Docker image (5-10 minutes)
+   docker build -t ess-web:latest .
+
+4. Authenticate to ECR
+   aws ecr get-login-password --region %REGION% | docker login --username AWS --password-stdin %ECR_URI%
+
+5. Tag image
+   docker tag ess-web:latest %ECR_URI%:latest
+
+6. Push to ECR (5-20 minutes)
+   docker push %ECR_URI%:latest
+
+7. Done! Your image is in ECR
+   echo SUCCESS! Image URI: %ECR_URI%:latest
+
+===================================
+
+If you see any errors, copy the error message and share it for help.

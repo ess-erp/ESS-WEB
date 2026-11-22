@@ -1,0 +1,125 @@
+================================================================================
+  SETUP CUSTOM DOMAIN WITH HTTPS - QUICK CHECKLIST
+================================================================================
+
+BEFORE YOU START:
+□ Do you have a domain name? (e.g., yourcompany.com)
+  - If NO: Buy one from Route 53 or any registrar first
+  - If YES: Continue below
+
+================================================================================
+STEP 1: REQUEST SSL CERTIFICATE (5 minutes)
+================================================================================
+
+1. Open: https://ap-southeast-1.console.aws.amazon.com/acm
+2. Click "Request certificate"
+3. Select "Request a public certificate"
+4. Enter your domain: erp.yourdomain.com
+5. Validation: Choose "DNS validation"
+6. Click "Create records in Route 53" (if domain is in Route 53)
+7. Wait 5-30 minutes for validation
+
+□ Certificate status shows "Issued"
+
+================================================================================
+STEP 2: CREATE APPLICATION LOAD BALANCER (10 minutes)
+================================================================================
+
+1. Open: https://ap-southeast-1.console.aws.amazon.com/ec2/home#LoadBalancers
+2. Click "Create load balancer"
+3. Choose "Application Load Balancer"
+4. Name: ess-web-alb
+5. Scheme: Internet-facing
+6. Select at least 2 subnets in different AZs
+7. Security group:
+   - Create new: ess-web-alb-sg
+   - Allow: HTTP (80) and HTTPS (443) from 0.0.0.0/0
+8. Create target group:
+   - Type: IP addresses
+   - Name: ess-web-targets
+   - Protocol: HTTP, Port: 80
+   - Health check: /
+9. Listeners:
+   - HTTPS:443 → Forward to ess-web-targets (attach SSL certificate)
+   - HTTP:80 → Redirect to HTTPS:443
+10. Click "Create"
+
+□ Load balancer status shows "Active"
+
+================================================================================
+STEP 3: UPDATE ECS SERVICE (5 minutes)
+================================================================================
+
+1. Open: https://ap-southeast-1.console.aws.amazon.com/ecs/v2/clusters/ess-web-cluster
+2. Click your service: ess-web-task-service-zlakin2ki
+3. Click "Update service"
+4. Load balancing:
+   - Load balancer: ess-web-alb
+   - Container: ess-web:80
+   - Target group: ess-web-targets
+   - Health check grace period: 60
+5. Update ECS task security group:
+   - Remove: HTTP from 0.0.0.0/0
+   - Add: HTTP from ALB security group only
+6. Click "Update"
+
+□ Service updated and running
+
+================================================================================
+STEP 4: ADD DNS RECORD IN ROUTE 53 (2 minutes)
+================================================================================
+
+1. Open: https://console.aws.amazon.com/route53/v2/hostedzones
+2. Click your domain
+3. Click "Create record"
+4. Record name: erp (or whatever subdomain you want)
+5. Record type: A
+6. Alias: ON
+7. Route traffic to: Application Load Balancer → ap-southeast-1 → ess-web-alb
+8. Click "Create records"
+
+□ DNS record created
+
+================================================================================
+STEP 5: TEST YOUR SETUP (2 minutes)
+================================================================================
+
+Wait 5-10 minutes for DNS propagation, then:
+
+1. Open: https://erp.yourdomain.com
+   □ Shows your app
+   □ Has padlock icon (secure)
+
+2. Open: http://erp.yourdomain.com
+   □ Automatically redirects to HTTPS
+
+3. Check certificate:
+   □ Click padlock → Valid certificate from Amazon
+
+================================================================================
+SUMMARY
+================================================================================
+
+Before: http://18.140.2.134 (insecure, IP address)
+After:  https://erp.yourdomain.com (secure, custom domain)
+
+Your app now has:
+✓ Custom domain name
+✓ HTTPS with SSL certificate
+✓ Automatic HTTP → HTTPS redirect
+✓ Load balancer for better performance
+✓ Better security and user experience
+
+================================================================================
+NEED HELP?
+================================================================================
+
+Check the detailed guide: SETUP-SSL-GUIDE.md
+
+Common issues:
+- DNS not working? Wait 10-30 minutes for propagation
+- Certificate not validated? Check Route 53 DNS records
+- 504 errors? Check ECS task is running and healthy
+- Still showing IP? Clear browser cache and check DNS
+
+================================================================================

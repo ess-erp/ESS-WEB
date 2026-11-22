@@ -1,0 +1,151 @@
+╔════════════════════════════════════════════════════════════╗
+║         ESS-WEB AWS DEPLOYMENT - FINAL CHECKLIST          ║
+╔════════════════════════════════════════════════════════════╝
+
+📋 PRE-DEPLOYMENT CHECKLIST
+═══════════════════════════════════════════════════════════
+
+Step 1: Verify Docker Desktop
+─────────────────────────────
+□ Docker Desktop is installed
+□ Docker Desktop shows "running" in system tray
+□ Open NEW Command Prompt and run: docker --version
+  ✓ Should show: Docker version 24.x.x or similar
+
+Step 2: Verify AWS CLI
+─────────────────────────────
+□ AWS CLI is installed
+□ In Command Prompt, run: aws --version
+  ✓ Should show: aws-cli/2.x.x
+
+Step 3: Verify AWS Configuration
+─────────────────────────────
+□ In Command Prompt, run: aws sts get-caller-identity
+  ✓ Should show your account: 083646823613
+  ✓ No errors about credentials
+
+═══════════════════════════════════════════════════════════
+
+🚀 DEPLOYMENT INSTRUCTIONS
+═══════════════════════════════════════════════════════════
+
+METHOD 1: Using Batch File (EASIEST)
+─────────────────────────────────────────
+
+1. Open File Explorer
+2. Navigate to: f:\ERP-2026\ESS-WEB
+3. Double-click: START-DEPLOYMENT.bat
+4. Press any key when prompted
+5. Wait 15-30 minutes
+6. Look for "SUCCESS!" message
+
+METHOD 2: Using Command Prompt
+─────────────────────────────────────────
+
+1. Open Command Prompt
+2. Run these commands:
+
+   cd f:\ERP-2026\ESS-WEB
+   DEPLOY-NOW.bat
+
+3. Wait for completion
+
+METHOD 3: Manual Step-by-Step
+─────────────────────────────────────────
+
+See MANUAL-DEPLOY.txt for individual commands
+
+═══════════════════════════════════════════════════════════
+
+📊 WHAT TO EXPECT
+═══════════════════════════════════════════════════════════
+
+Phase 1: Checks (10 seconds)
+─────────────────────────────
+✓ Checking Docker...
+✓ Checking AWS CLI...
+✓ Checking AWS credentials...
+
+Phase 2: Building (5-10 minutes)
+─────────────────────────────
+You'll see many lines like:
+  Step 1/10 : FROM node:18-alpine
+  Step 2/10 : WORKDIR /app
+  [+] Building 456.7s
+
+Phase 3: Pushing (5-20 minutes)
+─────────────────────────────
+You'll see progress bars:
+  latest: digest: sha256:abc123...
+  The push refers to repository [...]
+  [====>                ] 25%
+
+Phase 4: Success!
+─────────────────────────────
+  ============================================================
+   SUCCESS! Your app is now in AWS ECR!
+  ============================================================
+
+  Image URI: 083646823613.dkr.ecr.ap-southeast-1.amazonaws.com/ess-web:latest
+
+═══════════════════════════════════════════════════════════
+
+🛑 COMMON ERRORS & SOLUTIONS
+═══════════════════════════════════════════════════════════
+
+ERROR: "Docker is not accessible"
+SOLUTION: 
+  - Wait 2 more minutes for Docker to fully start
+  - Check system tray shows "Docker Desktop is running"
+  - Close Command Prompt and open a NEW one
+
+ERROR: "AWS CLI is not configured"
+SOLUTION:
+  - Run: aws configure
+  - Enter your Access Key, Secret Key, Region (ap-southeast-1), Format (json)
+  - Run deployment again
+
+ERROR: "Cannot connect to Docker daemon"
+SOLUTION:
+  - Restart Docker Desktop
+  - Wait for it to say "running"
+  - Try again
+
+ERROR: "Access Denied" during ECR push
+SOLUTION:
+  - Your AWS credentials don't have ECR permissions
+  - Ask your AWS admin to grant you ECR push permissions
+  - Or use an AWS account where you have admin access
+
+═══════════════════════════════════════════════════════════
+
+✅ AFTER SUCCESSFUL DEPLOYMENT
+═══════════════════════════════════════════════════════════
+
+Your Docker image is now in AWS ECR at:
+  083646823613.dkr.ecr.ap-southeast-1.amazonaws.com/ess-web:latest
+
+Next Steps:
+  1. Deploy to ECS Fargate (use AWS Console or script)
+  2. Your app will be live on AWS
+  3. You'll get a public URL to access it
+
+Files Created:
+  - deployment-success.txt (deployment details)
+  - ecr-push-info.txt (image information)
+
+═══════════════════════════════════════════════════════════
+
+📞 NEED HELP?
+═══════════════════════════════════════════════════════════
+
+If you encounter any issues:
+  1. Copy the error message
+  2. Take a screenshot
+  3. Share with your assistant for help
+
+═══════════════════════════════════════════════════════════
+
+Good luck with your deployment! 🚀
+
+═══════════════════════════════════════════════════════════

@@ -1,0 +1,178 @@
+================================================================================
+  GITHUB CI/CD SETUP - QUICK CHECKLIST
+================================================================================
+
+⏱️  Setup Time: 15-20 minutes
+💰 Cost: FREE (2,000 minutes/month)
+
+================================================================================
+□ STEP 1: CREATE GITHUB REPOSITORY (2 minutes)
+================================================================================
+
+1. Go to: https://github.com/new
+2. Repository name: ESS-WEB
+3. Private repository (recommended)
+4. Don't initialize with README
+5. Click "Create repository"
+
+□ Repository created
+
+================================================================================
+□ STEP 2: PUSH CODE TO GITHUB (3 minutes)
+================================================================================
+
+Run these commands in your project folder:
+
+  git init
+  git add .
+  git commit -m "Initial commit"
+  git remote add origin https://github.com/YOUR-USERNAME/ESS-WEB.git
+  git branch -M main
+  git push -u origin main
+
+Replace YOUR-USERNAME with your GitHub username!
+
+□ Code pushed to GitHub
+
+================================================================================
+□ STEP 3: CREATE AWS IAM USER (5 minutes)
+================================================================================
+
+1. Go to: https://console.aws.amazon.com/iam
+2. Users → Create user
+3. Username: github-actions-ess-web
+4. Attach policies:
+   ☑ AmazonEC2ContainerRegistryFullAccess
+   ☑ AmazonECS_FullAccess
+5. Create user
+
+□ IAM user created
+
+================================================================================
+□ STEP 4: CREATE ACCESS KEYS (2 minutes)
+================================================================================
+
+1. Click on user: github-actions-ess-web
+2. Security credentials tab
+3. Create access key
+4. Use case: Third-party service
+5. Download .csv file (IMPORTANT - save this!)
+
+Write down your credentials (you'll only see them once):
+
+  Access Key ID: _________________________________
+  Secret Key:    _________________________________
+
+□ Access keys saved securely
+
+================================================================================
+□ STEP 5: ADD SECRETS TO GITHUB (3 minutes)
+================================================================================
+
+1. Go to your GitHub repository
+2. Settings → Secrets and variables → Actions
+3. New repository secret:
+
+   Name:   AWS_ACCESS_KEY_ID
+   Secret: [paste Access Key ID from Step 4]
+
+4. New repository secret:
+
+   Name:   AWS_SECRET_ACCESS_KEY
+   Secret: [paste Secret Key from Step 4]
+
+□ Both secrets added to GitHub
+
+================================================================================
+□ STEP 6: VERIFY WORKFLOW FILE (1 minute)
+================================================================================
+
+File already created: .github/workflows/deploy.yml
+
+Check these values match your setup:
+  
+  ☑ AWS_REGION: ap-southeast-1
+  ☑ ECR_REPOSITORY: ess-web
+  ☑ ECS_CLUSTER: ess-web-cluster
+  ☑ ECS_SERVICE: ess-web-task-service-zlakin2ki
+  ☑ CONTAINER_NAME: ess-web
+
+□ Workflow file verified
+
+================================================================================
+□ STEP 7: COMMIT WORKFLOW FILE (2 minutes)
+================================================================================
+
+Run these commands:
+
+  git add .github/workflows/deploy.yml
+  git commit -m "Add GitHub Actions CI/CD"
+  git push
+
+□ Workflow file pushed
+
+================================================================================
+□ STEP 8: WATCH FIRST DEPLOYMENT (3-5 minutes)
+================================================================================
+
+1. Go to GitHub repository
+2. Click "Actions" tab
+3. See "Deploy to AWS ECS" workflow running
+4. Wait for green checkmark ✅
+5. Your app is deployed!
+
+□ First automated deployment successful!
+
+================================================================================
+  ✅ SETUP COMPLETE!
+================================================================================
+
+You now have automatic deployments!
+
+HOW TO USE:
+
+  1. Make code changes
+  2. git add .
+  3. git commit -m "Your message"
+  4. git push
+  5. Wait 3-5 minutes → Changes are LIVE! 🚀
+
+CHECK DEPLOYMENT STATUS:
+  • GitHub: Repository → Actions tab
+  • AWS: https://ap-southeast-1.console.aws.amazon.com/ecs
+  • App: http://18.140.2.134 (or your custom domain)
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+❌ Workflow failed?
+   → Go to Actions tab → Click failed run → See error logs
+
+❌ AWS credentials error?
+   → Check GitHub Secrets are set correctly
+   → Verify IAM user has correct permissions
+
+❌ Build failed?
+   → Check error logs in GitHub Actions
+   → Test build locally: npm run build
+
+❌ Deployment stuck?
+   → Check ECS service health in AWS Console
+   → Check CloudWatch logs
+
+================================================================================
+NEXT STEPS (OPTIONAL)
+================================================================================
+
+□ Add custom domain with HTTPS (see SETUP-SSL-GUIDE.md)
+□ Set up branch protection on main branch
+□ Add automated tests to workflow
+□ Configure Slack/email notifications
+□ Create staging environment
+
+================================================================================
+
+Need help? Check GITHUB-CICD-SETUP.md for detailed guide!
+
+================================================================================

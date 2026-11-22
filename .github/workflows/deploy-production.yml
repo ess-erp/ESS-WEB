@@ -1,0 +1,133 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main  # Triggers on push to main branch
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+env:
+  AWS_REGION: ap-southeast-1
+  ECR_REPOSITORY: ess-web
+  ECS_CLUSTER: ess-web-cluster
+  ECS_SERVICE: ess-web-task-service-ztakm2kh  # PRODUCTION service (connected to ALB)
+  CONTAINER_NAME: ess-web
+
+jobs:
+  deploy:
+    name: Build and Deploy to Production
+    runs-on: ubuntu-latest
+    
+    steps:
+      # ════════════════════════════════════════════════════════════════
+      # 1. CHECKOUT CODE
+      # ════════════════════════════════════════════════════════════════
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ════════════════════════════════════════════════════════════════
+      # 2. SETUP NODE.JS
+      # ════════════════════════════════════════════════════════════════
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # ════════════════════════════════════════════════════════════════
+      # 3. INSTALL DEPENDENCIES & BUILD
+      # ════════════════════════════════════════════════════════════════
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build application
+        run: npm run build
+        env:
+          # Build with production environment variables
+          VITE_BASE_URL: https://api.erp.ess.edu.ph/api
+          VITE_FILE_URL: https://api.erp.ess.edu.ph
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_REALTIME_URL: https://api.erp.ess.edu.ph/realtimeHub
+
+      # ════════════════════════════════════════════════════════════════
+      # 4. AWS AUTHENTICATION
+      # ════════════════════════════════════════════════════════════════
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # ════════════════════════════════════════════════════════════════
+      # 5. LOGIN TO AWS ECR
+      # ════════════════════════════════════════════════════════════════
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ════════════════════════════════════════════════════════════════
+      # 6. BUILD, TAG & PUSH DOCKER IMAGE
+      # ════════════════════════════════════════════════════════════════
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build Docker image
+          docker build -f aws-deployment/Dockerfile.simple -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          # Push both tags
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          
+          # Output image URI for next steps
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      # ════════════════════════════════════════════════════════════════
+      # 7. DEPLOY TO ECS (ZERO-DOWNTIME ROLLING UPDATE)
+      # ════════════════════════════════════════════════════════════════
+      - name: Deploy to Amazon ECS
+        run: |
+          echo "🚀 Deploying to ECS..."
+          echo "Cluster: $ECS_CLUSTER"
+          echo "Service: $ECS_SERVICE"
+          echo "Image: ${{ steps.build-image.outputs.image }}"
+          
+          # Force new deployment with latest image
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment \
+            --region $AWS_REGION
+
+      # ════════════════════════════════════════════════════════════════
+      # 8. WAIT FOR DEPLOYMENT TO COMPLETE
+      # ════════════════════════════════════════════════════════════════
+      - name: Wait for deployment to stabilize
+        run: |
+          echo "⏳ Waiting for ECS service to reach steady state..."
+          aws ecs wait services-stable \
+            --cluster $ECS_CLUSTER \
+            --services $ECS_SERVICE \
+            --region $AWS_REGION
+          
+          echo "✅ Deployment completed successfully!"
+
+      # ════════════════════════════════════════════════════════════════
+      # 9. DEPLOYMENT SUMMARY
+      # ════════════════════════════════════════════════════════════════
+      - name: Deployment Summary
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "  ✅ DEPLOYMENT SUCCESSFUL"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "🌐 Production URL: https://erp.ess.edu.ph"
+          echo "📦 Image: ${{ steps.build-image.outputs.image }}"
+          echo "🔄 Commit: ${{ github.sha }}"
+          echo "👤 Deployed by: ${{ github.actor }}"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
