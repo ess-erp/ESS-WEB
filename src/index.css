@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  /* Your custom animations can be defined here if needed */
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
