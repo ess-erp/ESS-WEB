@@ -1,19 +1,14 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DataTable from "react-data-table-component";
 import ModalComponent from "../ButtonsComponents/ModalComponent";
-import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Users, GraduationCap, CheckCircle, AlertTriangle, ArrowLeft } from "lucide-react";
+import { BookOpen, GraduationCap, Users, CheckCircle } from "lucide-react";
 import {
     fetchListOfSectionUserData,
-    fetchTeacherSubjectLoadData,
-    fetchListOfStudentPerTermData,
+    fetchSectionStudentsWithSubjects,
     fetchInsertEncodedGradesData,
     fetchFinalizeEncodedGradesData,
-    fetchSchoolCalendarStatus,
 } from "../../states/TeacherState/Action";
-import { getFormatDate } from "../../GlobalFunction/FormatDate";
-import { getFormatToAMPM } from "../../GlobalFunction/FormatToAMPM";
 
 const EncodingGradeClubComponent = () => {
     const dispatch = useDispatch();
@@ -23,8 +18,7 @@ const EncodingGradeClubComponent = () => {
     });
     const userId = user?.UserId;
 
-    const formatDate = getFormatDate;
-    const formatToAMPM = getFormatToAMPM;
+    // Section list state
     const [sectionList, setSectionList] = useState([]);
     const sectionTableState = useSelector((state) => state.teacher.sectionTableList || {});
     const sectionTable = sectionTableState.data.data || [];
@@ -71,617 +65,358 @@ const EncodingGradeClubComponent = () => {
         },
     ];
 
+    // Modal and grade encoding state
     const [rowModalOpen, setRowModalOpen] = useState(false);
-
     const [loadId, setLoadId] = useState(0);
     const [levelName, setLevelName] = useState("");
     const [sectionName, setSectionName] = useState("");
-    const [loadRowTable, setLoadRowTable] = useState(false);
-    const [showSectionRowTable, setShowSectionRowTable] = useState(false);
-    const openRowModal = (row) => {
-        console.log(row);
-        setLoadId(row?.LoadId);
-        setRowModalOpen(true);
-        setLoadRowTable(true);
-        setShowSectionRowTable(true);
-    };
-    const [sectionRowList, setSectionRowList] = useState([]);
-    const teacherSubjectLoadState = useSelector((state) => state.teacher.teacherSubjectLoadState || {});
-    const sectionRowTable = teacherSubjectLoadState.data.data || [];
-    const sectionRowTotalRows = teacherSubjectLoadState.data.totalRecords || 0;
-    const sectionRowLoading = teacherSubjectLoadState.loading || false;
-    const [sectionRowCurrentPage, setSectionRowTableCurrentPage] = useState(1);
-    const [sectionRowRowsPerPage, setSectionRowTableRowsPerPage] = useState(10);
-    const [sectionRowTableSearchFilter, setSectionRowTableFilterText] = useState("");
-
-
-    useEffect(() => {
-        if (!loadId || !userId) return;
-        dispatch(fetchTeacherSubjectLoadData(loadId, userId, sectionRowCurrentPage, sectionRowRowsPerPage, sectionRowTableSearchFilter));
-    }, [loadId, userId, sectionRowCurrentPage, sectionRowRowsPerPage, sectionRowTableSearchFilter, dispatch]);
-
-    useEffect(() => {
-        if (sectionRowTable.length === 0) return;
-        setSectionRowList(sectionRowTable);
-        setSectionName(sectionRowTable[0]?.SectionName);
-        setLevelName(sectionRowTable[0]?.LevelName);
-    }, [sectionRowTable]);
-
-    const sectionRowColumn = [
-        { name: 'Assigned Teacher', selector: row => row.TeacherFullname, sortable: true },
-        { name: 'Subject Code', selector: row => row.SubjectCode, sortable: true },
-        { name: 'Subject Name', selector: row => row.SubjectName, sortable: true },
-        { name: 'Start of time', selector: row => formatToAMPM(row.StartTime), sortable: true },
-        { name: 'End of time', selector: row => formatToAMPM(row.EndTime), sortable: true },
-        // {
-        //     name: "Actions",
-        //     cell: (row) => (
-        //         <div className="flex gap-4 items-center">
-        //             <button
-        //                 className="p-1 text-blue-600 hover:text-blue-800"
-        //                 onClick={() => openEncodeGradeModal(row, "view")}
-        //             >
-        //                 <Eye size={18} />
-        //             </button>
-        //         </div>
-        //     ),
-        //     ignoreRowClick: true,
-        //     width: "180px",
-        // }
-    ];
-    const [showEncodingTable, setShowEncodingTable] = useState(false);
-    const [rowLoadId, setRowLoadId] = useState(0);
-    const [subjectType, setSubjectType] = useState("");
-    const [subjectid, setSubjectId] = useState(0);
-    const openEncodeGradeModal = (data) => {
-        console.log(data);
-        setShowSectionRowTable(false);
-        setShowEncodingTable(true);
-        setRowLoadId(data?.LoadId);
-        setSubjectId(data?.SubjectId);
-        setSubjectType(data?.SubjectType);
-    };
-
+    const [termActivated, setTermActivated] = useState("");
     const [activeTab, setActiveTab] = useState("male");
-    const [studentList, setStudentList] = useState([]);
-    const linkOfStudentPerTermState = useSelector((state) => state.teacher.linkOfStudentPerTermState || {});
-    const studentTable = linkOfStudentPerTermState.data.data || [];
-    const studentTotalRows = linkOfStudentPerTermState.data.totalRecords || 0;
-    const studentLoading = linkOfStudentPerTermState.loading || false;
-    const [studentCurrentPage, setStudentCurrentPage] = useState(1);
-    const [studentRowsPerPage, setStudentRowsPerPage] = useState(10);
-    const [studentSearch, setStudentSearch] = useState("");
-    const [activeGradingPeriod, setActiveGradingPeriod] = useState(1);
-    const [subjectTitle, setSubjectTitle] = useState("");
     
-    console.log('Student Table Data:', studentTable);
-    
-    // Helper function to get active sub-subject for a term
-    const getSubSubjectForTerm = useCallback((subSubjects, termField) => {
-        if (!Array.isArray(subSubjects) || subSubjects.length === 0) return null;
-        return subSubjects.find(sub => sub[termField] === true);
-    }, []);
-    
-    useEffect(() => {
-        if (rowLoadId == 0) return;
-        dispatch(fetchListOfStudentPerTermData(rowLoadId, subjectid, subjectType, studentCurrentPage, studentRowsPerPage, studentSearch));
-    }, [rowLoadId, subjectid, subjectType, studentCurrentPage, studentRowsPerPage, studentSearch, dispatch]);
-
-    useEffect(() => {
-        if (studentTable.length === 0) return;
-        setStudentList(studentTable);
-        setSectionName(studentTable[0]?.SectionName);
-        setLevelName(studentTable[0]?.LevelName);
-        setSubjectTitle(studentTable[0]?.SubjectCode + "-" + studentTable[0]?.SubjectName);
-        // Log the TermActivated value to see what format it's in
-        console.log('TermActivated value:', studentTable[0]?.TermActivated);
-        // setNoOfSchoolDays(studentTable[0]?.NoOfSchoolDays);
-    }, [studentTable]);
-
-    console.log(studentTable);
-    console.log(subjectTitle);
-    const maleStudents = studentList.filter(
-        (s) => s.Gender?.toLowerCase() === "male"
-    );
-
-    const femaleStudents = studentList.filter(
-        (s) => s.Gender?.toLowerCase() === "female"
-    );
+    // Students and subjects state
+    const [subjects, setSubjects] = useState([]);
+    const [gradeData, setGradeData] = useState({});
     const [gradeErrors, setGradeErrors] = useState({});
-    const [daysErrors, setDaysErrors] = useState({});
+    const [attendanceData, setAttendanceData] = useState({}); // For Days Present, Absent, Tardy
     
-    // School Calendar Status State
-    const schoolCalendarStatusState = useSelector((state) => state.teacher.schoolCalendarStatusState || {});
-    const calendarStatus = schoolCalendarStatusState.data?.data ?? schoolCalendarStatusState.data ?? null;
-    const [isEncodingLocked, setIsEncodingLocked] = useState(true);
+    const sectionStudentsState = useSelector((state) => state.teacher.sectionStudentsWithSubjectsState || {});
+    const studentsData = sectionStudentsState.data?.data || [];
+    const totalRecords = sectionStudentsState.data?.totalRecords || 0;
+    const studentsLoading = sectionStudentsState.loading || false;
     
-    // Derive the active term string from the calendar (e.g. "1st Term")
-    const activeTerm = calendarStatus?.ActiveTerm ?? null;
+    const openRowModal = (row) => {
+        console.log('Opening modal for section:', row);
+        setLoadId(row?.LoadId);
+        setLevelName(row?.LevelName);
+        setSectionName(row?.SectionName);
+        setRowModalOpen(true);
+        setActiveTab("male"); // Reset to male tab when opening
+    };
 
-    // Fetch school calendar status on component mount
+    // Fetch students when modal opens or gender tab changes
     useEffect(() => {
-        dispatch(fetchSchoolCalendarStatus());
-    }, [dispatch]);
+        if (!rowModalOpen || !loadId || !userId || studentsLoading) return;
+        
+        const gender = activeTab === "male" ? "Male" : "Female";
+        console.log('Fetching students:', { loadId, userId, gender });
+        dispatch(fetchSectionStudentsWithSubjects(loadId, userId, gender, 0, 100, ""));
+    }, [rowModalOpen, loadId, userId, activeTab]); // Removed studentsLoading and dispatch from dependencies
 
-    // Lock/unlock encoding based on calendar IsEncodingPeriod flag
+    // Extract subjects from first student when data changes
     useEffect(() => {
-        if (calendarStatus) {
-            // IsEncodingPeriod: true  → encoding open
-            // IsEncodingPeriod: false → encoding locked
-            const locked = calendarStatus.IsEncodingPeriod === false;
-            setIsEncodingLocked(locked);
-        } else {
-            // No calendar data yet — keep locked
-            setIsEncodingLocked(true);
-        }
-    }, [calendarStatus]);
-    
-    const studentColumn = useMemo(() => [
-        {
-            name: <span className="font-semibold text-gray-700">Student Number</span>,
-            selector: row => row.StudentNumber,
-            sortable: true,
-            width: '140px'
-        },
-        {
-            name: <span className="font-semibold text-gray-700">Last Name</span>,
-            selector: row => row.Lname,
-            sortable: true,
-            width: '150px'
-        },
-        {
-            name: <span className="font-semibold text-gray-700">First Name</span>,
-            selector: row => row.Fname,
-            sortable: true,
-            width: '150px'
-        },
-        {
-            name: <span className="font-semibold text-gray-700">Middle Name</span>,
-            selector: row => row.Mname,
-            sortable: true,
-            width: '150px'
-        },
-
-        // =======================
-        // 1ST GRADING
-        // =======================
-        {
-            name: (() => {
-                // Get first row to determine sub-subject (all rows share same subject structure)
-                const firstRow = studentTable?.[0];
-                const activeSubSubject = firstRow ? getSubSubjectForTerm(firstRow.SubSubjects, 'Term1') : null;
-                
-                return (
-                    <div className="flex flex-col items-center">
-                        <span className="font-semibold text-blue-700">1st Term</span>
-                        {activeSubSubject && (
-                            <span className="text-xs text-blue-600 font-medium mt-0.5">
-                                ({activeSubSubject.SubjectName})
-                            </span>
-                        )}
-                    </div>
-                );
-            })(),
-            cell: (row) => {
-                const isActive = activeTerm === "1st Term";
-
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded ${isActive && !isEncodingLocked
-                                ? "border-blue-500"
-                                : "bg-gray-100 cursor-not-allowed"
-                                }`}
-                            disabled={!isActive || isEncodingLocked}
-                            value={row.FirstGrading || ""}
-                            onChange={(e) =>
-                                handleGradeChange(
-                                    row.StudentId,
-                                    "FirstGrading",
-                                    row.SubjectType,
-                                    e.target.value
-                                )
-                            }
-                            required={isActive && !isEncodingLocked}
-                        />
-                        {gradeErrors[`${row.StudentId}-FirstGrading`] && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {gradeErrors[`${row.StudentId}-FirstGrading`]}
-                            </p>
-                        )}
-                    </div>
-
-
-                );
-            },
-        },
-
-        // =======================
-        // 2ND GRADING
-        // =======================
-        {
-            name: (() => {
-                // Get first row to determine sub-subject (all rows share same subject structure)
-                const firstRow = studentTable?.[0];
-                const activeSubSubject = firstRow ? getSubSubjectForTerm(firstRow.SubSubjects, 'Term2') : null;
-                
-                return (
-                    <div className="flex flex-col items-center">
-                        <span className="font-semibold text-blue-700">2nd Term</span>
-                        {activeSubSubject && (
-                            <span className="text-xs text-blue-600 font-medium mt-0.5">
-                                ({activeSubSubject.SubjectName})
-                            </span>
-                        )}
-                    </div>
-                );
-            })(),
-            cell: (row) => {
-                const isActive = activeTerm === "2nd Term";
-
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded ${isActive && !isEncodingLocked
-                                ? "border-blue-500"
-                                : "bg-gray-100 cursor-not-allowed"
-                                }`}
-                            disabled={!isActive || isEncodingLocked}
-                            value={row.SecondGrading || ""}
-                            onChange={(e) =>
-                                handleGradeChange(
-                                    row.StudentId,
-                                    "SecondGrading",
-                                    row.SubjectType,
-                                    e.target.value
-                                )
-                            }
-                            required={isActive && !isEncodingLocked}
-                        />
-                        {gradeErrors[`${row.StudentId}-SecondGrading`] && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {gradeErrors[`${row.StudentId}-SecondGrading`]}
-                            </p>
-                        )}
-                    </div>
-
-                );
-            },
-        },
-
-        // =======================
-        // 3RD GRADING
-        // =======================
-        {
-            name: (() => {
-                // Get first row to determine sub-subject (all rows share same subject structure)
-                const firstRow = studentTable?.[0];
-                const activeSubSubject = firstRow ? getSubSubjectForTerm(firstRow.SubSubjects, 'Term3') : null;
-                
-                return (
-                    <div className="flex flex-col items-center">
-                        <span className="font-semibold text-blue-700">3rd Term</span>
-                        {activeSubSubject && (
-                            <span className="text-xs text-blue-600 font-medium mt-0.5">
-                                ({activeSubSubject.SubjectName})
-                            </span>
-                        )}
-                    </div>
-                );
-            })(),
-            cell: (row) => {
-                const isActive = activeTerm === "3rd Term";
-
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded ${isActive && !isEncodingLocked
-                                ? "border-blue-500"
-                                : "bg-gray-100 cursor-not-allowed"
-                                }`}
-                            disabled={!isActive || isEncodingLocked}
-                            value={row.ThirdGrading || ""}
-                            onChange={(e) =>
-                                handleGradeChange(
-                                    row.StudentId,
-                                    "ThirdGrading",
-                                    row.SubjectType,
-                                    e.target.value
-                                )
-                            }
-                            required={isActive && !isEncodingLocked}
-                        />
-                        {gradeErrors[`${row.StudentId}-ThirdGrading`] && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {gradeErrors[`${row.StudentId}-ThirdGrading`]}
-                            </p>
-                        )}
-                    </div>
-
-                );
-            },
-        },
-        {
-            name: <span className="font-semibold text-green-700">Days Present</span>,
-            cell: (row) => {
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
-                            value={row.DaysPresent || ""}
-                            onChange={(e) =>
-                                handleDaysChange(
-                                    row.StudentId,
-                                    "DaysPresent",
-                                    e.target.value
-                                )
-                            }
-                            required
-                        />
-                        {daysErrors[`${row.StudentId}-DaysPresent`] && (
-                            <p className="text-red-500 text-xs mt-1">
-                                {gradeErrors[`${row.StudentId}-DaysPresent`]}
-                            </p>
-                        )}
-                    </div>
-
-                );
-            },
-        },
-        {
-            name: <span className="font-semibold text-orange-700">Days Absent</span>,
-            cell: (row) => {
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
-                            value={row.DaysAbsent || ""}
-                            onChange={(e) =>
-                                handleDaysChange(
-                                    row.StudentId,
-                                    "DaysAbsent",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                );
-            },
-        },
-        {
-            name: <span className="font-semibold text-yellow-700">Days Tardy</span>,
-            cell: (row) => {
-                return (
-                    <div className="flex flex-col items-start min-w-[90px]">
-                        <input
-                            type="number"
-                            className={`border px-2 py-1 w-20 rounded border-blue-500`}
-                            value={row.DaysTardy || ""}
-                            onChange={(e) =>
-                                handleDaysChange(
-                                    row.DaysTardy,
-                                    "DaysOfPresent",
-                                    e.target.value
-                                )
-                            }
-                        />
-                    </div>
-
-                );
-            },
-        }
-    ], [studentTable, getSubSubjectForTerm, gradeErrors, daysErrors]);
-    
-    const handleGradeChange = (studentId, field, subjectType, value) => {
-        const numericValue = Number(value);
-
-        // update grade
-        setStudentList((prev) =>
-            prev.map((s) =>
-                s.StudentId === studentId
-                    ? { ...s, [field]: value }
-                    : s
-            )
-        );
-
-        if (subjectType.toLowerCase() == "curriculum") {
-            let error = "";
-            if (value !== "") {
-                if (numericValue < 70) {
-                    error = "Grade must be at least 70.";
-                } else if (numericValue > 100) {
-                    error = "Grade must not exceed 100.";
-                }
-            }
-            setGradeErrors((prev) => ({
-                ...prev,
-                [`${studentId}-${field}`]: error,
-            }));
-        }
-
-        // validate
-
-    };
-    const handleDaysChange = (studentId, field, value) => {
-
-        setStudentList((prev) =>
-            prev.map((s) =>
-                s.StudentId === studentId
-                    ? { ...s, [field]: value }
-                    : s
-            )
-        );
-        let error = "";
-        if (value == "") {
-            error = " is required.";
-        }
-
-        setDaysErrors((prev) => ({
-            ...prev,
-            [`${studentId}-${field}`]: error,
-        }));
-    }
-
-    // };
-    // const [noOfSchoolDays, setNoOfSchoolDays] = useState("");
-    // const [schoolDaysError, setSchoolDaysError] = useState(false);
-    // const [schoolDaysErrorMsg, setSchoolDaysErrorMsg] = useState("");
-    const handleCloseEncodeGrades = () => {
-        setRowModalOpen(false);
-        // setStudentList([]);
-        setShowEncodingTable(false);
-
-    };
-
-    const handleOpenWarningModal = () => {
-        // console.log(noOfSchoolDays);
-        // if (noOfSchoolDays == "" || noOfSchoolDays.length == 0) {
-        //     setSchoolDaysError(true);
-        //     setRowModalOpen(true);
-        //     setTimeout(() =>
-        //         setSchoolDaysErrorMsg("Number of school days is required.")
-        //         , 1000);
-        //     return;
-        // }
-        // else {
-
-        // }
-        setRowModalOpen(false);
-        setShowEncodingTable(false);
-        setIsModalOpen(true);
-    };
-
-    const handleBackToSubjectList = () => {
-        setShowEncodingTable(false);
-        setShowSectionRowTable(true);
-        setStudentList([]);
-        setStudentSearch("");
-        setActiveTab("male");
-    };
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-    const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-    const [errorBodyMessage, setErrorBodyMessage] = useState("");
-
-
-    const handleSubmitModal = async () => {
-        const missing = studentList.filter((s) => {
-            if (activeTerm === "1st Term") return !s.FirstGrading;
-            if (activeTerm === "2nd Term") return !s.SecondGrading;
-            if (activeTerm === "3rd Term") return !s.ThirdGrading;
-            return false;
-        });
-
-        if (missing.length > 0) {
-            setIsErrorModalOpen(true);
-            setErrorBodyMessage("Please complete all grades for active grading period.");
-            setShowEncodingTable(false);
+        if (!studentsData || studentsData.length === 0) {
+            setSubjects([]);
             return;
         }
-
-
-        // BUILD CLEAN PAYLOAD
-        const payload = {
-            LoadId: studentList[0]?.LoadId,
-            TermActivated: activeTerm,
-            CreatedByUserid: userId,
-            NoOfSchoolDays: noOfSchoolDays,
-
-            InsertEncodeGradeChildDtos: studentList.map((s) => {
-                let grade = null;
-                if (activeTerm === "1st Term") grade = s.FirstGrading;
-                else if (activeTerm === "2nd Term") grade = s.SecondGrading;
-                else if (activeTerm === "3rd Term") grade = s.ThirdGrading;
-
-                // Get active sub-subject for the current term (for subjects like MAPEH)
-                let activeSubSubjectId = null;
-                if (Array.isArray(s.SubSubjects) && s.SubSubjects.length > 0) {
-                    const termField = s.TermActivated; // "Term1", "Term2", or "Term3"
-                    const activeSubSubject = s.SubSubjects.find(sub => sub[termField] === true);
-                    if (activeSubSubject) {
-                        activeSubSubjectId = activeSubSubject.SubSubjectId;
-                    }
+        
+        console.log('Students data received:', studentsData);
+        
+        // Extract subjects and term from first student (all students have same subjects)
+        const firstStudent = studentsData[0];
+        if (firstStudent) {
+            if (firstStudent.Subjects) {
+                setSubjects(firstStudent.Subjects);
+                console.log('Subjects extracted:', firstStudent.Subjects);
+                
+                // Determine active term from subject flags
+                if (firstStudent.Subjects.length > 0) {
+                    const firstSubject = firstStudent.Subjects[0];
+                    if (firstSubject.Term1) setTermActivated("1st Term");
+                    else if (firstSubject.Term2) setTermActivated("2nd Term");
+                    else if (firstSubject.Term3) setTermActivated("3rd Term");
                 }
-
-                return {
-                    StudentId: s.StudentId,
-                    LoadChildId: s.LoadChildId,
-                    SubjectId: s.SubjectId,
-                    SubjectType: s.SubjectType,
-                    Grade: grade,
-                    DaysPresent: s.DaysPresent,
-                    DaysAbsent: s.DaysAbsent,
-                    DaysTardy: s.DaysTardy,
-                    ...(activeSubSubjectId && { SubSubjectId: activeSubSubjectId }) // Include only if sub-subject exists
-                };
-            })
-        };
-
-        console.log("Saving grades:", payload);
-        const res = await dispatch(fetchInsertEncodedGradesData(payload));
-        if (res.ok) {
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 1000);
             }
+        }
+    }, [studentsData]);
+
+    // Handle grade input change
+    const handleGradeChange = (studentId, loadChildId, value) => {
+        const key = `${studentId}-${loadChildId}`;
+        
+        // Validate grade
+        const numValue = parseFloat(value);
+        if (value && (isNaN(numValue) || numValue < 65 || numValue > 100)) {
+            setGradeErrors(prev => ({
+                ...prev,
+                [key]: "65-100"
+            }));
+        } else {
+            setGradeErrors(prev => {
+                const newErrors = { ...prev };
+                delete newErrors[key];
+                return newErrors;
+            });
+        }
+
+        setGradeData(prev => ({
+            ...prev,
+            [key]: value
+        }));
+    };
+
+    // Handle attendance input change (Days Present, Absent, Tardy)
+    const handleAttendanceChange = (studentId, loadChildId, field, value) => {
+        const key = `${studentId}-${loadChildId}`;
+        
+        setAttendanceData(prev => ({
+            ...prev,
+            [key]: {
+                ...prev[key],
+                [field]: value
+            }
+        }));
+    };
+
+    // Dynamic columns based on subjects
+    const studentColumns = useMemo(() => {
+        const baseColumns = [
+            {
+                name: <span className="font-semibold text-gray-700">Student #</span>,
+                selector: row => row.StudentNumber,
+                sortable: true,
+                width: '110px'
+            },
+            {
+                name: <span className="font-semibold text-gray-700">Full Name</span>,
+                selector: row => `${row.Lname}, ${row.Fname} ${row.Mname || ''}`,
+                sortable: true,
+                cell: row => (
+                    <div className="py-1">
+                        {row.Lname}, {row.Fname} {row.Mname && row.Mname}
+                    </div>
+                ),
+                grow: 2,
+            },
+        ];
+
+        // Add dynamic subject columns
+        const subjectColumns = subjects.map(subject => ({
+            name: (
+                <div className="flex flex-col items-center text-center">
+                    <span className="font-semibold text-blue-700 text-xs">{subject.SubjectCode}</span>
+                    <span className="text-xs text-gray-600 mt-0.5">{subject.SubjectName}</span>
+                    <div className="flex gap-2 mt-2 text-xs">
+                        <span className="text-blue-600">Grade</span>
+                        <span className="text-green-600">Present</span>
+                        <span className="text-red-600">Absent</span>
+                        <span className="text-yellow-600">Tardy</span>
+                    </div>
+                </div>
+            ),
+            cell: (row) => {
+                const key = `${row.StudentId}-${subject.LoadChildId}`;
+                const currentGrade = gradeData[key] ?? "";
+                const attendance = attendanceData[key] || {};
+                
+                return (
+                    <div className="flex gap-2 items-center justify-center py-2">
+                        {/* Grade Input */}
+                        <div className="flex flex-col items-center">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="65"
+                                max="100"
+                                className="border px-2 py-1.5 w-16 text-center rounded border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 text-sm"
+                                value={currentGrade}
+                                onChange={(e) => handleGradeChange(row.StudentId, subject.LoadChildId, e.target.value)}
+                                placeholder="—"
+                            />
+                            {gradeErrors[key] && (
+                                <span className="text-red-500 text-xs mt-0.5">
+                                    {gradeErrors[key]}
+                                </span>
+                            )}
+                        </div>
+                        
+                        {/* Days Present */}
+                        <input
+                            type="number"
+                            min="0"
+                            max="999"
+                            className="border px-2 py-1.5 w-14 text-center rounded border-green-400 focus:outline-none focus:ring-2 focus:ring-green-400 text-sm"
+                            value={attendance.DaysPresent || ""}
+                            onChange={(e) => handleAttendanceChange(row.StudentId, subject.LoadChildId, 'DaysPresent', e.target.value)}
+                            placeholder="0"
+                        />
+                        
+                        {/* Days Absent */}
+                        <input
+                            type="number"
+                            min="0"
+                            max="999"
+                            className="border px-2 py-1.5 w-14 text-center rounded border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400 text-sm"
+                            value={attendance.DaysAbsent || ""}
+                            onChange={(e) => handleAttendanceChange(row.StudentId, subject.LoadChildId, 'DaysAbsent', e.target.value)}
+                            placeholder="0"
+                        />
+                        
+                        {/* Days Tardy */}
+                        <input
+                            type="number"
+                            min="0"
+                            max="999"
+                            className="border px-2 py-1.5 w-14 text-center rounded border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 text-sm"
+                            value={attendance.DaysTardy || ""}
+                            onChange={(e) => handleAttendanceChange(row.StudentId, subject.LoadChildId, 'DaysTardy', e.target.value)}
+                            placeholder="0"
+                        />
+                    </div>
+                );
+            },
+            width: '220px',
+            center: true,
+        }));
+
+        return [...baseColumns, ...subjectColumns];
+    }, [subjects, gradeData, gradeErrors, attendanceData]);
+
+    const handleSaveGrades = async () => {
+        // Build the payload
+        const insertEncodeGradeChildDtos = [];
+        
+        // Iterate through gradeData to build the array
+        Object.entries(gradeData).forEach(([key, gradeValue]) => {
+            // key format: "StudentId-LoadChildId"
+            const [studentIdStr, loadChildIdStr] = key.split('-');
+            const studentId = parseInt(studentIdStr);
+            const loadChildId = parseInt(loadChildIdStr);
+            
+            // Find the student in studentsData
+            const student = studentsData.find(s => s.StudentId === studentId);
+            if (!student) return;
+            
+            // Find the subject
+            const subject = student.Subjects.find(sub => sub.LoadChildId === loadChildId);
+            if (!subject) return;
+            
+            // Only include grades that have been entered
+            if (gradeValue && gradeValue.trim() !== '') {
+                const grade = parseFloat(gradeValue);
+                
+                // Skip invalid grades
+                if (isNaN(grade) || grade < 65 || grade > 100) {
+                    return;
+                }
+                
+                // Get attendance data for this student-subject pair
+                const attendance = attendanceData[key] || {};
+                const daysPresent = parseInt(attendance.DaysPresent) || 0;
+                const daysAbsent = parseInt(attendance.DaysAbsent) || 0;
+                const daysTardy = parseInt(attendance.DaysTardy) || 0;
+                
+                insertEncodeGradeChildDtos.push({
+                    StudentId: studentId,
+                    LoadChildId: loadChildId,
+                    SubjectId: subject.SubjectId,
+                    SubjectType: subject.SubjectType || '',
+                    Grade: grade,
+                    DaysPresent: daysPresent,
+                    DaysAbsent: daysAbsent,
+                    DaysTardy: daysTardy
+                });
+            }
+        });
+        
+        if (insertEncodeGradeChildDtos.length === 0) {
+            alert('Please enter at least one valid grade before saving.');
+            return;
+        }
+        
+        const payload = {
+            LoadId: loadId,
+            TermActivated: termActivated,
+            CreatedByUserid: userId,
+            InsertEncodeGradeChildDtos: insertEncodeGradeChildDtos
+        };
+        
+        console.log('Save payload:', payload);
+        
+        const result = await dispatch(fetchInsertEncodedGradesData(payload));
+        
+        if (result.ok) {
+            alert('Grades saved successfully!');
+            // Clear grade data and attendance data after successful save
+            setGradeData({});
+            setGradeErrors({});
+            setAttendanceData({});
+        } else {
+            alert(`Error saving grades: ${result.error || 'Unknown error'}`);
         }
     };
 
-    const handleFinalizeGrade = async () => {
-        console.log(loadId);
-        setShowEncodingTable(false);
-        const payload = {
-            LoadId: studentList[0]?.LoadId,
-            TermActivated: activeTerm,
-            CreatedByUserid: userId,
-            // NoOfSchoolDays: noOfSchoolDays,
-            IsValidated: "Y",
-
-            InsertEncodeGradeChildDtos: studentList.map((s) => {
-                let grade = null;
-                if (activeTerm === "1st Term") grade = s.FirstGrading;
-                else if (activeTerm === "2nd Term") grade = s.SecondGrading;
-                else if (activeTerm === "3rd Term") grade = s.ThirdGrading;
-
-                // Get active sub-subject for the current term (for subjects like MAPEH)
-                let activeSubSubjectId = null;
-                if (Array.isArray(s.SubSubjects) && s.SubSubjects.length > 0) {
-                    const termField = s.TermActivated; // "Term1", "Term2", or "Term3"
-                    const activeSubSubject = s.SubSubjects.find(sub => sub[termField] === true);
-                    if (activeSubSubject) {
-                        activeSubSubjectId = activeSubSubject.SubSubjectId;
-                    }
+    const handleFinalizeGrades = async () => {
+        const confirmFinalize = window.confirm(
+            'Are you sure you want to finalize these grades? This action may lock the grades from further editing.'
+        );
+        
+        if (!confirmFinalize) return;
+        
+        // Build the payload (same as save, but with IsValidated: "Y")
+        const insertEncodeGradeChildDtos = [];
+        
+        Object.entries(gradeData).forEach(([key, gradeValue]) => {
+            const [studentIdStr, loadChildIdStr] = key.split('-');
+            const studentId = parseInt(studentIdStr);
+            const loadChildId = parseInt(loadChildIdStr);
+            
+            const student = studentsData.find(s => s.StudentId === studentId);
+            if (!student) return;
+            
+            const subject = student.Subjects.find(sub => sub.LoadChildId === loadChildId);
+            if (!subject) return;
+            
+            if (gradeValue && gradeValue.trim() !== '') {
+                const grade = parseFloat(gradeValue);
+                
+                if (isNaN(grade) || grade < 65 || grade > 100) {
+                    return;
                 }
-
-                return {
-                    StudentId: s.StudentId,
-                    LoadChildId: s.LoadChildId,
-                    SubjectId: s.SubjectId,
-                    SubjectType: s.SubjectType,
+                
+                // Get attendance data for this student-subject pair
+                const attendance = attendanceData[key] || {};
+                const daysPresent = parseInt(attendance.DaysPresent) || 0;
+                const daysAbsent = parseInt(attendance.DaysAbsent) || 0;
+                const daysTardy = parseInt(attendance.DaysTardy) || 0;
+                
+                insertEncodeGradeChildDtos.push({
+                    StudentId: studentId,
+                    LoadChildId: loadChildId,
+                    SubjectId: subject.SubjectId,
+                    SubjectType: subject.SubjectType || '',
                     Grade: grade,
-                    GradeChildId: s.GradeChildId,
-                    DaysPresent: s.DaysPresent,
-                    DaysAbsent: s.DaysAbsent,
-                    DaysTardy: s.DaysTardy,
-                    ...(activeSubSubjectId && { SubSubjectId: activeSubSubjectId }) // Include only if sub-subject exists
-                };
-            })
-        };
-
-        console.log("Saving grades:", payload);
-        const res = await dispatch(fetchFinalizeEncodedGradesData(payload));
-        if (res.ok) {
-            setIsSuccessModalOpen(true);
-            if (isSuccessModalOpen == false) {
-                setTimeout(() => window.location.reload(), 1000);
+                    DaysPresent: daysPresent,
+                    DaysAbsent: daysAbsent,
+                    DaysTardy: daysTardy
+                });
             }
+        });
+        
+        if (insertEncodeGradeChildDtos.length === 0) {
+            alert('Please enter at least one valid grade before finalizing.');
+            return;
+        }
+        
+        const payload = {
+            LoadId: loadId,
+            TermActivated: termActivated,
+            CreatedByUserid: userId,
+            IsValidated: "Y",
+            InsertEncodeGradeChildDtos: insertEncodeGradeChildDtos
+        };
+        
+        console.log('Finalize payload:', payload);
+        
+        const result = await dispatch(fetchFinalizeEncodedGradesData(payload));
+        
+        if (result.ok) {
+            alert('Grades finalized successfully!');
+            // Clear grade data and attendance data after successful finalization
+            setGradeData({});
+            setGradeErrors({});
+            setAttendanceData({});
+        } else {
+            alert(`Error finalizing grades: ${result.error || 'Unknown error'}`);
         }
     };
 
@@ -740,9 +475,18 @@ const EncodingGradeClubComponent = () => {
                     }
                 />
             </div>
+
+            {/* Grade Encoding Modal */}
             <ModalComponent
                 isOpen={rowModalOpen}
-                onClose={() => setRowModalOpen(false)}
+                onClose={() => {
+                    setRowModalOpen(false);
+                    setGradeData({});
+                    setGradeErrors({});
+                    setAttendanceData({});
+                }}
+                size="max-w-7xl w-full"
+                maxHeight="90vh"
                 title={
                     <div className="flex items-center gap-2">
                         <BookOpen size={24} className="text-green-600" />
@@ -765,7 +509,7 @@ const EncodingGradeClubComponent = () => {
 
                                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3 sm:p-4">
                                     <label className="block text-xs font-semibold text-purple-700 mb-1 sm:mb-2 uppercase tracking-wide">
-                                        Level Name
+                                        Level Name • Term: {termActivated || "—"}
                                     </label>
                                     <p className="text-sm sm:text-base font-bold text-purple-900">
                                         {levelName || "—"}
@@ -773,275 +517,91 @@ const EncodingGradeClubComponent = () => {
                                 </div>
                             </div>
 
+                            {/* Male/Female Tabs */}
+                            <div className="flex flex-col sm:flex-row gap-2 mb-4">
+                                <button
+                                    onClick={() => setActiveTab("male")}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm sm:text-base ${
+                                        activeTab === "male"
+                                            ? "bg-blue-600 text-white shadow-md"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    }`}
+                                >
+                                    <Users size={16} />
+                                    Male Students
+                                </button>
 
-                            {showSectionRowTable && (
-                                <>
-                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg">
-                                        <p className="text-xs sm:text-sm text-blue-700">
-                                            <strong className="font-semibold">Instruction:</strong> Click on any subject row to start encoding grades for that subject.
-                                        </p>
-                                    </div>
+                                <button
+                                    onClick={() => setActiveTab("female")}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all text-sm sm:text-base ${
+                                        activeTab === "female"
+                                            ? "bg-pink-600 text-white shadow-md"
+                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    }`}
+                                >
+                                    <Users size={16} />
+                                    Female Students
+                                </button>
+                            </div>
 
-                                    <div className="flex justify-end">
-                                        <input
-                                            type="text"
-                                            placeholder="Search subjects..."
-                                            className="px-3 py-2 text-sm border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            value={sectionRowTableSearchFilter}
-                                            onChange={(e) => {
-                                                setSectionRowTableFilterText(e.target.value);
-                                                setSectionRowTableCurrentPage(1);
-                                            }}
-                                        />
-                                    </div>
-
-                                    <DataTable
-                                        columns={sectionRowColumn}
-                                        data={sectionRowList}
-                                        progressPending={sectionRowLoading}
-                                        pagination
-                                        paginationServer
-                                        paginationTotalRows={sectionRowTotalRows}
-                                        paginationDefaultPage={sectionRowCurrentPage}
-                                        onChangePage={(page) =>
-                                            setSectionRowTableCurrentPage(page)
-                                        }
-                                        onChangeRowsPerPage={(newPerPage, page) => {
-                                            setSectionRowTableRowsPerPage(newPerPage);
-                                            setSectionRowTableCurrentPage(page);
-                                        }}
-                                        highlightOnHover
-                                        responsive
-                                        persistTableHead
-                                        pointerOnHover
-                                        noDataComponent={
-                                            <div className="py-8 text-center text-gray-500 text-sm">
-                                                No subjects assigned yet
-                                            </div>
-                                        }
-                                        onRowClicked={(row) => openEncodeGradeModal(row)}
-                                    />
-                                </>
-
-                            )}
-                            {showEncodingTable && (
-                                <>
-                                    {/* Encoding Lock Warning */}
-                                    {isEncodingLocked && (
-                                        <div className="bg-gradient-to-r from-red-50 to-red-100 border-l-4 border-red-500 p-3 rounded-r-lg mb-3">
-                                            <div className="flex items-start">
-                                                <AlertTriangle size={18} className="text-red-600 mt-0.5 mr-2" />
-                                                <div>
-                                                    <p className="text-sm text-red-800 font-semibold">
-                                                        Grade Encoding is Currently Locked
-                                                    </p>
-                                                    <p className="text-xs text-red-700 mt-1">
-                                                        {calendarStatus?.activeTerm && (
-                                                            <>Current Term: {calendarStatus.activeTerm} | </>
-                                                        )}
-                                                        {calendarStatus?.termStartDate && calendarStatus?.termEndDate ? (
-                                                            <>Encoding period: {new Date(calendarStatus.termStartDate).toLocaleDateString()} - {new Date(calendarStatus.termEndDate).toLocaleDateString()}</>
-                                                        ) : (
-                                                            <>Please contact the SRU office for the encoding schedule.</>
-                                                        )}
-                                                    </p>
-                                                    {calendarStatus?.daysUntilDeadline != null && calendarStatus.daysUntilDeadline >= 0 && !isEncodingLocked && (
-                                                        <p className="text-xs text-red-600 mt-1 font-medium">
-                                                            ⏰ {calendarStatus.daysUntilDeadline} {calendarStatus.daysUntilDeadline === 1 ? 'day' : 'days'} remaining
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
+                            {/* Student Grade Table */}
+                            <div className="overflow-x-auto">
+                                <DataTable
+                                    columns={studentColumns}
+                                    data={studentsData}
+                                    progressPending={studentsLoading}
+                                    highlightOnHover
+                                    responsive
+                                    persistTableHead
+                                    dense
+                                    noDataComponent={
+                                        <div className="py-8 text-center text-gray-500 text-sm">
+                                            No students found
                                         </div>
-                                    )}
-                                    
-                                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 p-3 rounded-r-lg">
-                                        <div className="flex items-start">
-                                            <AlertTriangle size={18} className="text-yellow-600 mt-0.5 mr-2" />
-                                            <p className="text-sm text-yellow-800">
-                                                <strong className="font-semibold">Important:</strong> Please double-check all grades before submission. You can only encode grades for the active grading period.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    }
+                                    customStyles={{
+                                        headCells: {
+                                            style: {
+                                                paddingLeft: '8px',
+                                                paddingRight: '8px',
+                                                fontSize: '12px',
+                                            },
+                                        },
+                                        cells: {
+                                            style: {
+                                                paddingLeft: '8px',
+                                                paddingRight: '8px',
+                                            },
+                                        },
+                                    }}
+                                />
+                            </div>
 
-                                    {/* Back Button */}
-                                    <div className="flex justify-start mb-3">
-                                        <button
-                                            onClick={handleBackToSubjectList}
-                                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-all text-sm border border-gray-300 hover:border-gray-400 shadow-sm"
-                                        >
-                                            <ArrowLeft size={18} />
-                                            <span>Back to Subject List</span>
-                                        </button>
-                                    </div>
+                            {/* Action Buttons */}
+                            {studentsData.length > 0 && (
+                                <div className="flex flex-col sm:flex-row gap-3 justify-end mt-4 pt-4 border-t">
+                                    <button
+                                        onClick={handleSaveGrades}
+                                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all shadow-md"
+                                    >
+                                        <CheckCircle size={18} />
+                                        Save Grades
+                                    </button>
 
-                                    <div className="flex flex-col sm:flex-row gap-2 mb-4 sm:justify-center">
-                                        <button
-                                            onClick={() => setActiveTab("male")}
-                                            className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all text-sm sm:text-base ${activeTab === "male"
-                                                    ? "bg-blue-600 text-white shadow-md"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                                }`}
-                                        >
-                                            <Users size={16} />
-                                            Male Students ({maleStudents.length})
-                                        </button>
-
-                                        <button
-                                            onClick={() => setActiveTab("female")}
-                                            className={`flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg font-medium transition-all text-sm sm:text-base ${activeTab === "female"
-                                                    ? "bg-pink-600 text-white shadow-md"
-                                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                                }`}
-                                        >
-                                            <Users size={16} />
-                                            Female Students ({femaleStudents.length})
-                                        </button>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                                        {subjectTitle != "" && (
-                                            <div className="flex items-center gap-2">
-                                                <BookOpen size={18} className="text-green-600" />
-                                                <h3 className="text-base sm:text-lg font-bold text-green-700">
-                                                    {subjectTitle}
-                                                </h3>
-                                            </div>
-                                        )}
-
-                                        <div className="w-full sm:w-auto sm:ml-auto">
-                                            <input
-                                                type="text"
-                                                placeholder="Search students..."
-                                                className="px-3 py-2 text-sm border border-gray-300 rounded-lg w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                                value={studentSearch}
-                                                onChange={(e) => {
-                                                    setStudentSearch(e.target.value);
-                                                    setStudentCurrentPage(1);
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={activeTab}
-                                            initial={{ opacity: 0, x: 20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            exit={{ opacity: 0, x: -20 }}
-                                            transition={{ duration: 0.25 }}
-                                        >
-
-                                            <DataTable
-                                                columns={studentColumn}
-                                                data={
-                                                    activeTab === "male"
-                                                        ? maleStudents
-                                                        : femaleStudents
-                                                }
-                                                progressPending={sectionRowLoading}
-                                                pagination
-                                                paginationServer
-                                                paginationTotalRows={studentTotalRows}
-                                                paginationDefaultPage={studentCurrentPage}
-                                                onChangePage={(page) => setStudentCurrentPage(page)}
-                                                onChangeRowsPerPage={(newPerPage, page) => {
-                                                    setStudentRowsPerPage(newPerPage);
-                                                    setStudentCurrentPage(page);
-                                                }}
-                                                highlightOnHover
-                                                striped
-                                                responsive
-                                                noDataComponent={`No ${activeTab} students found.`}
-                                                customStyles={{
-                                                    table: {
-                                                        style: {
-                                                            overflowX: 'auto',
-                                                        },
-                                                    },
-                                                    headRow: {
-                                                        style: {
-                                                            borderBottomWidth: '2px',
-                                                            borderBottomColor: '#e5e7eb',
-                                                        },
-                                                    },
-                                                    headCells: {
-                                                        style: {
-                                                            fontSize: '14px',
-                                                            fontWeight: '600',
-                                                            paddingLeft: '16px',
-                                                            paddingRight: '16px',
-                                                        },
-                                                    },
-                                                    cells: {
-                                                        style: {
-                                                            paddingLeft: '16px',
-                                                            paddingRight: '16px',
-                                                            fontSize: '14px',
-                                                        },
-                                                    },
-                                                }}
-                                            />
-                                        </motion.div>
-                                    </AnimatePresence>
-                                    {/* <div className="flex justify-end pt-2">
-                                        <label className="flex flex-col">
-                                            <span className="text-sm font-medium mb-1">Number of school days <span className="text-red-700">*</span></span>
-                                            <input
-                                                type="text"
-                                                placeholder="Enter number of school days"
-                                                value={noOfSchoolDays}
-                                                onChange={(e) => setNoOfSchoolDays(e.target.value)}
-                                                className={`mt-1 mx-auto rounded-lg border p-2 focus:ring-2 focus:ring-blue-500 
-                                                ${schoolDaysError ? "border-red-500" : "border-gray-300"}`}
-                                            />
-                                            {schoolDaysError && (
-                                                <p className="text-red-500 text-xs mt-1">{schoolDaysErrorMsg}</p>
-                                            )}
-                                        </label>
-
-                                    </div> */}
-                                </>
+                                    <button
+                                        onClick={handleFinalizeGrades}
+                                        className="flex items-center justify-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all shadow-md"
+                                    >
+                                        <CheckCircle size={18} />
+                                        Finalize Grades
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
                 }
-                size="w-full sm:w-[95vw] lg:w-[1200px]"
-                maxHeight="100vh"
-                buttons={[
-                    ...(!showEncodingTable || isEncodingLocked
-                        ? []
-                        : [
-                            { label: "Finalize Grade", type: "blue", onClick: handleFinalizeGrade },
-                            { label: "Save as draft", type: "green", onClick: handleOpenWarningModal, closeOnClick: false }
-                        ]
-                    ),
-                    { label: "Cancel", type: "red", onClick: handleCloseEncodeGrades },
-                ]}
             />
-            <ModalComponent
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                title="Warning"
-                body="Are you sure you want to continue?"
-                buttons={[
-                    { label: "Yes", type: "green", onClick: handleSubmitModal },
-                    { label: "No", type: "red" },
-                ]}
-            />
-            <ModalComponent
-                isOpen={isErrorModalOpen}
-                onClose={() => setIsErrorModalOpen(false)}
-                title={<span className="font-bold text-lg text-red-700">Error</span>}
-                body={<p>{errorBodyMessage}</p>}
-            />
-            <ModalComponent
-                isOpen={isSuccessModalOpen}
-                onClose={() => setIsSuccessModalOpen(false)}
-                title={<span className="font-bold text-lg text-green-700">Success</span>}
-                body={<p>Done encoding of grades.</p>}
-            />
-        </div >
+        </div>
     );
 };
 
