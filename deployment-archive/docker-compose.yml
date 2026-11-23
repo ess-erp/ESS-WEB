@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  ess-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ess-web-app
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - ess-network
+    labels:
+      - "com.ess.description=ESS Web Application"
+      - "com.ess.version=1.0"
+
+networks:
+  ess-network:
+    driver: bridge
