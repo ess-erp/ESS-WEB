@@ -84,7 +84,7 @@ export const fetchLevelData = (DivId = '') => async (dispatch) => {
 
         const url = `${baseUrl}/auth/get-level?DivId=${DivId}`;
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
 

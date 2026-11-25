@@ -19,6 +19,10 @@ import {
   Hash,
   Building2,
   CheckCircle,
+  Ban,
+  Shield,
+  UserCog,
+  KeyRound,
 } from "lucide-react";
 import { CreditCardIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -32,6 +36,7 @@ import NotificationBell from "./NotificationBell";
 import { removeToken } from "../../services/tokenServices";
 import { Link } from "react-router-dom";
 import { useSidebar } from "../../context/SidebarContext";
+import { extractUserRoles, hasAnyRole } from "../../utils/roleUtils";
 
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar, openSubmenus, toggleSubmenu } = useSidebar();
@@ -61,13 +66,8 @@ const Sidebar = () => {
   const hideTicketsRoles = [7, 8, 9, 14, 15];
 
   const shouldHideTickets = (userRoles) => {
-    const rolesArray = Array.isArray(userRoles)
-      ? userRoles
-      : [userRoles];
-
-    return rolesArray.some((role) =>
-      hideTicketsRoles.includes(role)
-    );
+    const rolesArray = extractUserRoles({ UserRoleId: userRoles, roles: userRoles });
+    return rolesArray.some((role) => hideTicketsRoles.includes(role));
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -180,6 +180,11 @@ const Sidebar = () => {
       path: "/cfw/onlineapplication",
     },
     {
+      name: "Student Hold/Clearance",
+      icon: Ban,
+      path: "/cfw/studentholdclearance",
+    },
+    {
       name: "CFW Templates",
       icon: DocumentIcon,
       path: "/cfw/templates",
@@ -228,32 +233,25 @@ const Sidebar = () => {
       path: "/sru/schoolcalendar",
     },
     {
-      name: "Generate",
-      icon: FilePlus,
-      children: [
-        {
-          name: "Student ID Form",
-          path: "/sru/generate-student-id",
-        },
-        {
-          name: "School Form",
-          path: "/sru/generate-school-form",
-        },
-        {
-          name: "ARC Sending",
-          path: "/sru/generate-school-form",
-        },
-        {
-          name: "Summary Sheet Report",
-          path: "/sru/summarysheet",
-        },
-        {
-          name: "Honor List Report",
-          path: "/sru/generate-school-form",
-        },
-      ],
+      name: "Summary Sheet Report",
+      icon: FileText,
+      path: "/sru/summarysheet",
     },
-
+    {
+      name: "Honor List Report",
+      icon: CheckCircle,
+      path: "/sru/honorlistreport",
+    },
+    {
+      name: "Student ID Form",
+      icon: FilePlus,
+      path: "/sru/generate-student-id",
+    },
+    {
+      name: "School Form",
+      icon: FilePlus,
+      path: "/sru/generate-school-form",
+    },
     {
       name: "Grade Report Template",
       icon: Calendar,
@@ -294,6 +292,11 @@ const Sidebar = () => {
       name: "Subject Schedule Entry",
       icon: DocumentIcon,
       path: "/academic/subjectscheduleloadentry",
+    },
+    {
+      name: "Student Hold/Clearance",
+      icon: Ban,
+      path: "/academic/studentholdclearance",
     },
     ...sharedMenu,
   ];
@@ -390,6 +393,7 @@ const Sidebar = () => {
       icon: UserIconSolid,
       path: "/sac/onlineapplication",
     },
+    ...sharedMenu,
   ];
 
   const apMenu = [
@@ -403,6 +407,7 @@ const Sidebar = () => {
       icon: UserIconSolid,
       path: "/ap/onlineapplication",
     },
+    ...sharedMenu,
   ];
 
   const principalMenu = [
@@ -416,6 +421,7 @@ const Sidebar = () => {
       icon: UserIconSolid,
       path: "/principal/onlineapplication",
     },
+    ...sharedMenu,
   ];
 
   const parentMenu = [
@@ -431,7 +437,7 @@ const Sidebar = () => {
     },
     {
       name: "List of Student",
-      icon: User,
+      icon: UserRoundPlus,
       path: "/parent/listofstudent",
     },
     ...sharedMenu,
@@ -445,7 +451,7 @@ const Sidebar = () => {
     },
     {
       name: "List of Section",
-      icon: DocumentIcon,
+      icon: User,
       path: "/teacher/listofsection",
     },
     {
@@ -463,52 +469,52 @@ const Sidebar = () => {
     },
     {
       name: "Chart of Account",
-      icon: DocumentIcon,
+      icon: Calculator,
       path: "/accounting/chartofaccounts",
     },
     {
       name: "Transaction Types",
-      icon: BookPlus,
+      icon: Calculator,
       path: "/accounting/addcoatransaction",
     },
     {
       name: "Journal Entry",
-      icon: ScrollText,
+      icon: Calculator,
       path: "/accounting/journalentry",
     },
     {
       name: "Cash & Bank Reconciliation",
-      icon: Building2,
+      icon: Calculator,
       path: "/accounting/cash-bank",
     },
     {
       name: "Student Ledger",
-      icon: User,
+      icon: Calculator,
       path: "/accounting/student-ledger",
     },
     {
       name: "General Ledger",
-      icon: BookPlus,
+      icon: Calculator,
       path: "/accounting/general-ledger",
     },
     {
       name: "Financial Reports",
-      icon: BarChart3,
+      icon: Calculator,
       path: "/accounting/financial-reports",
     },
     {
       name: "SI / OR Series",
-      icon: CreditCardIcon,
+      icon: Calculator,
       path: "/accounting/siseries",
     },
     {
       name: "Fee Assessment",
-      icon: FileText,
+      icon: Calculator,
       path: "/accounting/fee-assessment",
     },
     {
       name: "Payroll Approval",
-      icon: CheckCircle,
+      icon: Calculator,
       path: "/accounting/payroll-process-approval",
     },
     ...sharedMenu,
@@ -527,22 +533,22 @@ const Sidebar = () => {
     },
     {
       name: "Request Form",
-      icon: FileText,
+      icon: Package,
       path: "/purchasing/requestform",
     },
     {
       name: "Purchase Order",
-      icon: ShoppingCart,
+      icon: Package,
       path: "/purchasing/purchaseorder",
     },
     {
       name: "Supplier List",
-      icon: User,
+      icon: Package,
       path: "/purchasing/supplier",
     },
     {
       name: "RF No. Series",
-      icon: Hash,
+      icon: Package,
       path: "/purchasing/rf-number-series",
     },
     ...sharedMenu,
@@ -558,6 +564,305 @@ const Sidebar = () => {
       name: "Payroll Process Management",
       icon: Receipt,
       path: "/finance/payroll-batches",
+    },
+    ...sharedMenu,
+  ];
+
+  const superAdminMenu = [
+    {
+      name: "Dashboard",
+      icon: DashboardIcon,
+      path: "/super-admin/dashboard",
+    },
+    {
+      name: "Super Admin",
+      icon: Shield,
+      children: [
+        {
+          name: "User Maintenance",
+          path: "/super-admin/user-maintenance",
+        },
+        {
+          name: "Admin Password Reset",
+          path: "/super-admin/password-reset",
+        },
+        {
+          name: "User Login Logs",
+          path: "/super-admin/login-logs",
+        },
+      ],
+    },
+    {
+      name: "Academic",
+      icon: BookPlus,
+      children: [
+        {
+          name: "Assign Adviser or Non-Adviser",
+          path: "/academic/assignadvisernonadviser",
+        },
+        {
+          name: "Faculty Load Entry",
+          path: "/academic/facultyloadentry",
+        },
+        {
+          name: "Subject Master List",
+          path: "/academic/subjectloadentry",
+        },
+        {
+          name: "Curriculum Per Level Entry",
+          path: "/academic/curriculumentry",
+        },
+        {
+          name: "Subject Schedule Entry",
+          path: "/academic/subjectscheduleloadentry",
+        },
+        {
+          name: "Student Hold/Clearance",
+          path: "/academic/studentholdclearance",
+        },
+      ],
+    },
+    {
+      name: "CFW",
+      icon: FileText,
+      children: [
+        {
+          name: "Online Application",
+          path: "/cfw/onlineapplication",
+        },
+        {
+          name: "Student Hold/Clearance",
+          path: "/cfw/studentholdclearance",
+        },
+        {
+          name: "CFW Templates",
+          path: "/cfw/templates",
+        },
+      ],
+    },
+    {
+      name: "SRU",
+      icon: UserIconSolid,
+      children: [
+        {
+          name: "Student Master List",
+          path: "/sru/studentlist",
+        },
+        {
+          name: "Section and House Entry",
+          path: "/sru/sectionandhouseentry",
+        },
+        {
+          name: "School Calendar",
+          path: "/sru/schoolcalendar",
+        },
+        {
+          name: "Summary Sheet Report",
+          path: "/sru/summarysheet",
+        },
+        {
+          name: "Honor List Report",
+          path: "/sru/honorlistreport",
+        },
+        {
+          name: "Grade Report Template",
+          path: "/sru/gradereporttemplate",
+        },
+        {
+          name: "Generate Student ID Form",
+          path: "/sru/generate-student-id",
+        },
+        {
+          name: "Generate School Form",
+          path: "/sru/generate-school-form",
+        },
+      ],
+    },
+    {
+      name: "Admission",
+      icon: UserRoundPlus,
+      children: [
+        {
+          name: "Online Application",
+          path: "/admission/onlineapplication",
+        },
+        {
+          name: "Templates",
+          path: "/admission/templatesform",
+        },
+      ],
+    },
+    {
+      name: "Human Resources",
+      icon: User,
+      children: [
+        {
+          name: "Employee Online Application",
+          path: "/hrd/onlineapplication",
+        },
+        {
+          name: "Employee Directory",
+          path: "/hrd/employee-list",
+        },
+        {
+          name: "DTR Management",
+          path: "/hrd/dtr-management",
+        },
+        {
+          name: "Leave Filing Management",
+          path: "/hrd/leave-filing",
+        },
+        {
+          name: "Payroll Processing",
+          path: "/hrd/payroll-processing",
+        },
+        {
+          name: "Faculty Load Entry",
+          path: "/hrd/faculty-load-entry-prototype",
+        },
+        {
+          name: "Employee Payroll",
+          path: "/hrd/employee-payroll",
+        },
+        {
+          name: "Payroll Reports",
+          path: "/hrd/payroll-reports",
+        },
+        {
+          name: "Deductions Management",
+          path: "/hrd/deductions",
+        },
+        {
+          name: "Templates",
+          path: "/hrd/templates",
+        },
+      ],
+    },
+    {
+      name: "Finance",
+      icon: Receipt,
+      children: [
+        {
+          name: "Payroll Process Management",
+          path: "/finance/payroll-batches",
+        },
+      ],
+    },
+    {
+      name: "Accounting",
+      icon: Calculator,
+      children: [
+        {
+          name: "Chart of Account",
+          path: "/accounting/chartofaccounts",
+        },
+        {
+          name: "Transaction Types",
+          path: "/accounting/addcoatransaction",
+        },
+        {
+          name: "Journal Entry",
+          path: "/accounting/journalentry",
+        },
+        {
+          name: "Cash & Bank Reconciliation",
+          path: "/accounting/cash-bank",
+        },
+        {
+          name: "Student Ledger",
+          path: "/accounting/student-ledger",
+        },
+        {
+          name: "General Ledger",
+          path: "/accounting/general-ledger",
+        },
+        {
+          name: "Financial Reports",
+          path: "/accounting/financial-reports",
+        },
+        {
+          name: "SI / OR Series",
+          path: "/accounting/siseries",
+        },
+        {
+          name: "Fee Assessment",
+          path: "/accounting/fee-assessment",
+        },
+        {
+          name: "Payroll Approval",
+          path: "/accounting/payroll-process-approval",
+        },
+      ],
+    },
+    {
+      name: "Cashier",
+      icon: CreditCardIcon,
+      children: [
+        {
+          name: "Payment Form",
+          path: "/cashier/cashierpayment",
+        },
+        {
+          name: "Transaction History",
+          path: "/cashier/transactionhistory",
+        },
+      ],
+    },
+    {
+      name: "Purchasing",
+      icon: Package,
+      children: [
+        {
+          name: "Inventory Management",
+          path: "/purchasing/inventory",
+        },
+        {
+          name: "Request Form",
+          path: "/purchasing/requestform",
+        },
+        {
+          name: "Purchase Order",
+          path: "/purchasing/purchaseorder",
+        },
+        {
+          name: "Supplier List",
+          path: "/purchasing/supplier",
+        },
+        {
+          name: "RF No. Series",
+          path: "/purchasing/rf-number-series",
+        },
+      ],
+    },
+    {
+      name: "SAC",
+      icon: IdCard,
+      children: [
+        {
+          name: "Employee Online Application",
+          path: "/sac/onlineapplication",
+        },
+      ],
+    },
+    {
+      name: "Principal",
+      icon: Building2,
+      children: [
+        {
+          name: "Employee Online Application",
+          path: "/principal/onlineapplication",
+        },
+      ],
+    },
+    {
+      name: "Assistant Principal",
+      icon: UserIconSolid,
+      children: [
+        {
+          name: "Employee Online Application",
+          path: "/ap/onlineapplication",
+        },
+      ],
     },
     ...sharedMenu,
   ];
@@ -586,7 +891,7 @@ const Sidebar = () => {
     17: parentMenu,
     18: accountingMenu,
     19: purchasingMenu,
-
+    20: superAdminMenu,
   };
 
 
@@ -595,15 +900,15 @@ const Sidebar = () => {
       MULTI ROLE MENU MERGE
   ========================================================= */
 
-  const getMenuByRoles = (userRoles) => {
+  const getMenuByRoles = (userData) => {
+    if (!userData) return [];
 
-    if (!userRoles) return [];
+    // Extract roles using utility function (supports both legacy and new format)
+    const userRoles = extractUserRoles(userData);
+    
+    if (userRoles.length === 0) return [];
 
-    const rolesArray = Array.isArray(userRoles)
-      ? userRoles
-      : [userRoles];
-
-    const mergedMenus = rolesArray.flatMap(
+    const mergedMenus = userRoles.flatMap(
       (role) => roleMenus[role] || []
     );
 
@@ -611,17 +916,12 @@ const Sidebar = () => {
     const seen = new Set();
 
     for (const item of mergedMenus) {
-
       if (item.separator) {
-
         // prevent duplicate separators
-        const lastItem =
-          uniqueMenus[uniqueMenus.length - 1];
-
+        const lastItem = uniqueMenus[uniqueMenus.length - 1];
         if (!lastItem?.separator) {
           uniqueMenus.push(item);
         }
-
         continue;
       }
 
@@ -636,7 +936,7 @@ const Sidebar = () => {
     return uniqueMenus;
   };
 
-  const menuItems = getMenuByRoles(user?.UserRoleId);
+  const menuItems = getMenuByRoles(user);
 
   // Filter menu items based on search query (must be after menuItems declaration)
   const filteredMenuItems = filterMenuItems(menuItems, searchQuery);

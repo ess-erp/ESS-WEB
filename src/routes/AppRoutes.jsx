@@ -17,6 +17,8 @@ import CfwStudentOnlineApplication from "../pages/CFW/StudentOnlineApplication";
 import CfwStudentOnlineAppForm from "../pages/CFW/StudentOnlineAppForm";
 import CfwExamRoomTemplate from "../pages/CFW/ExamRoomTemplates";
 import CfwTemplates from "../pages/CFW/Templates";
+import StudentHoldClearance from "../pages/CFW/StudentHoldClearance";
+import AcademicStudentHoldClearance from "../pages/AcademicStaff/StudentHoldClearance";
 import CashierDashboard from "../pages/Cashier/Dashboard";
 //import CashierStudentOnlineApplication from "../pages/Cashier/StudentOnlineApplication";
 import CashierPayment from "../pages/Cashier/CashierPayment";
@@ -93,6 +95,10 @@ import PurchasingSupplier from "../pages/Purchasing/Supplier";
 import PurchasingRfNumberSeries from "../pages/Purchasing/RfNumberSeries";
 import FinanceDashboard from "../pages/Finance/Dashboard";
 import FinancePayrollBatches from "../pages/Finance/PayrollBatches";
+import SuperAdminDashboard from "../pages/SuperAdmin/Dashboard";
+import SuperAdminUserMaintenance from "../pages/SuperAdmin/UserMaintenance";
+import SuperAdminPasswordReset from "../pages/SuperAdmin/AdminPasswordReset";
+import SuperAdminLoginLogs from "../pages/SuperAdmin/UserLoginLogs";
 
 
 
@@ -133,7 +139,7 @@ const AppRoutes = () => (
         <Route
           path="/admission/onlineapplication"
           element={
-            <ProtectedRoutes allowedRoles={[1]}>
+            <ProtectedRoutes allowedRoles={[1,20]}>
               <StudentOnlineApplication />
             </ProtectedRoutes>
           }
@@ -141,7 +147,7 @@ const AppRoutes = () => (
         <Route
           path="/admission/studentappform"
           element={
-            <ProtectedRoutes allowedRoles={[1]}>
+            <ProtectedRoutes allowedRoles={[1,20]}>
               <StudentOnlineAppForm />
             </ProtectedRoutes>
           }
@@ -197,6 +203,14 @@ const AppRoutes = () => (
             </ProtectedRoutes>
           }
         />
+        <Route
+          path="/cfw/studentholdclearance"
+          element={
+            <ProtectedRoutes allowedRoles={[2]}>
+              <StudentHoldClearance />
+            </ProtectedRoutes>
+          }
+        />
         {/* End of CFW Modules */}
 
 
@@ -205,7 +219,7 @@ const AppRoutes = () => (
         <Route
           path="/cashier/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[3]}>
+            <ProtectedRoutes allowedRoles={[3, 20]}>
               <CashierDashboard />
             </ProtectedRoutes>
           }
@@ -213,7 +227,7 @@ const AppRoutes = () => (
         <Route
           path="/cashier/cashierpayment"
           element={
-            <ProtectedRoutes allowedRoles={[3]}>
+            <ProtectedRoutes allowedRoles={[3, 20]}>
               <CashierPayment />
             </ProtectedRoutes>
           }
@@ -221,7 +235,7 @@ const AppRoutes = () => (
         <Route
           path="/cashier/transactionhistory"
           element={
-            <ProtectedRoutes allowedRoles={[3]}>
+            <ProtectedRoutes allowedRoles={[3, 20]}>
               <CashierTransactionHistory />
             </ProtectedRoutes>
           }
@@ -234,7 +248,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruDashboard />
             </ProtectedRoutes>
           }
@@ -242,7 +256,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/studentlist"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruOnlineApplication />
             </ProtectedRoutes>
           }
@@ -250,7 +264,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/StudentMasterFile"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <StudentMasterFile />
             </ProtectedRoutes>
           }
@@ -258,7 +272,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/sectionandhouseentry"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SectionAndHouseEntry />
             </ProtectedRoutes>
           }
@@ -266,7 +280,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/schoolcalendar"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruSchoolCalendar />
             </ProtectedRoutes>
           }
@@ -274,7 +288,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/arcmasterlist"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruArcMasterList />
             </ProtectedRoutes>
           }
@@ -282,7 +296,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/gradereporttemplate"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruGradeReportTemplate />
             </ProtectedRoutes>
           }
@@ -290,7 +304,7 @@ const AppRoutes = () => (
         <Route
           path="/sru/summarysheet"
           element={
-            <ProtectedRoutes allowedRoles={[5]}>
+            <ProtectedRoutes allowedRoles={[5, 20]}>
               <SruSummarySheet />
             </ProtectedRoutes>
           }
@@ -301,7 +315,7 @@ const AppRoutes = () => (
         <Route
           path="/academic/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcademicDashboard />
             </ProtectedRoutes>
           }
@@ -309,7 +323,7 @@ const AppRoutes = () => (
         <Route
           path="/academic/facultyloadentry"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcadFacultyLoadEntry />
             </ProtectedRoutes>
           }
@@ -317,7 +331,7 @@ const AppRoutes = () => (
         <Route
           path="/academic/subjectloadentry"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcadSubjectLoadEntry />
             </ProtectedRoutes>
           }
@@ -325,7 +339,7 @@ const AppRoutes = () => (
         <Route
           path="/academic/subjectscheduleloadentry"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcadSubjectScheduleLoadEntry />
             </ProtectedRoutes>
           }
@@ -333,7 +347,7 @@ const AppRoutes = () => (
         <Route
           path="/academic/assignadvisernonadviser"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcademicAdviserNonAdviser />
             </ProtectedRoutes>
           }
@@ -341,8 +355,16 @@ const AppRoutes = () => (
         <Route
           path="/academic/curriculumentry"
           element={
-            <ProtectedRoutes allowedRoles={[6]}>
+            <ProtectedRoutes allowedRoles={[6, 20]}>
               <AcademicCurriculumEntry />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/academic/studentholdclearance"
+          element={
+            <ProtectedRoutes allowedRoles={[6, 20]}>
+              <AcademicStudentHoldClearance />
             </ProtectedRoutes>
           }
         />
@@ -353,7 +375,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrDashboard />
             </ProtectedRoutes>
           }
@@ -362,7 +384,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/onlineapplication"
           element={
-            <ProtectedRoutes allowedRoles={[7, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 10, 20]}>
               <HrOnlineApplication />
             </ProtectedRoutes>
           }
@@ -370,7 +392,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employeeappform"
           element={
-            <ProtectedRoutes allowedRoles={[7, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 10, 20]}>
               <HrEmployeeAppForm />
             </ProtectedRoutes>
           }
@@ -378,7 +400,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employeehiringprocess"
           element={
-            <ProtectedRoutes allowedRoles={[7, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 10, 20]}>
               <HrEmployeeHiringProcess />
             </ProtectedRoutes>
           }
@@ -386,7 +408,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/templates"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrTemplates />
             </ProtectedRoutes>
           }
@@ -394,7 +416,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/payroll-processing"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <PayrollProcessing />
             </ProtectedRoutes>
           }
@@ -402,7 +424,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/faculty-load-entry-prototype"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrFacultyLoadEntryPrototype />
             </ProtectedRoutes>
           }
@@ -410,7 +432,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employee-payroll"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <EmployeePayrollList />
             </ProtectedRoutes>
           }
@@ -418,7 +440,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/payroll-reports"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <PayrollSummaryReport />
             </ProtectedRoutes>
           }
@@ -426,7 +448,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employeeinitialinterview"
           element={
-            <ProtectedRoutes allowedRoles={[10]}>
+            <ProtectedRoutes allowedRoles={[10, 20]}>
               <HrEmployeeInitialInterview />
             </ProtectedRoutes>
           }
@@ -434,7 +456,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/dtr-management"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrDtrManagement />
             </ProtectedRoutes>
           }
@@ -442,7 +464,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/leave-filing"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrLeaveFiling />
             </ProtectedRoutes>
           }
@@ -450,7 +472,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employee-list"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <HrEmployeeList />
             </ProtectedRoutes>
           }
@@ -458,7 +480,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employeedatamanagement/:employeeId"
           element={
-            <ProtectedRoutes allowedRoles={[7, 8, 9, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 8, 9, 10, 20]}>
               <EmployeeDataManagement />
             </ProtectedRoutes>
           }
@@ -466,7 +488,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/employeeappform/:employeeId"
           element={
-            <ProtectedRoutes allowedRoles={[7, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 10, 20]}>
               <HrEmployeeAppForm />
             </ProtectedRoutes>
           }
@@ -474,7 +496,7 @@ const AppRoutes = () => (
         <Route
           path="/hrd/deductions"
           element={
-            <ProtectedRoutes allowedRoles={[7, 10]}>
+            <ProtectedRoutes allowedRoles={[7, 10, 20]}>
               <HrDeductionsManagement />
             </ProtectedRoutes>
           }
@@ -486,7 +508,7 @@ const AppRoutes = () => (
         <Route
           path="/sac/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[11]}>
+            <ProtectedRoutes allowedRoles={[11, 20]}>
               <SacDashboard />
             </ProtectedRoutes>
           }
@@ -494,7 +516,7 @@ const AppRoutes = () => (
         <Route
           path="/sac/onlineapplication"
           element={
-            <ProtectedRoutes allowedRoles={[11]}>
+            <ProtectedRoutes allowedRoles={[11, 20]}>
               <SacOnlineApplication />
             </ProtectedRoutes>
           }
@@ -502,7 +524,7 @@ const AppRoutes = () => (
         <Route
           path="/sac/employeeinitialinterview"
           element={
-            <ProtectedRoutes allowedRoles={[11]}>
+            <ProtectedRoutes allowedRoles={[11, 20]}>
               <SacEmployeeinitialInterview />
             </ProtectedRoutes>
           }
@@ -514,7 +536,7 @@ const AppRoutes = () => (
         <Route
           path="/ap/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[12]}>
+            <ProtectedRoutes allowedRoles={[12, 20]}>
               <ApDashboard />
             </ProtectedRoutes>
           }
@@ -522,7 +544,7 @@ const AppRoutes = () => (
         <Route
           path="/ap/onlineapplication"
           element={
-            <ProtectedRoutes allowedRoles={[12]}>
+            <ProtectedRoutes allowedRoles={[12, 20]}>
               <ApOnlineApplication />
             </ProtectedRoutes>
           }
@@ -530,7 +552,7 @@ const AppRoutes = () => (
         <Route
           path="/ap/employeeinitialinterview"
           element={
-            <ProtectedRoutes allowedRoles={[12]}>
+            <ProtectedRoutes allowedRoles={[12, 20]}>
               <ApEmployeeInitialInterview />
             </ProtectedRoutes>
           }
@@ -541,7 +563,7 @@ const AppRoutes = () => (
         <Route
           path="/principal/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[13]}>
+            <ProtectedRoutes allowedRoles={[13, 20]}>
               <PrincipalDashboard />
             </ProtectedRoutes>
           }
@@ -549,7 +571,7 @@ const AppRoutes = () => (
         <Route
           path="/principal/onlineapplication"
           element={
-            <ProtectedRoutes allowedRoles={[13]}>
+            <ProtectedRoutes allowedRoles={[13, 20]}>
               <PrincipalOnlineApplication />
             </ProtectedRoutes>
           }
@@ -557,7 +579,7 @@ const AppRoutes = () => (
         <Route
           path="/principal/employeeinitialinterview"
           element={
-            <ProtectedRoutes allowedRoles={[13]}>
+            <ProtectedRoutes allowedRoles={[13, 20]}>
               <PrincipalEmployeeInitialInterview />
             </ProtectedRoutes>
           }
@@ -568,7 +590,7 @@ const AppRoutes = () => (
         <Route
           path="/parent/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[17]}>
+            <ProtectedRoutes allowedRoles={[17, 20]}>
               <ParentDashboard />
             </ProtectedRoutes>
           }
@@ -577,7 +599,7 @@ const AppRoutes = () => (
         <Route
           path="/parent/enrollstudent"
           element={
-            <ProtectedRoutes allowedRoles={[17]}>
+            <ProtectedRoutes allowedRoles={[17, 20]}>
               <ParentEnrollStudent />
             </ProtectedRoutes>
           }
@@ -586,7 +608,7 @@ const AppRoutes = () => (
         <Route
           path="/parent/listofstudent"
           element={
-            <ProtectedRoutes allowedRoles={[17]}>
+            <ProtectedRoutes allowedRoles={[17, 20]}>
               <ListOfStudent />
             </ProtectedRoutes>
           }
@@ -595,7 +617,7 @@ const AppRoutes = () => (
         <Route
           path="/parent/pendingliststudentform"
           element={
-            <ProtectedRoutes allowedRoles={[17]}>
+            <ProtectedRoutes allowedRoles={[17, 20]}>
               <StudentAppComponent />
             </ProtectedRoutes>
           }
@@ -608,7 +630,7 @@ const AppRoutes = () => (
         <Route
           path="/teacher/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[14, 15]}>
+            <ProtectedRoutes allowedRoles={[14, 15, 20]}>
               <TeacherDashboard />
             </ProtectedRoutes>
           }
@@ -616,7 +638,7 @@ const AppRoutes = () => (
         <Route
           path="/teacher/listofsection"
           element={
-            <ProtectedRoutes allowedRoles={[14, 15]}>
+            <ProtectedRoutes allowedRoles={[14, 15, 20]}>
               <TeacherListOfSection />
             </ProtectedRoutes>
           }
@@ -650,7 +672,7 @@ const AppRoutes = () => (
          <Route
           path="/accounting/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingDashboard />
             </ProtectedRoutes>
           }
@@ -659,7 +681,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/chartofaccounts"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingChartOfAccounts />
             </ProtectedRoutes>
           }
@@ -668,7 +690,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/addcoatransaction"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingAddCoaTransaction />
             </ProtectedRoutes>
           }
@@ -677,7 +699,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/journalentry"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingJournalEntry />
             </ProtectedRoutes>
           }
@@ -686,7 +708,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/siseries"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingSiSeries />
             </ProtectedRoutes>
           }
@@ -695,7 +717,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/fee-assessment"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingFeeAssessment />
             </ProtectedRoutes>
           }
@@ -704,7 +726,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/student-ledger"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingStudentLedger />
             </ProtectedRoutes>
           }
@@ -713,7 +735,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/financial-reports"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingFinancialReports />
             </ProtectedRoutes>
           }
@@ -722,7 +744,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/general-ledger"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingGeneralLedger />
             </ProtectedRoutes>
           }
@@ -731,7 +753,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/cash-bank"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingCashBankManagement />
             </ProtectedRoutes>
           }
@@ -740,7 +762,7 @@ const AppRoutes = () => (
         <Route
           path="/accounting/payroll-process-approval"
           element={
-            <ProtectedRoutes allowedRoles={[18]}>
+            <ProtectedRoutes allowedRoles={[18, 20]}>
               <AccountingPayrollProcessApproval />
             </ProtectedRoutes>
           }
@@ -753,7 +775,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingDashboard />
             </ProtectedRoutes>
           }
@@ -762,7 +784,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/inventory"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingInventoryManagement />
             </ProtectedRoutes>
           }
@@ -771,7 +793,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/requestform"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingRequestForm />
             </ProtectedRoutes>
           }
@@ -780,7 +802,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/purchaseorder"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingPurchaseOrder />
             </ProtectedRoutes>
           }
@@ -789,7 +811,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/supplier"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingSupplier />
             </ProtectedRoutes>
           }
@@ -798,7 +820,7 @@ const AppRoutes = () => (
         <Route
           path="/purchasing/rf-number-series"
           element={
-            <ProtectedRoutes allowedRoles={[19]}>
+            <ProtectedRoutes allowedRoles={[19, 20]}>
               <PurchasingRfNumberSeries />
             </ProtectedRoutes>
           }
@@ -810,7 +832,7 @@ const AppRoutes = () => (
         <Route
           path="/finance/dashboard"
           element={
-            <ProtectedRoutes allowedRoles={[4]}>
+            <ProtectedRoutes allowedRoles={[4, 20]}>
               <FinanceDashboard />
             </ProtectedRoutes>
           }
@@ -818,12 +840,47 @@ const AppRoutes = () => (
         <Route
           path="/finance/payroll-batches"
           element={
-            <ProtectedRoutes allowedRoles={[4]}>
+            <ProtectedRoutes allowedRoles={[4, 20]}>
               <FinancePayrollBatches />
             </ProtectedRoutes>
           }
         />
         {/* end of finance module */}
+
+        {/* start of super admin module */}
+        <Route
+          path="/super-admin/dashboard"
+          element={
+            <ProtectedRoutes allowedRoles={[20]}>
+              <SuperAdminDashboard />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/super-admin/user-maintenance"
+          element={
+            <ProtectedRoutes allowedRoles={[20]}>
+              <SuperAdminUserMaintenance />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/super-admin/password-reset"
+          element={
+            <ProtectedRoutes allowedRoles={[20]}>
+              <SuperAdminPasswordReset />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/super-admin/login-logs"
+          element={
+            <ProtectedRoutes allowedRoles={[20]}>
+              <SuperAdminLoginLogs />
+            </ProtectedRoutes>
+          }
+        />
+        {/* end of super admin module */}
 
         {/* shared components */}
 
@@ -831,7 +888,7 @@ const AppRoutes = () => (
         <Route
           path="/notification"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}>
               <Notification />
             </ProtectedRoutes>
           }
@@ -839,7 +896,7 @@ const AppRoutes = () => (
         <Route
           path="/ticketing"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}>
               <Ticketing />
             </ProtectedRoutes>
           }
@@ -847,7 +904,7 @@ const AppRoutes = () => (
         <Route
           path="/profile"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}>
               <Profile />
             </ProtectedRoutes>
           }
@@ -857,7 +914,7 @@ const AppRoutes = () => (
         <Route
           path="/employee/time-attendance"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20]}>
               <TimeAndAttendance />
             </ProtectedRoutes>
           }
@@ -865,7 +922,7 @@ const AppRoutes = () => (
         <Route
           path="/employee/payroll"
           element={
-            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19]}>
+            <ProtectedRoutes allowedRoles={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20]}>
               <PayrollAndCompensation />
             </ProtectedRoutes>
           }

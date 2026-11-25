@@ -27,6 +27,10 @@ import {
     FETCH_CURRICULUM_PER_LEVEL_REQUEST, FETCH_CURRICULUM_PER_LEVEL_SUCCESS, FETCH_CURRICULUM_PER_LEVEL_FAILURE,
     FETCH_CURRICULUM_LIST_REQUEST, FETCH_CURRICULUM_LIST_SUCCESS, FETCH_CURRICULUM_LIST_FAILURE,
     FETCH_CURRICULUM_TABLE_REQUEST, FETCH_CURRICULUM_TABLE_SUCCESS, FETCH_CURRICULUM_TABLE_FAILURE,
+    FETCH_STUDENT_HOLD_TABLE_REQUEST, FETCH_STUDENT_HOLD_TABLE_SUCCESS, FETCH_STUDENT_HOLD_TABLE_FAILURE,
+    CREATE_STUDENT_HOLD_REQUEST, CREATE_STUDENT_HOLD_SUCCESS, CREATE_STUDENT_HOLD_FAILURE,
+    REMOVE_STUDENT_HOLD_REQUEST, REMOVE_STUDENT_HOLD_SUCCESS, REMOVE_STUDENT_HOLD_FAILURE,
+    SEARCH_STUDENT_FOR_HOLD_REQUEST, SEARCH_STUDENT_FOR_HOLD_SUCCESS, SEARCH_STUDENT_FOR_HOLD_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -892,5 +896,151 @@ export const toggleNonCurriculumSubjectStatusData = (nonCurriculumSubjectId, act
         dispatch(toggleNonCurriculumSubjectStatusFailure(error.message));
         
         return { ok: false, error };
+    }
+};
+
+
+// ============================================================================
+// STUDENT HOLD/CLEARANCE MODULE
+// ============================================================================
+
+// Fetch Student Hold Table
+export const fetchStudentHoldTableRequest = () => ({ type: FETCH_STUDENT_HOLD_TABLE_REQUEST });
+export const fetchStudentHoldTableSuccess = (data) => ({ type: FETCH_STUDENT_HOLD_TABLE_SUCCESS, payload: data });
+export const fetchStudentHoldTableFailure = (error) => ({ type: FETCH_STUDENT_HOLD_TABLE_FAILURE, payload: error });
+
+export const fetchStudentHoldTable = (page = 1, pageSize = 10, search = '') => async (dispatch) => {
+    dispatch(fetchStudentHoldTableRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/get-student-hold-list?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+
+        dispatch(fetchStudentHoldTableSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchStudentHoldTableFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Search Student for Hold
+export const searchStudentForHoldRequest = () => ({ type: SEARCH_STUDENT_FOR_HOLD_REQUEST });
+export const searchStudentForHoldSuccess = (data) => ({ type: SEARCH_STUDENT_FOR_HOLD_SUCCESS, payload: data });
+export const searchStudentForHoldFailure = (error) => ({ type: SEARCH_STUDENT_FOR_HOLD_FAILURE, payload: error });
+
+export const searchStudentForHold = (search = '') => async (dispatch) => {
+    dispatch(searchStudentForHoldRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/search-student-for-hold?search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+
+        dispatch(searchStudentForHoldSuccess(res));
+        return { ok: true, data: res.data };
+    }
+    catch (error) {
+        dispatch(searchStudentForHoldFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Create Student Hold
+export const createStudentHoldRequest = () => ({ type: CREATE_STUDENT_HOLD_REQUEST });
+export const createStudentHoldSuccess = (data) => ({ type: CREATE_STUDENT_HOLD_SUCCESS, payload: data });
+export const createStudentHoldFailure = (error) => ({ type: CREATE_STUDENT_HOLD_FAILURE, payload: error });
+
+export const createStudentHold = (payload) => async (dispatch) => {
+    dispatch(createStudentHoldRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/create-student-hold`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+
+        dispatch(createStudentHoldSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    }
+    catch (error) {
+        dispatch(createStudentHoldFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Remove Student Hold
+export const removeStudentHoldRequest = () => ({ type: REMOVE_STUDENT_HOLD_REQUEST });
+export const removeStudentHoldSuccess = (data) => ({ type: REMOVE_STUDENT_HOLD_SUCCESS, payload: data });
+export const removeStudentHoldFailure = (error) => ({ type: REMOVE_STUDENT_HOLD_FAILURE, payload: error });
+
+export const removeStudentHold = (holdId) => async (dispatch) => {
+    dispatch(removeStudentHoldRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/academic/remove-student-hold/${holdId}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+
+        dispatch(removeStudentHoldSuccess(res));
+        return { ok: true, data: res.data, message: res.message };
+    }
+    catch (error) {
+        dispatch(removeStudentHoldFailure(error.message));
+        return { ok: false, error: error.message };
     }
 };

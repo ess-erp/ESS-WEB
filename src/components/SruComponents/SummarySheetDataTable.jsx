@@ -87,6 +87,11 @@ const SummarySheetDataTable = () => {
     const summarySheetTable = summarySheetTableState.data?.data || [];
     const summarySheetTotalRows = summarySheetTableState.data?.totalRecords || 0;
     const summarySheetLoading = summarySheetTableState.loading || false;
+    
+    // Generate summary sheet state (for PDF)
+    const generateSummarySheetState = useSelector((state) => state.sru?.generateSummarySheetState || {});
+    const pdfData = generateSummarySheetState.data?.PdfBase64 || null;
+    const pdfLoading = generateSummarySheetState.loading || false;
     const [summarySheetCurrentPage, setSummarySheetCurrentPage] = useState(1);
     const [summarySheetRowsPerPage, setSummarySheetRowsPerPage] = useState(10);
     const [summarySheetSearchFilter, setSummarySheetFilterText] = useState("");
@@ -124,7 +129,7 @@ const SummarySheetDataTable = () => {
     ];
 
     const [viewModal, setViewModal] = useState(false);
-    // const [reportId, setReportId] = useState(0);
+    const [pdfModal, setPdfModal] = useState(false);
 
     // --- Filter Toggles ---
     const [enableDivision, setEnableDivision] = useState(true); // Always enabled by default
@@ -171,12 +176,15 @@ const SummarySheetDataTable = () => {
     //     return [{ value: "ALL", label: "Select All" }, ...sectionData.map(item => ({ value: item.SectionId, label: item.SectionName }))];
     // }, [sectionData]);
 
-    const openRowModal = (data) => {
-        setViewModal(true);
-        dispatch(fetchDivisionData());
-        dispatch(fetchLevelData());
-        dispatch(fetchSectionListData());
-        setReportId(data?.ReportId);
+    const openRowModal = async (row) => {
+        setPdfModal(true);
+
+        // Use the existing Redux action to fetch the PDF
+        const payload = {
+            reportId: row.ReportId
+        };
+
+        await dispatch(fetchGenerateSummarySheetData(payload));
     };
 
     const openGenerateModal = () => {
@@ -197,7 +205,16 @@ const SummarySheetDataTable = () => {
         };
 
         console.log(payload);
-        await dispatch(fetchGenerateSummarySheetData(payload));
+        const result = await dispatch(fetchGenerateSummarySheetData(payload));
+        
+        if (result.ok) {
+            // Close generate modal and open PDF modal
+            setViewModal(false);
+            setPdfModal(true);
+            
+            // Refresh the table list
+            dispatch(fetchSummarySheetTableData(summarySheetCurrentPage, summarySheetRowsPerPage, summarySheetSearchFilter));
+        }
     };
 
     const handleResetFilters = () => {
@@ -495,6 +512,55 @@ const SummarySheetDataTable = () => {
                     { label: "Reset", type: "blue", onClick: handleResetFilters, closeOnClick: false },
                     { label: "Cancel", type: "red", onClick: () => setViewModal(false) },
                 ]}
+            />
+
+            {/* PDF Viewer Modal */}
+            <ModalComponent
+                isOpen={pdfModal}
+                onClose={() => {
+                    setPdfModal(false);
+                }}
+                title="Summary Sheet Report PDF"
+                body={
+                    <div className="mt-4">
+                        {pdfLoading ? (
+                            <div className="flex items-center justify-center h-[600px]">
+                                <div className="text-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                                    <p className="text-gray-600">Loading PDF...</p>
+                                </div>
+                            </div>
+                        ) : pdfData ? (
+                            <div className="border border-gray-300 rounded">
+                                <iframe
+                                    src={`data:application/pdf;base64,${pdfData}`}
+                                    className="w-full h-[600px]"
+                                    title="Summary Sheet PDF"
+                                />
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-[600px]">
+                                <p className="text-gray-500">No PDF data available</p>
+                            </div>
+                        )}
+                    </div>
+                }
+                size="w-[1200px]"
+                maxHeight="100vh"
+                buttons={[
+                    pdfData && {
+                        label: "Download",
+                        type: "blue",
+                        onClick: () => {
+                            const link = document.createElement('a');
+                            link.href = `data:application/pdf;base64,${pdfData}`;
+                            link.download = `Summary_Sheet_${new Date().getTime()}.pdf`;
+                            link.click();
+                        },
+                        closeOnClick: false
+                    },
+                    { label: "Close", type: "red", onClick: () => setPdfModal(false) },
+                ].filter(Boolean)}
             />
         </div>
     );

@@ -67,6 +67,11 @@ const EncodingGradeClubComponent = () => {
 
     // Modal and grade encoding state
     const [rowModalOpen, setRowModalOpen] = useState(false);
+    const [confirmSaveModalOpen, setConfirmSaveModalOpen] = useState(false);
+    const [successModalOpen, setSuccessModalOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [loadId, setLoadId] = useState(0);
     const [levelName, setLevelName] = useState("");
     const [sectionName, setSectionName] = useState("");
@@ -319,9 +324,61 @@ const EncodingGradeClubComponent = () => {
         });
         
         if (insertEncodeGradeChildDtos.length === 0) {
-            alert('Please enter at least one valid grade before saving.');
+            setErrorMessage('Please enter at least one valid grade before saving.');
+            setErrorModalOpen(true);
             return;
         }
+        
+        // Open confirmation modal instead of directly saving
+        setConfirmSaveModalOpen(true);
+    };
+
+    const confirmSaveGrades = async () => {
+        // Build the payload
+        const insertEncodeGradeChildDtos = [];
+        
+        // Iterate through gradeData to build the array
+        Object.entries(gradeData).forEach(([key, gradeValue]) => {
+            // key format: "StudentId-LoadChildId"
+            const [studentIdStr, loadChildIdStr] = key.split('-');
+            const studentId = parseInt(studentIdStr);
+            const loadChildId = parseInt(loadChildIdStr);
+            
+            // Find the student in studentsData
+            const student = studentsData.find(s => s.StudentId === studentId);
+            if (!student) return;
+            
+            // Find the subject
+            const subject = student.Subjects.find(sub => sub.LoadChildId === loadChildId);
+            if (!subject) return;
+            
+            // Only include grades that have been entered
+            if (gradeValue && gradeValue.trim() !== '') {
+                const grade = parseFloat(gradeValue);
+                
+                // Skip invalid grades
+                if (isNaN(grade) || grade < 65 || grade > 100) {
+                    return;
+                }
+                
+                // Get attendance data for this student-subject pair
+                const attendance = attendanceData[key] || {};
+                const daysPresent = parseInt(attendance.DaysPresent) || 0;
+                const daysAbsent = parseInt(attendance.DaysAbsent) || 0;
+                const daysTardy = parseInt(attendance.DaysTardy) || 0;
+                
+                insertEncodeGradeChildDtos.push({
+                    StudentId: studentId,
+                    LoadChildId: loadChildId,
+                    SubjectId: subject.SubjectId,
+                    SubjectType: subject.SubjectType || '',
+                    Grade: grade,
+                    DaysPresent: daysPresent,
+                    DaysAbsent: daysAbsent,
+                    DaysTardy: daysTardy
+                });
+            }
+        });
         
         const payload = {
             LoadId: loadId,
@@ -334,24 +391,22 @@ const EncodingGradeClubComponent = () => {
         
         const result = await dispatch(fetchInsertEncodedGradesData(payload));
         
+        setConfirmSaveModalOpen(false);
+        
         if (result.ok) {
-            alert('Grades saved successfully!');
+            setSuccessMessage(`Successfully saved ${insertEncodeGradeChildDtos.length} grade(s) for ${sectionName}`);
+            setSuccessModalOpen(true);
             // Clear grade data and attendance data after successful save
             setGradeData({});
             setGradeErrors({});
             setAttendanceData({});
         } else {
-            alert(`Error saving grades: ${result.error || 'Unknown error'}`);
+            setErrorMessage(`Error saving grades: ${result.error || 'Unknown error occurred'}`);
+            setErrorModalOpen(true);
         }
     };
 
     const handleFinalizeGrades = async () => {
-        const confirmFinalize = window.confirm(
-            'Are you sure you want to finalize these grades? This action may lock the grades from further editing.'
-        );
-        
-        if (!confirmFinalize) return;
-        
         // Build the payload (same as save, but with IsValidated: "Y")
         const insertEncodeGradeChildDtos = [];
         
@@ -393,9 +448,16 @@ const EncodingGradeClubComponent = () => {
         });
         
         if (insertEncodeGradeChildDtos.length === 0) {
-            alert('Please enter at least one valid grade before finalizing.');
+            setErrorMessage('Please enter at least one valid grade before finalizing.');
+            setErrorModalOpen(true);
             return;
         }
+        
+        const confirmFinalize = window.confirm(
+            'Are you sure you want to finalize these grades? This action may lock the grades from further editing.'
+        );
+        
+        if (!confirmFinalize) return;
         
         const payload = {
             LoadId: loadId,
@@ -410,13 +472,15 @@ const EncodingGradeClubComponent = () => {
         const result = await dispatch(fetchFinalizeEncodedGradesData(payload));
         
         if (result.ok) {
-            alert('Grades finalized successfully!');
+            setSuccessMessage(`Successfully finalized ${insertEncodeGradeChildDtos.length} grade(s) for ${sectionName}`);
+            setSuccessModalOpen(true);
             // Clear grade data and attendance data after successful finalization
             setGradeData({});
             setGradeErrors({});
             setAttendanceData({});
         } else {
-            alert(`Error finalizing grades: ${result.error || 'Unknown error'}`);
+            setErrorMessage(`Error finalizing grades: ${result.error || 'Unknown error occurred'}`);
+            setErrorModalOpen(true);
         }
     };
 
@@ -600,6 +664,144 @@ const EncodingGradeClubComponent = () => {
                         </div>
                     </div>
                 }
+            />
+
+            {/* Confirmation Modal for Save */}
+            <ModalComponent
+                isOpen={confirmSaveModalOpen}
+                onClose={() => setConfirmSaveModalOpen(false)}
+                size="w-[500px]"
+                title={
+                    <div className="flex items-center gap-2">
+                        <CheckCircle size={24} className="text-blue-600" />
+                        <span className="text-xl font-bold text-blue-700">Confirm Save Grades</span>
+                    </div>
+                }
+                body={
+                    <div className="space-y-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <p className="text-gray-800 text-sm leading-relaxed">
+                                You are about to save <span className="font-bold text-blue-600">{Object.keys(gradeData).filter(key => gradeData[key] && gradeData[key].trim() !== '').length}</span> grade(s) for:
+                            </p>
+                            <div className="mt-3 space-y-1">
+                                <p className="text-sm"><span className="font-semibold">Section:</span> {sectionName}</p>
+                                <p className="text-sm"><span className="font-semibold">Level:</span> {levelName}</p>
+                                <p className="text-sm"><span className="font-semibold">Term:</span> {termActivated}</p>
+                                <p className="text-sm"><span className="font-semibold">Gender:</span> {activeTab === "male" ? "Male" : "Female"}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p className="text-yellow-800 text-sm font-medium">
+                                ⚠️ Please review all grades carefully before saving. You can still edit them after saving.
+                            </p>
+                        </div>
+
+                        <p className="text-gray-600 text-sm">
+                            Do you want to proceed with saving these grades?
+                        </p>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Yes, Save Grades",
+                        type: "blue",
+                        onClick: confirmSaveGrades,
+                    },
+                    {
+                        label: "Cancel",
+                        type: "red",
+                        onClick: () => setConfirmSaveModalOpen(false),
+                    },
+                ]}
+            />
+
+            {/* Success Modal */}
+            <ModalComponent
+                isOpen={successModalOpen}
+                onClose={() => setSuccessModalOpen(false)}
+                size="w-[500px]"
+                title={
+                    <div className="flex items-center gap-2">
+                        <CheckCircle size={24} className="text-green-600" />
+                        <span className="text-xl font-bold text-green-700">Success!</span>
+                    </div>
+                }
+                body={
+                    <div className="space-y-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <p className="text-green-800 text-sm leading-relaxed">
+                                {successMessage}
+                            </p>
+                        </div>
+                        
+                        <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="text-blue-600 mt-0.5">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-blue-800 text-sm font-medium">What's next?</p>
+                                <p className="text-blue-700 text-sm mt-1">
+                                    You can continue encoding grades for other students or switch to the other gender tab.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "blue",
+                        onClick: () => setSuccessModalOpen(false),
+                    },
+                ]}
+            />
+
+            {/* Error Modal */}
+            <ModalComponent
+                isOpen={errorModalOpen}
+                onClose={() => setErrorModalOpen(false)}
+                size="w-[500px]"
+                title={
+                    <div className="flex items-center gap-2">
+                        <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xl font-bold text-red-700">Error</span>
+                    </div>
+                }
+                body={
+                    <div className="space-y-4">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <p className="text-red-800 text-sm leading-relaxed">
+                                {errorMessage}
+                            </p>
+                        </div>
+                        
+                        <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div className="text-yellow-600 mt-0.5">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-yellow-800 text-sm font-medium">What to do?</p>
+                                <p className="text-yellow-700 text-sm mt-1">
+                                    Please check your internet connection and try again. If the problem persists, contact system support.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                buttons={[
+                    {
+                        label: "Close",
+                        type: "red",
+                        onClick: () => setErrorModalOpen(false),
+                    },
+                ]}
             />
         </div>
     );

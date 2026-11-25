@@ -8,6 +8,7 @@ import {
     FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
     FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
     FETCH_SCHOOL_CALENDAR_STATUS_REQUEST, FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS, FETCH_SCHOOL_CALENDAR_STATUS_FAILURE,
+    FETCH_SECTION_STUDENTS_WITH_SUBJECTS_REQUEST, FETCH_SECTION_STUDENTS_WITH_SUBJECTS_SUCCESS, FETCH_SECTION_STUDENTS_WITH_SUBJECTS_FAILURE,
 } from "./ActionType";
 
 const initialState = {
@@ -26,6 +27,7 @@ const initialDataState = {
     linkOfStudentPerTermState: { ...initialState },
     insertEncodedGradesState: { ...initialState },
     schoolCalendarStatusState: { ...initialState },
+    sectionStudentsWithSubjectsState: { ...initialState },
 };
 
 const teacherReducer = (state = initialDataState, action) => {
@@ -86,6 +88,13 @@ const teacherReducer = (state = initialDataState, action) => {
             return { ...state, schoolCalendarStatusState: { loading: false, data: action.payload, error: '' } };
         case FETCH_SCHOOL_CALENDAR_STATUS_FAILURE:
             return { ...state, schoolCalendarStatusState: { loading: false, data: [], error: action.payload } };
+
+        case FETCH_SECTION_STUDENTS_WITH_SUBJECTS_REQUEST:
+            return { ...state, sectionStudentsWithSubjectsState: { loading: true, data: [], error: '' } };
+        case FETCH_SECTION_STUDENTS_WITH_SUBJECTS_SUCCESS:
+            return { ...state, sectionStudentsWithSubjectsState: { loading: false, data: action.payload, error: '' } };
+        case FETCH_SECTION_STUDENTS_WITH_SUBJECTS_FAILURE:
+            return { ...state, sectionStudentsWithSubjectsState: { loading: false, data: [], error: action.payload } };
 
         default:
             return state;

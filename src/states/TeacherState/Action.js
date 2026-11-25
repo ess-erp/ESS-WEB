@@ -8,6 +8,7 @@ import {
     FETCH_INSERT_ENCODED_GRADES_REQUEST, FETCH_INSERT_ENCODED_GRADES_SUCCESS, FETCH_INSERT_ENCODED_GRADES_FAILURE,
     FETCH_FINALIZE_ENCODED_GRADES_REQUEST, FETCH_FINALIZE_ENCODED_GRADES_SUCCESS, FETCH_FINALIZE_ENCODED_GRADES_FAILURE,
     FETCH_SCHOOL_CALENDAR_STATUS_REQUEST, FETCH_SCHOOL_CALENDAR_STATUS_SUCCESS, FETCH_SCHOOL_CALENDAR_STATUS_FAILURE,
+    FETCH_SECTION_STUDENTS_WITH_SUBJECTS_REQUEST, FETCH_SECTION_STUDENTS_WITH_SUBJECTS_SUCCESS, FETCH_SECTION_STUDENTS_WITH_SUBJECTS_FAILURE,
 } from "./ActionType";
 import { getToken } from "../../services/tokenServices";
 
@@ -278,6 +279,40 @@ export const fetchSchoolCalendarStatus = () => async (dispatch) => {
     }
     catch (error) {
         dispatch(fetchSchoolCalendarStatusFailure(error.message));
+        return { ok: false, error: error.message };
+    }
+};
+
+// Fetch Section Students With Subjects (for grade encoding)
+export const fetchSectionStudentsWithSubjectsRequest = () => ({ type: FETCH_SECTION_STUDENTS_WITH_SUBJECTS_REQUEST });
+export const fetchSectionStudentsWithSubjectsSuccess = (data) => ({ type: FETCH_SECTION_STUDENTS_WITH_SUBJECTS_SUCCESS, payload: data });
+export const fetchSectionStudentsWithSubjectsFailure = (error) => ({ type: FETCH_SECTION_STUDENTS_WITH_SUBJECTS_FAILURE, payload: error });
+
+export const fetchSectionStudentsWithSubjects = (loadId, userId, gender, page = 0, pageSize = 100, search = '') => async (dispatch) => {
+    dispatch(fetchSectionStudentsWithSubjectsRequest());
+    try {
+        const token = getToken();
+        const url = `${baseUrl}/teacher/get-section-students-with-subjects?loadId=${loadId}&userId=${userId}&gender=${encodeURIComponent(gender)}&page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const res = await response.json();
+        dispatch(fetchSectionStudentsWithSubjectsSuccess(res));
+        return { ok: true, data: res.data, totalRecords: res.totalRecords };
+    }
+    catch (error) {
+        dispatch(fetchSectionStudentsWithSubjectsFailure(error.message));
         return { ok: false, error: error.message };
     }
 };

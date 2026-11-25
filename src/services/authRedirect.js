@@ -1,4 +1,10 @@
 // services/authRedirect.js
+import { getDashboardPath, extractUserRoles } from '../utils/roleUtils';
+
+/**
+ * Redirect user to appropriate dashboard based on their roles
+ * Supports both single role (UserRoleId) and multiple roles (roles array)
+ */
 export const handleAuthRedirect = (navigate) => {
   const token = localStorage.getItem("token");
 
@@ -6,72 +12,23 @@ export const handleAuthRedirect = (navigate) => {
 
   try {
     const userData = JSON.parse(localStorage.getItem("userData"));
-    console.log(userData);
-    const role = userData?.UserRoleId;
-    console.log("Redirect role:", role);
-
-    switch (role) {
-      case 1:
-        navigate("/admission/dashboard");
-        break;
-      case 2:
-        navigate("/cfw/dashboard");
-        break;
-      case 3:
-        navigate("/cashier/dashboard");
-        break;
-      case 4:
-        navigate("/finance/dashboard");
-        break;
-      case 5:
-        navigate("/sru/dashboard");
-        break;
-      case 6:
-        navigate("/academic/dashboard");
-        break;
-      case 7:
-        navigate("/hrd/dashboard");
-        break;
-      case 8:
-        navigate("/hrd/dashboard");
-        break;
-      case 9:
-        navigate("/hrd/dashboard");
-        break;
-      case 10:
-        navigate("/hrd/dashboard");
-        break;
-      case 11:
-        navigate("/sac/dashboard");
-        break;
-      case 12:
-        navigate("/ap/dashboard");
-        break;
-      case 13:
-        navigate("/principal/dashboard");
-        break;
-      case 14:
-        navigate("/teacher/dashboard");
-        break;
-      case 15:
-        navigate("/teacher/dashboard");
-        break;
-      case 16:
-        navigate("/student/dashboard");
-        break;
-      case 17:
-        navigate("/parent/dashboard");
-        break;
-      case 18:
-        navigate("/accounting/dashboard");
-        break;
-      case 19:
-        navigate("/purchasing/dashboard");
-        break;
-      default:
-        navigate("/");
-        break;
+    console.log("User data:", userData);
+    
+    // Extract roles (supports both legacy single role and new multiple roles)
+    const userRoles = extractUserRoles(userData);
+    console.log("User roles:", userRoles);
+    
+    if (userRoles.length === 0) {
+      console.warn("No valid roles found for user");
+      navigate("/");
+      return;
     }
+    
+    // Get dashboard path based on user's primary role
+    const dashboardPath = getDashboardPath(userRoles);
+    console.log("Redirecting to:", dashboardPath);
+    
+    navigate(dashboardPath);
   } catch (err) {
     console.error("Error parsing userData:", err);
     navigate("/");

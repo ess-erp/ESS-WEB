@@ -723,7 +723,7 @@ export const fetchSummarySheetTableData = (page, pageSize, search) => async (dis
         const url = `${baseUrl}/sru/get-summary-sheet-table?page=${page}&pageSize=${pageSize}&search=${search}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -761,15 +761,20 @@ export const fetchGenerateSummarySheetData = (payload) => async (dispatch) => {
             body: JSON.stringify(payload),
         });
 
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
         const res = await response.json();
 
         dispatch(fetchGenerateSummarySheetSuccess(res));
-        return { ok: true, data: res.data };
+        return { ok: true, data: res.data, message: res.message };
     }
     catch (error) {
         dispatch(fetchGenerateSummarySheetFailure(error.message));
-        return { ok: false, error };
-    };
+        return { ok: false, error: error.message };
+    }
 };
 
 export const fetchSectionListByLevelIdRequest = () => ({ type: FETCH_SECTION_LIST_BY_LEVEL_ID_REQUEST });
@@ -783,7 +788,7 @@ export const fetchSectionListByLevelIdData = (levelId) => async (dispatch) => {
         const url = `${baseUrl}/sru/get-section-list-by-level-id?levelId=${levelId}`;
 
         const response = await fetch(url, {
-            method: 'POST',
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`,

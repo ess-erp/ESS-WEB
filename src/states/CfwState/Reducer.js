@@ -21,7 +21,11 @@ import {
     FETCH_EXAM_RAW_SCORE_TABLE_REQUEST, FETCH_EXAM_RAW_SCORE_TABLE_SUCCESS, FETCH_EXAM_RAW_SCORE_TABLE_FAILURE,
     FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_REQUEST, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_SUCCESS, FETCH_INSERT_RAW_SCORE_BY_STUDENT_ID_FAILURE,
     FETCH_CFW_ENROLLMENT_COUNTS_REQUEST, FETCH_CFW_ENROLLMENT_COUNTS_SUCCESS, FETCH_CFW_ENROLLMENT_COUNTS_FAILURE,
-    UPDATE_CFW_ENROLLMENT_COUNT_REALTIME
+    UPDATE_CFW_ENROLLMENT_COUNT_REALTIME,
+    FETCH_STUDENT_HOLD_TABLE_REQUEST, FETCH_STUDENT_HOLD_TABLE_SUCCESS, FETCH_STUDENT_HOLD_TABLE_FAILURE,
+    CREATE_STUDENT_HOLD_REQUEST, CREATE_STUDENT_HOLD_SUCCESS, CREATE_STUDENT_HOLD_FAILURE,
+    REMOVE_STUDENT_HOLD_REQUEST, REMOVE_STUDENT_HOLD_SUCCESS, REMOVE_STUDENT_HOLD_FAILURE,
+    SEARCH_STUDENT_FOR_HOLD_REQUEST, SEARCH_STUDENT_FOR_HOLD_SUCCESS, SEARCH_STUDENT_FOR_HOLD_FAILURE,
     // FETCH_RAW_SCORE_BY_STUDENT_REQUEST, FETCH_RAW_SCORE_BY_STUDENT_SUCCESS, FETCH_RAW_SCORE_BY_STUDENT_FAILURE,
     // FETCH_SUBJECTLIST_REQUEST, FETCH_SUBJECTLIST_SUCCESS, FETCH_SUBJECTLIST_FAILURE,
 } from "./ActionType";
@@ -59,6 +63,11 @@ const initialGeneralState = {
         data: { ongoing: 0, enrolled: 0 }, 
         error: '' 
     },
+    // Student Hold/Clearance States
+    studentHoldTableState: { ...initialState, totalRecords: 0 },
+    createStudentHoldState: { ...initialState },
+    removeStudentHoldState: { ...initialState },
+    searchStudentForHoldState: { ...initialState },
     // rawScoreStudentState: { ...initialState },
     // subjectListState: { ...initialState },
 }
@@ -280,6 +289,43 @@ const cfwReducer = (state = initialGeneralState, action) => {
                     },
                 },
             };
+
+        // Student Hold/Clearance
+        case FETCH_STUDENT_HOLD_TABLE_REQUEST:
+            return { ...state, studentHoldTableState: { loading: true, data: [], error: '', totalRecords: 0 } };
+        case FETCH_STUDENT_HOLD_TABLE_SUCCESS:
+            return {
+                ...state,
+                studentHoldTableState: {
+                    loading: false,
+                    data: action.payload.data || [],
+                    error: '',
+                    totalRecords: action.payload.totalRecords || 0
+                }
+            };
+        case FETCH_STUDENT_HOLD_TABLE_FAILURE:
+            return { ...state, studentHoldTableState: { loading: false, data: [], error: action.payload, totalRecords: 0 } };
+
+        case SEARCH_STUDENT_FOR_HOLD_REQUEST:
+            return { ...state, searchStudentForHoldState: { loading: true, data: [], error: '' } };
+        case SEARCH_STUDENT_FOR_HOLD_SUCCESS:
+            return { ...state, searchStudentForHoldState: { loading: false, data: action.payload, error: '' } };
+        case SEARCH_STUDENT_FOR_HOLD_FAILURE:
+            return { ...state, searchStudentForHoldState: { loading: false, data: [], error: action.payload } };
+
+        case CREATE_STUDENT_HOLD_REQUEST:
+            return { ...state, createStudentHoldState: { loading: true, data: null, error: '' } };
+        case CREATE_STUDENT_HOLD_SUCCESS:
+            return { ...state, createStudentHoldState: { loading: false, data: action.payload, error: '' } };
+        case CREATE_STUDENT_HOLD_FAILURE:
+            return { ...state, createStudentHoldState: { loading: false, data: null, error: action.payload } };
+
+        case REMOVE_STUDENT_HOLD_REQUEST:
+            return { ...state, removeStudentHoldState: { loading: true, data: null, error: '' } };
+        case REMOVE_STUDENT_HOLD_SUCCESS:
+            return { ...state, removeStudentHoldState: { loading: false, data: action.payload, error: '' } };
+        case REMOVE_STUDENT_HOLD_FAILURE:
+            return { ...state, removeStudentHoldState: { loading: false, data: null, error: action.payload } };
 
         default:
             return state;
